@@ -13,20 +13,20 @@ double **Aux::parse2DCsvFile(char *file_name, int number_of_years, int number_of
 
     std::ifstream file(file_name);
 
-    for (int row = 0; row < number_of_years; ++row) {
+    for (int row = 0; row < number_of_years; row++) {
         data[row] = new double[number_of_time_steps];
         std::string line;
         std::getline(file, line);
-        if (!file.good())
-            break;
+//        if (!file.good())
+//            break;
 
         std::stringstream iss(line);
 
-        for (int col = 0; col < number_of_time_steps; ++col) {
+        for (int col = 0; col < number_of_time_steps; col++) {
             std::string val;
             std::getline(iss, val, ',');
-            if (!iss.good())
-                break;
+//            if (!iss.good())
+//                break;
 
             std::stringstream convertor(val);
             convertor >> data[row][col];

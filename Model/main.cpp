@@ -4,8 +4,8 @@
 #include "Constants.h"
 #include "Region.h"
 #include "Aux.h"
+#include "Catchment.h"
 
-void testReadCsv();
 
 using namespace std;
 using namespace Constants;
@@ -46,29 +46,45 @@ int regionContinuityTest() {
     return 0;
 }
 
-void testReadCsv() {
+int testReadCsv() {
 
     cout << "BEGINNING CSV READ TEST" << endl << endl;
 
     double **test_data;
-    char *file_name = "/home/bernardo/test_csv.csv";
-    test_data = Aux::parse2DCsvFile(file_name, 2, 4);
+    char *file_name = "/home/bernardo/ClionProjects/TriangleModel/TestFiles/updatedOWASAInflowSYN9.csv";
+    test_data = Aux::parse2DCsvFile(file_name, 1000, 3640);
 
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 4; j++) {
-            cout << test_data[i][j];
+            cout << test_data[i][j] << " ";
         }
+        cout << endl;
     }
 
     cout << endl << "END OF CSV READ TEST" << endl << "------------------------------------" << endl << endl;
+
+    return 0;
 }
+
+int testCatchment() {
+    Catchment c("/home/bernardo/ClionProjects/TriangleModel/TestFiles/updatedOWASAInflowSYN9.csv", 1000, 3640);
+
+    double *streamflow = c.getStreamflow(1);
+
+    for (int i = 0; i < 3640; i++) {
+        cout << streamflow[i] << " ";
+    }
+}
+
+
 
 
 int main() {
 
-    ::reservoirTest();
-    ::testReadCsv();
+//    ::reservoirTest();
+//    ::testReadCsv();
 //    ::regionContinuityTest();
+    ::testCatchment();
 
     return 0;
 }

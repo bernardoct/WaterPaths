@@ -6,27 +6,36 @@
 #define TRIANGLEMODEL_RESERVOIR_H
 
 #include <string>
+#include "Catchment.h"
 
 using namespace std;
 
 
 class Reservoir {
+private:
+    Catchment catchment;
     double stored_volume;
+    double release_previous_week;
+    bool online;
 
 public:
-
+    const int id;
     string const reservoir_name;
     double const capacity;
     double const min_environmental_flow;
-    bool online;
 
-    Reservoir(const string reservoir_name, double stored_volume, const double capacity,
-              const double min_environmental_flow, bool online);
+    Reservoir(const string &reservoir_name, const int id, const double min_environmental_flow,
+              const Catchment &catchment, bool online, const double capacity);
 
-    double applyContinuity(double inflow, double demand_outflow);
+    double applyContinuity(int week, double upstream_reservoir_inflow, double demand_outflow);
+
+    void setOnline(bool online);
 
     double getStored_volume() const;
 
+    double getRelease_previous_week() const;
+
+    bool isOnline() const;
 };
 
 

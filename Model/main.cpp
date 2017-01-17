@@ -1,64 +1,51 @@
 #include <iostream>
-#include <vector>
 #include "Reservoir.h"
-#include "Constants.h"
-#include "Region.h"
+#include "Utility.h"
 #include "Aux.h"
-#include "Catchment.h"
+#include "Region.h"
 
 
 using namespace std;
 using namespace Constants;
 
-int reservoirTest() {
+int reservoirAndCatchmentTest() {
     cout << "BEGINNING RESERVOIR TEST" << endl << endl;
 
-    Reservoir r(string("Lake Michie"), 8.4, 10.0, 0.5, ONLINE);
+    double **streamflows_test = Aux::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
+                                                            "inflowsLakeTest.csv", 2, 52);
+    Catchment catchment_test(streamflows_test[0]);
 
-    cout << r.applyContinuity(4.0, 2.0) << endl;
-    cout << r.getStored_volume() << endl;
+    Reservoir r(string("Lake Michie"), 0, 0.5, catchment_test, ONLINE, 10.0);
+
+    cout << r.applyContinuity(0, 2.5, 2.0) << " expected: " << 1.3 << endl;
+    cout << r.getStored_volume() << " expected: " << 10 << endl;
 
     cout << endl << "END OF RESERVOIR TEST" << endl << "------------------------------------" << endl << endl;
 
     return 1;
 }
 
-int regionContinuityTest() {
-
-    cout << "BEGINNING REGION CONTINUITY TEST" << endl << endl;
-
-    int reservoirConnectivityMatrix[MAX_NUMBER_OF_RESERVOIRS][MAX_NUMBER_OF_RESERVOIRS] = {{}};
-    reservoirConnectivityMatrix[0][1] = -1;
-    reservoirConnectivityMatrix[1][0] = 1;
-
-    vector<Reservoir> reservoirs;
-
-    Reservoir *lake_michie = new Reservoir(string("Lake Michie"), 8.4, 10.0, 0.5, ONLINE);
-    Reservoir *stone_quarry = new Reservoir(string("Stone Quarry"), 8.8, 10.0, 0.5, ONLINE);
-
-    reservoirs.push_back(*lake_michie);
-    reservoirs.push_back(*stone_quarry);
-
-    Region region(reservoirs, reservoirConnectivityMatrix, 1);
-
-    cout << endl << "END OF REGION CONTINUITY TEST" << endl << endl << endl;
-
-    return 0;
-}
-
 int testReadCsv() {
 
     cout << "BEGINNING CSV READ TEST" << endl << endl;
 
-    double **test_data;
-    char *file_name = "/home/bernardo/ClionProjects/TriangleModel/TestFiles/updatedOWASAInflowSYN9.csv";
-    test_data = Aux::parse2DCsvFile(file_name, 1000, 3640);
+    // 2D
+    char const *file_name_2d = "/home/bernardo/ClionProjects/TriangleModel/TestFiles/updatedOWASAInflowSYN9.csv";
+    double **test_data_2d = Aux::parse2DCsvFile(file_name_2d, 1000, 3640);
 
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 4; j++) {
-            cout << test_data[i][j] << " ";
+            cout << test_data_2d[i][j] << " ";
         }
         cout << endl;
+    }
+
+    // 1D
+    char const *file_name_1d = "/home/bernardo/ClionProjects/TriangleModel/TestFiles/current_split_demands.csv";
+    double *test_data_1d = Aux::parse1DCsvFile(file_name_1d, 52);
+
+    for (int i = 0; i < 52; i++) {
+        cout << test_data_1d[i] << endl;
     }
 
     cout << endl << "END OF CSV READ TEST" << endl << "------------------------------------" << endl << endl;
@@ -66,25 +53,54 @@ int testReadCsv() {
     return 0;
 }
 
-int testCatchment() {
-    Catchment c("/home/bernardo/ClionProjects/TriangleModel/TestFiles/updatedOWASAInflowSYN9.csv", 1000, 3640);
+int regionContinuityTest() {
+    double **streamflows_test = Aux::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
+                                                            "inflowsLakeTest.csv", 2, 52);
 
-    double *streamflow = c.getStreamflow(1);
+    int n_weeks = 52;
 
-    for (int i = 0; i < 3640; i++) {
-        cout << streamflow[i] << " ";
-    }
+    Catchment c1(streamflows_test[0]);
+    Catchment c2(streamflows_test[1]);
+    Catchment c3(streamflows_test[0]);
+
+    Reservoir r1("R1", 0, 0.5, c1, ONLINE, 10.0);
+    Reservoir r2("R2", 1, 0.4, c2, ONLINE, 8.0);
+    Reservoir r3("R3", 2, 0.8, c3, ONLINE, 15.0);
+
+    Utility u1("U1", 0, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demands.csv", n_weeks);
+    Utility u2("U2", 1, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demands.csv", n_weeks);
+
+    vector<Reservoir> reservoirs;
+    reservoirs.push_back(r1);
+    reservoirs.push_back(r2);
+    reservoirs.push_back(r3);
+
+    vector<Utility> utilities;
+    utilities.push_back(u1);
+    utilities.push_back(u2);
+
+    vector<vector<int>> reservoir_connectivity_matrix = {
+            {0,  1,  0},
+            {-1, 0,  1},
+            {0,  -1, 0}
+    };
+
+    vector<vector<int>> reservoir_utility_connectivity_matrix = {
+            {1, 0, 0},
+            {0, 1, 1}
+    };
+
+    Region rg(0, reservoirs, reservoir_connectivity_matrix, utilities, reservoir_utility_connectivity_matrix, 2);
+
+    return 0;
 }
-
-
 
 
 int main() {
 
-//    ::reservoirTest();
+//    ::reservoirAndCatchmentTest();
 //    ::testReadCsv();
-//    ::regionContinuityTest();
-    ::testCatchment();
+    ::regionContinuityTest();
 
     return 0;
 }

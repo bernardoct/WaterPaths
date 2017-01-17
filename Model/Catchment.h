@@ -12,12 +12,12 @@ using namespace std;
 
 class Catchment {
 public:
-    Catchment(char *file_name, int number_of_records, int number_of_time_steps);
+    Catchment(double *streamflows);
 
-    double *getStreamflow(int index) const;
+    double getStreamflow(int week);
 
 private:
-    double **streamflows;
+    double *streamflows;
 };
 
 

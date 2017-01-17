@@ -7,31 +7,36 @@
 
 using namespace std;
 
-Reservoir::Reservoir(const string reservoir_name, double stored_volume, const double capacity,
-                     const double min_environmental_flow, bool online) : reservoir_name(reservoir_name),
-                                                                         stored_volume(stored_volume),
-                                                                         capacity(capacity),
-                                                                         min_environmental_flow(min_environmental_flow),
-                                                                         online(online) {
-
+Reservoir::Reservoir(const string &reservoir_name, const int id, const double min_environmental_flow,
+                     const Catchment &catchment, bool online, const double capacity)
+        : reservoir_name(reservoir_name), capacity(capacity),
+          min_environmental_flow(min_environmental_flow),
+          catchment(catchment), online(online),
+          stored_volume(capacity), id(id) {
     cout << "Reservoir " << reservoir_name << " created" << endl;
+    release_previous_week = min_environmental_flow;
 }
 
-double Reservoir::applyContinuity(double inflow, double demand_outflow) {
-    double new_volume = stored_volume + inflow - demand_outflow - min_environmental_flow;
+double Reservoir::applyContinuity(int week, double upstream_reservoir_inflow, double demand_outflow) {
+
+    double total_inflow = upstream_reservoir_inflow + catchment.getStreamflow((week));
+    double new_volume = stored_volume + total_inflow - demand_outflow - min_environmental_flow;
     double released_volume = min_environmental_flow;
+    double spillage = 0;
 
     if (online) {
         if (new_volume > capacity) {
-            released_volume += new_volume - capacity;
+            spillage = new_volume - capacity;
+            released_volume += spillage;
             new_volume = capacity;
         }
     } else {
         new_volume = stored_volume;
-        released_volume = inflow;
+        released_volume = total_inflow;
     }
 
     stored_volume = new_volume;
+    release_previous_week = released_volume;
 
     return released_volume;
 }
@@ -39,4 +44,18 @@ double Reservoir::applyContinuity(double inflow, double demand_outflow) {
 double Reservoir::getStored_volume() const {
     return stored_volume;
 }
+
+bool Reservoir::isOnline() const {
+    return online;
+}
+
+void Reservoir::setOnline(bool online) {
+    Reservoir::online = online;
+}
+
+double Reservoir::getRelease_previous_week() const {
+    return release_previous_week;
+}
+
+
 

@@ -7,6 +7,7 @@
 
 #include "Reservoir.h"
 #include "Constants.h"
+#include "Utility.h"
 #include <vector>
 
 using namespace Constants;
@@ -14,16 +15,25 @@ using namespace std;
 
 class Region {
 public:
-    Region(const vector<Reservoir> &reservoirs,
-           int (&reservoir_connectivity_matrix_)[MAX_NUMBER_OF_RESERVOIRS][MAX_NUMBER_OF_RESERVOIRS],
-           const int simulation_time);
+    Region(int realization_index,
+           vector<Reservoir> &reservoirs,
+           vector<vector<int> > reservoir_connectivity_matrix_,
+           vector<Utility> &utilities,
+           vector<vector<int> > reservoir_utility_connectivity_matrix,
+           const int total_simulation_time);
 
-    void continuity_step();
+    void continuity_step(int i);
+
+    const int total_simulation_time;
+    const int realization_index;
 
 private:
     vector<Reservoir> reservoirs;
-    int reservoir_connectivity_matrix[MAX_NUMBER_OF_RESERVOIRS][MAX_NUMBER_OF_RESERVOIRS];
-    const int simulation_time;
+    vector<Utility> utilities;
+    vector<vector<int> > reservoir_adjacency_list;
+    vector<vector<int> > reservoir_utility_adjacency_list;
+    vector<vector<int> > reservoir_adjacency_matrix; // 1 for receive from, -1 to release to, and 0 for no connection.
+    vector<vector<int> > reservoir_utility_connectivity_matrix; // Reservoir in rows and utilities in columns.
 
 };
 

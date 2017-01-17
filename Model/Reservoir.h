@@ -27,7 +27,7 @@ public:
     Reservoir(const string &reservoir_name, const int id, const double min_environmental_flow,
               const Catchment &catchment, bool online, const double capacity);
 
-    double applyContinuity(int week, double upstream_reservoir_inflow, double demand_outflow);
+    void applyContinuity(int week, double upstream_reservoir_inflow, double demand_outflow);
 
     void setOnline(bool online);
 

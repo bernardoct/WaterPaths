@@ -20,18 +20,17 @@ private:
     map<int, Reservoir> reservoirs;
 
 public:
-    const map<int, Reservoir> &getReservoirs() const;
-
-public:
     Utility(char const *name, int id, char const *demand_file_name, int number_of_weeks);
 
     double getDemand(int reservoir_id);
 
     const int id;
 
-    void updateCurrentDemandAndTotalStoredVolume(int week, double inflow);
+    void updateCurrentDemandAndTotalStoredVolume(int week);
 
-    void assignReservoirs(map<int, Reservoir> reservoirs_);
+    const map<int, Reservoir> &getReservoirs() const;
+
+    void addReservoir(Reservoir reservoir);
 };
 
 

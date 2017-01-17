@@ -17,7 +17,7 @@ Reservoir::Reservoir(const string &reservoir_name, const int id, const double mi
     release_previous_week = min_environmental_flow;
 }
 
-double Reservoir::applyContinuity(int week, double upstream_reservoir_inflow, double demand_outflow) {
+void Reservoir::applyContinuity(int week, double upstream_reservoir_inflow, double demand_outflow) {
 
     double total_inflow = upstream_reservoir_inflow + catchment.getStreamflow((week));
     double new_volume = stored_volume + total_inflow - demand_outflow - min_environmental_flow;
@@ -38,7 +38,6 @@ double Reservoir::applyContinuity(int week, double upstream_reservoir_inflow, do
     stored_volume = new_volume;
     release_previous_week = released_volume;
 
-    return released_volume;
 }
 
 double Reservoir::getStored_volume() const {

@@ -17,6 +17,7 @@ private:
     double stored_volume;
     double release_previous_week;
     bool online;
+    int week;
 
 public:
     const int id;
@@ -29,13 +30,15 @@ public:
 
     void applyContinuity(int week, double upstream_reservoir_inflow, double demand_outflow);
 
-    void setOnline(bool online);
+    void setOnline(bool online_status);
 
     double getStored_volume() const;
 
     double getRelease_previous_week() const;
 
     bool isOnline() const;
+
+    void toString();
 };
 
 

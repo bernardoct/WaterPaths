@@ -7,32 +7,30 @@
 
 Region::Region(int realization_index,
                vector<Reservoir> reservoirs,
-               vector<vector<int> > reservoir_connectivity_matrix_,
+               vector<vector<int> > &reservoir_connectivity_matrix,
                vector<Utility> utilities,
-               vector<vector<int> > reservoir_utility_connectivity_matrix_,
+               vector<vector<int> > &reservoir_utility_connectivity_matrix,
                const int total_simulation_time) : realization_index(realization_index),
                                                   reservoirs(reservoirs),
-                                                  reservoir_adjacency_matrix(reservoir_connectivity_matrix_),
                                                   utilities(utilities),
-                                                  reservoir_utility_connectivity_matrix(
-                                                          reservoir_utility_connectivity_matrix_),
                                                   total_simulation_time(total_simulation_time) {
 
     // Assign reservoirs to each utility.
     for (int i = 0; i < utilities.size(); i++) {
         for (int j = 0; j < reservoirs.size(); j++) {
-            if (reservoir_utility_connectivity_matrix_[i][j] == 1) {
-                this->utilities[i].addReservoir(reservoirs[j]);
+            if (reservoir_utility_connectivity_matrix[i][j] == 1) {
+                this->utilities[i].addReservoir(&this->reservoirs[j]);
             }
         }
     }
 
     // Convert reservoir adjacency matrix into adjacency list.
-    for (int i = 0; i < reservoirs.size(); i++) {
+    for (int j = 0; j < reservoirs.size(); j++) {
         vector<int> v;
-        for (int j = 0; j < reservoirs.size(); j++) {
-            if (reservoir_connectivity_matrix_[i][j] == 1) v.push_back(j);
+        for (int i = 0; i < reservoirs.size(); i++) {
+            if (reservoir_connectivity_matrix[i][j] == 1) v.push_back(i);
         }
+        if (v.size() == 0) v.push_back(-1);
         reservoir_adjacency_list.push_back(v);
     }
 
@@ -40,7 +38,7 @@ Region::Region(int realization_index,
     for (int i = 0; i < reservoirs.size(); ++i) {
         vector<int> v;
         for (int j = 0; j < utilities.size(); ++j) {
-            if (reservoir_utility_connectivity_matrix_[j][i] == 1) {
+            if (reservoir_utility_connectivity_matrix[j][i] == 1) {
                 v.push_back(this->utilities.at(j).id);
             }
         }
@@ -48,7 +46,10 @@ Region::Region(int realization_index,
     }
 
     // Print reservoir adjacency list. FOR TESTS ONLY.
-    for (vector<int> &row : reservoir_adjacency_list) {
+    cout << endl << "Reservoir connections." << endl;
+    for (int k = 0; k < reservoir_adjacency_list.size(); ++k) {
+        vector<int> row = reservoir_adjacency_list[k];
+        cout << "Reservoir " << k << ": ";
         for (int &i : row) {
             cout << i << " ";
         }
@@ -57,9 +58,11 @@ Region::Region(int realization_index,
 
 
     // Print list of reservoir for each utility. FOR TESTS ONLY.
+    cout << endl << "Reservoirs belonging to each utility." << endl;
     for (Utility &u : this->utilities) {
-        for (const map<int, Reservoir>::value_type &r : u.getReservoirs()) {
-            cout << r.second.id << " ";
+        cout << "Utility " << u.id << ": ";
+        for (const map<int, Reservoir *>::value_type &r : u.getReservoirs()) {
+            cout << r.second->id << " ";
         }
         cout << endl;
     }
@@ -67,40 +70,54 @@ Region::Region(int realization_index,
     cout << endl;
 
     // Print list of utilities drawing from each reservoir. FOR TESTS ONLY.
-    for (vector<int> &v : reservoir_utility_adjacency_list) {
-        for (int &id : v) {
+    cout << endl << "Utilities drawing from reservoir." << endl;
+    for (int i = 0; i < reservoir_utility_adjacency_list.size(); ++i) {
+        cout << "Reservoir " << i << ": ";
+        for (int &id : reservoir_utility_adjacency_list[i]) {
             cout << id << " ";
         }
         cout << endl;
     }
+    cout << endl;
 
 }
 
 void Region::continuityStep(int week) {
     double demands[reservoirs.size()] = {};
-    double inflows[reservoirs.size()] = {};
-
-    for (Utility &u : utilities) {
-        u.updateCurrentDemandAndTotalStoredVolume(week);
-    }
+    double upstream_releases_inflows[reservoirs.size()] = {};
 
     for (int i = 0; i < reservoirs.size(); ++i) {
         for (int &j : reservoir_utility_adjacency_list[i]) {
-            demands[i] += utilities[j].getDemand(i);
+            demands[i] += utilities[j].getDemand(week, i);
         }
         for (int &j : reservoir_adjacency_list[i]) {
-            inflows[i] += reservoirs[j].getRelease_previous_week();
+            upstream_releases_inflows[i] += reservoirs[j].getRelease_previous_week();
         }
     }
 
     for (int i = 0; i < reservoirs.size(); i++) {
-        reservoirs[i].applyContinuity(week, inflows[i], demands[i]);
+        reservoirs[i].applyContinuity(week, upstream_releases_inflows[i], demands[i]);
+    }
+
+    for (Utility &u : utilities) {
+        u.updateTotalStoredVolume();
     }
 }
 
 void Region::runSimpleContinuitySimulation(int total_simulation_time) {
+
+    for (Utility &u : utilities) {
+        u.updateTotalStoredVolume();
+    }
+
     for (int week = 0; week < total_simulation_time; ++week) {
         this->continuityStep(week);
+
+        cout << "====== Week: " << week << " ======" << endl;
+
+        for (Reservoir &r : reservoirs) {
+            r.toString();
+        }
     }
 }
 

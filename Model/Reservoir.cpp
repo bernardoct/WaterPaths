@@ -24,6 +24,8 @@ void Reservoir::applyContinuity(int week, double upstream_reservoir_inflow, doub
     double released_volume = min_environmental_flow;
     double spillage = 0;
 
+    this->week = week;
+
     if (online) {
         if (new_volume > capacity) {
             spillage = new_volume - capacity;
@@ -48,13 +50,21 @@ bool Reservoir::isOnline() const {
     return online;
 }
 
-void Reservoir::setOnline(bool online) {
-    Reservoir::online = online;
+void Reservoir::setOnline(bool online_status) {
+    Reservoir::online = online_status;
 }
 
 double Reservoir::getRelease_previous_week() const {
     return release_previous_week;
 }
 
+void Reservoir::toString() {
+    cout << "Reservoir " << id << ", " << this->reservoir_name << endl;
+    cout << "Status: " << online << endl;
+    cout << "Last update: week " << week << endl;
+    cout << "Stored volume: " << stored_volume << endl;
+    cout << "Release previous week: " << release_previous_week << endl;
+    cout << endl;
 
+}
 

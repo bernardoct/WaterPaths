@@ -14,23 +14,22 @@ class Utility {
 private:
     double *demand_series;
     double total_storage_capacity;
-    double current_total_demand;
     double total_stored_volume;
     const char *name;
-    map<int, Reservoir> reservoirs;
+    map<int, Reservoir *> reservoirs;
 
 public:
     Utility(char const *name, int id, char const *demand_file_name, int number_of_weeks);
 
-    double getDemand(int reservoir_id);
+    double getDemand(int week, int reservoir_id);
 
     const int id;
 
-    void updateCurrentDemandAndTotalStoredVolume(int week);
+    void updateTotalStoredVolume();
 
-    const map<int, Reservoir> &getReservoirs() const;
+    const map<int, Reservoir *> &getReservoirs() const;
 
-    void addReservoir(Reservoir reservoir);
+    void addReservoir(Reservoir *reservoir);
 };
 
 

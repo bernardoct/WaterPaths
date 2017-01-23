@@ -15,40 +15,42 @@ Utility::Utility(char const *name, int id, char const *demand_file_name, int num
 }
 
 /**
- * Generates week's random inflow, which is then split among reservoirs in getDemand. Needs to be completed by
- * making it generate a demand based on a combination of inflows from 2 or more connected reservoirs.
- * @param week
+ * Updates the total current storage held by the utility and all its reservoirs.
  */
-void Utility::updateCurrentDemandAndTotalStoredVolume(int week) {
-    current_total_demand = demand_series[week];
-
+void Utility::updateTotalStoredVolume() {
     total_stored_volume = 0;
-    for (map<int, Reservoir>::value_type &r : reservoirs) {
-        total_stored_volume += r.second.getStored_volume();
+
+    for (map<int, Reservoir *>::value_type &r : reservoirs) {
+        total_stored_volume += r.second->getStored_volume();
     }
+
+    return;
 }
 
-//void Utility::assignReservoirs(map<int, Reservoir> reservoirs) {
-//
-//    this->reservoirs = reservoirs;
-//
-//    total_storage_capacity = 0;
-//    for (map<int, Reservoir>::value_type &r : reservoirs) {
-//        if (r.second.isOnline()) total_storage_capacity += r.second.capacity;
-//    }
-//    total_stored_volume = total_storage_capacity;
-//}
-
-void Utility::addReservoir(Reservoir reservoir) {
-    reservoirs.insert(pair<int, Reservoir>(reservoir.id, reservoir));
-    if (reservoir.isOnline()) total_storage_capacity += reservoir.capacity;
+/**
+ * Connects a reservoir to the utility.
+ * @param reservoir
+ */
+void Utility::addReservoir(Reservoir *reservoir) {
+    reservoirs.insert(pair<int, Reservoir *>(reservoir->id, reservoir));
+    if (reservoir->isOnline()) total_storage_capacity += reservoir->capacity;
 }
 
-const map<int, Reservoir> &Utility::getReservoirs() const {
+/**
+ * Assigns a fraction of the total weekly demand to a reservoir according to its current storage in relation
+ * to the combined current stored of all reservoirs where the utility has .
+ * @param week
+ * @param reservoir_id
+ * @return proportional demand.
+ */
+double Utility::getDemand(int week, int reservoir_id) {
+
+    double reservoir_volume = reservoirs.at(reservoir_id)->getStored_volume();
+    double demand = demand_series[week] * reservoir_volume / total_stored_volume;
+    return demand;
+}
+
+const map<int, Reservoir *> &Utility::getReservoirs() const {
     return reservoirs;
-}
-
-double Utility::getDemand(int reservoir_id) {
-    return current_total_demand * reservoirs.at(reservoir_id).getStored_volume() / total_stored_volume;
 }
 

@@ -5,7 +5,6 @@
 #include "Catchment.h"
 
 Catchment::Catchment(double *streamflows) : streamflows(streamflows) {
-
 }
 
 double Catchment::getStreamflow(int week) {

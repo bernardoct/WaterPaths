@@ -17,6 +17,13 @@ Reservoir::Reservoir(const string &reservoir_name, const int id, const double mi
     release_previous_week = min_environmental_flow;
 }
 
+/**
+ * Reservoir mass balance. Gets releases from upstream reservoirs, demands from connected utilities, and
+ * combines them with its catchments inflows.
+ * @param week
+ * @param upstream_reservoir_inflow
+ * @param demand_outflow
+ */
 void Reservoir::applyContinuity(int week, double upstream_reservoir_inflow, double demand_outflow) {
 
     double total_inflow = upstream_reservoir_inflow + catchment.getStreamflow((week));

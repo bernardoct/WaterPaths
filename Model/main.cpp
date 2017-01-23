@@ -155,8 +155,8 @@ int main() {
 //
 //    ::reservoirAndCatchmentTest();
 //    ::testReadCsv();
-//    ::regionContinuityTest();
-//    ::regionUtilityTwoReservoirs();
+    ::regionContinuityTest();
+    ::regionUtilityTwoReservoirs();
 
 
     return 0;

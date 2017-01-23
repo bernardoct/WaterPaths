@@ -5,7 +5,7 @@
 #ifndef TRIANGLEMODEL_REGION_H
 #define TRIANGLEMODEL_REGION_H
 
-#include "Reservoir.h"
+#include "WaterSources/Reservoir.h"
 #include "Constants.h"
 #include "Utility.h"
 #include <vector>

@@ -21,7 +21,7 @@ void Utility::updateTotalStoredVolume() {
     total_stored_volume = 0;
 
     for (map<int, Reservoir *>::value_type &r : reservoirs) {
-        total_stored_volume += r.second->getStored_volume();
+        total_stored_volume += r.second->getAvailable_volume();
     }
 
     return;
@@ -45,7 +45,7 @@ void Utility::addReservoir(Reservoir *reservoir) {
  */
 double Utility::getDemand(int week, int reservoir_id) {
 
-    double reservoir_volume = reservoirs.at(reservoir_id)->getStored_volume();
+    double reservoir_volume = reservoirs.at(reservoir_id)->getAvailable_volume();
     double demand = demand_series[week] * reservoir_volume / total_stored_volume;
     return demand;
 }

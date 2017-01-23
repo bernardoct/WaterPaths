@@ -3,7 +3,7 @@
 //
 
 #include <iostream>
-#include "Region.h"
+#include "ContinuityModel.h"
 
 Region::Region(int realization_index,
                vector<Reservoir> reservoirs,
@@ -82,6 +82,10 @@ Region::Region(int realization_index,
 
 }
 
+/**
+ *
+ * @param week
+ */
 void Region::continuityStep(int week) {
     double demands[reservoirs.size()] = {};
     double upstream_releases_inflows[reservoirs.size()] = {};
@@ -91,12 +95,12 @@ void Region::continuityStep(int week) {
             demands[i] += utilities[j].getDemand(week, i);
         }
         for (int &j : reservoir_adjacency_list[i]) {
-            upstream_releases_inflows[i] += reservoirs[j].getRelease_previous_week();
+            upstream_releases_inflows[i] += reservoirs[j].getOutflow_previous_week();
         }
     }
 
     for (int i = 0; i < reservoirs.size(); i++) {
-        reservoirs[i].applyContinuity(week, upstream_releases_inflows[i], demands[i]);
+        reservoirs[i].updateAvailableVolume(week, upstream_releases_inflows[i], demands[i]);
     }
 
     for (Utility &u : utilities) {

@@ -1,8 +1,8 @@
 #include <iostream>
-#include "Reservoir.h"
+#include "WaterSources/Reservoir.h"
 #include "Utility.h"
 #include "Aux.h"
-#include "Region.h"
+#include "ContinuityModel.h"
 
 
 int regionUtilityTwoReservoirs();
@@ -19,9 +19,9 @@ int reservoirAndCatchmentTest() {
 
     Reservoir r(string("Lake Michie"), 0, 0.5, catchment_test, ONLINE, 10.0);
 
-    r.applyContinuity(0, 2.5, 2.0);
-    cout << r.getRelease_previous_week() << " expected: " << 1.0 << endl;
-    cout << r.getStored_volume() << " expected: " << 10 << endl;
+    r.updateAvailableVolume(0, 2.5, 2.0);
+    cout << r.getOutflow_previous_week() << " expected: " << 1.0 << endl;
+    cout << r.getAvailable_volume() << " expected: " << 10 << endl;
 
     cout << endl << "END OF RESERVOIR TEST" << endl << "------------------------------------" << endl << endl;
 

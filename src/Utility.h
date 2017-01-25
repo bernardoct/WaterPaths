@@ -15,8 +15,9 @@ private:
     double *demand_series;
     double total_storage_capacity;
     double total_stored_volume;
+    double risk_of_failure;
     const char *name;
-    map<int, Reservoir *> reservoirs;
+    map<int, WaterSource *> water_sources;
 
 public:
     Utility(char const *name, int id, char const *demand_file_name, int number_of_weeks);
@@ -27,9 +28,9 @@ public:
 
     void updateTotalStoredVolume();
 
-    const map<int, Reservoir *> &getReservoirs() const;
+    const map<int, WaterSource *> &getWaterSource() const;
 
-    void addReservoir(Reservoir *reservoir);
+    void addWaterSource(WaterSource *water_source);
 };
 
 

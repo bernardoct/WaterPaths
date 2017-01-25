@@ -5,29 +5,29 @@
 #include <iostream>
 #include "ContinuityModel.h"
 
-Region::Region(int realization_index,
-               vector<Reservoir> reservoirs,
-               vector<vector<int> > &water_sources_connectivity_matrix,
-               vector<Utility> utilities,
-               vector<vector<int> > &water_sources_utility_connectivity_matrix,
-               const int total_simulation_time) : realization_index(realization_index),
-                                                  reservoirs(reservoirs),
-                                                  utilities(utilities),
-                                                  total_simulation_time(total_simulation_time) {
+ContinuityModel::ContinuityModel(int realization_index,
+                                 vector<Reservoir> water_sources,
+                                 vector<vector<int> > &water_sources_connectivity_matrix,
+                                 vector<Utility> utilities,
+                                 vector<vector<int> > &water_sources_utility_connectivity_matrix,
+                                 const int total_simulation_time) : realization_index(realization_index),
+                                                                    water_sources(water_sources),
+                                                                    utilities(utilities),
+                                                                    total_simulation_time(total_simulation_time) {
 
-    // Assign reservoirs to each utility.
+    // Assign water_sources to each utility.
     for (int i = 0; i < utilities.size(); i++) {
-        for (int j = 0; j < reservoirs.size(); j++) {
+        for (int j = 0; j < water_sources.size(); j++) {
             if (water_sources_utility_connectivity_matrix[i][j] == 1) {
-                this->utilities[i].addReservoir(&this->reservoirs[j]);
+                this->utilities[i].addWaterSource(&this->water_sources[j]);
             }
         }
     }
 
     // Convert reservoir adjacency matrix into adjacency list.
-    for (int j = 0; j < reservoirs.size(); j++) {
+    for (int j = 0; j < water_sources.size(); j++) {
         vector<int> v;
-        for (int i = 0; i < reservoirs.size(); i++) {
+        for (int i = 0; i < water_sources.size(); i++) {
             if (water_sources_connectivity_matrix[i][j] == 1) v.push_back(i);
         }
         if (v.size() == 0) v.push_back(-1);
@@ -35,7 +35,7 @@ Region::Region(int realization_index,
     }
 
     // Populate reservoir to utility adjacency list.
-    for (int i = 0; i < reservoirs.size(); ++i) {
+    for (int i = 0; i < water_sources.size(); ++i) {
         vector<int> v;
         for (int j = 0; j < utilities.size(); ++j) {
             if (water_sources_utility_connectivity_matrix[j][i] == 1) {
@@ -61,7 +61,7 @@ Region::Region(int realization_index,
     cout << endl << "Reservoirs belonging to each utility." << endl;
     for (Utility &u : this->utilities) {
         cout << "Utility " << u.id << ": ";
-        for (const map<int, Reservoir *>::value_type &r : u.getReservoirs()) {
+        for (const map<int, WaterSource *>::value_type &r : u.getWaterSource()) {
             cout << r.second->id << " ";
         }
         cout << endl;
@@ -86,21 +86,21 @@ Region::Region(int realization_index,
  *
  * @param week
  */
-void Region::continuityStep(int week) {
-    double demands[reservoirs.size()] = {};
-    double upstream_releases_inflows[reservoirs.size()] = {};
+void ContinuityModel::continuityStep(int week) {
+    double demands[water_sources.size()] = {};
+    double upstream_releases_inflows[water_sources.size()] = {};
 
-    for (int i = 0; i < reservoirs.size(); ++i) {
+    for (int i = 0; i < water_sources.size(); ++i) {
         for (int &j : water_sources_utility_adjacency_list[i]) {
             demands[i] += utilities[j].getDemand(week, i);
         }
         for (int &j : water_sources_adjacency_list[i]) {
-            upstream_releases_inflows[i] += reservoirs[j].getOutflow_previous_week();
+            upstream_releases_inflows[i] += water_sources[j].getOutflow_previous_week();
         }
     }
 
-    for (int i = 0; i < reservoirs.size(); i++) {
-        reservoirs[i].updateAvailableVolume(week, upstream_releases_inflows[i], demands[i]);
+    for (int i = 0; i < water_sources.size(); i++) {
+        water_sources[i].updateAvailableVolume(week, upstream_releases_inflows[i], demands[i]);
     }
 
     for (Utility &u : utilities) {
@@ -108,7 +108,7 @@ void Region::continuityStep(int week) {
     }
 }
 
-void Region::runSimpleContinuitySimulation(int total_simulation_time) {
+void ContinuityModel::runSimpleContinuitySimulation(int total_simulation_time) {
 
     for (Utility &u : utilities) {
         u.updateTotalStoredVolume();
@@ -119,7 +119,7 @@ void Region::runSimpleContinuitySimulation(int total_simulation_time) {
 
         cout << "====== Week: " << week << " ======" << endl;
 
-        for (Reservoir &r : reservoirs) {
+        for (WaterSource &r : water_sources) {
             r.toString();
         }
     }

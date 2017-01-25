@@ -13,14 +13,14 @@
 using namespace Constants;
 using namespace std;
 
-class Region {
+class ContinuityModel {
 public:
-    Region(int realization_index,
-           vector<Reservoir> reservoirs,
-           vector<vector<int> > &reservoir_connectivity_matrix,
-           vector<Utility> utilities,
-           vector<vector<int> > &reservoir_utility_connectivity_matrix,
-           const int total_simulation_time);
+    ContinuityModel(int realization_index,
+                    vector<Reservoir> water_source,
+                    vector<vector<int> > &reservoir_connectivity_matrix,
+                    vector<Utility> utilities,
+                    vector<vector<int> > &reservoir_utility_connectivity_matrix,
+                    const int total_simulation_time);
 
     const int total_simulation_time;
     const int realization_index;
@@ -28,7 +28,7 @@ public:
     void runSimpleContinuitySimulation(int total_simulation_time);
 
 private:
-    vector<Reservoir> reservoirs;
+    vector<Reservoir> water_sources;
     vector<Utility> utilities;
     vector<vector<int> > water_sources_adjacency_list;
     vector<vector<int> > water_sources_utility_adjacency_list;

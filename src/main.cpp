@@ -59,51 +59,51 @@ int testReadCsv() {
     return 0;
 }
 
-int regionContinuityTest() {
-
-    cout << "BEGINNING 2 RESERVOIRS 2 UTILITIES READ TEST" << endl << endl;
-
-    double **streamflows_test = Aux::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
-                                                            "inflowsLakeTest.csv", 2, 52);
-
-    int n_weeks = 52;
-
-    Catchment c1(streamflows_test[0]);
-    Catchment c2(streamflows_test[1]);
-
-    Reservoir r1("R1", 0, 1.0, c1, ONLINE, 15.0);
-    Reservoir r2("R2", 1, 0.5, c2, ONLINE, 10.0);
-
-    Utility u1("U1", 0, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demands.csv", n_weeks);
-    Utility u2("U2", 1, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demands.csv", n_weeks);
-
-    vector<Reservoir> reservoirs;
-    reservoirs.push_back(r1);
-    reservoirs.push_back(r2);
-
-    vector<Utility> utilities;
-    utilities.push_back(u1);
-    utilities.push_back(u2);
-
-    vector<vector<int>> reservoir_connectivity_matrix = {
-            {0,  1},
-            {-1, 0},
-    };
-
-    vector<vector<int>> reservoir_utility_connectivity_matrix = {
-            {1, 0},
-            {0, 1}
-    };
-
-    Region rg(0, reservoirs, reservoir_connectivity_matrix, utilities, reservoir_utility_connectivity_matrix, 4);
-
-    rg.runSimpleContinuitySimulation(4);
-
-    cout << endl << "END OF 2 RESERVOIRS 2 UTILITIES TEST" << endl << "---------------------"
-            "---------------" << endl << endl;
-
-    return 0;
-}
+//int regionContinuityTest() {
+//
+//    cout << "BEGINNING 2 RESERVOIRS 2 UTILITIES READ TEST" << endl << endl;
+//
+//    double **streamflows_test = Aux::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
+//                                                            "inflowsLakeTest.csv", 2, 52);
+//
+//    int n_weeks = 52;
+//
+//    Catchment c1(streamflows_test[0]);
+//    Catchment c2(streamflows_test[1]);
+//
+//    Reservoir r1("R1", 0, 1.0, c1, ONLINE, 15.0);
+//    Reservoir r2("R2", 1, 0.5, c2, ONLINE, 10.0);
+//
+//    Utility u1("U1", 0, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demands.csv", n_weeks);
+//    Utility u2("U2", 1, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demands.csv", n_weeks);
+//
+//    vector<Reservoir> reservoirs;
+//    reservoirs.push_back(r1);
+//    reservoirs.push_back(r2);
+//
+//    vector<Utility> utilities;
+//    utilities.push_back(u1);
+//    utilities.push_back(u2);
+//
+//    vector<vector<int>> reservoir_connectivity_matrix = {
+//            {0,  1},
+//            {-1, 0},
+//    };
+//
+//    vector<vector<int>> reservoir_utility_connectivity_matrix = {
+//            {1, 0},
+//            {0, 1}
+//    };
+//
+//    ContinuityModel rg(0, reservoirs, reservoir_connectivity_matrix, utilities, reservoir_utility_connectivity_matrix, 4);
+//
+//    rg.runSimpleContinuitySimulation(4);
+//
+//    cout << endl << "END OF 2 RESERVOIRS 2 UTILITIES TEST" << endl << "---------------------"
+//            "---------------" << endl << endl;
+//
+//    return 0;
+//}
 
 int regionUtilityTwoReservoirs() {
 
@@ -137,7 +137,8 @@ int regionUtilityTwoReservoirs() {
             {1, 1},
     };
 
-    Region rg(0, reservoirs, reservoir_connectivity_matrix, utilities, reservoir_utility_connectivity_matrix, 4);
+    ContinuityModel rg(0, reservoirs, reservoir_connectivity_matrix, utilities, reservoir_utility_connectivity_matrix,
+                       4);
 
     rg.runSimpleContinuitySimulation(4);
 
@@ -155,7 +156,7 @@ int main() {
 //
 //    ::reservoirAndCatchmentTest();
 //    ::testReadCsv();
-    ::regionContinuityTest();
+//    ::regionContinuityTest();
     ::regionUtilityTwoReservoirs();
 
 

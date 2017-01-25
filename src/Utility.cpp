@@ -20,7 +20,7 @@ Utility::Utility(char const *name, int id, char const *demand_file_name, int num
 void Utility::updateTotalStoredVolume() {
     total_stored_volume = 0;
 
-    for (map<int, Reservoir *>::value_type &r : reservoirs) {
+    for (map<int, WaterSource *>::value_type &r : water_sources) {
         total_stored_volume += r.second->getAvailable_volume();
     }
 
@@ -29,11 +29,11 @@ void Utility::updateTotalStoredVolume() {
 
 /**
  * Connects a reservoir to the utility.
- * @param reservoir
+ * @param water_source
  */
-void Utility::addReservoir(Reservoir *reservoir) {
-    reservoirs.insert(pair<int, Reservoir *>(reservoir->id, reservoir));
-    if (reservoir->isOnline()) total_storage_capacity += reservoir->capacity;
+void Utility::addWaterSource(WaterSource *water_source) {
+    water_sources.insert(pair<int, WaterSource *>(water_source->id, water_source));
+    if (water_source->isOnline()) total_storage_capacity += water_source->capacity;
 }
 
 /**
@@ -45,12 +45,12 @@ void Utility::addReservoir(Reservoir *reservoir) {
  */
 double Utility::getDemand(int week, int reservoir_id) {
 
-    double reservoir_volume = reservoirs.at(reservoir_id)->getAvailable_volume();
+    double reservoir_volume = water_sources.at(reservoir_id)->getAvailable_volume();
     double demand = demand_series[week] * reservoir_volume / total_stored_volume;
     return demand;
 }
 
-const map<int, Reservoir *> &Utility::getReservoirs() const {
-    return reservoirs;
+const map<int, WaterSource *> &Utility::getWaterSource() const {
+    return water_sources;
 }
 

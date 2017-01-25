@@ -30,8 +30,8 @@ public:
 private:
     vector<Reservoir> reservoirs;
     vector<Utility> utilities;
-    vector<vector<int> > reservoir_adjacency_list;
-    vector<vector<int> > reservoir_utility_adjacency_list;
+    vector<vector<int> > water_sources_adjacency_list;
+    vector<vector<int> > water_sources_utility_adjacency_list;
 
     void continuityStep(int i);
 

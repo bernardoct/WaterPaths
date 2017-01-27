@@ -8,11 +8,12 @@
 using namespace std;
 
 WaterSource::WaterSource(const string &reservoir_name, const int id, const double min_environmental_outflow,
-                         const Catchment &catchment, bool online, const double capacity)
+                         const vector<Catchment *> &catchments, bool online, const double capacity,
+                         const string source_type)
         : source_name(reservoir_name), capacity(capacity),
           min_environmental_outflow(min_environmental_outflow),
-          catchment(catchment), online(online),
-          available_volume(capacity), id(id) {
+          catchments(catchments), online(online),
+          available_volume(capacity), id(id), source_type(source_type) {
     cout << "Reservoir " << reservoir_name << " created" << endl;
     outflow_previous_week = min_environmental_outflow;
 }
@@ -24,9 +25,9 @@ WaterSource::WaterSource(const string &reservoir_name, const int id, const doubl
  * @param upstream_reservoir_inflow
  * @param demand_outflow
  */
-void WaterSource::updateAvailableVolume(int week, double upstream_reservoir_inflow, double demand_outflow) {
-    cout << "Available volume update must be called from a WaterSource child class" << endl;
-}
+//void WaterSource::updateAvailableVolume(int week, double upstream_reservoir_inflow, double demand_outflow) {
+//    cout << "Available volume update must be called from a WaterSource child class" << endl;
+//}
 
 double WaterSource::getAvailable_volume() const {
     return available_volume;
@@ -45,7 +46,7 @@ double WaterSource::getOutflow_previous_week() const {
 }
 
 void WaterSource::toString() {
-    cout << source_type << id << ", " << this->source_name << endl;
+    cout << source_type << " " << id << " - " << this->source_name << endl;
     cout << "Status: " << online << endl;
     cout << "Last update: week " << week << endl;
     cout << "Stored volume: " << available_volume << endl;

@@ -9,10 +9,12 @@ using namespace std;
 
 
 Reservoir::Reservoir(const string &source_name, const int id, const double min_environmental_outflow,
-                     const Catchment &catchment, bool online, const double capacity) : WaterSource(source_name, id,
-                                                                                                   min_environmental_outflow,
-                                                                                                   catchment, online,
-                                                                                                   capacity) {}
+                     const vector<Catchment *> &catchments, bool online, const double capacity) : WaterSource(
+        source_name, id,
+        min_environmental_outflow,
+        catchments, online,
+        capacity,
+        "Reservoir") {}
 
 /**
  * Reservoir mass balance. Gets releases from upstream reservoirs, demands from connected utilities, and
@@ -23,7 +25,10 @@ Reservoir::Reservoir(const string &source_name, const int id, const double min_e
  */
 void Reservoir::updateAvailableVolume(int week, double upstream_reservoir_inflow, double demand_outflow) {
 
-    double total_inflow = upstream_reservoir_inflow + catchment.getStreamflow((week));
+    double total_inflow = upstream_reservoir_inflow;
+    for (Catchment *c : catchments) {
+        total_inflow += c->getStreamflow((week));
+    }
     double new_volume = available_volume + total_inflow - demand_outflow - min_environmental_outflow;
     double released_volume = min_environmental_outflow;
     double spillage = 0;

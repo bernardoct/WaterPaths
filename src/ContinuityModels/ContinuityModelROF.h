@@ -19,6 +19,11 @@ public:
                        vector<vector<int>> &water_source_utility_connectivity_matrix, const int rof_type);
 
     void calculateROF();
+
+    void deepCopyReservoirsAndUtility(vector<WaterSource *> water_sources_original,
+                                      vector<Utility *> utilities_original,
+                                      vector<WaterSource *> &water_sources_copy,
+                                      vector<Utility *> &utilities_copy);
 };
 
 

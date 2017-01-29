@@ -13,5 +13,13 @@ ContinuityModelRealization::ContinuityModelRealization(const vector<WaterSource 
         : ContinuityModel(water_source, water_source_connectivity_matrix, utilities,
                           water_source_utility_connectivity_matrix), realization_index(realization_index) {}
 
+vector<WaterSource *> ContinuityModelRealization::getWaterSources() {
+    return water_sources;
+}
+
+vector<Utility *> ContinuityModelRealization::getUtilities() {
+    return utilities;
+}
+
 
 

@@ -12,7 +12,15 @@ using namespace std;
 
 class Catchment {
 public:
-    Catchment(double *streamflows);
+    Catchment(double *streamflows, int series_length);
+
+    Catchment(Catchment &catchment);
+
+    ~Catchment();
+
+    Catchment &operator=(const Catchment &catchment);
+
+    const int series_length;
 
     double getStreamflow(int week);
 

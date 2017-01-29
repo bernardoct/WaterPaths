@@ -68,13 +68,12 @@ int regionTwoUtilitiesTwoReservoirsContinuityTest() {
 
     cout << "BEGINNING 2 RESERVOIRS 2 UTILITIES READ TEST" << endl << endl;
 
+    int streamflow_n_weeks = 52;
     double **streamflows_test = Aux::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
-                                                            "inflowsLakeTest.csv", 2, 52);
+                                                            "inflowsLakeTest.csv", 2, streamflow_n_weeks);
 
-    int n_weeks = 52;
-
-    Catchment c1(streamflows_test[0]);
-    Catchment c2(streamflows_test[1]);
+    Catchment c1(streamflows_test[0], streamflow_n_weeks);
+    Catchment c2(streamflows_test[1], streamflow_n_weeks);
 
     vector<Catchment *> catchments1;
     vector<Catchment *> catchments2;
@@ -85,8 +84,8 @@ int regionTwoUtilitiesTwoReservoirsContinuityTest() {
     Reservoir r1("R1", 0, 1.0, catchments1, ONLINE, 15.0);
     Reservoir r2("R2", 1, 0.5, catchments2, ONLINE, 10.0);
 
-    Utility u1("U1", 0, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demands.csv", n_weeks);
-    Utility u2("U2", 1, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demands.csv", n_weeks);
+    Utility u1("U1", 0, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demands.csv", streamflow_n_weeks);
+    Utility u2("U2", 1, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demands.csv", streamflow_n_weeks);
 
     vector<WaterSource *> reservoirs;
     reservoirs.push_back(&r1);
@@ -123,13 +122,12 @@ int regionTwoUtilitiesTwoReservoirsContinuityTest() {
 int regionOneUtilitiesTwoReservoirsContinuityTest() {
 
     cout << "BEGINNING 2 RESERVOIRS 1 UTILITY READ TEST" << endl << endl;
-
+    int streamflow_n_weeks = 52;
     double **streamflows_test = Aux::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
-                                                            "inflowsLakeTest.csv", 2, 52);
-    int n_weeks = 52;
+                                                            "inflowsLakeTest.csv", 2, streamflow_n_weeks);
 
-    Catchment c1(streamflows_test[0]);
-    Catchment c2(streamflows_test[1]);
+    Catchment c1(streamflows_test[0], streamflow_n_weeks);
+    Catchment c2(streamflows_test[1], streamflow_n_weeks);
 
     vector<Catchment *> catchments1;
     vector<Catchment *> catchments2;
@@ -141,7 +139,7 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
     Reservoir r1("R1", 0, 1.0, catchments1, ONLINE, 15.0);
     Reservoir r2("R2", 1, 0.5, catchments2, ONLINE, 10.0);
 
-    Utility u1("U1", 0, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demands.csv", n_weeks);
+    Utility u1("U1", 0, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demands.csv", streamflow_n_weeks);
 
     vector<WaterSource *> reservoirs;
     reservoirs.push_back(&r1);
@@ -170,15 +168,138 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
 }
 
 
+//void catchmentCopy() {
+//    cout << "BEGINNING CATCHMENT COPY READ TEST" << endl << endl;
+//    int streamflow_n_weeks = 52;
+//    double **streamflows_test = Aux::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
+//                                                            "inflowsLakeTest.csv", 2, streamflow_n_weeks);
+//
+//    Catchment c1(streamflows_test[0], streamflow_n_weeks);
+//
+//    Catchment c2(c1);
+//
+//    c2.setStreamflow(1, 70);
+//
+//    for (int i = 0; i < 5; ++i) {
+//        cout << c1.getStreamflow(i) << endl;
+//    }
+//
+//    cout << " " << endl;
+//
+//    for (int i = 0; i < 5; ++i) {
+//        cout << c2.getStreamflow(i) << endl;
+//    }
+//
+//    Catchment * c3 = new Catchment(c1);
+//    cout << " " << endl;
+//
+//    c3->setStreamflow(1, 20);
+//
+//    for (int i = 0; i < 5; ++i) {
+//        cout << c2.getStreamflow(i) << endl;
+//    }
+//
+//    cout << " " << endl;
+//
+//    for (int i = 0; i < 5; ++i) {
+//        cout << c3->getStreamflow(i) << endl;
+//    }
+//
+//}
+//
+//void reservoirCopy() {
+//    cout << "BEGINNING RESERVOIR COPY TEST" << endl << endl;
+//    int streamflow_n_weeks = 52;
+//    double **streamflows_test = Aux::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
+//                                                            "inflowsLakeTest.csv", 2, streamflow_n_weeks);
+//
+//    Catchment c1(streamflows_test[0], streamflow_n_weeks);
+//    vector<Catchment *> catchments1;
+//    catchments1.push_back(&c1);
+//
+//    Reservoir r1("R1", 0, 1.0, catchments1, ONLINE, 15.0);
+////    Reservoir r2(r1);
+//    Reservoir r2 = r1;
+//
+//    r2.catchments[0]->streamflows[0] = 50;
+//
+//    cout << r1.catchments[0]->getStreamflow(0) << endl; // should be 0.5
+//    cout << r2.catchments[0]->getStreamflow(0) << endl; // should be 50
+//
+//    r1.updateAvailableVolume(1, 2.0, 3.0);
+//
+//    r1.toString(); // Should show stored volume of 14.5.
+//    r2.toString(); // Should show stored volume of 15.0.
+//
+//
+//    cout << "END OF RESERVOIR COPY TEST" << endl << endl;
+//}
+//
+//void utilityCopy() {
+//    cout << "BEGINNING 2 RESERVOIRS 1 UTILITY READ TEST" << endl << endl;
+//    int streamflow_n_weeks = 52;
+//    double **streamflows_test = Aux::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
+//                                                            "inflowsLakeTest.csv", 2, streamflow_n_weeks);
+//
+//    Catchment c1(streamflows_test[0], streamflow_n_weeks);
+//    Catchment c2(streamflows_test[1], streamflow_n_weeks);
+//
+//    vector<Catchment *> catchments1;
+//    vector<Catchment *> catchments2;
+//    catchments1.push_back(&c1);
+//    catchments1.push_back(&c2);
+//    catchments2.push_back(&c2);
+//
+//
+//    Reservoir r1("R1", 0, 1.0, catchments1, ONLINE, 15.0);
+//    Reservoir r2("R2", 1, 0.5, catchments2, ONLINE, 10.0);
+//
+//    Utility u1("U1", 0, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demands.csv", streamflow_n_weeks);
+//
+//    vector<WaterSource *> reservoirs;
+//    reservoirs.push_back(&r1);
+//    reservoirs.push_back(&r2);
+//
+//    vector<Utility *> utilities;
+//    utilities.push_back(&u1);
+//
+//    vector<vector<int>> reservoir_connectivity_matrix = {
+//            {0,  1},
+//            {-1, 0},
+//    };
+//
+//    vector<vector<int>> reservoir_utility_connectivity_matrix = {
+//            {1, 1},
+//    };
+//
+//    ContinuityModelRealization cmr(reservoirs, reservoir_connectivity_matrix,
+//                               utilities, reservoir_utility_connectivity_matrix, 0);
+//
+//    vector<WaterSource* > ws = cmr.getWaterSources();
+//    vector<Utility* > u = cmr.getUtilities();
+//
+////    Utility u3(*u[0]);
+//    Utility u3 = u1;
+//    u3.demand_series[0] = 30;
+//    u3.total_stored_volume = 5;
+//    u3.getWaterSource().at(0)->source_name[0] = 'a'; // remove const from source_name declaration in WaterSource.h
+//
+//    cout << u[0]->demand_series[0] << " " << u3.demand_series[0] << endl; // 2 30
+//    cout << u[0]->total_stored_volume << " " << u3.total_stored_volume << endl; // 0 5
+//    cout << u[0]->getWaterSource().at(0)->source_name << " " << u3.getWaterSource().at(0)->source_name << endl;
+//}
+
 int main() {
 //
 // Uncomment the lines below to run the tests.
 //
 //    ::reservoirAndCatchmentTest();
 //    ::testReadCsv();
-    ::regionTwoUtilitiesTwoReservoirsContinuityTest();
-    ::regionOneUtilitiesTwoReservoirsContinuityTest();
-
+//    ::regionTwoUtilitiesTwoReservoirsContinuityTest();
+//    ::regionOneUtilitiesTwoReservoirsContinuityTest();
+//    ::catchmentCopy(); // Create a setStreamflow method in order to run this test.
+    ::reservoirCopy(); // Make vector catchments public in order to run this test.
+//    ::utilityCopy();
 
     return 0;
 }

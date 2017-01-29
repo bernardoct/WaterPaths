@@ -12,6 +12,7 @@
 
 class Utility {
 private:
+public:
     double *demand_series;
     double total_storage_capacity;
     double total_stored_volume;
@@ -20,11 +21,18 @@ private:
     map<int, WaterSource *> water_sources;
 
 public:
-    Utility(char const *name, int id, char const *demand_file_name, int number_of_weeks);
+    Utility(char const *name, int id, char const *demand_file_name, int number_of_week_demands);
 
-    double getDemand(int week, int reservoir_id);
+    Utility(Utility &utility);
+
+    ~Utility();
+
+    Utility &operator=(const Utility &utility);
 
     const int id;
+    const int number_of_week_demands;
+
+    double getDemand(int week, int reservoir_id);
 
     void updateTotalStoredVolume();
 

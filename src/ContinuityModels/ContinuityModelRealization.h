@@ -18,6 +18,9 @@ public:
                                const vector<vector<int>> &water_source_utility_connectivity_matrix,
                                const int realization_index);
 
+    vector<WaterSource *> getWaterSources();
+
+    vector<Utility *> getUtilities();
 };
 
 

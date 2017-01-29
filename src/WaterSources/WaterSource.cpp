@@ -19,6 +19,45 @@ WaterSource::WaterSource(const string &reservoir_name, const int id, const doubl
 }
 
 /**
+ * Copy constructor.
+ * @param water_source
+ */
+WaterSource::WaterSource(const WaterSource &water_source) : capacity(water_source.capacity),
+                                                            source_name(water_source.source_name),
+                                                            min_environmental_outflow(
+                                                                    water_source.min_environmental_outflow),
+                                                            id(water_source.id),
+                                                            available_volume(water_source.available_volume),
+                                                            outflow_previous_week(water_source.outflow_previous_week),
+                                                            online(water_source.online),
+                                                            source_type("Reservoir") {
+    catchments.clear();
+    for (Catchment *c : water_source.catchments) {
+        catchments.push_back(new Catchment(*c));
+    }
+}
+
+/**
+ * Destructor.
+ */
+WaterSource::~WaterSource() {
+//    catchments.clear();
+}
+
+/**
+ * Copy assignment operator.
+ * @param water_source
+ * @return
+ */
+WaterSource &WaterSource::operator=(const WaterSource &water_source) {
+
+    catchments.clear();
+    for (Catchment *c : water_source.catchments) {
+        catchments.push_back(new Catchment(*c));
+    }
+}
+
+/**
  * Water source mass balance. Gets releases from upstream water sources, demands from connected utilities, and
  * combines them with its catchments inflows.
  * @param week

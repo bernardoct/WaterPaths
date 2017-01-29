@@ -17,6 +17,29 @@ Reservoir::Reservoir(const string &source_name, const int id, const double min_e
         "Reservoir") {}
 
 /**
+ * Copy constructor.
+ * @param reservoir
+ */
+Reservoir::Reservoir(const Reservoir &reservoir) : WaterSource(reservoir) {}
+
+/**
+ * Copy assignment operator
+ * @param reservoir
+ * @return
+ */
+Reservoir &Reservoir::operator=(const Reservoir &reservoir) {
+    WaterSource::operator=(reservoir);
+    return *this;
+}
+
+/**
+ * Destructor.
+ */
+Reservoir::~Reservoir() {
+    catchments.clear();
+}
+
+/**
  * Reservoir mass balance. Gets releases from upstream reservoirs, demands from connected utilities, and
  * combines them with its catchments inflows.
  * @param week

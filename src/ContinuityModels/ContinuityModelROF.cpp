@@ -15,6 +15,7 @@ ContinuityModelROF::ContinuityModelROF(const vector<WaterSource *> &water_source
                                                                              water_source_utility_connectivity_matrix),
                                                              rof_type(rof_type) {
 
+
     // DEEP COPY WATER SOURCES AND UTILITIES FOR VARIABLES THAT MATTER (STORED VOLUMES).
 }
 
@@ -37,4 +38,12 @@ void ContinuityModelROF::calculateROF() {
             }
         }
     }
+}
+
+void ContinuityModelROF::deepCopyReservoirsAndUtility(vector<WaterSource *> water_sources_original,
+                                                      vector<Utility *> utilities_original,
+                                                      vector<WaterSource *> &water_sources_copy,
+                                                      vector<Utility *> &utilities_copy) {
+
+
 }

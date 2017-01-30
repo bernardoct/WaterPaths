@@ -1,7 +1,7 @@
 #include <iostream>
-#include "WaterSources/Reservoir.h"
-#include "Utility.h"
-#include "Aux.h"
+#include "SystemComponents/WaterSources/Reservoir.h"
+#include "SystemComponents/Utility.h"
+#include "Utils/Aux.h"
 #include "Simulation.h"
 
 
@@ -289,6 +289,56 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
 //    cout << u[0]->getWaterSource().at(0)->source_name << " " << u3.getWaterSource().at(0)->source_name << endl;
 //}
 
+void rofCalculationsTest() {
+
+    cout << "BEGINNING ROF TEST" << endl << endl;
+
+    int streamflow_n_weeks = 52 * 70;
+    double **streamflows_test = Aux::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
+                                                            "inflowsLong.csv", 2, streamflow_n_weeks);
+
+    Catchment c1(streamflows_test[0], streamflow_n_weeks);
+    Catchment c2(streamflows_test[1], streamflow_n_weeks);
+
+    vector<Catchment *> catchments1;
+    vector<Catchment *> catchments2;
+    catchments1.push_back(&c1);
+    catchments1.push_back(&c2);
+    catchments2.push_back(&c2);
+
+    Reservoir r1("R1", 0, 3.0, catchments1, ONLINE, 150.0);
+    Reservoir r2("R2", 1, 3.0, catchments2, ONLINE, 100.0);
+
+    Utility u1("U1", 0, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demandsLong.csv", streamflow_n_weeks);
+    Utility u2("U2", 1, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demandsLong.csv", streamflow_n_weeks);
+
+    vector<WaterSource *> reservoirs;
+    reservoirs.push_back(&r1);
+    reservoirs.push_back(&r2);
+
+    vector<Utility *> utilities;
+    utilities.push_back(&u1);
+    utilities.push_back(&u2);
+
+    vector<vector<int>> reservoir_connectivity_matrix = {
+            {0,  1},
+            {-1, 0},
+    };
+
+    vector<vector<int>> reservoir_utility_connectivity_matrix = {
+            {1, 0},
+            {0, 1}
+    };
+
+    ContinuityModelROF crof(reservoirs, reservoir_connectivity_matrix, utilities,
+                            reservoir_utility_connectivity_matrix, SHORT_TERM_ROF);
+    vector<double> rofs;
+    rofs = crof.calculateROF(3120); // beginning of 60th year.
+
+    cout << endl << "END OF ROF TEST" << endl << "---------------------"
+            "---------------" << endl << endl;
+}
+
 int main() {
 //
 // Uncomment the lines below to run the tests.
@@ -298,8 +348,9 @@ int main() {
 //    ::regionTwoUtilitiesTwoReservoirsContinuityTest();
 //    ::regionOneUtilitiesTwoReservoirsContinuityTest();
 //    ::catchmentCopy(); // Create a setStreamflow method in order to run this test.
-    ::reservoirCopy(); // Make vector catchments public in order to run this test.
+//    ::reservoirCopy(); // Make vector catchments public in order to run this test.
 //    ::utilityCopy();
+    ::rofCalculationsTest();
 
     return 0;
 }

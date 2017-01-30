@@ -6,44 +6,53 @@
 #include "ContinuityModelROF.h"
 
 ContinuityModelROF::ContinuityModelROF(const vector<WaterSource *> &water_source,
-                                       vector<vector<int>> &water_source_connectivity_matrix,
+                                       const vector<vector<int>> &water_source_connectivity_matrix,
                                        const vector<Utility *> &utilities,
-                                       vector<vector<int>> &water_source_utility_connectivity_matrix,
+                                       const vector<vector<int>> &water_source_utility_connectivity_matrix,
                                        const int rof_type) : ContinuityModel(water_source,
                                                                              water_source_connectivity_matrix,
                                                                              utilities,
                                                                              water_source_utility_connectivity_matrix),
                                                              rof_type(rof_type) {
+    for (Utility *u : this->utilities) {
+        u->updateTotalStoredVolume();
+    }
 
 
-    // DEEP COPY WATER SOURCES AND UTILITIES FOR VARIABLES THAT MATTER (STORED VOLUMES).
 }
-
 
 /**
  * Runs one realization over total_simulation_time weeks for the input system.
  * @param total_simulation_time
  */
-void ContinuityModelROF::calculateROF() {
+vector<double> ContinuityModelROF::calculateROF(int week) {
 
+    vector<double> rofs(utilities.size(), 0);
     if (rof_type == SHORT_TERM_ROF) {
-
         for (int r = 0; r < NUMBER_REALIZATIONS_ROF; ++r) {
-            for (Utility *u : utilities) {
-                u->updateTotalStoredVolume();
+            for (int w = 0; w < WEEKS_ROF_SHORT_TERM; ++w) {
+                this->continuityStep(week + w, r);
+
+                for (int i = 0; i < utilities.size(); ++i) {
+                    if (utilities[i]->getStorageToCapacityRatio() <=
+                        STORAGE_CAPACITY_RATIO_FAIL)
+                        rofs[i] += ROF_SHORT_TERM_PRECISION;
+                    cout << utilities[i]->getStorageToCapacityRatio() << " ";
+                }
+                cout << endl;
             }
 
-            for (int week = 0; week < WEEKS_ROF_SHORT_TERM; ++week) {
-                this->continuityStep(week, r);
-            }
+            cout << endl;
         }
     }
 }
 
-void ContinuityModelROF::deepCopyReservoirsAndUtility(vector<WaterSource *> water_sources_original,
-                                                      vector<Utility *> utilities_original,
-                                                      vector<WaterSource *> &water_sources_copy,
-                                                      vector<Utility *> &utilities_copy) {
+void ContinuityModelROF::setUtilities_realization(const vector<Utility *> &utilities_realization) {
+    this->utilities_realization = utilities_realization;
+}
 
-
+void ContinuityModelROF::resetUtilitiesAndReservoirs() {
+    for (int i = 0; i < utilities.size(); ++i) {
+        utilities[i]->
+    }
 }

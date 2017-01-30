@@ -7,23 +7,23 @@
 
 
 #include "ContinuityModel.h"
+#include "ContinuityModelRealization.h"
 
 class ContinuityModelROF : public ContinuityModel {
 
-private:
+protected:
     const int rof_type;
-
+    vector<Utility *> utilities_realization;
 public:
     ContinuityModelROF(const vector<WaterSource *> &water_source,
-                       vector<vector<int>> &water_source_connectivity_matrix, const vector<Utility *> &utilities,
-                       vector<vector<int>> &water_source_utility_connectivity_matrix, const int rof_type);
+                       const vector<vector<int>> &water_source_connectivity_matrix, const vector<Utility *> &utilities,
+                       const vector<vector<int>> &water_source_utility_connectivity_matrix, const int rof_type);
 
-    void calculateROF();
+    void setUtilities_realization(const vector<Utility *> &utilities_realization);
 
-    void deepCopyReservoirsAndUtility(vector<WaterSource *> water_sources_original,
-                                      vector<Utility *> utilities_original,
-                                      vector<WaterSource *> &water_sources_copy,
-                                      vector<Utility *> &utilities_copy);
+    vector<double> calculateROF(int week);
+
+    void resetUtilitiesAndReservoirs();
 };
 
 

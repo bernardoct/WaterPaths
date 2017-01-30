@@ -5,9 +5,9 @@
 #ifndef TRIANGLEMODEL_CONTINUITYMODEL_H
 #define TRIANGLEMODEL_CONTINUITYMODEL_H
 
-#include "../WaterSources/WaterSource.h"
-#include "../Constants.h"
-#include "../Utility.h"
+#include "../SystemComponents/WaterSources/WaterSource.h"
+#include "../Utils/Constants.h"
+#include "../SystemComponents/Utility.h"
 #include <vector>
 
 using namespace Constants;
@@ -29,7 +29,8 @@ protected:
     vector<vector<int> > water_sources_adjacency_list;
     vector<vector<int> > water_sources_utility_adjacency_list;
 
-
+public:
+    const vector<Utility *> &getUtilities() const;
 };
 
 

@@ -5,9 +5,9 @@
 #ifndef TRIANGLEMODEL_SIMULATION_H
 #define TRIANGLEMODEL_SIMULATION_H
 
-#include "WaterSources/WaterSource.h"
-#include "Constants.h"
-#include "Utility.h"
+#include "SystemComponents/WaterSources/WaterSource.h"
+#include "Utils/Constants.h"
+#include "SystemComponents/Utility.h"
 #include "ContinuityModels/ContinuityModel.h"
 #include "ContinuityModels/ContinuityModelRealization.h"
 #include <vector>
@@ -30,9 +30,7 @@ private:
     vector<WaterSource *> water_sources;
     vector<Utility *> utilities;
     vector<ContinuityModelRealization *> realization_models;
-
-    vector<double> calculateRisksOfFailure(ContinuityModel realization_regional_model);
-
+    vector<ContinuityModelROF *> rof_models;
 };
 
 

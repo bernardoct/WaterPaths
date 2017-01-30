@@ -3,5 +3,5 @@ project(TriangleModel)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(SOURCE_FILES Model/main.cpp Model/WaterSources/WaterSource.cpp Model/WaterSources/WaterSource.h Model/WaterSources/Reservoir.cpp Model/WaterSources/Reservoir.h Model/ContinuityModel.cpp Model/ContinuityModel.h Model/Constants.h Model/Utility.cpp Model/Utility.h Model/Catchment.cpp Model/Catchment.h Model/Aux.cpp Model/Aux.h)
+set(SOURCE_FILES src/main.cpp src/SystemComponents/WaterSources/Reservoir.cpp src/SystemComponents/WaterSources/Reservoir.h src/ContinuityModels/ContinuityModel.cpp src/ContinuityModels/ContinuityModel.h src/Utils/Constants.h src/SystemComponents/Utility.cpp src/SystemComponents/Utility.h src/SystemComponents/Catchment.cpp src/SystemComponents/Catchment.h src/Utils/Aux.cpp src/Utils/Aux.h src/SystemComponents/WaterSources/WaterSource.cpp src/SystemComponents/WaterSources/WaterSource.h src/Simulation.cpp src/Simulation.h src/ContinuityModels/ContinuityModelROF.cpp src/ContinuityModels/ContinuityModelROF.h src/ContinuityModels/ContinuityModelRealization.cpp src/ContinuityModels/ContinuityModelRealization.h)
 add_executable(TriangleModel ${SOURCE_FILES})

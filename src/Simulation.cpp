@@ -3,41 +3,44 @@
 //
 
 #include "Simulation.h"
+#include "Utils/Aux.h"
 
 Simulation::Simulation(const vector<WaterSource *> &water_sources,
                        const vector<vector<int>> &water_sources_adjacency_matrix,
                        const vector<Utility *> &utilities,
                        const vector<vector<int>> &water_sources_utility_adjacency_matrix,
-                       const int total_simulation_time, const int number_of_realizations) : water_sources(
-        water_sources),
-                                                                                            utilities(utilities),
-                                                                                            total_simulation_time(
-                                                                                                    total_simulation_time),
-                                                                                            number_of_realizations(
-                                                                                                    number_of_realizations) {
+                       const int total_simulation_time, const int number_of_realizations) :
+        water_sources(water_sources),
+        utilities(utilities),
+        total_simulation_time(total_simulation_time),
+        number_of_realizations(number_of_realizations) {
 
-    ContinuityModelRealization *cmr;
     for (int r = 0; r < number_of_realizations; ++r) {
-        cmr = new ContinuityModelRealization(water_sources, water_sources_adjacency_matrix,
-                                             utilities, water_sources_utility_adjacency_matrix, r);
-        realization_models.push_back(cmr);
+        // Creates realization models by copying the water sources and utilities.
+        realization_models.push_back(new ContinuityModelRealization(Aux::copyWaterSourceVector(water_sources),
+                                                                    water_sources_adjacency_matrix,
+                                                                    Aux::copyUtilityVector(utilities),
+                                                                    water_sources_utility_adjacency_matrix, r));
+
+        // Creates rof models by copying the water utilities and sources.
+        rof_models.push_back(new ContinuityModelROF(Aux::copyWaterSourceVector(water_sources),
+                                                    water_sources_adjacency_matrix,
+                                                    Aux::copyUtilityVector(utilities),
+                                                    water_sources_utility_adjacency_matrix,
+                                                    SHORT_TERM_ROF));
+
+        // Pass utilities of the realization model to the rof model so that the latter
+        // can set the rof's in the former.
+        rof_models[r]->setUtilities_realization(realization_models[r]->getUtilities());
     }
 }
 
 void Simulation::runFullSimulation() {
 
     for (int r = 0; r < number_of_realizations; ++r) {
-        for (Utility *u : utilities) {
-            u->updateTotalStoredVolume();
-        }
-
         for (int w = 0; w < total_simulation_time; ++w) {
             realization_models[r]->continuityStep(w);
         }
     }
-
-}
-
-vector<double> calculateRisksOfFailure(ContinuityModel realization_regional_model) {
 
 }

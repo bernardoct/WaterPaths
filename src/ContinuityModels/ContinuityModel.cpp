@@ -41,6 +41,11 @@ ContinuityModel::ContinuityModel(const vector<WaterSource *> water_sources,
         water_sources_utility_adjacency_list.push_back(v);
     }
 
+    // Update all utilities' combined storage volume.
+    for (Utility *u : this->utilities) {
+        u->updateTotalStoredVolume();
+    }
+
     // Print water source adjacency list. FOR TESTS ONLY.
     cout << endl << "Water source connections." << endl;
     for (int k = 0; k < water_sources_adjacency_list.size(); ++k) {
@@ -97,21 +102,23 @@ void ContinuityModel::continuityStep(int week, int id_rof) {
         }
     }
 
-    cout << "week " << week << ": ";
+//    cout << "week " << week << ": ";
     for (int i = 0; i < water_sources.size(); i++) {
         water_sources[i]->updateAvailableVolume(week - id_rof * WEEKS_IN_YEAR,
                                                 upstream_releases_inflows[i], demands[i]);
 
-        cout << this->water_sources[i]->getAvailable_volume() <<
-             " " << this->water_sources[i]->getOutflow_previous_week();
+//        cout << this->water_sources[i]->getAvailable_volume() <<
+//             " " << this->water_sources[i]->getOutflow_previous_week() << " ";
     }
-    cout << endl;
+//    cout << endl;
 
     for (Utility *u : utilities) {
         u->updateTotalStoredVolume();
     }
+}
 
-
+const vector<Utility *> &ContinuityModel::getUtilities() const {
+    return utilities;
 }
 
 

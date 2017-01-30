@@ -11,7 +11,7 @@
 
 class ContinuityModelRealization : public ContinuityModel {
 public:
-    const int realization_index;
+    const int realization_id;
 
     ContinuityModelRealization(const vector<WaterSource *> &water_source,
                                const vector<vector<int>> &water_source_connectivity_matrix,

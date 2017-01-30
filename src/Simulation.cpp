@@ -27,11 +27,7 @@ Simulation::Simulation(const vector<WaterSource *> &water_sources,
                                                     water_sources_adjacency_matrix,
                                                     Aux::copyUtilityVector(utilities),
                                                     water_sources_utility_adjacency_matrix,
-                                                    SHORT_TERM_ROF));
-
-        // Pass utilities of the realization model to the rof model so that the latter
-        // can set the rof's in the former.
-        rof_models[r]->setUtilities_realization(realization_models[r]->getUtilities());
+                                                    SHORT_TERM_ROF, r));
     }
 }
 

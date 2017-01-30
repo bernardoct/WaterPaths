@@ -78,6 +78,14 @@ bool WaterSource::isOnline() const {
     return online;
 }
 
+void WaterSource::setAvailable_volume(double available_volume) {
+    WaterSource::available_volume = available_volume;
+}
+
+void WaterSource::setOutflow_previous_week(double outflow_previous_week) {
+    WaterSource::outflow_previous_week = outflow_previous_week;
+}
+
 void WaterSource::setOnline(bool online_status) {
     online = online_status;
 }

@@ -12,7 +12,7 @@ ContinuityModelRealization::ContinuityModelRealization(const vector<WaterSource 
                                                        const int realization_index) :
         ContinuityModel(water_source, water_source_connectivity_matrix, utilities,
                         water_source_utility_connectivity_matrix),
-        realization_index(realization_index) {}
+        realization_id(realization_index) {}
 
 
 

@@ -21,7 +21,7 @@ public:
                        const vector<vector<int>> &water_source_utility_connectivity_matrix, const int rof_type,
                        const int realization_id);
 
-    vector<double> calculateROF(int week);
+    double *calculateROF(int week);
 
     void resetUtilitiesAndReservoirs();
 

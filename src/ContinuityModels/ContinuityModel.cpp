@@ -35,7 +35,7 @@ ContinuityModel::ContinuityModel(const vector<WaterSource *> water_sources,
         vector<int> v;
         for (int j = 0; j < utilities.size(); ++j) {
             if (water_sources_utility_connectivity_matrix[j][i] == 1) {
-                v.push_back(this->utilities.at(j)->id);
+                v.push_back(this->utilities[j]->id);
             }
         }
         water_sources_utility_adjacency_list.push_back(v);
@@ -104,7 +104,8 @@ void ContinuityModel::continuityStep(int week, int id_rof) {
 
 //    cout << "week " << week << ": ";
     for (int i = 0; i < water_sources.size(); i++) {
-        water_sources[i]->updateAvailableVolume(week - id_rof * WEEKS_IN_YEAR,
+        water_sources[i]->updateAvailableVolume(week + WEEKS_IN_YEAR * NUMBER_REALIZATIONS_ROF -
+                                                (id_rof + 1) * WEEKS_IN_YEAR,
                                                 upstream_releases_inflows[i], demands[i]);
 
 //        cout << this->water_sources[i]->getAvailable_volume() <<

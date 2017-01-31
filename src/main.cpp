@@ -335,12 +335,65 @@ void rofCalculationsTest() {
                                                       Aux::copyUtilityVector(utilities),
                                                       water_sources_utility_adjacency_matrix,
                                                       SHORT_TERM_ROF, 0);
-    vector<double> rofs;
+    double *rofs;
     crof->setWater_sources_realization(water_sources);
-    rofs = crof->calculateROF(3120); // beginning of 60th year.
+    rofs = crof->calculateROF(0); // beginning of 60th year.
+    cout << rofs[0] << " " << rofs[1]; // The output should be split in 50 blocks of 52 rows and 2 columns.
+    // The numbers in the columns are the storage/capacity ratio for
+    // each of the two utilities. The last two numbers are the rofs,
+    // which must be 0.0365385 0.0665385.
 
     cout << endl << "END OF ROF TEST" << endl << "---------------------"
             "---------------" << endl << endl;
+}
+
+void simulationTest() {
+    cout << "BEGINNING ROF TEST" << endl << endl;
+
+    int streamflow_n_weeks = 52 * 70;
+    double **streamflows_test = Aux::parse2DCsvFile("../TestFiles/"
+                                                            "inflowsLong.csv", 2, streamflow_n_weeks);
+
+    Catchment c1(streamflows_test[0], streamflow_n_weeks);
+    Catchment c2(streamflows_test[1], streamflow_n_weeks);
+
+    vector<Catchment *> catchments1;
+    vector<Catchment *> catchments2;
+    catchments1.push_back(&c1);
+    catchments1.push_back(&c2);
+    catchments2.push_back(&c2);
+
+    Reservoir r1("R1", 0, 3.0, catchments1, ONLINE, 400.0);
+    Reservoir r2("R2", 1, 3.0, catchments2, ONLINE, 350.0);
+
+    Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
+    Utility u2("U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
+
+    vector<WaterSource *> water_sources;
+    water_sources.push_back(&r1);
+    water_sources.push_back(&r2);
+
+    vector<Utility *> utilities;
+    utilities.push_back(&u1);
+    utilities.push_back(&u2);
+
+    vector<vector<int>> water_sources_adjacency_matrix = {
+            {0,  1},
+            {-1, 0},
+    };
+
+    vector<vector<int>> water_sources_utility_adjacency_matrix = {
+            {1, 0},
+            {0, 1}
+    };
+
+    Simulation s(Aux::copyWaterSourceVector(water_sources),
+                 water_sources_adjacency_matrix,
+                 Aux::copyUtilityVector(utilities),
+                 water_sources_utility_adjacency_matrix,
+                 2, 1);
+
+    s.runFullSimulation();
 }
 
 int main() {
@@ -354,7 +407,9 @@ int main() {
 //    ::catchmentCopy(); // Create a setStreamflow method in order to run this test.
 //    ::reservoirCopy(); // Make vector catchments public in order to run this test.
 //    ::utilityCopy();
-    ::rofCalculationsTest();
+//    ::rofCalculationsTest();
+    ::simulationTest();
+
 
     return 0;
 }

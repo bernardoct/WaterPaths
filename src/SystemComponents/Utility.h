@@ -15,7 +15,7 @@ private:
     double *demand_series;
     double total_storage_capacity;
     double total_stored_volume;
-    double risk_of_failure;
+    vector<double> rof_records;
     const char *name;
     map<int, WaterSource *> water_sources;
 
@@ -40,6 +40,8 @@ public:
     void addWaterSource(WaterSource *water_source);
 
     double getStorageToCapacityRatio() const;
+
+    void recordRof(double rof, int week);
 };
 
 

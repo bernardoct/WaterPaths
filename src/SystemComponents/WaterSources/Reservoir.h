@@ -13,7 +13,8 @@ using namespace std;
 
 
 class Reservoir : public WaterSource {
-
+protected:
+    vector<double> storage_records;
 public:
 
     Reservoir(const string &source_name, const int id, const double min_environmental_outflow,

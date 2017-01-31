@@ -33,10 +33,16 @@ Simulation::Simulation(const vector<WaterSource *> &water_sources,
 
 void Simulation::runFullSimulation() {
 
+    double *rofs = new double[utilities.size()];
     for (int r = 0; r < number_of_realizations; ++r) {
         for (int w = 0; w < total_simulation_time; ++w) {
             realization_models[r]->continuityStep(w);
+            rofs = rof_models[r]->calculateROF(w);
+            for (int i = 0; i < utilities.size(); ++i) {
+                utilities[i]->recordRof(rofs[i], w);
+            }
         }
     }
+    delete[] rofs;
 
 }

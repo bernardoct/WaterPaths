@@ -17,16 +17,19 @@ Utility::Utility(char const *name, int id, char const *demand_file_name, int num
         name(name), id(id), number_of_week_demands(number_of_week_demands) {
 
     demand_series = Aux::parse1DCsvFile(demand_file_name, number_of_week_demands);
+    rof_records.assign(number_of_week_demands, 0);
     cout << "Utility " << name << " created." << endl;
+
 }
 
 /**
  * Copy constructor.
  * @param utility
  */
-Utility::Utility(Utility &utility) : id(utility.id), number_of_week_demands(number_of_week_demands),
+Utility::Utility(Utility &utility) : id(utility.id), number_of_week_demands(utility.number_of_week_demands),
                                      total_storage_capacity(utility.total_storage_capacity),
-                                     total_stored_volume(utility.total_stored_volume) {
+                                     total_stored_volume(utility.total_stored_volume),
+                                     demand_series(new double[utility.number_of_week_demands]) {
 
     water_sources.clear();
     for (map<int, WaterSource *>::value_type &ws : utility.water_sources) {
@@ -37,7 +40,6 @@ Utility::Utility(Utility &utility) : id(utility.id), number_of_week_demands(numb
     }
 
     // The problem is in this copy line.
-    demand_series = new double[utility.number_of_week_demands];
     std::copy(utility.demand_series, utility.demand_series + utility.number_of_week_demands, demand_series);
 }
 
@@ -112,4 +114,8 @@ const map<int, WaterSource *> &Utility::getWaterSource() const {
 
 double Utility::getStorageToCapacityRatio() const {
     return total_stored_volume / total_storage_capacity;
+}
+
+void Utility::recordRof(double rof, int week) {
+    rof_records[week] = rof;
 }

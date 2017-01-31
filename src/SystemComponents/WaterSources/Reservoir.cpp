@@ -14,7 +14,9 @@ Reservoir::Reservoir(const string &source_name, const int id, const double min_e
         min_environmental_outflow,
         catchments, online,
         capacity,
-        "Reservoir") {}
+        "Reservoir") {
+    storage_records.assign(catchments[0]->series_length, 0);
+}
 
 /**
  * Copy constructor.
@@ -72,6 +74,7 @@ void Reservoir::updateAvailableVolume(int week, double upstream_reservoir_inflow
     available_volume = new_volume;
     outflow_previous_week = released_volume;
 
+    storage_records.push_back(new_volume);
 }
 
 void Reservoir::setAvailableVolumeAndOutflowPreviousRelease(double available_volume, double outflow_previous_week) {

@@ -15,7 +15,7 @@ Reservoir::Reservoir(const string &source_name, const int id, const double min_e
         catchments, online,
         capacity,
         "Reservoir") {
-    storage_records.assign(catchments[0]->series_length, 0);
+    storage_records.assign((unsigned long) catchments[0]->series_length, 0);
 }
 
 /**

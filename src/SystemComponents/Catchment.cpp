@@ -3,6 +3,7 @@
 //
 
 #include "Catchment.h"
+#include "../Utils/Constants.h"
 
 
 Catchment::Catchment(double *streamflows, int series_length) : streamflows(streamflows),
@@ -42,6 +43,6 @@ Catchment::~Catchment() {
 }
 
 double Catchment::getStreamflow(int week) {
-    return streamflows[week];
+    return streamflows[week + Constants::WEEKS_IN_YEAR * Constants::NUMBER_REALIZATIONS_ROF];
 }
 

@@ -21,7 +21,7 @@ public:
                     const vector<Utility *> utilities,
                     const vector<vector<int> > &water_source_utility_connectivity_matrix);
 
-    void continuityStep(int week, int id_rof = 0);
+    void continuityStep(int week, int id_rof = -1);
 
 protected:
     vector<WaterSource *> water_sources;

@@ -51,6 +51,8 @@ public:
     void setAvailable_volume(double available_volume);
 
     void setOutflow_previous_week(double outflow_previous_week);
+
+    double getCapacity();
 };
 
 

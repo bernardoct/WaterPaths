@@ -4,20 +4,22 @@
 
 #include "Simulation.h"
 #include "Utils/Aux.h"
+#include <iostream>
 
 Simulation::Simulation(const vector<WaterSource *> &water_sources,
                        const vector<vector<int>> &water_sources_adjacency_matrix,
                        const vector<Utility *> &utilities,
                        const vector<vector<int>> &water_sources_utility_adjacency_matrix,
                        const int total_simulation_time, const int number_of_realizations) :
-        water_sources(water_sources),
-        utilities(utilities),
         total_simulation_time(total_simulation_time),
         number_of_realizations(number_of_realizations) {
 
+    vector<WaterSource *> water_sources_realization;
+
     for (int r = 0; r < number_of_realizations; ++r) {
         // Creates realization models by copying the water sources and utilities.
-        realization_models.push_back(new ContinuityModelRealization(Aux::copyWaterSourceVector(water_sources),
+        water_sources_realization = Aux::copyWaterSourceVector(water_sources);
+        realization_models.push_back(new ContinuityModelRealization(water_sources_realization,
                                                                     water_sources_adjacency_matrix,
                                                                     Aux::copyUtilityVector(utilities),
                                                                     water_sources_utility_adjacency_matrix, r));
@@ -28,21 +30,38 @@ Simulation::Simulation(const vector<WaterSource *> &water_sources,
                                                     Aux::copyUtilityVector(utilities),
                                                     water_sources_utility_adjacency_matrix,
                                                     SHORT_TERM_ROF, r));
+
+        rof_models[r]->setWater_sources_realization(water_sources_realization);
+        water_sources_realization.clear();
     }
 }
 
 void Simulation::runFullSimulation() {
 
-    double *rofs = new double[utilities.size()];
+    int n_utilities = (int) realization_models[0]->getUtilities().size();
+    double *rofs = new double[n_utilities];
     for (int r = 0; r < number_of_realizations; ++r) {
+        cout << "Realization: " << r << endl;
         for (int w = 0; w < total_simulation_time; ++w) {
+//            cout << "week: " << w << " ";
             realization_models[r]->continuityStep(w);
             rofs = rof_models[r]->calculateROF(w);
-            for (int i = 0; i < utilities.size(); ++i) {
-                utilities[i]->recordRof(rofs[i], w);
-            }
-        }
-    }
-    delete[] rofs;
 
+            for (int i = 0; i < n_utilities; ++i) {
+                cout << realization_models[r]->getUtilities()[i]->getStorageToCapacityRatio()
+                     << " " << rofs[i] << " ";
+            }
+            cout << " " << endl;
+/*            for (Utility * u : realization_models[r]->getUtilities()) {
+//                cout << u->getStorageToCapacityRatio() << " ";
+//            }
+//            for (int i = 0; i < n_utilities; ++i) {
+//                cout << rofs[i] << " ";
+//            }
+//            cout << endl;*/
+        }
+        cout << " " << endl;
+    }
+
+    delete[](rofs);
 }

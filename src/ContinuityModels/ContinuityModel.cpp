@@ -46,55 +46,69 @@ ContinuityModel::ContinuityModel(const vector<WaterSource *> water_sources,
         u->updateTotalStoredVolume();
     }
 
-    // Print water source adjacency list. FOR TESTS ONLY.
-    cout << endl << "Water source connections." << endl;
-    for (int k = 0; k < water_sources_adjacency_list.size(); ++k) {
-        vector<int> row = water_sources_adjacency_list[k];
-        cout << water_sources[k]->source_type << " " << k << ": ";
-        for (int &i : row) {
-            cout << i << " ";
-        }
-        cout << endl;
-    }
-
-
-    // Print list of reservoir for each utility. FOR TESTS ONLY.
-    cout << endl << "Water sources belonging to each utility." << endl;
-    for (Utility *u : this->utilities) {
-        cout << "Utility " << u->id << ": ";
-        for (const map<int, WaterSource *>::value_type &r : u->getWaterSource()) {
-            cout << r.second->id << " ";
-        }
-        cout << endl;
-    }
-
-    cout << endl;
-
-    // Print list of utilities drawing from each water source. FOR TESTS ONLY.
-    cout << endl << "Utilities drawing from water source." << endl;
-    for (int i = 0; i < water_sources_utility_adjacency_list.size(); ++i) {
-        cout << water_sources[i]->source_type << " " << i << ": ";
-        for (int &id : water_sources_utility_adjacency_list[i]) {
-            cout << id << " ";
-        }
-        cout << endl;
-    }
-    cout << endl;
-
+/*/    // Print water source adjacency list. FOR TESTS ONLY.
+//    cout << endl << "Water source connections." << endl;
+//    for (int k = 0; k < water_sources_adjacency_list.size(); ++k) {
+//        vector<int> row = water_sources_adjacency_list[k];
+//        cout << water_sources[k]->source_type << " " << k << ": ";
+//        for (int &i : row) {
+//            cout << i << " ";
+//        }
+//        cout << endl;
+//    }
+//
+//
+//    // Print list of reservoir for each utility. FOR TESTS ONLY.
+//    cout << endl << "Water sources belonging to each utility." << endl;
+//    for (Utility *u : this->utilities) {
+//        cout << "Utility " << u->id << ": ";
+//        for (const map<int, WaterSource *>::value_type &r : u->getWaterSource()) {
+//            cout << r.second->id << " ";
+//        }
+//        cout << endl;
+//    }
+//
+//    cout << endl;
+//
+//    // Print list of utilities drawing from each water source. FOR TESTS ONLY.
+//    cout << endl << "Utilities drawing from water source." << endl;
+//    for (int i = 0; i < water_sources_utility_adjacency_list.size(); ++i) {
+//        cout << water_sources[i]->source_type << " " << i << ": ";
+//        for (int &id : water_sources_utility_adjacency_list[i]) {
+//            cout << id << " ";
+//        }
+//        cout << endl;
+//    }
+//    cout << endl;
+*/
 }
 
 /**
- *
- * @param week
+ * Calculates continuity for one week time step for streamflows of id_rof years before current week.
+ * @param week current week.
+ * @param id_rof rof realization id (between 0 and 49 inclusive).
  */
 void ContinuityModel::continuityStep(int week, int id_rof) {
     double demands[water_sources.size()] = {};
     double upstream_releases_inflows[water_sources.size()] = {};
 
+    /*
+     * Split weekly demands among each reservoirfor each utility. For each water source:
+     * (1) sums the demands of each drawing utility to come up with the total demand for
+     * that week for that water source, and (2) sums the flow contributions of upstream
+     * reservoirs.
+     */
+
+    for (Utility *u : utilities) {
+        u->splitDemands(week);
+    }
+
     for (int i = 0; i < water_sources.size(); ++i) {
+        // gets demands from utilities
         for (int &j : water_sources_utility_adjacency_list[i]) {
-            demands[i] += utilities[j]->getDemand(week, i);
+            demands[i] += utilities[j]->getDemand(i);
         }
+        // gets flows from upstream sources.
         for (int &j : water_sources_adjacency_list[i]) {
             if (j > -1) {
                 upstream_releases_inflows[i] += water_sources[j]->getOutflow_previous_week();
@@ -102,17 +116,21 @@ void ContinuityModel::continuityStep(int week, int id_rof) {
         }
     }
 
-//    cout << "week " << week << ": ";
+    /*
+     * For all water sources, performs mass balance to update the available volume. The week here is
+     * shifted back according to the rof year realization (0 to 49, inclusive) so that the right flows are
+     * gotten from source catchments for each rof year realization.
+     */
     for (int i = 0; i < water_sources.size(); i++) {
-        water_sources[i]->updateAvailableVolume(week + WEEKS_IN_YEAR * NUMBER_REALIZATIONS_ROF -
-                                                (id_rof + 1) * WEEKS_IN_YEAR,
+        water_sources[i]->updateAvailableVolume(week - (id_rof + 1) * WEEKS_IN_YEAR,
                                                 upstream_releases_inflows[i], demands[i]);
 
-//        cout << this->water_sources[i]->getAvailable_volume() <<
-//             " " << this->water_sources[i]->getOutflow_previous_week() << " ";
+//        if (id_rof < 0) cout << this->water_sources[i]->getAvailable_volume() <<
+//             " " << this->water_sources[i]->getOutflow_previous_week() << " " << demands[i] << " ";
     }
-//    cout << endl;
+//    if (id_rof < 0) cout << "" << endl;
 
+    // updates combined storage for utilities.
     for (Utility *u : utilities) {
         u->updateTotalStoredVolume();
     }

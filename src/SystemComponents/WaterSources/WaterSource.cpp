@@ -104,3 +104,7 @@ void WaterSource::toString() {
 
 }
 
+double WaterSource::getCapacity() {
+    return capacity;
+}
+

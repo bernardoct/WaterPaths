@@ -17,7 +17,6 @@ Utility::Utility(char const *name, int id, char const *demand_file_name, int num
         name(name), id(id), number_of_week_demands(number_of_week_demands) {
 
     demand_series = Aux::parse1DCsvFile(demand_file_name, number_of_week_demands);
-    rof_records.assign(number_of_week_demands, 0);
     cout << "Utility " << name << " created." << endl;
 
 }
@@ -39,7 +38,6 @@ Utility::Utility(Utility &utility) : id(utility.id), number_of_week_demands(util
         }
     }
 
-    // The problem is in this copy line.
     std::copy(utility.demand_series, utility.demand_series + utility.number_of_week_demands, demand_series);
 }
 
@@ -69,6 +67,7 @@ Utility &Utility::operator=(const Utility &utility) {
     std::copy(utility.demand_series, utility.demand_series + utility.number_of_week_demands, demand_series_temp);
     delete[] demand_series;
     demand_series = demand_series_temp;
+
     return *this;
 }
 
@@ -78,11 +77,9 @@ Utility &Utility::operator=(const Utility &utility) {
 void Utility::updateTotalStoredVolume() {
     total_stored_volume = 0;
 
-    for (map<int, WaterSource *>::value_type &r : water_sources) {
-        total_stored_volume += r.second->getAvailable_volume();
+    for (map<int, WaterSource *>::value_type &ws : water_sources) {
+        total_stored_volume += max(1.0e-6, ws.second->getAvailable_volume());
     }
-
-    return;
 }
 
 /**
@@ -91,6 +88,8 @@ void Utility::updateTotalStoredVolume() {
  */
 void Utility::addWaterSource(WaterSource *water_source) {
     water_sources.insert(pair<int, WaterSource *>(water_source->id, water_source));
+    split_demands_among_sources.insert(pair<int, double>(water_source->id, 0));
+
     if (water_source->isOnline()) total_storage_capacity += water_source->capacity;
 }
 
@@ -98,14 +97,34 @@ void Utility::addWaterSource(WaterSource *water_source) {
  * Assigns a fraction of the total weekly demand to a reservoir according to its current storage in relation
  * to the combined current stored of all reservoirs where the utility has .
  * @param week
- * @param reservoir_id
+ * @param water_source_id
  * @return proportional demand.
  */
-double Utility::getDemand(int week, int reservoir_id) {
+double Utility::getDemand(int water_source_id) {
+    return split_demands_among_sources.at(water_source_id);
+}
 
-    double reservoir_volume = water_sources.at(reservoir_id)->getAvailable_volume();
-    double demand = demand_series[week] * reservoir_volume / total_stored_volume;
-    return demand;
+/**
+ * Splits demands among sources. As different source types are added, this will need to be updated. Also,
+ * whenever the on/offline status of sources starts being used, this will need to be updated.
+ * @param week
+ */
+void Utility::splitDemands(int week) {
+    int i, number_of_reservoir_with_water = 0;
+
+    for (map<int, WaterSource *>::value_type &ws : water_sources) {
+        if (ws.second->getAvailable_volume() > 0) {
+            number_of_reservoir_with_water++;
+        }
+    }
+
+    for (map<int, WaterSource *>::value_type &ws : water_sources) {
+        i = ws.second->id;
+        split_demands_among_sources.at(i) = demand_series[week] *
+                                            max(1.0e-6, water_sources.at(i)->getAvailable_volume()) /
+                                            total_stored_volume;
+    }
+
 }
 
 const map<int, WaterSource *> &Utility::getWaterSource() const {
@@ -116,6 +135,7 @@ double Utility::getStorageToCapacityRatio() const {
     return total_stored_volume / total_storage_capacity;
 }
 
-void Utility::recordRof(double rof, int week) {
-    rof_records[week] = rof;
+double Utility::getTotal_storage_capacity() const {
+    return total_storage_capacity;
 }
+

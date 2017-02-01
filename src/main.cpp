@@ -68,7 +68,7 @@ int regionTwoUtilitiesTwoReservoirsContinuityTest() {
 
     cout << "BEGINNING 2 RESERVOIRS 2 UTILITIES READ TEST" << endl << endl;
 
-    int streamflow_n_weeks = 52;
+    int streamflow_n_weeks = 2652;
     double **streamflows_test = Aux::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
                                                             "inflowsLakeTest.csv", 2, streamflow_n_weeks);
 
@@ -105,7 +105,7 @@ int regionTwoUtilitiesTwoReservoirsContinuityTest() {
             {0, 1}
     };
 
-    Simulation s(reservoirs, reservoir_connectivity_matrix, utilities, reservoir_utility_connectivity_matrix, 6, 1);
+    Simulation s(reservoirs, reservoir_connectivity_matrix, utilities, reservoir_utility_connectivity_matrix, 52, 1);
     s.runFullSimulation();
 
     cout << endl << "END OF 2 RESERVOIRS 2 UTILITIES TEST" << endl << "---------------------"
@@ -122,7 +122,7 @@ int regionTwoUtilitiesTwoReservoirsContinuityTest() {
 int regionOneUtilitiesTwoReservoirsContinuityTest() {
 
     cout << "BEGINNING 2 RESERVOIRS 1 UTILITY READ TEST" << endl << endl;
-    int streamflow_n_weeks = 52;
+    int streamflow_n_weeks = 2652;
     double **streamflows_test = Aux::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
                                                             "inflowsLakeTest.csv", 2, streamflow_n_weeks);
 
@@ -157,7 +157,7 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
             {1, 1},
     };
 
-    Simulation s(reservoirs, reservoir_connectivity_matrix, utilities, reservoir_utility_connectivity_matrix, 6, 1);
+    Simulation s(reservoirs, reservoir_connectivity_matrix, utilities, reservoir_utility_connectivity_matrix, 52, 1);
     s.runFullSimulation();
 
     cout << "Check results with spreadsheet ContinuityTest.ods" << endl;
@@ -363,8 +363,8 @@ void simulationTest() {
     catchments1.push_back(&c2);
     catchments2.push_back(&c2);
 
-    Reservoir r1("R1", 0, 3.0, catchments1, ONLINE, 400.0);
-    Reservoir r2("R2", 1, 3.0, catchments2, ONLINE, 350.0);
+    Reservoir r1("R1", 0, 3.0, catchments1, ONLINE, 500.0);
+    Reservoir r2("R2", 1, 3.0, catchments2, ONLINE, 575.0);
 
     Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
     Utility u2("U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
@@ -391,9 +391,10 @@ void simulationTest() {
                  water_sources_adjacency_matrix,
                  Aux::copyUtilityVector(utilities),
                  water_sources_utility_adjacency_matrix,
-                 2, 1);
-
+                 104, 3);
+    cout << "Beginning simulation" << endl;
     s.runFullSimulation();
+    cout << "Ending simulation" << endl;
 }
 
 int main() {
@@ -402,7 +403,7 @@ int main() {
 //
 //    ::reservoirAndCatchmentTest();
 //    ::testReadCsv();
-//    ::regionTwoUtilitiesTwoReservoirsContinuityTest();
+//    ::regionTwoUtilitiesTwoReservoirsContinuityTest(); // ESSES DOIS TESTES ESTAO FALHANDO. TENHO QUE ARRUMAR
 //    ::regionOneUtilitiesTwoReservoirsContinuityTest();
 //    ::catchmentCopy(); // Create a setStreamflow method in order to run this test.
 //    ::reservoirCopy(); // Make vector catchments public in order to run this test.

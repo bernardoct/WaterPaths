@@ -43,14 +43,14 @@ double *ContinuityModelROF::calculateROF(int week) {
                 for (int i = 0; i < utilities.size(); ++i) {
                     if (utilities[i]->getStorageToCapacityRatio() <= STORAGE_CAPACITY_RATIO_FAIL)
                         rofs[i] += ROF_SHORT_TERM_PRECISION;
-                    cout << utilities[i]->getStorageToCapacityRatio() << " ";
+//                    cout << utilities[i]->getStorageToCapacityRatio() << " ";
                 }
-                cout << endl;
+//                cout << endl;
             }
+//            cout << endl;
             // reset reservoirs' and utilities' storage and combined storage, respectively, they currently
             // have in the corresponding realization simulation.
             this->resetUtilitiesAndReservoirs();
-            cout << endl;
         }
     }
 

@@ -10,6 +10,7 @@
 #include "SystemComponents/Utility.h"
 #include "ContinuityModels/ContinuityModel.h"
 #include "ContinuityModels/ContinuityModelRealization.h"
+#include "DataColector.h"
 #include <vector>
 
 using namespace Constants;
@@ -27,10 +28,9 @@ public:
     void runFullSimulation();
 
 private:
-    vector<WaterSource *> water_sources;
-    vector<Utility *> utilities;
     vector<ContinuityModelRealization *> realization_models;
     vector<ContinuityModelROF *> rof_models;
+    DataColector *data_colector;
 };
 
 

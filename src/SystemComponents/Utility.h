@@ -14,10 +14,12 @@ class Utility {
 private:
     double *demand_series;
     double total_storage_capacity;
+
+private:
     double total_stored_volume;
-    vector<double> rof_records;
     const char *name;
     map<int, WaterSource *> water_sources;
+    map<int, double> split_demands_among_sources;
 
 public:
     Utility(char const *name, int id, char const *demand_file_name, int number_of_week_demands);
@@ -31,7 +33,7 @@ public:
     const int id;
     const int number_of_week_demands;
 
-    double getDemand(int week, int reservoir_id);
+    double getDemand(int water_source_id);
 
     void updateTotalStoredVolume();
 
@@ -41,7 +43,9 @@ public:
 
     double getStorageToCapacityRatio() const;
 
-    void recordRof(double rof, int week);
+    void splitDemands(int week);
+
+    double getTotal_storage_capacity() const;
 };
 
 

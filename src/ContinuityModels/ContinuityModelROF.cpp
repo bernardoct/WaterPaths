@@ -24,10 +24,11 @@ ContinuityModelROF::ContinuityModelROF(const vector<WaterSource *> &water_source
  * Runs one the full rof calculations for realization #realization_id for a given week.
  * @param week for which rof is to be calculated.
  */
-double *ContinuityModelROF::calculateROF(int week) {
+vector<double> ContinuityModelROF::calculateROF(int week) {
 
-    // vector where rof's will be stored.
-    double *rofs = new double[utilities.size()];
+    // vector where risks of failure will be stored.
+    vector<double> risk_of_failure(utilities.size(), 0.0);
+    vector<double> year_failure(utilities.size(), 0.0);
 
     // short-term rof calculations.
     if (rof_type == SHORT_TERM_ROF) {
@@ -36,25 +37,33 @@ double *ContinuityModelROF::calculateROF(int week) {
         for (int r = 0; r < NUMBER_REALIZATIONS_ROF; ++r) {
             for (int w = week; w < week + WEEKS_ROF_SHORT_TERM; ++w) {
 
-                this->continuityStep(w, r); // one week continuity time-step.
+                // one week continuity time-step.
+                this->continuityStep(w, r);
 
                 // check total available storage for each utility and, if smaller than the fail ration,
                 // increase the rof of that utility to 1 / (50 [yearly realizations] * 52 [short-term rof])
                 for (int i = 0; i < utilities.size(); ++i) {
                     if (utilities[i]->getStorageToCapacityRatio() <= STORAGE_CAPACITY_RATIO_FAIL)
-                        rofs[i] += ROF_SHORT_TERM_PRECISION;
-//                    cout << utilities[i]->getStorageToCapacityRatio() << " ";
+                        year_failure[i] = FAILURE;
                 }
-//                cout << endl;
             }
-//            cout << endl;
+
+            for (int j = 0; j < utilities.size(); ++j) {
+                risk_of_failure[j] += year_failure[j];
+                year_failure[j] = NON_FAILURE;
+            }
+
             // reset reservoirs' and utilities' storage and combined storage, respectively, they currently
             // have in the corresponding realization simulation.
             this->resetUtilitiesAndReservoirs();
         }
     }
 
-    return rofs;
+    for (int i = 0; i < utilities.size(); ++i) {
+        risk_of_failure[i] /= NUMBER_REALIZATIONS_ROF;
+    }
+
+    return risk_of_failure;
 }
 
 /**

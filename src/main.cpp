@@ -105,7 +105,11 @@ int regionTwoUtilitiesTwoReservoirsContinuityTest() {
             {0, 1}
     };
 
-    Simulation s(reservoirs, reservoir_connectivity_matrix, utilities, reservoir_utility_connectivity_matrix, 52, 1);
+    DataCollector * data_collector;
+    data_collector = new DataCollector(std::vector<Utility *>(), std::vector<WaterSource *>());
+
+    Simulation s(reservoirs, reservoir_connectivity_matrix, utilities, reservoir_utility_connectivity_matrix, 52, 1,
+                 data_collector);
     s.runFullSimulation();
 
     cout << endl << "END OF 2 RESERVOIRS 2 UTILITIES TEST" << endl << "---------------------"
@@ -157,8 +161,14 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
             {1, 1},
     };
 
-    Simulation s(reservoirs, reservoir_connectivity_matrix, utilities, reservoir_utility_connectivity_matrix, 52, 1);
+    DataCollector * data_collector;
+    data_collector = new DataCollector(std::vector<Utility *>(), std::vector<WaterSource *>());
+
+    Simulation s(reservoirs, reservoir_connectivity_matrix, utilities, reservoir_utility_connectivity_matrix, 52, 1,
+                 data_collector);
     s.runFullSimulation();
+
+
 
     cout << "Check results with spreadsheet ContinuityTest.ods" << endl;
     cout << endl << "END OF 2 RESERVOIRS 1 UTILITY TEST" << endl << "---------------------"
@@ -335,12 +345,12 @@ void rofCalculationsTest() {
                                                       Aux::copyUtilityVector(utilities),
                                                       water_sources_utility_adjacency_matrix,
                                                       SHORT_TERM_ROF, 0);
-    double *rofs;
+    vector<double> risks_of_failure;
     crof->setWater_sources_realization(water_sources);
-    rofs = crof->calculateROF(0); // beginning of 60th year.
-    cout << rofs[0] << " " << rofs[1]; // The output should be split in 50 blocks of 52 rows and 2 columns.
+    risks_of_failure = crof->calculateROF(0); // beginning of 60th year.
+    cout << risks_of_failure[0] << " " << risks_of_failure[1]; // The output should be split in 50 blocks of 52 rows and 2 columns.
     // The numbers in the columns are the storage/capacity ratio for
-    // each of the two utilities. The last two numbers are the rofs,
+    // each of the two utilities. The last two numbers are the risks_of_failure,
     // which must be 0.0365385 0.0665385.
 
     cout << endl << "END OF ROF TEST" << endl << "---------------------"
@@ -387,11 +397,12 @@ void simulationTest() {
             {0, 1}
     };
 
-    Simulation s(Aux::copyWaterSourceVector(water_sources),
-                 water_sources_adjacency_matrix,
-                 Aux::copyUtilityVector(utilities),
-                 water_sources_utility_adjacency_matrix,
-                 104, 3);
+    DataCollector * data_collector;
+    data_collector = new DataCollector(std::vector<Utility *>(), std::vector<WaterSource *>());
+
+    Simulation s(Aux::copyWaterSourceVector(water_sources), water_sources_adjacency_matrix,
+                 Aux::copyUtilityVector(utilities), water_sources_utility_adjacency_matrix, 104, 3,
+                 data_collector);
     cout << "Beginning simulation" << endl;
     s.runFullSimulation();
     cout << "Ending simulation" << endl;
@@ -403,13 +414,13 @@ int main() {
 //
 //    ::reservoirAndCatchmentTest();
 //    ::testReadCsv();
-//    ::regionTwoUtilitiesTwoReservoirsContinuityTest(); // ESSES DOIS TESTES ESTAO FALHANDO. TENHO QUE ARRUMAR
-//    ::regionOneUtilitiesTwoReservoirsContinuityTest();
+    ::regionTwoUtilitiesTwoReservoirsContinuityTest(); // ESSES DOIS TESTES ESTAO FALHANDO. TENHO QUE ARRUMAR
+    ::regionOneUtilitiesTwoReservoirsContinuityTest();
 //    ::catchmentCopy(); // Create a setStreamflow method in order to run this test.
 //    ::reservoirCopy(); // Make vector catchments public in order to run this test.
 //    ::utilityCopy();
 //    ::rofCalculationsTest();
-    ::simulationTest();
+//    ::simulationTest();
 
 
     return 0;

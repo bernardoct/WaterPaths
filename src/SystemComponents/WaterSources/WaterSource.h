@@ -14,7 +14,7 @@ using namespace std;
 class WaterSource {
 protected:
     vector<Catchment *> catchments;
-    double available_volume;
+    double available_volume = 0;
     double outflow_previous_week;
     bool online;
     int week;

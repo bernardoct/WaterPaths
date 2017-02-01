@@ -10,7 +10,7 @@
 #include "SystemComponents/Utility.h"
 #include "ContinuityModels/ContinuityModel.h"
 #include "ContinuityModels/ContinuityModelRealization.h"
-#include "DataColector.h"
+#include "Utils/DataCollector.h"
 #include <vector>
 
 using namespace Constants;
@@ -18,9 +18,12 @@ using namespace std;
 
 class Simulation {
 public:
-    Simulation(const vector<WaterSource *> &water_sources, const vector<vector<int>> &water_sources_adjacency_matrix,
-               const vector<Utility *> &utilities, const vector<vector<int>> &water_sources_utility_adjacency_matrix,
-               const int total_simulation_time, const int number_of_realizations);
+    Simulation(const vector<WaterSource *> &water_sources,
+                   const vector<vector<int>> &water_sources_adjacency_matrix,
+                   const vector<Utility *> &utilities,
+                   const vector<vector<int>> &water_sources_utility_adjacency_matrix,
+                   const int total_simulation_time, const int number_of_realizations,
+                   DataCollector * data_collector);
 
     const int total_simulation_time;
     const int number_of_realizations;
@@ -30,7 +33,7 @@ public:
 private:
     vector<ContinuityModelRealization *> realization_models;
     vector<ContinuityModelROF *> rof_models;
-    DataColector *data_colector;
+    DataCollector * data_collector;
 };
 
 

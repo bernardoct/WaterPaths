@@ -16,7 +16,8 @@ namespace Constants {
     const int NUMBER_REALIZATIONS_ROF = 50;
     const bool ONLINE = true;
     const double STORAGE_CAPACITY_RATIO_FAIL = 0.2;
-    const double ROF_SHORT_TERM_PRECISION = 1.0 / (NUMBER_REALIZATIONS_ROF * WEEKS_ROF_SHORT_TERM);
+    const int FAILURE = 1;
+    const int NON_FAILURE = 0;
 };
 
 

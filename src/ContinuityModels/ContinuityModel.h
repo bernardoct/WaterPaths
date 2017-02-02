@@ -14,14 +14,6 @@ using namespace Constants;
 using namespace std;
 
 class ContinuityModel {
-public:
-
-    ContinuityModel(const vector<WaterSource *> water_source,
-                    const vector<vector<int> > &water_source_connectivity_matrix,
-                    const vector<Utility *> utilities,
-                    const vector<vector<int> > &water_source_utility_connectivity_matrix);
-
-    void continuityStep(int week, int id_rof = -1);
 
 protected:
     vector<WaterSource *> water_sources;
@@ -30,6 +22,13 @@ protected:
     vector<vector<int> > water_sources_utility_adjacency_list;
 
 public:
+    ContinuityModel(const vector<WaterSource *> water_source,
+                    const vector<vector<int> > &water_source_connectivity_matrix,
+                    const vector<Utility *> utilities,
+                    const vector<vector<int> > &water_source_utility_connectivity_matrix);
+
+    void continuityStep(int week, int id_rof = -1);
+
     const vector<Utility *> &getUtilities() const;
 };
 

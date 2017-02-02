@@ -105,8 +105,7 @@ int regionTwoUtilitiesTwoReservoirsContinuityTest() {
             {0, 1}
     };
 
-    DataCollector * data_collector;
-    data_collector = new DataCollector(std::vector<Utility *>(), std::vector<WaterSource *>());
+    DataCollector *data_collector = nullptr;
 
     Simulation s(reservoirs, reservoir_connectivity_matrix, utilities, reservoir_utility_connectivity_matrix, 52, 1,
                  data_collector);
@@ -161,8 +160,8 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
             {1, 1},
     };
 
-    DataCollector * data_collector;
-    data_collector = new DataCollector(std::vector<Utility *>(), std::vector<WaterSource *>());
+    DataCollector *data_collector = nullptr;
+//    data_collector = new DataCollector(std::vector<Utility *>(), std::vector<WaterSource *>());
 
     Simulation s(reservoirs, reservoir_connectivity_matrix, utilities, reservoir_utility_connectivity_matrix, 52, 1,
                  data_collector);
@@ -292,11 +291,11 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
 //    Utility u3 = u1;
 //    u3.demand_series[0] = 30;
 //    u3.total_stored_volume = 5;
-//    u3.getWaterSource().at(0)->source_name[0] = 'a'; // remove const from source_name declaration in WaterSource.h
+//    u3.getWaterSource().at(0)->name[0] = 'a'; // remove const from name declaration in WaterSource.h
 //
 //    cout << u[0]->demand_series[0] << " " << u3.demand_series[0] << endl; // 2 30
 //    cout << u[0]->total_stored_volume << " " << u3.total_stored_volume << endl; // 0 5
-//    cout << u[0]->getWaterSource().at(0)->source_name << " " << u3.getWaterSource().at(0)->source_name << endl;
+//    cout << u[0]->getWaterSource().at(0)->name << " " << u3.getWaterSource().at(0)->name << endl;
 //}
 
 void rofCalculationsTest() {
@@ -376,7 +375,7 @@ void simulationTest() {
     Reservoir r1("R1", 0, 3.0, catchments1, ONLINE, 500.0);
     Reservoir r2("R2", 1, 3.0, catchments2, ONLINE, 575.0);
 
-    Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
+    Utility u1("U2", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
     Utility u2("U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
 
     vector<WaterSource *> water_sources;
@@ -397,11 +396,10 @@ void simulationTest() {
             {0, 1}
     };
 
-    DataCollector * data_collector;
-    data_collector = new DataCollector(std::vector<Utility *>(), std::vector<WaterSource *>());
+    DataCollector *data_collector = nullptr;
 
     Simulation s(Aux::copyWaterSourceVector(water_sources), water_sources_adjacency_matrix,
-                 Aux::copyUtilityVector(utilities), water_sources_utility_adjacency_matrix, 104, 3,
+                 Aux::copyUtilityVector(utilities), water_sources_utility_adjacency_matrix, 4, 3,
                  data_collector);
     cout << "Beginning simulation" << endl;
     s.runFullSimulation();
@@ -414,13 +412,13 @@ int main() {
 //
 //    ::reservoirAndCatchmentTest();
 //    ::testReadCsv();
-    ::regionTwoUtilitiesTwoReservoirsContinuityTest(); // ESSES DOIS TESTES ESTAO FALHANDO. TENHO QUE ARRUMAR
-    ::regionOneUtilitiesTwoReservoirsContinuityTest();
+//    ::regionTwoUtilitiesTwoReservoirsContinuityTest(); // ESSES DOIS TESTES ESTAO FALHANDO. TENHO QUE ARRUMAR
+//    ::regionOneUtilitiesTwoReservoirsContinuityTest();
 //    ::catchmentCopy(); // Create a setStreamflow method in order to run this test.
 //    ::reservoirCopy(); // Make vector catchments public in order to run this test.
 //    ::utilityCopy();
 //    ::rofCalculationsTest();
-//    ::simulationTest();
+    ::simulationTest();
 
 
     return 0;

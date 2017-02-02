@@ -16,12 +16,15 @@ protected:
     vector<Catchment *> catchments;
     double available_volume = 0;
     double outflow_previous_week;
+    double upstream_inflow_previous_week;
+    double catchment_inflow_previous_week;
+    double demand_previous_week;
     bool online;
     int week;
 
 public:
     const int id;
-    const string source_name;
+    const string name;
     const double capacity;
     const double min_environmental_outflow;
     const string source_type;
@@ -53,6 +56,12 @@ public:
     void setOutflow_previous_week(double outflow_previous_week);
 
     double getCapacity();
+
+    double getUpstream_inflow_previous_week() const;
+
+    double getDemand() const;
+
+    double getCatchment_inflow_previous_week() const;
 };
 
 

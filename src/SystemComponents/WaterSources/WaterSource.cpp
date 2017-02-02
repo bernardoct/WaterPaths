@@ -10,7 +10,7 @@ using namespace std;
 WaterSource::WaterSource(const string &reservoir_name, const int id, const double min_environmental_outflow,
                          const vector<Catchment *> &catchments, bool online, const double capacity,
                          const string source_type)
-        : source_name(reservoir_name), capacity(capacity),
+        : name(reservoir_name), capacity(capacity),
           min_environmental_outflow(min_environmental_outflow),
           catchments(catchments), online(online),
           available_volume(capacity), id(id), source_type(source_type) {
@@ -23,7 +23,7 @@ WaterSource::WaterSource(const string &reservoir_name, const int id, const doubl
  * @param water_source
  */
 WaterSource::WaterSource(const WaterSource &water_source) : capacity(water_source.capacity),
-                                                            source_name(water_source.source_name),
+                                                            name(water_source.name),
                                                             min_environmental_outflow(
                                                                     water_source.min_environmental_outflow),
                                                             id(water_source.id),
@@ -95,7 +95,7 @@ double WaterSource::getOutflow_previous_week() const {
 }
 
 void WaterSource::toString() {
-    cout << source_type << " " << id << " - " << this->source_name << endl;
+    cout << source_type << " " << id << " - " << this->name << endl;
     cout << "Status: " << online << endl;
     cout << "Last update: week " << week << endl;
     cout << "Stored volume: " << available_volume << endl;
@@ -108,3 +108,14 @@ double WaterSource::getCapacity() {
     return capacity;
 }
 
+double WaterSource::getDemand() const {
+    return demand_previous_week;
+}
+
+double WaterSource::getUpstream_inflow_previous_week() const {
+    return upstream_inflow_previous_week;
+}
+
+double WaterSource::getCatchment_inflow_previous_week() const {
+    return catchment_inflow_previous_week;
+}

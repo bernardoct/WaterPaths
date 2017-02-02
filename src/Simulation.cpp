@@ -15,8 +15,11 @@ Simulation::Simulation(const vector<WaterSource *> &water_sources,
         total_simulation_time(total_simulation_time),
         number_of_realizations(number_of_realizations), data_collector(data_collector) {
 
-    vector<WaterSource *> water_sources_realization;
+    // Creates the data collector for the simulation.
+    this->data_collector = new DataCollector(utilities, water_sources, number_of_realizations);
 
+    // Creates the realization and ROF models.
+    vector<WaterSource *> water_sources_realization;
     for (int r = 0; r < number_of_realizations; ++r) {
         // Creates realization models by copying the water sources and utilities.
         water_sources_realization = Aux::copyWaterSourceVector(water_sources);
@@ -44,19 +47,38 @@ void Simulation::runFullSimulation() {
     for (int r = 0; r < number_of_realizations; ++r) {
         cout << "Realization: " << r << endl;
         for (int w = 0; w < total_simulation_time; ++w) {
-//            cout << "week: " << w << " ";
             realization_models[r]->continuityStep(w);
-            rofs = rof_models[r]->calculateROF(w);
 
-            for (int i = 0; i < n_utilities; ++i) {
-                cout << realization_models[r]->getUtilities()[i]->getStorageToCapacityRatio()
-                     << " " << rofs[i] << " ";
-            }
+            rofs = rof_models[r]->calculateROF(w);
+            realization_models[r]->setRisks_of_failure(rofs);
+
+            this->collectData(realization_models[r]);
         }
     }
 
+    data_collector->printUtilityOutput();
+    data_collector->printReservoirOutput();
+
 }
 
-void collectData(ContinuityModelRealization continuity_model_realization) {
+void Simulation::collectData(ContinuityModelRealization *continuity_model_realization) {
 
+    Utility *u;
+    WaterSource *ws;
+    int r = continuity_model_realization->realization_id;
+    for (int i = 0; i < continuity_model_realization->getUtilities().size(); ++i) {
+        u = continuity_model_realization->getUtilities()[i];
+        data_collector->addUtilityCombinedStorage(r, i, u->getStorageToCapacityRatio() *
+                                                        u->getTotal_storage_capacity());
+        data_collector->addUtilityRof(r, i, continuity_model_realization->getRisks_of_failure()[i]);
+    }
+
+    for (int i = 0; i < continuity_model_realization->getWater_sources().size(); ++i) {
+        ws = continuity_model_realization->getWater_sources()[i];
+        data_collector->addReservoirAvailableVolume(r, i, ws->getAvailable_volume());
+        data_collector->addReservoirDemands(r, i, ws->getDemand());
+        data_collector->addReservoirUpstreamSourcesInflow(r, i, ws->getUpstream_inflow_previous_week());
+        data_collector->addReservoirOutflows(r, i, ws->getOutflow_previous_week());
+        data_collector->addReservoirCatchmentInflow(r, i, ws->getCatchment_inflow_previous_week());
+    }
 }

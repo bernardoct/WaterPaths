@@ -54,6 +54,7 @@ void Reservoir::updateAvailableVolume(int week, double upstream_reservoir_inflow
     for (Catchment *c : catchments) {
         total_inflow += c->getStreamflow((week));
     }
+    demand_previous_week = demand_outflow;
     double new_volume = available_volume + total_inflow - demand_outflow - min_environmental_outflow;
     double released_volume = min_environmental_outflow;
     double spillage = 0;
@@ -73,8 +74,8 @@ void Reservoir::updateAvailableVolume(int week, double upstream_reservoir_inflow
 
     available_volume = new_volume;
     outflow_previous_week = released_volume;
-
-    storage_records.push_back(new_volume);
+    upstream_inflow_previous_week = upstream_reservoir_inflow;
+    catchment_inflow_previous_week = total_inflow - upstream_reservoir_inflow;
 }
 
 void Reservoir::setAvailableVolumeAndOutflowPreviousRelease(double available_volume, double outflow_previous_week) {

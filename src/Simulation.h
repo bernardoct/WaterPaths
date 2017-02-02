@@ -34,6 +34,8 @@ private:
     vector<ContinuityModelRealization *> realization_models;
     vector<ContinuityModelROF *> rof_models;
     DataCollector * data_collector;
+
+    void collectData(ContinuityModelRealization *continuity_model_realization);
 };
 
 

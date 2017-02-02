@@ -13,7 +13,7 @@
  * @param demand_file_name Text file containing utility's demand series.
  * @param number_of_week_demands Length of weeks in demand series.
  */
-Utility::Utility(char const *name, int id, char const *demand_file_name, int number_of_week_demands) :
+Utility::Utility(string name, int id, char const *demand_file_name, int number_of_week_demands) :
         name(name), id(id), number_of_week_demands(number_of_week_demands) {
 
     demand_series = Aux::parse1DCsvFile(demand_file_name, number_of_week_demands);

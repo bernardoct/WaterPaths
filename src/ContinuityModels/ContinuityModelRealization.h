@@ -10,6 +10,9 @@
 #include "ContinuityModelROF.h"
 
 class ContinuityModelRealization : public ContinuityModel {
+private:
+    vector<double> risks_of_failure;
+
 public:
     const int realization_id;
 
@@ -19,6 +22,11 @@ public:
                                const vector<vector<int>> &water_source_utility_connectivity_matrix,
                                const int realization_index);
 
+    vector<WaterSource *> getWater_sources();
+
+    const vector<double> &getRisks_of_failure() const;
+
+    void setRisks_of_failure(const vector<double> &risks_of_failure);
 };
 
 

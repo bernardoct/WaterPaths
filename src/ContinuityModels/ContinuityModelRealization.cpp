@@ -15,6 +15,14 @@ ContinuityModelRealization::ContinuityModelRealization(const vector<WaterSource 
         realization_id(realization_index) {}
 
 
+vector<WaterSource *> ContinuityModelRealization::getWater_sources() {
+    return water_sources;
+}
 
+void ContinuityModelRealization::setRisks_of_failure(const vector<double> &risks_of_failure) {
+    ContinuityModelRealization::risks_of_failure = risks_of_failure;
+}
 
-
+const vector<double> &ContinuityModelRealization::getRisks_of_failure() const {
+    return risks_of_failure;
+}

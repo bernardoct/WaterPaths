@@ -15,7 +15,7 @@ WaterSource::WaterSource(const string &reservoir_name, const int id, const doubl
           catchments(catchments), online(online),
           available_volume(capacity), id(id), source_type(source_type) {
     cout << "Reservoir " << reservoir_name << " created" << endl;
-    outflow_previous_week = min_environmental_outflow;
+    total_outflow = min_environmental_outflow;
 }
 
 /**
@@ -28,7 +28,7 @@ WaterSource::WaterSource(const WaterSource &water_source) : capacity(water_sourc
                                                                     water_source.min_environmental_outflow),
                                                             id(water_source.id),
                                                             available_volume(water_source.available_volume),
-                                                            outflow_previous_week(water_source.outflow_previous_week),
+                                                            total_outflow(water_source.total_outflow),
                                                             online(water_source.online),
                                                             source_type("Reservoir") {
     catchments.clear();
@@ -83,25 +83,15 @@ void WaterSource::setAvailable_volume(double available_volume) {
 }
 
 void WaterSource::setOutflow_previous_week(double outflow_previous_week) {
-    WaterSource::outflow_previous_week = outflow_previous_week;
+    WaterSource::total_outflow = outflow_previous_week;
 }
 
 void WaterSource::setOnline(bool online_status) {
     online = online_status;
 }
 
-double WaterSource::getOutflow_previous_week() const {
-    return outflow_previous_week;
-}
-
-void WaterSource::toString() {
-    cout << source_type << " " << id << " - " << this->name << endl;
-    cout << "Status: " << online << endl;
-    cout << "Last update: week " << week << endl;
-    cout << "Stored volume: " << available_volume << endl;
-    cout << "Outflow previous week: " << outflow_previous_week << endl;
-    cout << endl;
-
+double WaterSource::getTotal_inflow() const {
+    return total_outflow;
 }
 
 double WaterSource::getCapacity() {
@@ -112,10 +102,10 @@ double WaterSource::getDemand() const {
     return demand_previous_week;
 }
 
-double WaterSource::getUpstream_inflow_previous_week() const {
-    return upstream_inflow_previous_week;
+double WaterSource::getUpstream_source_inflow() const {
+    return upstream_source_inflow;
 }
 
-double WaterSource::getCatchment_inflow_previous_week() const {
-    return catchment_inflow_previous_week;
+double WaterSource::getCatchment_upstream_catchment_inflow() const {
+    return upstream_catchment_inflow;
 }

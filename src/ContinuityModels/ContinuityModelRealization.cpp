@@ -6,12 +6,12 @@
 #include "ContinuityModelRealization.h"
 
 ContinuityModelRealization::ContinuityModelRealization(const vector<WaterSource *> &water_source,
-                                                       const vector<vector<int>> &water_source_connectivity_matrix,
+                                                       const Graph &water_sources_graph,
+                                                       const vector<vector<int>> &water_sources_to_utilities,
                                                        const vector<Utility *> &utilities,
-                                                       const vector<vector<int>> &water_source_utility_connectivity_matrix,
                                                        const int realization_index) :
-        ContinuityModel(water_source, water_source_connectivity_matrix, utilities,
-                        water_source_utility_connectivity_matrix),
+        ContinuityModel(water_source, utilities, water_sources_graph,
+                        water_sources_to_utilities),
         realization_id(realization_index) {}
 
 

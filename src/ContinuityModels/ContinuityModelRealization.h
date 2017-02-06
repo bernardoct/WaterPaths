@@ -11,16 +11,15 @@
 
 class ContinuityModelRealization : public ContinuityModel {
 private:
+
     vector<double> risks_of_failure;
 
 public:
-    const int realization_id;
+    ContinuityModelRealization(const vector<WaterSource *> &water_source, const Graph &water_sources_graph,
+                               const vector<vector<int>> &water_sources_to_utilities,
+                               const vector<Utility *> &utilities, const int realization_index);
 
-    ContinuityModelRealization(const vector<WaterSource *> &water_source,
-                               const vector<vector<int>> &water_source_connectivity_matrix,
-                               const vector<Utility *> &utilities,
-                               const vector<vector<int>> &water_source_utility_connectivity_matrix,
-                               const int realization_index);
+    const int realization_id;
 
     vector<WaterSource *> getWater_sources();
 

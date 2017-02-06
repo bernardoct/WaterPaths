@@ -7,6 +7,7 @@
 
 #include <vector>
 #include "../SystemComponents/Utility.h"
+#include "../ContinuityModels/ContinuityModelRealization.h"
 
 struct Utility_t {
     Utility_t(int id, double capacity, string name) : id(id), capacity(capacity) {};
@@ -36,10 +37,13 @@ class DataCollector {
 private:
     vector<vector<Utility_t>> utilities_t;
     vector<vector<Reservoir_t>> reservoir_t;
+    string output_directory = "/home/bernardo/";
 
 public:
     DataCollector(const vector<Utility *> &utilities, const vector<WaterSource *> &water_sources,
-                  int number_of_relizations);
+                  int number_of_realizations);
+
+    void collectData(ContinuityModelRealization *continuity_model_realization);
 
     void addUtilityRof(int realization_index, int utility_index, double rof);
 
@@ -55,9 +59,9 @@ public:
 
     void addReservoirCatchmentInflow(int realization_index, int reservoir_index, double volume);
 
-    void printUtilityOutput();
+    void printUtilityOutput(bool toFile, string fileName = "Utilities.out");
 
-    void printReservoirOutput();
+    void printReservoirOutput(bool toFile, string fileName = "Reservoirs.out");
 };
 
 

@@ -6,13 +6,13 @@
 #include "ContinuityModelROF.h"
 
 ContinuityModelROF::ContinuityModelROF(const vector<WaterSource *> &water_source,
-                                       const vector<vector<int>> &water_source_connectivity_matrix,
+                                       const Graph &water_sources_graph,
+                                       const vector<vector<int>> &water_sources_to_utilities,
                                        const vector<Utility *> &utilities,
-                                       const vector<vector<int>> &water_source_utility_connectivity_matrix,
                                        const int rof_type, const int realization_id) : ContinuityModel(water_source,
-                                                                             water_source_connectivity_matrix,
-                                                                             utilities,
-                                                                             water_source_utility_connectivity_matrix),
+                                                                                                       utilities,
+                                                                                                       water_sources_graph,
+                                                                                                       water_sources_to_utilities),
                                                              rof_type(rof_type), realization_id(realization_id) {
     // calculate total combined storage volumes (here, it equals sum of reservoirs capacities.
     for (Utility *u : this->utilities) {
@@ -75,7 +75,7 @@ void ContinuityModelROF::resetUtilitiesAndReservoirs() {
     // update water sources info.
     for (int i = 0; i < water_sources.size(); ++i) {
         water_sources[i]->setAvailable_volume(water_sources_realization[i]->getAvailable_volume());
-        water_sources[i]->setOutflow_previous_week(water_sources_realization[i]->getOutflow_previous_week());
+        water_sources[i]->setOutflow_previous_week(water_sources_realization[i]->getTotal_inflow());
     }
 
     // update utilities combined storage.

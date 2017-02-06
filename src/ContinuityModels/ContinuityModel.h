@@ -8,6 +8,7 @@
 #include "../SystemComponents/WaterSources/WaterSource.h"
 #include "../Utils/Constants.h"
 #include "../SystemComponents/Utility.h"
+#include "../Utils/Graph.h"
 #include <vector>
 
 using namespace Constants;
@@ -18,14 +19,14 @@ class ContinuityModel {
 protected:
     vector<WaterSource *> water_sources;
     vector<Utility *> utilities;
-    vector<vector<int> > water_sources_adjacency_list;
-    vector<vector<int> > water_sources_utility_adjacency_list;
+    Graph water_sources_graph;
+    vector<vector<int> > water_sources_to_utilities;
+    vector<vector<int> > utilities_to_water_sources;
+    vector<int> reservoir_continuity_order;
 
 public:
-    ContinuityModel(const vector<WaterSource *> water_source,
-                    const vector<vector<int> > &water_source_connectivity_matrix,
-                    const vector<Utility *> utilities,
-                    const vector<vector<int> > &water_source_utility_connectivity_matrix);
+    ContinuityModel(const vector<WaterSource *> &water_sources, const vector<Utility *> &utilities,
+                    const Graph &water_sources_graph, const vector<vector<int>> &water_sources_to_utilities);
 
     void continuityStep(int week, int id_rof = -1);
 

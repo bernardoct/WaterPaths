@@ -75,7 +75,7 @@ Utility &Utility::operator=(const Utility &utility) {
  * Updates the total current storage held by the utility and all its reservoirs.
  */
 void Utility::updateTotalStoredVolume() {
-    total_stored_volume = 0;
+    total_stored_volume = 0.0;
 
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
         total_stored_volume += max(1.0e-6, ws.second->getAvailable_volume());
@@ -100,7 +100,7 @@ void Utility::addWaterSource(WaterSource *water_source) {
  * @param water_source_id
  * @return proportional demand.
  */
-double Utility::getDemand(int water_source_id) {
+double Utility::getReservoirDraw(const int water_source_id) {
     return split_demands_among_sources.at(water_source_id);
 }
 
@@ -110,14 +110,7 @@ double Utility::getDemand(int water_source_id) {
  * @param week
  */
 void Utility::splitDemands(int week) {
-    int i, number_of_reservoir_with_water = 0;
-
-    for (map<int, WaterSource *>::value_type &ws : water_sources) {
-        if (ws.second->getAvailable_volume() > 0) {
-            number_of_reservoir_with_water++;
-        }
-    }
-
+    int i;
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
         i = ws.second->id;
         split_demands_among_sources.at(i) = demand_series[week] *
@@ -138,4 +131,3 @@ double Utility::getStorageToCapacityRatio() const {
 double Utility::getTotal_storage_capacity() const {
     return total_storage_capacity;
 }
-

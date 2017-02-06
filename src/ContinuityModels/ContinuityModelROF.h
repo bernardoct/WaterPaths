@@ -12,14 +12,14 @@
 class ContinuityModelROF : public ContinuityModel {
 
 protected:
+
     const int rof_type;
     const int realization_id;
     vector<WaterSource *> water_sources_realization;
 public:
-    ContinuityModelROF(const vector<WaterSource *> &water_source,
-                       const vector<vector<int>> &water_source_connectivity_matrix, const vector<Utility *> &utilities,
-                       const vector<vector<int>> &water_source_utility_connectivity_matrix, const int rof_type,
-                       const int realization_id);
+    ContinuityModelROF(const vector<WaterSource *> &water_source, const Graph &water_sources_graph,
+                       const vector<vector<int>> &water_sources_to_utilities, const vector<Utility *> &utilities,
+                       const int rof_type, const int realization_id);
 
     vector<double> calculateROF(int week);
 

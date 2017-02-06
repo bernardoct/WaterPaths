@@ -15,7 +15,6 @@ Reservoir::Reservoir(const string &source_name, const int id, const double min_e
         catchments, online,
         capacity,
         "Reservoir") {
-    storage_records.assign((unsigned long) catchments[0]->series_length, 0);
 }
 
 /**
@@ -45,41 +44,41 @@ Reservoir::~Reservoir() {
  * Reservoir mass balance. Gets releases from upstream reservoirs, demands from connected utilities, and
  * combines them with its catchments inflows.
  * @param week
- * @param upstream_reservoir_inflow
+ * @param upstream_source_inflow
  * @param demand_outflow
  */
-void Reservoir::updateAvailableVolume(int week, double upstream_reservoir_inflow, double demand_outflow) {
+void Reservoir::updateAvailableVolume(int week, double upstream_source_inflow, double demand_outflow) {
 
-    double total_inflow = upstream_reservoir_inflow;
+
+    double catchment_inflow = 0;
     for (Catchment *c : catchments) {
-        total_inflow += c->getStreamflow((week));
+        catchment_inflow += c->getStreamflow((week));
     }
     demand_previous_week = demand_outflow;
-    double new_volume = available_volume + total_inflow - demand_outflow - min_environmental_outflow;
-    double released_volume = min_environmental_outflow;
-    double spillage = 0;
+    double stored_volume_new =
+            available_volume + upstream_source_inflow + catchment_inflow - demand_outflow - min_environmental_outflow;
+    double outflow_new = min_environmental_outflow;
 
     this->week = week;
 
     if (online) {
-        if (new_volume > capacity) {
-            spillage = new_volume - capacity;
-            released_volume += spillage;
-            new_volume = capacity;
+        if (stored_volume_new > capacity) {
+            outflow_new += stored_volume_new - capacity;
+            stored_volume_new = capacity;
         }
     } else {
-        new_volume = available_volume;
-        released_volume = total_inflow;
+        stored_volume_new = available_volume;
+        outflow_new = upstream_source_inflow + catchment_inflow;
     }
 
-    available_volume = new_volume;
-    outflow_previous_week = released_volume;
-    upstream_inflow_previous_week = upstream_reservoir_inflow;
-    catchment_inflow_previous_week = total_inflow - upstream_reservoir_inflow;
+    available_volume = stored_volume_new;
+    total_outflow = outflow_new;
+    this->upstream_source_inflow = upstream_source_inflow;
+    upstream_catchment_inflow = catchment_inflow;
 }
 
 void Reservoir::setAvailableVolumeAndOutflowPreviousRelease(double available_volume, double outflow_previous_week) {
     this->available_volume = available_volume;
-    this->outflow_previous_week = outflow_previous_week;
+    this->total_outflow = outflow_previous_week;
 }
 

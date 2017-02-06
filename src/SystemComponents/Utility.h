@@ -31,7 +31,7 @@ public:
 
     Utility &operator=(const Utility &utility);
 
-    double getDemand(int water_source_id);
+    double getReservoirDraw(const int water_source_id);
 
     void updateTotalStoredVolume();
 

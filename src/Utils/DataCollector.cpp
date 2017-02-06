@@ -3,13 +3,14 @@
 //
 
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include "DataCollector.h"
 
 
 DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<WaterSource *> &water_sources,
-                             int number_of_relizations) {
-    for (int r = 0; r < number_of_relizations; ++r) {
+                             int number_of_realizations) {
+    for (int r = 0; r < number_of_realizations; ++r) {
         utilities_t.push_back(vector<Utility_t>());
         reservoir_t.push_back(vector<Reservoir_t>());
         for (Utility *u : utilities) {
@@ -49,54 +50,97 @@ void DataCollector::addReservoirCatchmentInflow(int realization_index, int reser
     reservoir_t[realization_index][reservoir_index].total_catchments_inflow.push_back(volume);
 }
 
-void DataCollector::printUtilityOutput() {
-    for (int r = 0; r < utilities_t.size(); ++r) {
-        cout << endl;
-        for (int i = 0; i < utilities_t[r].size(); ++i) {
-            cout << utilities_t[r][i].name << " " << endl;
-        }
-        for (int i = 0; i < utilities_t[r].size(); ++i) {
-            cout << "St_vol rof ";
-        }
-        cout << endl;
-        for (int w = 0; w < utilities_t[0][0].rof.size(); ++w) {
+void DataCollector::collectData(ContinuityModelRealization *continuity_model_realization) {
 
-            for (int i = 0; i < utilities_t[r].size(); ++i) {
-                cout << utilities_t[r][i].combined_storage[w] << " " << utilities_t[r][i].rof[w] << " ";
-            }
-            cout << endl;
-        }
+    Utility *u;
+    WaterSource *ws;
+    int r = continuity_model_realization->realization_id;
+    for (int i = 0; i < continuity_model_realization->getUtilities().size(); ++i) {
+        u = continuity_model_realization->getUtilities()[i];
+        this->addUtilityCombinedStorage(r, i, u->getStorageToCapacityRatio() *
+                                              u->getTotal_storage_capacity());
+        this->addUtilityRof(r, i, continuity_model_realization->getRisks_of_failure()[i]);
     }
 
+    for (int i = 0; i < continuity_model_realization->getWater_sources().size(); ++i) {
+        ws = continuity_model_realization->getWater_sources()[i];
+        this->addReservoirAvailableVolume(r, i, ws->getAvailable_volume());
+        this->addReservoirDemands(r, i, ws->getDemand());
+        this->addReservoirUpstreamSourcesInflow(r, i, ws->getUpstream_source_inflow());
+        this->addReservoirOutflows(r, i, ws->getTotal_inflow());
+        this->addReservoirCatchmentInflow(r, i, ws->getCatchment_upstream_catchment_inflow());
+    }
 }
 
-void DataCollector::printReservoirOutput() {
+void DataCollector::printReservoirOutput(bool toFile, string fileName) {
+
+    std::ofstream outStream;
+    outStream.open(output_directory + fileName);
+
     for (int r = 0; r < reservoir_t.size(); ++r) {
-        cout << endl;
+        outStream << endl;
         for (int i = 0; i < reservoir_t[r].size(); ++i) {
-            cout << reservoir_t[r][i].name << " " << endl;
+            outStream << reservoir_t[r][i].name << " " << endl;
         }
         for (int i = 0; i < reservoir_t[r].size(); ++i) {
-            cout
-                    << " Av_volume"
-                    << "    Demands"
-                    << "  Sour_infl"
-                    << "  Catc_infl"
-                    << "   Outflows";
+            outStream
+//                    << " Av_volume"
+//                    << "    Demands"
+//                    << "   Up_spill"
+//                    << "  Catc_infl"
+//                    << "   Outflows";
+                    << "Av_volume,"
+                    << "Demands,"
+                    << "Up_spill,"
+                    << "Catc_infl,"
+                    << "Outflows,";
         }
-        cout << endl;
+        outStream << endl;
         for (int w = 0; w < reservoir_t[0][0].available_volume.size(); ++w) {
 
             for (int i = 0; i < reservoir_t[r].size(); ++i) {
-                cout
-                        << setw(10) << setprecision(4) << reservoir_t[r][i].available_volume[w] << " "
-                        << setw(10) << setprecision(4) << reservoir_t[r][i].demands[w] << " "
-                        << setw(10) << setprecision(4) << reservoir_t[r][i].total_upstream_sources_inflows[w] << " "
-                        << setw(10) << setprecision(4) << reservoir_t[r][i].total_catchments_inflow[w] << " "
-                        << setw(10) << setprecision(4) << reservoir_t[r][i].outflows[w] << " ";
+                outStream
+//                        << setw(10) << setprecision(4) << reservoir_t[r][i].available_volume[w]
+//                        << setw(10) << setprecision(4) << reservoir_t[r][i].demands[w]
+//                        << setw(10) << setprecision(4) << reservoir_t[r][i].total_upstream_sources_inflows[w]
+//                        << setw(10) << setprecision(4) << reservoir_t[r][i].total_catchments_inflow[w]
+//                        << setw(10) << setprecision(4) << reservoir_t[r][i].outflows[w];
+                        << setprecision(4) << reservoir_t[r][i].available_volume[w] << ", "
+                        << setprecision(4) << reservoir_t[r][i].demands[w] << ", "
+                        << setprecision(4) << reservoir_t[r][i].total_upstream_sources_inflows[w] << ", "
+                        << setprecision(4) << reservoir_t[r][i].total_catchments_inflow[w] << ", "
+                        << setprecision(4) << reservoir_t[r][i].outflows[w] << ", ";
             }
-            cout << endl;
+            outStream << endl;
         }
     }
 
+    outStream.close();
 }
+
+void DataCollector::printUtilityOutput(bool toFile, string fileName) {
+
+    std::ofstream outStream;
+    outStream.open(output_directory + fileName);
+
+    for (int r = 0; r < utilities_t.size(); ++r) {
+        outStream << endl;
+        for (int i = 0; i < utilities_t[r].size(); ++i) {
+            outStream << utilities_t[r][i].name << " " << endl;
+        }
+        for (int i = 0; i < utilities_t[r].size(); ++i) {
+            outStream << "St_vol, rof, ";
+        }
+        outStream << endl;
+        for (int w = 0; w < utilities_t[0][0].rof.size(); ++w) {
+
+            for (int i = 0; i < utilities_t[r].size(); ++i) {
+                outStream << utilities_t[r][i].combined_storage[w] << ", " << utilities_t[r][i].rof[w] << ", ";
+            }
+            outStream << endl;
+        }
+    }
+
+    outStream.close();
+}
+

@@ -7,6 +7,7 @@
 
 #include <string>
 #include "../Catchment.h"
+#include "../../Utils/Constants.h"
 
 using namespace std;
 
@@ -14,18 +15,18 @@ using namespace std;
 class WaterSource {
 protected:
     vector<Catchment *> catchments;
-    double available_volume = 0;
-    double outflow_previous_week;
-    double upstream_inflow_previous_week;
-    double catchment_inflow_previous_week;
-    double demand_previous_week;
-    bool online;
+    double available_volume = -1;
+    double total_outflow = -1;
+    double upstream_source_inflow = -1;
+    double upstream_catchment_inflow = -1;
+    double demand_previous_week = -1;
+    bool online = Constants::ONLINE;
     int week;
 
 public:
     const int id;
     const string name;
-    const double capacity;
+    const double capacity = -1;
     const double min_environmental_outflow;
     const string source_type;
 
@@ -45,7 +46,7 @@ public:
 
     double getAvailable_volume() const;
 
-    double getOutflow_previous_week() const;
+    double getTotal_inflow() const;
 
     bool isOnline() const;
 
@@ -57,11 +58,11 @@ public:
 
     double getCapacity();
 
-    double getUpstream_inflow_previous_week() const;
+    double getUpstream_source_inflow() const;
 
     double getDemand() const;
 
-    double getCatchment_inflow_previous_week() const;
+    double getCatchment_upstream_catchment_inflow() const;
 };
 
 

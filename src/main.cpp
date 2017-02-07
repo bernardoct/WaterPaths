@@ -106,9 +106,17 @@ int regionTwoUtilitiesTwoReservoirsContinuityTest() {
             {1}
     };
 
+    vector<double> restriction_stage_multipliers = {0.7, 0.9};
+    vector<double> restriction_stage_triggers = {1.1, 1.1};
+
+    Restrictions rp1(0, restriction_stage_triggers, restriction_stage_multipliers, 1);
+    Restrictions rp2(0, restriction_stage_triggers, restriction_stage_multipliers, 2);
+
+    vector<DroughtMitigationPolicy *> restrictions = {&rp1, &rp2};
+
     DataCollector *data_collector = nullptr;
 
-    Simulation s(reservoirs, g, reservoir_utility_connectivity_matrix, utilities, 52, 1, data_collector);
+    Simulation s(reservoirs, g, reservoir_utility_connectivity_matrix, utilities, restrictions, 52, 1, data_collector);
     s.runFullSimulation();
 
     cout << endl << "END OF 2 RESERVOIRS 2 UTILITIES TEST" << endl << "---------------------"
@@ -158,10 +166,16 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
             {0, 1},
     };
 
-    DataCollector *data_collector = nullptr;
-//    data_collector = new DataCollector(std::vector<Utility *>(), std::vector<WaterSource *>());
+    vector<double> restriction_stage_multipliers = {0.7, 0.9};
+    vector<double> restriction_stage_triggers = {1.1, 1.1};
 
-    Simulation s(reservoirs, g, reservoir_utility_connectivity_matrix, utilities, 104, 5, data_collector);
+    Restrictions rp1(0, restriction_stage_triggers, restriction_stage_multipliers, 1);
+
+    vector<DroughtMitigationPolicy *> restrictions = {&rp1};
+
+    DataCollector *data_collector = nullptr;
+
+    Simulation s(reservoirs, g, reservoir_utility_connectivity_matrix, utilities, restrictions, 52, 1, data_collector);
     s.runFullSimulation();
 
 
@@ -396,9 +410,18 @@ void simulationTest() {
             {1}
     };
 
+    vector<double> restriction_stage_multipliers = {0.7, 0.9};
+    vector<double> restriction_stage_triggers = {1.1, 1.1};
+
+    Restrictions rp1(0, restriction_stage_triggers, restriction_stage_multipliers, 1);
+    Restrictions rp2(0, restriction_stage_triggers, restriction_stage_multipliers, 2);
+
+    vector<DroughtMitigationPolicy *> restrictions = {&rp1, &rp2};
+
     DataCollector *data_collector = nullptr;
 
-    Simulation s(water_sources, g, reservoir_utility_connectivity_matrix, utilities, 104, 3, data_collector);
+    Simulation s(water_sources, g, reservoir_utility_connectivity_matrix, utilities, restrictions, 52, 1,
+                 data_collector);
     cout << "Beginning simulation" << endl;
     s.runFullSimulation();
     cout << "Ending simulation" << endl;
@@ -458,10 +481,10 @@ void simulation3U5RTest() {
     catchments3.push_back(&c1);
 
     Reservoir r1("R1", 0, 3.0, catchments1, ONLINE, 200.0);
-    Reservoir r2("R2", 1, 3.0, catchments2, ONLINE, 175.0);
+    Reservoir r2("R2", 1, 3.0, catchments2, ONLINE, 275.0);
     Reservoir r3("R3", 2, 2.0, catchments3, ONLINE, 400.0);
     Reservoir r4("R4", 3, 3.0, catchments2, ONLINE, 400.0);
-    Reservoir r5("R5", 4, 2.0, catchments3, ONLINE, 100.0);
+    Reservoir r5("R5", 4, 2.0, catchments3, ONLINE, 300.0);
 
     Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
     Utility u2("U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
@@ -500,9 +523,22 @@ void simulation3U5RTest() {
             {3}
     };
 
+    vector<double> restriction_stage_multipliers1 = {0.7, 0.9};
+    vector<double> restriction_stage_triggers1 = {0.02, 0.04};
+
+    vector<double> restriction_stage_multipliers2 = {0.6, 0.8};
+    vector<double> restriction_stage_triggers2 = {0.03, 0.05};
+
+    Restrictions rp1(1, restriction_stage_multipliers1, restriction_stage_triggers1, 1);
+    Restrictions rp2(2, restriction_stage_multipliers2, restriction_stage_triggers2, 2);
+    Restrictions rp3(3, restriction_stage_multipliers1, restriction_stage_triggers1, 3);
+
+    vector<DroughtMitigationPolicy *> restrictions = {&rp1, &rp2, &rp3};
+
     DataCollector *data_collector = nullptr;
 
-    Simulation s(water_sources, g, reservoir_utility_connectivity_matrix, utilities, 104, 3, data_collector);
+    Simulation s(water_sources, g, reservoir_utility_connectivity_matrix, utilities, restrictions, 104, 2,
+                 data_collector);
     cout << "Beginning U3R5 simulation" << endl;
     s.runFullSimulation();
     cout << "Ending U3R5 simulation" << endl;

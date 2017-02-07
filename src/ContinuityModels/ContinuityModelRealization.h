@@ -8,24 +8,29 @@
 
 #include "ContinuityModel.h"
 #include "ContinuityModelROF.h"
+#include "../DroughtMitigationInstruments/Restrictions.h"
 
 class ContinuityModelRealization : public ContinuityModel {
 private:
-
-    vector<double> risks_of_failure;
+    vector<DroughtMitigationPolicy *> drought_mitigation_policies;
 
 public:
-    ContinuityModelRealization(const vector<WaterSource *> &water_source, const Graph &water_sources_graph,
+    ContinuityModelRealization(const vector<WaterSource *> &water_source,
+                               const Graph &water_sources_graph,
                                const vector<vector<int>> &water_sources_to_utilities,
-                               const vector<Utility *> &utilities, const int realization_index);
+                               const vector<Utility *> &utilities,
+                               vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
+                               const int realization_index);
 
     const int realization_id;
 
     vector<WaterSource *> getWater_sources();
 
-    const vector<double> &getRisks_of_failure() const;
-
     void setRisks_of_failure(const vector<double> &risks_of_failure);
+
+    void applyRestrictionsAndTransfers(int week);
+
+    const vector<DroughtMitigationPolicy *> &getDrought_mitigation_policies() const;
 };
 
 

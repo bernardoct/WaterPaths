@@ -131,3 +131,19 @@ double Utility::getStorageToCapacityRatio() const {
 double Utility::getTotal_storage_capacity() const {
     return total_storage_capacity;
 }
+
+void Utility::setDemand(int week, double demand_multiplier) {
+    demand_series[week] *= demand_multiplier;
+}
+
+double Utility::getDemand(int week) {
+    return demand_series[week];
+}
+
+double Utility::getRisk_of_failure() const {
+    return risk_of_failure;
+}
+
+void Utility::setRisk_of_failure(double risk_of_failure) {
+    this->risk_of_failure = risk_of_failure;
+}

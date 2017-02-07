@@ -32,36 +32,32 @@ struct Reservoir_t {
     string name;
 };
 
+struct RestrictionPolicy_t {
+    RestrictionPolicy_t(int utility_id) : utility_id(utility_id) {};
+
+    int utility_id;
+    vector<double> restriction_multiplier;
+};
+
 class DataCollector {
 
 private:
     vector<vector<Utility_t>> utilities_t;
     vector<vector<Reservoir_t>> reservoir_t;
-    string output_directory = "/home/bernardo/";
+    vector<vector<RestrictionPolicy_t>> restriction_policy_t;
+    string output_directory = "/home/bernardo/ClionProjects/TriangleModel/TestFiles/";
 
 public:
     DataCollector(const vector<Utility *> &utilities, const vector<WaterSource *> &water_sources,
-                  int number_of_realizations);
+                  const vector<DroughtMitigationPolicy *> &drought_mitigation_policies, int number_of_realizations);
 
     void collectData(ContinuityModelRealization *continuity_model_realization);
-
-    void addUtilityRof(int realization_index, int utility_index, double rof);
-
-    void addUtilityCombinedStorage(int realization_index, int utility_index, double volume);
-
-    void addReservoirUpstreamSourcesInflow(int realization_index, int utility_index, double volume);
-
-    void addReservoirOutflows(int realization_index, int utility_index, double volume);
-
-    void addReservoirDemands(int realization_index, int utility_index, double volume);
-
-    void addReservoirAvailableVolume(int realization_index, int reservoir_index, double volume);
-
-    void addReservoirCatchmentInflow(int realization_index, int reservoir_index, double volume);
 
     void printUtilityOutput(bool toFile, string fileName = "Utilities.out");
 
     void printReservoirOutput(bool toFile, string fileName = "Reservoirs.out");
+
+    void printPoliciesOutput(bool toFile, string fileName = "Policies.out");
 };
 
 

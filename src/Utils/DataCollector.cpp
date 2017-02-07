@@ -9,68 +9,61 @@
 
 
 DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<WaterSource *> &water_sources,
+                             const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
                              int number_of_realizations) {
     for (int r = 0; r < number_of_realizations; ++r) {
         utilities_t.push_back(vector<Utility_t>());
         reservoir_t.push_back(vector<Reservoir_t>());
+        restriction_policy_t.push_back(vector<RestrictionPolicy_t>());
         for (Utility *u : utilities) {
             utilities_t[r].push_back(*new Utility_t(u->id, u->getTotal_storage_capacity(), u->name));
         }
         for (WaterSource *ws : water_sources) {
             reservoir_t[r].push_back(*new Reservoir_t(ws->id, ws->getCapacity(), ws->name));
         }
+        for (DroughtMitigationPolicy *dmp : drought_mitigation_policies) {
+            restriction_policy_t[r].push_back(*new RestrictionPolicy_t(dmp->id));
+        }
     }
+    int i = 0;
 }
 
-void DataCollector::addUtilityRof(int realization_index, int utility_index, double rof) {
-    utilities_t[realization_index][utility_index].rof.push_back(rof);
-}
-
-void DataCollector::addUtilityCombinedStorage(int realization_index, int utility_index, double volume) {
-    utilities_t[realization_index][utility_index].combined_storage.push_back(volume);
-}
-
-void DataCollector::addReservoirAvailableVolume(int realization_index, int reservoir_index, double volume) {
-    reservoir_t[realization_index][reservoir_index].available_volume.push_back(volume);
-}
-
-void DataCollector::addReservoirUpstreamSourcesInflow(int realization_index, int reservoir_index, double volume) {
-    reservoir_t[realization_index][reservoir_index].total_upstream_sources_inflows.push_back(volume);
-}
-
-void DataCollector::addReservoirOutflows(int realization_index, int reservoir_index, double volume) {
-    reservoir_t[realization_index][reservoir_index].outflows.push_back(volume);
-}
-
-void DataCollector::addReservoirDemands(int realization_index, int reservoir_index, double volume) {
-    reservoir_t[realization_index][reservoir_index].demands.push_back(volume);
-}
-
-void DataCollector::addReservoirCatchmentInflow(int realization_index, int reservoir_index, double volume) {
-    reservoir_t[realization_index][reservoir_index].total_catchments_inflow.push_back(volume);
-}
-
+/**
+ * Collect data from realization step.
+ * @param continuity_model_realization
+ */
 void DataCollector::collectData(ContinuityModelRealization *continuity_model_realization) {
 
     Utility *u;
     WaterSource *ws;
+    Restrictions *rp;
     int r = continuity_model_realization->realization_id;
+
+    /// Get utilities data.
     for (int i = 0; i < continuity_model_realization->getUtilities().size(); ++i) {
         u = continuity_model_realization->getUtilities()[i];
-        this->addUtilityCombinedStorage(r, i, u->getStorageToCapacityRatio() *
-                                              u->getTotal_storage_capacity());
-        this->addUtilityRof(r, i, continuity_model_realization->getRisks_of_failure()[i]);
+        utilities_t[r][i].combined_storage.push_back(u->getStorageToCapacityRatio() *
+                                                     u->getTotal_storage_capacity());
+        utilities_t[r][i].rof.push_back(u->getRisk_of_failure());
     }
 
+    /// Get reservoirs data.
     for (int i = 0; i < continuity_model_realization->getWater_sources().size(); ++i) {
         ws = continuity_model_realization->getWater_sources()[i];
-        this->addReservoirAvailableVolume(r, i, ws->getAvailable_volume());
-        this->addReservoirDemands(r, i, ws->getDemand());
-        this->addReservoirUpstreamSourcesInflow(r, i, ws->getUpstream_source_inflow());
-        this->addReservoirOutflows(r, i, ws->getTotal_inflow());
-        this->addReservoirCatchmentInflow(r, i, ws->getCatchment_upstream_catchment_inflow());
+        reservoir_t[r][i].available_volume.push_back(ws->getAvailable_volume());
+        reservoir_t[r][i].demands.push_back(ws->getDemand());
+        reservoir_t[r][i].total_upstream_sources_inflows.push_back(ws->getUpstream_source_inflow());
+        reservoir_t[r][i].outflows.push_back(ws->getTotal_inflow());
+        reservoir_t[r][i].total_catchments_inflow.push_back(ws->getCatchment_upstream_catchment_inflow());
+    }
+
+    /// Get drought mitigation policy data.
+    for (int i = 0; i < continuity_model_realization->getDrought_mitigation_policies().size(); ++i) {
+        rp = (Restrictions *) continuity_model_realization->getDrought_mitigation_policies()[i];
+        restriction_policy_t[r][i].restriction_multiplier.push_back(rp->getCurrent_multiplier());
     }
 }
+
 
 void DataCollector::printReservoirOutput(bool toFile, string fileName) {
 
@@ -78,41 +71,41 @@ void DataCollector::printReservoirOutput(bool toFile, string fileName) {
     outStream.open(output_directory + fileName);
 
     for (int r = 0; r < reservoir_t.size(); ++r) {
-        outStream << endl;
+
+        /// Print realization number.
+        outStream << "Realization " << r << endl;
         for (int i = 0; i < reservoir_t[r].size(); ++i) {
-            outStream << reservoir_t[r][i].name << " " << endl;
+            outStream << reservoir_t[r][i].name << " ";
         }
+
+        /// Print realization header.
+        outStream << endl
+                  << setw(8) << "Week";
+
         for (int i = 0; i < reservoir_t[r].size(); ++i) {
             outStream
-//                    << " Av_volume"
-//                    << "    Demands"
-//                    << "   Up_spill"
-//                    << "  Catc_infl"
-//                    << "   Outflows";
-                    << "Av_volume,"
-                    << "Demands,"
-                    << "Up_spill,"
-                    << "Catc_infl,"
-                    << "Outflows,";
+                    << setw(16) << "Av_vol."
+                    << setw(8) << "Demands"
+                    << setw(8) << "Up_spil"
+                    << setw(8) << "Catc_Q"
+                    << setw(8) << "Out_Q";
         }
         outStream << endl;
-        for (int w = 0; w < reservoir_t[0][0].available_volume.size(); ++w) {
 
+        /// Print numbers.
+        for (int w = 0; w < reservoir_t[0][0].available_volume.size(); ++w) {
+            outStream << setw(8) << w;
             for (int i = 0; i < reservoir_t[r].size(); ++i) {
                 outStream
-//                        << setw(10) << setprecision(4) << reservoir_t[r][i].available_volume[w]
-//                        << setw(10) << setprecision(4) << reservoir_t[r][i].demands[w]
-//                        << setw(10) << setprecision(4) << reservoir_t[r][i].total_upstream_sources_inflows[w]
-//                        << setw(10) << setprecision(4) << reservoir_t[r][i].total_catchments_inflow[w]
-//                        << setw(10) << setprecision(4) << reservoir_t[r][i].outflows[w];
-                        << setprecision(4) << reservoir_t[r][i].available_volume[w] << ", "
-                        << setprecision(4) << reservoir_t[r][i].demands[w] << ", "
-                        << setprecision(4) << reservoir_t[r][i].total_upstream_sources_inflows[w] << ", "
-                        << setprecision(4) << reservoir_t[r][i].total_catchments_inflow[w] << ", "
-                        << setprecision(4) << reservoir_t[r][i].outflows[w] << ", ";
+                        << setw(16) << setprecision(4) << reservoir_t[r][i].available_volume[w]
+                        << setw(8) << setprecision(4) << reservoir_t[r][i].demands[w]
+                        << setw(8) << setprecision(4) << reservoir_t[r][i].total_upstream_sources_inflows[w]
+                        << setw(8) << setprecision(4) << reservoir_t[r][i].total_catchments_inflow[w]
+                        << setw(8) << setprecision(4) << reservoir_t[r][i].outflows[w];
             }
             outStream << endl;
         }
+        outStream << endl << endl;
     }
 
     outStream.close();
@@ -124,18 +117,60 @@ void DataCollector::printUtilityOutput(bool toFile, string fileName) {
     outStream.open(output_directory + fileName);
 
     for (int r = 0; r < utilities_t.size(); ++r) {
-        outStream << endl;
-        for (int i = 0; i < utilities_t[r].size(); ++i) {
-            outStream << utilities_t[r][i].name << " " << endl;
-        }
-        for (int i = 0; i < utilities_t[r].size(); ++i) {
-            outStream << "St_vol, rof, ";
-        }
-        outStream << endl;
-        for (int w = 0; w < utilities_t[0][0].rof.size(); ++w) {
 
+        /// Print realization number.
+        outStream << "Realization " << r << endl;
+        for (int i = 0; i < utilities_t[r].size(); ++i) {
+            outStream << utilities_t[r][i].name << " ";
+        }
+
+        /// Print realization header.
+        outStream << endl << setw(8) << "Week";
+        for (int i = 0; i < utilities_t[r].size(); ++i) {
+            outStream << setw(16) << "Sto_vol"
+                      << setw(8) << "ROF";
+        }
+        outStream << endl;
+
+        /// Print numbers.
+        for (int w = 0; w < utilities_t[0][0].rof.size(); ++w) {
+            outStream << setw(8) << w;
             for (int i = 0; i < utilities_t[r].size(); ++i) {
-                outStream << utilities_t[r][i].combined_storage[w] << ", " << utilities_t[r][i].rof[w] << ", ";
+                outStream << setw(16) << setprecision(4) << utilities_t[r][i].combined_storage[w]
+                          << setw(8) << setprecision(4) << utilities_t[r][i].rof[w];
+            }
+            outStream << endl;
+        }
+    }
+
+    outStream.close();
+}
+
+void DataCollector::printPoliciesOutput(bool toFile, string fileName) {
+
+    std::ofstream outStream;
+    outStream.open(output_directory + fileName);
+
+    for (int r = 0; r < restriction_policy_t.size(); ++r) {
+
+        /// Print realization number.
+        outStream << "Realization " << r << endl;
+        for (int i = 0; i < restriction_policy_t[r].size(); ++i) {
+            outStream << restriction_policy_t[r][i].utility_id << " ";
+        }
+
+        /// Print realization header.
+        outStream << endl << setw(8) << "Week";
+        for (int i = 0; i < restriction_policy_t[r].size(); ++i) {
+            outStream << setw(8) << "Multip.";
+        }
+        outStream << endl;
+
+        /// Print numbers.
+        for (unsigned long w = 0; w < restriction_policy_t[0][0].restriction_multiplier.size(); ++w) {
+            outStream << setw(8) << w;
+            for (int i = 0; i < restriction_policy_t[r].size(); ++i) {
+                outStream << setw(8) << setprecision(4) << restriction_policy_t[r][i].restriction_multiplier.at(w);
             }
             outStream << endl;
         }

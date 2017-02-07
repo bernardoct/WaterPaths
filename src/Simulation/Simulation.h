@@ -11,6 +11,7 @@
 #include "../ContinuityModels/ContinuityModel.h"
 #include "../ContinuityModels/ContinuityModelRealization.h"
 #include "../Utils/DataCollector.h"
+#include "../DroughtMitigationInstruments/Restrictions.h"
 #include <vector>
 
 using namespace Constants;
@@ -21,7 +22,8 @@ public:
 
     Simulation(const vector<WaterSource *> &water_sources, const Graph &water_sources_graph,
                const vector<vector<int>> &water_sources_to_utilities, const vector<Utility *> &utilities,
-               const int total_simulation_time, const int number_of_realizations, DataCollector *data_collector);
+               vector<DroughtMitigationPolicy *> &drought_mitigation_policies, const int total_simulation_time,
+               const int number_of_realizations, DataCollector *data_collector);
 
     const int total_simulation_time;
     const int number_of_realizations;
@@ -29,6 +31,7 @@ public:
     void runFullSimulation();
 
 private:
+    vector<DroughtMitigationPolicy *> drought_mitigation_policies;
     vector<ContinuityModelRealization *> realization_models;
     vector<ContinuityModelROF *> rof_models;
     DataCollector * data_collector;

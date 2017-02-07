@@ -13,6 +13,7 @@
 class Utility {
 private:
     double *demand_series;
+    double risk_of_failure;
     double total_storage_capacity;
     double total_stored_volume;
     map<int, WaterSource *> water_sources;
@@ -20,6 +21,11 @@ private:
 
 public:
     const int id;
+
+    double getRisk_of_failure() const;
+
+    void setRisk_of_failure(double risk_of_failure);
+
     const int number_of_week_demands;
     const string name;
 
@@ -44,6 +50,10 @@ public:
     void splitDemands(int week);
 
     double getTotal_storage_capacity() const;
+
+    void setDemand(int week, double weekly_demand);
+
+    double getDemand(int week);
 };
 
 

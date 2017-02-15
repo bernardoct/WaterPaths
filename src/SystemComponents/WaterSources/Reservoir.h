@@ -26,8 +26,6 @@ public:
 
     virtual void updateAvailableVolume(int week, double upstream_source_inflow, double demand_outflow) override;
 
-    void setAvailableVolumeAndOutflowPreviousRelease(double available_volume, double outflow_previous_week);
-
 
 };
 

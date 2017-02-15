@@ -3,6 +3,7 @@
 #include "SystemComponents/Utility.h"
 #include "Utils/Aux.h"
 #include "Simulation/Simulation.h"
+#include "SystemComponents/WaterSources/Intake.h"
 
 
 int regionOneUtilitiesTwoReservoirsContinuityTest();
@@ -504,6 +505,9 @@ void simulation3U5RTest() {
 
 
     /*
+     * System connection diagram (water
+     * flows from top to bottom)
+     *
      *      0   1
      *       \ /
      *        2   4
@@ -544,6 +548,52 @@ void simulation3U5RTest() {
     cout << "Ending U3R5 simulation" << endl;
 }
 
+void simulation1U1R1ITest() {
+    cout << "BEGINNING INTAKE TEST" << endl << endl;
+
+    int streamflow_n_weeks = 52 * 70;
+    double **streamflows_test = Aux::parse2DCsvFile("../TestFiles/"
+                                                            "inflowsLong.csv", 2, streamflow_n_weeks);
+
+    Catchment c1(streamflows_test[0], streamflow_n_weeks);
+    Catchment c2(streamflows_test[1], streamflow_n_weeks);
+
+    vector<Catchment *> catchments1;
+    vector<Catchment *> catchments2;
+    catchments1.push_back(&c1);
+    catchments2.push_back(&c2);
+
+    Reservoir r1("R1", 0, 3.0, catchments1, ONLINE, 200.0);
+    Intake i1("I1", 1, 3.5, catchments2, ONLINE);
+
+    Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
+
+    vector<WaterSource *> water_sources;
+    water_sources.push_back(&r1);
+    water_sources.push_back(&i1);
+
+    vector<Utility *> utilities;
+    utilities.push_back(&u1);
+
+
+    Graph g((int) water_sources.size());
+    g.addEdge(0, 1);
+
+    vector<vector<int>> sources_to_utility_connectivity_matrix = {
+            {0, 1}
+    };
+
+    vector<DroughtMitigationPolicy *> restrictions;// = {&rp1, &rp2, &rp3};
+
+    DataCollector *data_collector = nullptr;
+
+    Simulation s(water_sources, g, sources_to_utility_connectivity_matrix, utilities, restrictions, 104, 2,
+                 data_collector);
+    cout << "Beginning U3R5 simulation" << endl;
+    s.runFullSimulation();
+    cout << "Ending U3R5 simulation" << endl;
+}
+
 int main() {
 //
 // Uncomment the lines below to run the tests.
@@ -558,7 +608,8 @@ int main() {
 //    ::rofCalculationsTest();
 //    ::simulationTest();
 //    ::graphTest();
-    ::simulation3U5RTest();
+//    ::simulation3U5RTest();
+    ::simulation1U1R1ITest();
 
     return 0;
 }

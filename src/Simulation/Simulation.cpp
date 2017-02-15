@@ -15,8 +15,8 @@ Simulation::Simulation(const vector<WaterSource *> &water_sources, const Graph &
         drought_mitigation_policies(drought_mitigation_policies) {
 
     // Creates the data collector for the simulation.
-    this->data_collector = new DataCollector(utilities, water_sources,
-                                             drought_mitigation_policies, number_of_realizations);
+    this->data_collector = new DataCollector(utilities, water_sources, drought_mitigation_policies,
+                                             number_of_realizations);
 
     // Creates the realization and ROF models.
     vector<WaterSource *> water_sources_realization;

@@ -32,7 +32,7 @@ Utility::Utility(Utility &utility) : id(utility.id), number_of_week_demands(util
 
     water_sources.clear();
     for (map<int, WaterSource *>::value_type &ws : utility.water_sources) {
-        if (ws.second->source_type.compare("Reservoir") == 0) {
+        if (ws.second->source_type == RESERVOIR) {
             water_sources.insert(pair<int, WaterSource *>
                                          (ws.first, new Reservoir(*dynamic_cast<Reservoir *>(ws.second))));
         }
@@ -58,7 +58,7 @@ Utility &Utility::operator=(const Utility &utility) {
 
     water_sources.clear();
     for (auto &ws : utility.water_sources) {
-        if (ws.second->source_type.compare("Reservoir")) {
+        if (ws.second->source_type == RESERVOIR) {
             water_sources.insert(pair<int, WaterSource *>
                                          (ws.first, new Reservoir(*dynamic_cast<Reservoir *>(ws.second))));
         }
@@ -89,7 +89,6 @@ void Utility::updateTotalStoredVolume() {
 void Utility::addWaterSource(WaterSource *water_source) {
     water_sources.insert(pair<int, WaterSource *>(water_source->id, water_source));
     split_demands_among_sources.insert(pair<int, double>(water_source->id, 0));
-
     if (water_source->isOnline()) total_storage_capacity += water_source->capacity;
 }
 
@@ -105,19 +104,35 @@ double Utility::getReservoirDraw(const int water_source_id) {
 }
 
 /**
- * Splits demands among sources. As different source types are added, this will need to be updated. Also,
- * whenever the on/offline status of sources starts being used, this will need to be updated.
+ * Splits demands among sources. Demand is allocated so that it used the river intakes to their capacity before
+ * allocating to reservoirs. Also, whenever the on/offline status of sources starts being used, this will need to be
+ * updated.
  * @param week
  */
 void Utility::splitDemands(int week) {
     int i;
+    double intake_demand;
+    double remaining_demand = demand_series[week];
+
+    /// Allocates demand to intakes.
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
-        i = ws.second->id;
-        split_demands_among_sources.at(i) = demand_series[week] *
-                                            max(1.0e-6, water_sources.at(i)->getAvailable_volume()) /
-                                            total_stored_volume;
+        if (ws.second->source_type == INTAKE) {
+            i = ws.second->id;
+            intake_demand = min(remaining_demand, ws.second->getAvailable_volume());
+            split_demands_among_sources.at(i) = intake_demand;
+            remaining_demand -= intake_demand;
+        }
     }
 
+    /// Allocates remaining demand to reservoirs.
+    for (map<int, WaterSource *>::value_type &ws : water_sources) {
+        if (ws.second->source_type == RESERVOIR) {
+            i = ws.second->id;
+            split_demands_among_sources.at(i) = remaining_demand *
+                                                max(1.0e-6, water_sources.at(i)->getAvailable_volume()) /
+                                                total_stored_volume;
+        }
+    }
 }
 
 const map<int, WaterSource *> &Utility::getWaterSource() const {
@@ -134,10 +149,6 @@ double Utility::getTotal_storage_capacity() const {
 
 void Utility::setDemand(int week, double demand_multiplier) {
     demand_series[week] *= demand_multiplier;
-}
-
-double Utility::getDemand(int week) {
-    return demand_series[week];
 }
 
 double Utility::getRisk_of_failure() const {

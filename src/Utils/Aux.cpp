@@ -3,6 +3,7 @@
 //
 
 #include "Aux.h"
+#include "../SystemComponents/WaterSources/Intake.h"
 #include <fstream>
 #include <sstream>
 
@@ -67,8 +68,10 @@ vector<WaterSource *> Aux::copyWaterSourceVector(vector<WaterSource *> water_sou
     vector<WaterSource *> water_sources_new;
 
     for (WaterSource *ws : water_sources_original) {
-        if (ws->source_type.compare("Reservoir") == 0) {
+        if (ws->source_type == RESERVOIR) {
             water_sources_new.push_back(new Reservoir(*dynamic_cast<Reservoir *>(ws)));
+        } else if (ws->source_type == INTAKE) {
+            water_sources_new.push_back(new Intake(*dynamic_cast<Intake *>(ws)));
         }
     }
 

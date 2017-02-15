@@ -12,14 +12,18 @@ DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<Wa
                              const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
                              int number_of_realizations) {
     for (int r = 0; r < number_of_realizations; ++r) {
+
+        /// Add vector of structs corresponding the realization r.
         utilities_t.push_back(vector<Utility_t>());
-        reservoir_t.push_back(vector<Reservoir_t>());
+        reservoir_t.push_back(vector<WaterSource_t>());
         restriction_policy_t.push_back(vector<RestrictionPolicy_t>());
+
+        /// Add structs to realization.
         for (Utility *u : utilities) {
             utilities_t[r].push_back(*new Utility_t(u->id, u->getTotal_storage_capacity(), u->name));
         }
         for (WaterSource *ws : water_sources) {
-            reservoir_t[r].push_back(*new Reservoir_t(ws->id, ws->getCapacity(), ws->name));
+            reservoir_t[r].push_back(*new WaterSource_t(ws->id, ws->getCapacity(), ws->name));
         }
         for (DroughtMitigationPolicy *dmp : drought_mitigation_policies) {
             restriction_policy_t[r].push_back(*new RestrictionPolicy_t(dmp->id));
@@ -153,26 +157,28 @@ void DataCollector::printPoliciesOutput(bool toFile, string fileName) {
 
     for (int r = 0; r < restriction_policy_t.size(); ++r) {
 
-        /// Print realization number.
-        outStream << "Realization " << r << endl;
-        for (int i = 0; i < restriction_policy_t[r].size(); ++i) {
-            outStream << restriction_policy_t[r][i].utility_id << " ";
-        }
-
-        /// Print realization header.
-        outStream << endl << setw(8) << "Week";
-        for (int i = 0; i < restriction_policy_t[r].size(); ++i) {
-            outStream << setw(8) << "Multip.";
-        }
-        outStream << endl;
-
-        /// Print numbers.
-        for (unsigned long w = 0; w < restriction_policy_t[0][0].restriction_multiplier.size(); ++w) {
-            outStream << setw(8) << w;
+        if (restriction_policy_t[r].size() > 0) {
+            /// Print realization number.
+            outStream << "Realization " << r << endl;
             for (int i = 0; i < restriction_policy_t[r].size(); ++i) {
-                outStream << setw(8) << setprecision(4) << restriction_policy_t[r][i].restriction_multiplier.at(w);
+                outStream << restriction_policy_t[r][i].utility_id << " ";
+            }
+
+            /// Print realization header.
+            outStream << endl << setw(8) << "Week";
+            for (int i = 0; i < restriction_policy_t[r].size(); ++i) {
+                outStream << setw(8) << "Multip.";
             }
             outStream << endl;
+
+            /// Print numbers.
+            for (unsigned long w = 0; w < restriction_policy_t[0][0].restriction_multiplier.size(); ++w) {
+                outStream << setw(8) << w;
+                for (int i = 0; i < restriction_policy_t[r].size(); ++i) {
+                    outStream << setw(8) << setprecision(4) << restriction_policy_t[r][i].restriction_multiplier.at(w);
+                }
+                outStream << endl;
+            }
         }
     }
 

@@ -16,6 +16,7 @@ private:
     double risk_of_failure;
     double total_storage_capacity;
     double total_stored_volume;
+    vector<int> source_types;
     map<int, WaterSource *> water_sources;
     map<int, double> split_demands_among_sources;
 
@@ -53,7 +54,6 @@ public:
 
     void setDemand(int week, double weekly_demand);
 
-    double getDemand(int week);
 };
 
 

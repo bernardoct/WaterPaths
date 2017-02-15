@@ -18,6 +18,9 @@ namespace Constants {
     const double STORAGE_CAPACITY_RATIO_FAIL = 0.2;
     const int FAILURE = 1;
     const int NON_FAILURE = 0;
+    const int NONE = 0;
+    const int INTAKE = 0;
+    const int RESERVOIR = 1;
 };
 
 

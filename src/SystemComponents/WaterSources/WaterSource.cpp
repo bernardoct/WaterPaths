@@ -9,7 +9,7 @@ using namespace std;
 
 WaterSource::WaterSource(const string &reservoir_name, const int id, const double min_environmental_outflow,
                          const vector<Catchment *> &catchments, bool online, const double capacity,
-                         const string source_type)
+                         const int source_type)
         : name(reservoir_name), capacity(capacity),
           min_environmental_outflow(min_environmental_outflow),
           catchments(catchments), online(online),
@@ -30,7 +30,7 @@ WaterSource::WaterSource(const WaterSource &water_source) : capacity(water_sourc
                                                             available_volume(water_source.available_volume),
                                                             total_outflow(water_source.total_outflow),
                                                             online(water_source.online),
-                                                            source_type("Reservoir") {
+                                                            source_type(water_source.source_type) {
     catchments.clear();
     for (Catchment *c : water_source.catchments) {
         catchments.push_back(new Catchment(*c));
@@ -108,4 +108,8 @@ double WaterSource::getUpstream_source_inflow() const {
 
 double WaterSource::getCatchment_upstream_catchment_inflow() const {
     return upstream_catchment_inflow;
+}
+
+bool WaterSource::isOfType(int type) const {
+    return type == source_type;
 }

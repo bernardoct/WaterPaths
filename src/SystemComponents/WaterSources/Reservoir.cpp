@@ -14,7 +14,7 @@ Reservoir::Reservoir(const string &source_name, const int id, const double min_e
         min_environmental_outflow,
         catchments, online,
         capacity,
-        "Reservoir") {
+        RESERVOIR) {
 }
 
 /**
@@ -49,12 +49,11 @@ Reservoir::~Reservoir() {
  */
 void Reservoir::updateAvailableVolume(int week, double upstream_source_inflow, double demand_outflow) {
 
-
     double catchment_inflow = 0;
     for (Catchment *c : catchments) {
         catchment_inflow += c->getStreamflow((week));
     }
-    demand_previous_week = demand_outflow;
+
     double stored_volume_new =
             available_volume + upstream_source_inflow + catchment_inflow - demand_outflow - min_environmental_outflow;
     double outflow_new = min_environmental_outflow;
@@ -71,14 +70,10 @@ void Reservoir::updateAvailableVolume(int week, double upstream_source_inflow, d
         outflow_new = upstream_source_inflow + catchment_inflow;
     }
 
+    demand_previous_week = demand_outflow;
     available_volume = stored_volume_new;
     total_outflow = outflow_new;
     this->upstream_source_inflow = upstream_source_inflow;
     upstream_catchment_inflow = catchment_inflow;
-}
-
-void Reservoir::setAvailableVolumeAndOutflowPreviousRelease(double available_volume, double outflow_previous_week) {
-    this->available_volume = available_volume;
-    this->total_outflow = outflow_previous_week;
 }
 

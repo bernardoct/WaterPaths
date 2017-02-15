@@ -17,8 +17,8 @@ ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, con
     /// Connect water sources to utilities.
     for (int i = 0; i < utilities.size(); ++i) {
         for (int j = 0; j < water_sources_to_utilities[i].size(); ++j) {
-            this->utilities.at((unsigned long) i)->addWaterSource(water_sources.at((unsigned long)
-                                                                                           water_sources_to_utilities[i][j]));
+            this->utilities.at((unsigned long) i)->addWaterSource(
+                    water_sources.at((unsigned long) water_sources_to_utilities[i][j]));
         }
     }
 

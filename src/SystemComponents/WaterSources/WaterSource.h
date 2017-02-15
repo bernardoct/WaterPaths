@@ -10,6 +10,7 @@
 #include "../../Utils/Constants.h"
 
 using namespace std;
+using namespace Constants;
 
 
 class WaterSource {
@@ -25,14 +26,14 @@ protected:
 
 public:
     const int id;
-    const string name;
-    const double capacity = -1;
+    const double capacity = NONE;
     const double min_environmental_outflow;
-    const string source_type;
+    const string name;
+    const int source_type;
 
     WaterSource(const string &source_name, const int id, const double min_environmental_outflow,
                 const vector<Catchment *> &catchments, bool online, const double capacity,
-                const string source_type);
+                const int source_type);
 
     WaterSource(const WaterSource &water_source);
 
@@ -50,8 +51,6 @@ public:
 
     bool isOnline() const;
 
-    void toString();
-
     void setAvailable_volume(double available_volume);
 
     void setOutflow_previous_week(double outflow_previous_week);
@@ -63,6 +62,8 @@ public:
     double getDemand() const;
 
     double getCatchment_upstream_catchment_inflow() const;
+
+    bool isOfType(int type) const;
 };
 
 

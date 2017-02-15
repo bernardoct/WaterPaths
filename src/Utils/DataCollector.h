@@ -19,8 +19,8 @@ struct Utility_t {
     string name;
 };
 
-struct Reservoir_t {
-    Reservoir_t(int id, double capacity, string name) : id(id), capacity(capacity) {};
+struct WaterSource_t {
+    WaterSource_t(int id, double capacity, string name) : id(id), capacity(capacity) {};
 
     vector<double> available_volume;
     vector<double> total_upstream_sources_inflows;
@@ -43,7 +43,7 @@ class DataCollector {
 
 private:
     vector<vector<Utility_t>> utilities_t;
-    vector<vector<Reservoir_t>> reservoir_t;
+    vector<vector<WaterSource_t>> reservoir_t;
     vector<vector<RestrictionPolicy_t>> restriction_policy_t;
     string output_directory = "/home/bernardo/ClionProjects/TriangleModel/TestFiles/";
 

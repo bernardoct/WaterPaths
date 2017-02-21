@@ -78,6 +78,15 @@ Utility &Utility::operator=(const Utility &utility) {
 }
 
 /**
+ * Sorting by id compare operator.
+ * @param other
+ * @return
+ */
+bool Utility::operator<(const Utility *other) {
+    return id < other->id;
+}
+
+/**
  * Updates the total current storage held by the utility and all its reservoirs.
  */
 void Utility::updateTotalStoredVolume() {

@@ -526,15 +526,15 @@ void simulation3U5RTest() {
             {3}
     };
 
-    vector<double> restriction_stage_multipliers1 = {0.7, 0.9};
+    vector<double> restriction_stage_multipliers1 = {0.9, 0.7};
     vector<double> restriction_stage_triggers1 = {0.02, 0.04};
 
-    vector<double> restriction_stage_multipliers2 = {0.6, 0.8};
+    vector<double> restriction_stage_multipliers2 = {0.8, 0.6};
     vector<double> restriction_stage_triggers2 = {0.03, 0.05};
 
-    Restrictions rp1(1, restriction_stage_multipliers1, restriction_stage_triggers1, vector<int>(1));
-    Restrictions rp2(2, restriction_stage_multipliers2, restriction_stage_triggers2, vector<int>(2));
-    Restrictions rp3(3, restriction_stage_multipliers1, restriction_stage_triggers1, vector<int>(3));
+    Restrictions rp1(0, restriction_stage_multipliers1, restriction_stage_triggers1, vector<int>(1, 0));
+    Restrictions rp2(1, restriction_stage_multipliers2, restriction_stage_triggers2, vector<int>(1, 1));
+    Restrictions rp3(2, restriction_stage_multipliers1, restriction_stage_triggers1, vector<int>(1, 2));
 
     vector<DroughtMitigationPolicy *> restrictions = {&rp1, &rp2, &rp3};
 

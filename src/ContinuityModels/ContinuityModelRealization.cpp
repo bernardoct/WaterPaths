@@ -9,20 +9,18 @@ ContinuityModelRealization::ContinuityModelRealization(const vector<WaterSource 
                                                        const Graph &water_sources_graph,
                                                        const vector<vector<int>> &water_sources_to_utilities,
                                                        const vector<Utility *> &utilities,
-                                                       vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
+                                                       const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
                                                        const int realization_index) :
         ContinuityModel(water_source, utilities, water_sources_graph,
                         water_sources_to_utilities),
         realization_id(realization_index), drought_mitigation_policies(drought_mitigation_policies) {
 
-    for (DroughtMitigationPolicy *dmp : drought_mitigation_policies) {
+    for (DroughtMitigationPolicy *dmp : this->drought_mitigation_policies) {
         for (int i : dmp->utilities_ids) {
-            dmp->addUtility(utilities.at((unsigned long) i));
+            dmp->addUtility(this->utilities.at((unsigned long) i));
         }
     }
-
 }
-
 
 vector<WaterSource *> ContinuityModelRealization::getWater_sources() {
     return water_sources;

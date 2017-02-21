@@ -38,6 +38,8 @@ public:
 
     Utility &operator=(const Utility &utility);
 
+    bool operator<(const Utility *utility);
+
     double getReservoirDraw(const int water_source_id);
 
     void updateTotalStoredVolume();

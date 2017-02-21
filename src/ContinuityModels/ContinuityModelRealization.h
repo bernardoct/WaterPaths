@@ -19,7 +19,7 @@ public:
                                const Graph &water_sources_graph,
                                const vector<vector<int>> &water_sources_to_utilities,
                                const vector<Utility *> &utilities,
-                               vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
+                               const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
                                const int realization_index);
 
     const int realization_id;

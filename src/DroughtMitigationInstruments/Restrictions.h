@@ -29,6 +29,8 @@ public:
     virtual void addUtility(Utility *utility) override;
 
     double getCurrent_multiplier() const;
+
+    virtual ~Restrictions();
 };
 
 

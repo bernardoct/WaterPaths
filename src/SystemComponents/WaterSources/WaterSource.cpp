@@ -64,6 +64,15 @@ WaterSource &WaterSource::operator=(const WaterSource &water_source) {
 }
 
 /**
+ * Sorting by id compare operator.
+ * @param other
+ * @return
+ */
+bool WaterSource::operator<(const WaterSource *other) {
+    return id < other->id;
+}
+
+/**
  * Applies continuity to the water source.
  * @param week
  * @param upstream_source_inflow Total inflow released from the upstream water source, excluding water for the

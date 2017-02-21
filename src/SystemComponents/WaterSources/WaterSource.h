@@ -42,6 +42,8 @@ public:
 
     WaterSource &operator=(const WaterSource &water_source);
 
+    bool operator<(const WaterSource *other);
+
     void continuityWaterSource(int week, double upstream_source_inflow, double demand_outflow);
 
     virtual void applyContinuity(int week, double upstream_source_inflow, double demand_outflow) = 0;

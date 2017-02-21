@@ -16,18 +16,18 @@ Restrictions::Restrictions(const Restrictions &restrictions) : DroughtMitigation
                                                                stage_triggers(restrictions.stage_triggers),
                                                                utility(restrictions.utility) {}
 
+Restrictions::~Restrictions() {}
+
 void Restrictions::applyPolicy(int week) {
 
-    current_multiplier = 0;
+    current_multiplier = 1.0;
     for (int i = 0; i < stage_triggers.size(); ++i) {
         if (utility->getRisk_of_failure() > stage_triggers[i]) {
-            utility->setDemand(week, stage_multipliers[i]);
             current_multiplier = stage_multipliers[i];
-            break;
-        }
+        } else break;
     }
 
-    return;
+    utility->setDemand(week, current_multiplier);
 }
 
 double Restrictions::getCurrent_multiplier() const {

@@ -14,6 +14,7 @@ struct Utility_t {
 
     vector<double> rof;
     vector<double> combined_storage;
+    vector<double> demand;
     double capacity;
     int id;
     string name;
@@ -51,7 +52,7 @@ public:
     DataCollector(const vector<Utility *> &utilities, const vector<WaterSource *> &water_sources,
                   const vector<DroughtMitigationPolicy *> &drought_mitigation_policies, int number_of_realizations);
 
-    void collectData(ContinuityModelRealization *continuity_model_realization);
+    void collectData(ContinuityModelRealization *continuity_model_realization, int week);
 
     void printUtilityOutput(bool toFile, string fileName = "Utilities.out");
 

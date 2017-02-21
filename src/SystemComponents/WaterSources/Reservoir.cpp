@@ -47,7 +47,7 @@ Reservoir::~Reservoir() {
  * @param upstream_source_inflow
  * @param demand_outflow
  */
-void Reservoir::updateAvailableVolume(int week, double upstream_source_inflow, double demand_outflow) {
+void Reservoir::applyContinuity(int week, double upstream_source_inflow, double demand_outflow) {
 
     double catchment_inflow = 0;
     for (Catchment *c : catchments) {
@@ -70,10 +70,16 @@ void Reservoir::updateAvailableVolume(int week, double upstream_source_inflow, d
         outflow_new = upstream_source_inflow + catchment_inflow;
     }
 
-    demand_previous_week = demand_outflow;
+    demand = demand_outflow;
     available_volume = stored_volume_new;
     total_outflow = outflow_new;
     this->upstream_source_inflow = upstream_source_inflow;
     upstream_catchment_inflow = catchment_inflow;
+}
+
+void Reservoir::setOnline() {
+    WaterSource::setOnline();
+
+    available_volume = NONE;
 }
 

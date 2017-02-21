@@ -20,7 +20,8 @@ protected:
     double total_outflow = -1;
     double upstream_source_inflow = -1;
     double upstream_catchment_inflow = -1;
-    double demand_previous_week = -1;
+    double demand = -1;
+    double upstream_min_env_inflow;
     bool online = Constants::ONLINE;
     int week;
 
@@ -41,13 +42,15 @@ public:
 
     WaterSource &operator=(const WaterSource &water_source);
 
-    virtual void updateAvailableVolume(int week, double upstream_source_inflow, double demand_outflow) = 0;
+    void continuityWaterSource(int week, double upstream_source_inflow, double demand_outflow);
 
-    void setOnline(bool online_status);
+    virtual void applyContinuity(int week, double upstream_source_inflow, double demand_outflow) = 0;
+
+    virtual void setOnline();
 
     double getAvailable_volume() const;
 
-    double getTotal_inflow() const;
+    double getTotal_outflow() const;
 
     bool isOnline() const;
 
@@ -63,7 +66,7 @@ public:
 
     double getCatchment_upstream_catchment_inflow() const;
 
-    bool isOfType(int type) const;
+    void bypass(int week, double upstream_source_inflow);
 };
 
 

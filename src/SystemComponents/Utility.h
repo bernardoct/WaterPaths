@@ -54,6 +54,7 @@ public:
 
     void setDemand(int week, double weekly_demand);
 
+    double getDemand(const int week);
 };
 
 

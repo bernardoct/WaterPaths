@@ -53,7 +53,7 @@ vector<int> Graph::getUpstreamSources(int id) {
 vector<int> Graph::topologicalSort() const {
     // Create a vector to store indegrees of all
     // vertices. Initialize all indegrees as 0.
-    vector<int> in_degree(V, 0);
+    vector<int> in_degree((unsigned long) V, 0);
 
     // Traverse adjacency lists to fill indegrees of
     // vertices.  This step takes O(V+E) time

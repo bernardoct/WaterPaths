@@ -3,7 +3,6 @@
 //
 
 #include "Aux.h"
-#include "../SystemComponents/WaterSources/Intake.h"
 #include <fstream>
 #include <sstream>
 
@@ -86,4 +85,15 @@ vector<Utility *> Aux::copyUtilityVector(vector<Utility *> utility_original) {
     }
 
     return utility_new;
+}
+
+vector<DroughtMitigationPolicy *>
+Aux::copyDroughtMitigationPolicyVector(vector<DroughtMitigationPolicy *> drought_mitigation_policy_original) {
+    vector<DroughtMitigationPolicy *> drought_mitigation_policy_new;
+
+    for (DroughtMitigationPolicy *dmp : drought_mitigation_policy_original) {
+        drought_mitigation_policy_new.push_back(new Restrictions(*dynamic_cast<Restrictions *>(dmp)));
+    }
+
+    return drought_mitigation_policy_new;
 }

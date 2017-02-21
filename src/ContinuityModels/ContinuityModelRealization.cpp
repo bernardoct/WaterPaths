@@ -13,7 +13,15 @@ ContinuityModelRealization::ContinuityModelRealization(const vector<WaterSource 
                                                        const int realization_index) :
         ContinuityModel(water_source, utilities, water_sources_graph,
                         water_sources_to_utilities),
-        realization_id(realization_index), drought_mitigation_policies(drought_mitigation_policies) {}
+        realization_id(realization_index), drought_mitigation_policies(drought_mitigation_policies) {
+
+    for (DroughtMitigationPolicy *dmp : drought_mitigation_policies) {
+        for (int i : dmp->utilities_ids) {
+            dmp->addUtility(utilities.at((unsigned long) i));
+        }
+    }
+
+}
 
 
 vector<WaterSource *> ContinuityModelRealization::getWater_sources() {
@@ -28,11 +36,10 @@ void ContinuityModelRealization::setRisks_of_failure(const vector<double> &risks
 
 void ContinuityModelRealization::applyRestrictionsAndTransfers(int week) {
     for (unsigned long i = 0; i < drought_mitigation_policies.size(); ++i) {
-        \
-            drought_mitigation_policies.at(i)->applyRestriction(week, utilities.at(i));
+        drought_mitigation_policies.at(i)->applyPolicy(week);
     }
 }
 
-const vector<DroughtMitigationPolicy *> &ContinuityModelRealization::getDrought_mitigation_policies() const {
+const vector<DroughtMitigationPolicy *> ContinuityModelRealization::getDrought_mitigation_policies() const {
     return drought_mitigation_policies;
 }

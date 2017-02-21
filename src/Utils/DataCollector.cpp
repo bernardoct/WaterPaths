@@ -36,7 +36,7 @@ DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<Wa
  * Collect data from realization step.
  * @param continuity_model_realization
  */
-void DataCollector::collectData(ContinuityModelRealization *continuity_model_realization) {
+void DataCollector::collectData(ContinuityModelRealization *continuity_model_realization, int week) {
 
     Utility *u;
     WaterSource *ws;
@@ -49,6 +49,7 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
         utilities_t[r][i].combined_storage.push_back(u->getStorageToCapacityRatio() *
                                                      u->getTotal_storage_capacity());
         utilities_t[r][i].rof.push_back(u->getRisk_of_failure());
+        utilities_t[r][i].demand.push_back(u->getDemand(week));
     }
 
     /// Get reservoirs data.
@@ -57,7 +58,7 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
         reservoir_t[r][i].available_volume.push_back(ws->getAvailable_volume());
         reservoir_t[r][i].demands.push_back(ws->getDemand());
         reservoir_t[r][i].total_upstream_sources_inflows.push_back(ws->getUpstream_source_inflow());
-        reservoir_t[r][i].outflows.push_back(ws->getTotal_inflow());
+        reservoir_t[r][i].outflows.push_back(ws->getTotal_outflow());
         reservoir_t[r][i].total_catchments_inflow.push_back(ws->getCatchment_upstream_catchment_inflow());
     }
 
@@ -67,7 +68,6 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
         restriction_policy_t[r][i].restriction_multiplier.push_back(rp->getCurrent_multiplier());
     }
 }
-
 
 void DataCollector::printReservoirOutput(bool toFile, string fileName) {
 
@@ -89,10 +89,10 @@ void DataCollector::printReservoirOutput(bool toFile, string fileName) {
         for (int i = 0; i < reservoir_t[r].size(); ++i) {
             outStream
                     << setw(16) << "Av_vol."
-                    << setw(8) << "Demands"
-                    << setw(8) << "Up_spil"
-                    << setw(8) << "Catc_Q"
-                    << setw(8) << "Out_Q";
+                    << setw(10) << "Demands"
+                    << setw(10) << "Up_spil"
+                    << setw(10) << "Catc_Q"
+                    << setw(10) << "Out_Q";
         }
         outStream << endl;
 
@@ -102,10 +102,10 @@ void DataCollector::printReservoirOutput(bool toFile, string fileName) {
             for (int i = 0; i < reservoir_t[r].size(); ++i) {
                 outStream
                         << setw(16) << setprecision(4) << reservoir_t[r][i].available_volume[w]
-                        << setw(8) << setprecision(4) << reservoir_t[r][i].demands[w]
-                        << setw(8) << setprecision(4) << reservoir_t[r][i].total_upstream_sources_inflows[w]
-                        << setw(8) << setprecision(4) << reservoir_t[r][i].total_catchments_inflow[w]
-                        << setw(8) << setprecision(4) << reservoir_t[r][i].outflows[w];
+                        << setw(10) << setprecision(4) << reservoir_t[r][i].demands[w]
+                        << setw(10) << setprecision(4) << reservoir_t[r][i].total_upstream_sources_inflows[w]
+                        << setw(10) << setprecision(4) << reservoir_t[r][i].total_catchments_inflow[w]
+                        << setw(10) << setprecision(4) << reservoir_t[r][i].outflows[w];
             }
             outStream << endl;
         }
@@ -132,7 +132,8 @@ void DataCollector::printUtilityOutput(bool toFile, string fileName) {
         outStream << endl << setw(8) << "Week";
         for (int i = 0; i < utilities_t[r].size(); ++i) {
             outStream << setw(16) << "Sto_vol"
-                      << setw(8) << "ROF";
+                      << setw(8) << "ROF"
+                      << setw(8) << "Demand";
         }
         outStream << endl;
 
@@ -141,7 +142,8 @@ void DataCollector::printUtilityOutput(bool toFile, string fileName) {
             outStream << setw(8) << w;
             for (int i = 0; i < utilities_t[r].size(); ++i) {
                 outStream << setw(16) << setprecision(4) << utilities_t[r][i].combined_storage[w]
-                          << setw(8) << setprecision(4) << utilities_t[r][i].rof[w];
+                          << setw(8) << setprecision(4) << utilities_t[r][i].rof[w]
+                          << setw(8) << setprecision(4) << utilities_t[r][i].demand[w];
             }
             outStream << endl;
         }

@@ -35,6 +35,9 @@ Utility::Utility(Utility &utility) : id(utility.id), number_of_week_demands(util
         if (ws.second->source_type == RESERVOIR) {
             water_sources.insert(pair<int, WaterSource *>
                                          (ws.first, new Reservoir(*dynamic_cast<Reservoir *>(ws.second))));
+        } else {
+            water_sources.insert(pair<int, WaterSource *>
+                                         (ws.first, new Intake(*dynamic_cast<Intake *>(ws.second))));
         }
     }
 
@@ -61,6 +64,9 @@ Utility &Utility::operator=(const Utility &utility) {
         if (ws.second->source_type == RESERVOIR) {
             water_sources.insert(pair<int, WaterSource *>
                                          (ws.first, new Reservoir(*dynamic_cast<Reservoir *>(ws.second))));
+        } else {
+            water_sources.insert(pair<int, WaterSource *>
+                                         (ws.first, new Intake(*dynamic_cast<Intake *>(ws.second))));
         }
     }
 
@@ -89,7 +95,8 @@ void Utility::updateTotalStoredVolume() {
 void Utility::addWaterSource(WaterSource *water_source) {
     water_sources.insert(pair<int, WaterSource *>(water_source->id, water_source));
     split_demands_among_sources.insert(pair<int, double>(water_source->id, 0));
-    if (water_source->isOnline()) total_storage_capacity += water_source->capacity;
+    if (water_source->isOnline())
+        total_storage_capacity += water_source->capacity;
 }
 
 /**
@@ -137,6 +144,10 @@ void Utility::splitDemands(int week) {
 
 const map<int, WaterSource *> &Utility::getWaterSource() const {
     return water_sources;
+}
+
+double Utility::getDemand(const int week) {
+    return demand_series[week];
 }
 
 double Utility::getStorageToCapacityRatio() const {

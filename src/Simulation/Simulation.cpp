@@ -6,7 +6,7 @@
 #include "../Utils/Aux.h"
 #include <iostream>
 
-Simulation::Simulation(const vector<WaterSource *> &water_sources, const Graph &water_sources_graph,
+Simulation::Simulation(const vector<WaterSource *> &water_sources, Graph &water_sources_graph,
                        const vector<vector<int>> &water_sources_to_utilities, const vector<Utility *> &utilities,
                        vector<DroughtMitigationPolicy *> &drought_mitigation_policies, const int total_simulation_time,
                        const int number_of_realizations, DataCollector *data_collector) :
@@ -14,20 +14,34 @@ Simulation::Simulation(const vector<WaterSource *> &water_sources, const Graph &
         number_of_realizations(number_of_realizations), data_collector(data_collector),
         drought_mitigation_policies(drought_mitigation_policies) {
 
+    // Pass sum of minimum environmental inflows of upstream sources to intakes.
+    double upstream_min_env_flow;
+    for (WaterSource *ws : water_sources) {
+        upstream_min_env_flow = 0;
+        if (ws->source_type == INTAKE) {
+            for (int &i : water_sources_graph.getUpstreamSources(ws->id))
+                upstream_min_env_flow += water_sources[i]->min_environmental_outflow;
+            dynamic_cast<Intake *>(ws)->setUpstream_min_env_flow(upstream_min_env_flow);
+        }
+    }
+
     // Creates the data collector for the simulation.
     this->data_collector = new DataCollector(utilities, water_sources, drought_mitigation_policies,
                                              number_of_realizations);
 
     // Creates the realization and ROF models.
     vector<WaterSource *> water_sources_realization;
+    vector<DroughtMitigationPolicy *> drought_mitigation_policies_realization;
     for (int r = 0; r < number_of_realizations; ++r) {
         // Creates realization models by copying the water sources and utilities.
         water_sources_realization = Aux::copyWaterSourceVector(water_sources);
+        drought_mitigation_policies_realization = Aux::copyDroughtMitigationPolicyVector(drought_mitigation_policies);
         realization_models.push_back(new ContinuityModelRealization(water_sources_realization,
                                                                     water_sources_graph,
                                                                     water_sources_to_utilities,
                                                                     Aux::copyUtilityVector(utilities),
-                                                                    drought_mitigation_policies, r));
+                                                                    drought_mitigation_policies_realization,
+                                                                    r));
 
         // Creates rof models by copying the water utilities and sources.
         rof_models.push_back(new ContinuityModelROF(Aux::copyWaterSourceVector(water_sources),
@@ -52,7 +66,7 @@ void Simulation::runFullSimulation() {
             realization_models[r]->continuityStep(w);
             risks_of_failure_week = rof_models[r]->calculateROF(w);
             realization_models[r]->setRisks_of_failure(risks_of_failure_week);
-            data_collector->collectData(realization_models[r]);
+            data_collector->collectData(realization_models[r], w);
         }
     }
 

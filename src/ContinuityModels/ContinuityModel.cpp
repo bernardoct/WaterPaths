@@ -50,7 +50,7 @@ void ContinuityModel::continuityStep(int week, int id_rof) {
 
     /*
      * Split weekly demands among each reservoir for each utility. For each water source:
-     * (1) sums the demands of each drawing utility to come up with the total demand_previous_week for
+     * (1) sums the demands of each drawing utility to come up with the total demand for
      * that week for that water source, and (2) sums the flow contributions of upstream
      * reservoirs.
      */
@@ -73,9 +73,10 @@ void ContinuityModel::continuityStep(int week, int id_rof) {
      */
     for (int &i : reservoir_continuity_order) {
         for (int &ws : water_sources_graph.getUpstreamSources(i))
-            upstream_spillage[i] += water_sources[ws]->getTotal_inflow();
+            upstream_spillage[i] += water_sources[ws]->getTotal_outflow();
 
-        water_sources[i]->updateAvailableVolume(week - (id_rof + 1) * WEEKS_IN_YEAR,
+
+        water_sources[i]->continuityWaterSource(week - (id_rof + 1) * WEEKS_IN_YEAR,
                                                 upstream_spillage[i], demands[i]);
     }
 

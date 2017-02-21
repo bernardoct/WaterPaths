@@ -12,6 +12,7 @@ using namespace Constants;
 
 class Intake : public WaterSource {
 public:
+
     Intake(const string &source_name, const int id, const double min_environmental_outflow,
            const vector<Catchment *> &catchments, bool online);
 
@@ -21,7 +22,9 @@ public:
 
     ~Intake();
 
-    virtual void updateAvailableVolume(int week, double upstream_source_inflow, double demand_outflow) override;
+    virtual void applyContinuity(int week, double upstream_source_min_env_flow, double demand) override;
+
+    void setUpstream_min_env_flow(double upstream_min_env_flow);
 
 };
 

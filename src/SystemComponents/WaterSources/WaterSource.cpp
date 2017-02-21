@@ -30,7 +30,11 @@ WaterSource::WaterSource(const WaterSource &water_source) : capacity(water_sourc
                                                             available_volume(water_source.available_volume),
                                                             total_outflow(water_source.total_outflow),
                                                             online(water_source.online),
-                                                            source_type(water_source.source_type) {
+                                                            source_type(water_source.source_type),
+                                                            upstream_min_env_inflow(
+                                                                    water_source.upstream_min_env_inflow),
+                                                            upstream_catchment_inflow(
+                                                                    water_source.upstream_catchment_inflow) {
     catchments.clear();
     for (Catchment *c : water_source.catchments) {
         catchments.push_back(new Catchment(*c));
@@ -60,15 +64,38 @@ WaterSource &WaterSource::operator=(const WaterSource &water_source) {
 }
 
 /**
- * Water source mass balance. Gets releases from upstream water sources, demands from connected utilities, and
- * combines them with its catchments inflows.
+ * Applies continuity to the water source.
  * @param week
- * @param upstream_reservoir_inflow
- * @param demand_outflow
+ * @param upstream_source_inflow Total inflow released from the upstream water source, excluding water for the
+ * catchment between both water sources.
+ * @param demand_outflow demand from utility.
  */
-//void WaterSource::updateAvailableVolume(int week, double upstream_reservoir_inflow, double demand_outflow) {
-//    cout << "Available volume update must be called from a WaterSource child class" << endl;
-//}
+void WaterSource::continuityWaterSource(int week, double upstream_source_inflow, double demand_outflow) {
+    if (online)
+        applyContinuity(week, upstream_source_inflow, demand_outflow);
+    else
+        bypass(week, upstream_source_inflow);
+}
+
+/**
+ * Does not apply continuity to the water source, by instead just treats it as non existing,
+ * i.e. outflow = inflow + catchment_flow
+ * @param week
+ * @param upstream_source_inflow Total inflow released from the upstream water source, excluding water for the
+ * catchment between both water sources.
+ */
+void WaterSource::bypass(int week, double upstream_source_inflow) {
+
+    upstream_catchment_inflow = 0;
+    for (Catchment *c : catchments) {
+        upstream_catchment_inflow += c->getStreamflow((week));
+    }
+
+    demand = NONE;
+    available_volume = NONE;
+    total_outflow = upstream_catchment_inflow + upstream_source_inflow;
+    this->upstream_source_inflow = upstream_source_inflow;
+}
 
 double WaterSource::getAvailable_volume() const {
     return available_volume;
@@ -86,11 +113,11 @@ void WaterSource::setOutflow_previous_week(double outflow_previous_week) {
     WaterSource::total_outflow = outflow_previous_week;
 }
 
-void WaterSource::setOnline(bool online_status) {
-    online = online_status;
+void WaterSource::setOnline() {
+    online = ONLINE;
 }
 
-double WaterSource::getTotal_inflow() const {
+double WaterSource::getTotal_outflow() const {
     return total_outflow;
 }
 
@@ -99,7 +126,7 @@ double WaterSource::getCapacity() {
 }
 
 double WaterSource::getDemand() const {
-    return demand_previous_week;
+    return demand;
 }
 
 double WaterSource::getUpstream_source_inflow() const {
@@ -108,8 +135,4 @@ double WaterSource::getUpstream_source_inflow() const {
 
 double WaterSource::getCatchment_upstream_catchment_inflow() const {
     return upstream_catchment_inflow;
-}
-
-bool WaterSource::isOfType(int type) const {
-    return type == source_type;
 }

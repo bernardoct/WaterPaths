@@ -3,7 +3,6 @@
 #include "SystemComponents/Utility.h"
 #include "Utils/Aux.h"
 #include "Simulation/Simulation.h"
-#include "SystemComponents/WaterSources/Intake.h"
 
 
 int regionOneUtilitiesTwoReservoirsContinuityTest();
@@ -22,8 +21,8 @@ using namespace Constants;
 //
 //    Reservoir r(string("Lake Michie"), 0, 0.5, catchment_test, ONLINE, 10.0);
 //
-//    r.updateAvailableVolume(0, 2.5, 2.0);
-//    cout << r.getTotal_inflow() << " expected: " << 1.0 << endl;
+//    r.continuityWaterSource(0, 2.5, 2.0);
+//    cout << r.getTotal_outflow() << " expected: " << 1.0 << endl;
 //    cout << r.getAvailable_volume() << " expected: " << 10 << endl;
 //
 //    cout << endl << "END OF RESERVOIR TEST" << endl << "------------------------------------" << endl << endl;
@@ -110,8 +109,8 @@ int regionTwoUtilitiesTwoReservoirsContinuityTest() {
     vector<double> restriction_stage_multipliers = {0.7, 0.9};
     vector<double> restriction_stage_triggers = {1.1, 1.1};
 
-    Restrictions rp1(0, restriction_stage_triggers, restriction_stage_multipliers, 1);
-    Restrictions rp2(0, restriction_stage_triggers, restriction_stage_multipliers, 2);
+    Restrictions rp1(0, restriction_stage_triggers, restriction_stage_multipliers, vector<int>(1));
+    Restrictions rp2(0, restriction_stage_triggers, restriction_stage_multipliers, vector<int>(2));
 
     vector<DroughtMitigationPolicy *> restrictions = {&rp1, &rp2};
 
@@ -170,7 +169,7 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
     vector<double> restriction_stage_multipliers = {0.7, 0.9};
     vector<double> restriction_stage_triggers = {1.1, 1.1};
 
-    Restrictions rp1(0, restriction_stage_triggers, restriction_stage_multipliers, 1);
+    Restrictions rp1(0, restriction_stage_triggers, restriction_stage_multipliers, vector<int>(1));
 
     vector<DroughtMitigationPolicy *> restrictions = {&rp1};
 
@@ -247,7 +246,7 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
 //    cout << r1.catchments[0]->getStreamflow(0) << endl; // should be 0.5
 //    cout << r2.catchments[0]->getStreamflow(0) << endl; // should be 50
 //
-//    r1.updateAvailableVolume(1, 2.0, 3.0);
+//    r1.continuityWaterSource(1, 2.0, 3.0);
 //
 //    r1.toString(); // Should show stored volume of 14.5.
 //    r2.toString(); // Should show stored volume of 15.0.
@@ -414,8 +413,8 @@ void simulationTest() {
     vector<double> restriction_stage_multipliers = {0.7, 0.9};
     vector<double> restriction_stage_triggers = {1.1, 1.1};
 
-    Restrictions rp1(0, restriction_stage_triggers, restriction_stage_multipliers, 1);
-    Restrictions rp2(0, restriction_stage_triggers, restriction_stage_multipliers, 2);
+    Restrictions rp1(0, restriction_stage_triggers, restriction_stage_multipliers, vector<int>(1));
+    Restrictions rp2(0, restriction_stage_triggers, restriction_stage_multipliers, vector<int>(2));
 
     vector<DroughtMitigationPolicy *> restrictions = {&rp1, &rp2};
 
@@ -533,9 +532,9 @@ void simulation3U5RTest() {
     vector<double> restriction_stage_multipliers2 = {0.6, 0.8};
     vector<double> restriction_stage_triggers2 = {0.03, 0.05};
 
-    Restrictions rp1(1, restriction_stage_multipliers1, restriction_stage_triggers1, 1);
-    Restrictions rp2(2, restriction_stage_multipliers2, restriction_stage_triggers2, 2);
-    Restrictions rp3(3, restriction_stage_multipliers1, restriction_stage_triggers1, 3);
+    Restrictions rp1(1, restriction_stage_multipliers1, restriction_stage_triggers1, vector<int>(1));
+    Restrictions rp2(2, restriction_stage_multipliers2, restriction_stage_triggers2, vector<int>(2));
+    Restrictions rp3(3, restriction_stage_multipliers1, restriction_stage_triggers1, vector<int>(3));
 
     vector<DroughtMitigationPolicy *> restrictions = {&rp1, &rp2, &rp3};
 
@@ -560,17 +559,21 @@ void simulation1U1R1ITest() {
 
     vector<Catchment *> catchments1;
     vector<Catchment *> catchments2;
+    vector<Catchment *> catchments3;
     catchments1.push_back(&c1);
     catchments2.push_back(&c2);
+    catchments3.push_back(&c2);
 
     Reservoir r1("R1", 0, 3.0, catchments1, ONLINE, 200.0);
-    Intake i1("I1", 1, 3.5, catchments2, ONLINE);
+    Intake i1("I1", 1, 1.0, catchments2, OFFLINE);
+    Reservoir r2("R1", 2, 1.0, catchments1, ONLINE, 200.0);
 
     Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
 
     vector<WaterSource *> water_sources;
     water_sources.push_back(&r1);
     water_sources.push_back(&i1);
+    water_sources.push_back(&r2);
 
     vector<Utility *> utilities;
     utilities.push_back(&u1);
@@ -578,9 +581,10 @@ void simulation1U1R1ITest() {
 
     Graph g((int) water_sources.size());
     g.addEdge(0, 1);
+    g.addEdge(1, 2);
 
     vector<vector<int>> sources_to_utility_connectivity_matrix = {
-            {0, 1}
+            {0, 1, 2}
     };
 
     vector<DroughtMitigationPolicy *> restrictions;// = {&rp1, &rp2, &rp3};
@@ -589,9 +593,9 @@ void simulation1U1R1ITest() {
 
     Simulation s(water_sources, g, sources_to_utility_connectivity_matrix, utilities, restrictions, 104, 2,
                  data_collector);
-    cout << "Beginning U3R5 simulation" << endl;
+    cout << "Beginning 1U1R1I simulation" << endl;
     s.runFullSimulation();
-    cout << "Ending U3R5 simulation" << endl;
+    cout << "Ending 1U1R1I simulation" << endl;
 }
 
 int main() {
@@ -608,8 +612,8 @@ int main() {
 //    ::rofCalculationsTest();
 //    ::simulationTest();
 //    ::graphTest();
-//    ::simulation3U5RTest();
-    ::simulation1U1R1ITest();
+    ::simulation3U5RTest();
+//    ::simulation1U1R1ITest();
 
     return 0;
 }

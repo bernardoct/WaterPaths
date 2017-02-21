@@ -24,9 +24,9 @@ public:
 
     ~Reservoir();
 
-    virtual void updateAvailableVolume(int week, double upstream_source_inflow, double demand_outflow) override;
+    virtual void applyContinuity(int week, double upstream_source_inflow, double demand_outflow) override;
 
-
+    void setOnline();
 };
 
 

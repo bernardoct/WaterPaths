@@ -30,7 +30,7 @@ public:
 
     void applyRestrictionsAndTransfers(int week);
 
-    const vector<DroughtMitigationPolicy *> &getDrought_mitigation_policies() const;
+    const vector<DroughtMitigationPolicy *> getDrought_mitigation_policies() const;
 };
 
 

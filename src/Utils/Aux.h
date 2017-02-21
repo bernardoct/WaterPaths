@@ -7,7 +7,10 @@
 
 
 #include "../SystemComponents/WaterSources/WaterSource.h"
+#include "../SystemComponents/WaterSources/Intake.h"
 #include "../SystemComponents/Utility.h"
+#include "../DroughtMitigationInstruments/DroughtMitigationPolicy.h"
+#include "../DroughtMitigationInstruments/Restrictions.h"
 
 class Aux {
 public:
@@ -19,6 +22,9 @@ public:
     static vector<WaterSource *> copyWaterSourceVector(vector<WaterSource *> water_sources_original);
 
     static vector<Utility *> copyUtilityVector(vector<Utility *> utility_original);
+
+    static vector<DroughtMitigationPolicy *> copyDroughtMitigationPolicyVector(
+            vector<DroughtMitigationPolicy *> drought_mitigation_policy_original);
 };
 
 

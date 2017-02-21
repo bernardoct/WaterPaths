@@ -11,11 +11,14 @@
 class DroughtMitigationPolicy {
 
 public:
+    const vector<int> utilities_ids;
     const int id;
 
-    DroughtMitigationPolicy(const int id);
+    DroughtMitigationPolicy(const int id, vector<int> utilities_id);
 
-    virtual void applyRestriction(int week, Utility *utility)= 0;
+    virtual void applyPolicy(int week)= 0;
+
+    virtual void addUtility(Utility *utility) = 0;
 
 };
 

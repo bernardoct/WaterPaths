@@ -11,17 +11,22 @@
 
 class Restrictions : public DroughtMitigationPolicy {
 
+private:
+
     const vector<double> stage_multipliers;
     const vector<double> stage_triggers;
     double current_multiplier = 0;
-
+    Utility *utility;
 public:
-    const int utility_id;
 
     Restrictions(const int id, const vector<double> &stage_multipliers,
-                 const vector<double> &stage_triggers, const int utility_id);
+                 const vector<double> &stage_triggers, const vector<int> utilities_id);
 
-    virtual void applyRestriction(int week, Utility *utility) override;
+    Restrictions(const Restrictions &reservoir);
+
+    virtual void applyPolicy(int week) override;
+
+    virtual void addUtility(Utility *utility) override;
 
     double getCurrent_multiplier() const;
 };

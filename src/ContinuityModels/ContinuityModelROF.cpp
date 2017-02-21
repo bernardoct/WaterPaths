@@ -75,7 +75,7 @@ void ContinuityModelROF::resetUtilitiesAndReservoirs() {
     // update water sources info.
     for (int i = 0; i < water_sources.size(); ++i) {
         water_sources[i]->setAvailable_volume(water_sources_realization[i]->getAvailable_volume());
-        water_sources[i]->setOutflow_previous_week(water_sources_realization[i]->getTotal_inflow());
+        water_sources[i]->setOutflow_previous_week(water_sources_realization[i]->getTotal_outflow());
     }
 
     // update utilities combined storage.

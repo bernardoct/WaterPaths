@@ -16,9 +16,11 @@ private:
     double risk_of_failure;
     double total_storage_capacity;
     double total_stored_volume;
-    double max_treatment_capacity;
+    double total_treatment_capacity;
     map<int, WaterSource *> water_sources;
     map<int, double> split_demands_among_sources;
+
+    void setWaterSourceOnline(int source_id);
 
 public:
     const int id;
@@ -57,6 +59,10 @@ public:
     void setDemand(int week, double weekly_demand);
 
     double getDemand(const int week);
+
+    double getTotal_treatment_capacity() const;
+
+    double Utility::getTotal_available_volume() const;
 };
 
 

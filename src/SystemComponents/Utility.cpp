@@ -104,19 +104,10 @@ void Utility::updateTotalStoredVolume() {
 void Utility::addWaterSource(WaterSource *water_source) {
     water_sources.insert(pair<int, WaterSource *>(water_source->id, water_source));
     split_demands_among_sources.insert(pair<int, double>(water_source->id, 0));
-    if (water_source->isOnline())
+    if (water_source->isOnline()) {
         total_storage_capacity += water_source->capacity;
-}
-
-/**
- * Assigns a fraction of the total weekly demand to a reservoir according to its current storage in relation
- * to the combined current stored of all reservoirs where the utility has .
- * @param week
- * @param water_source_id
- * @return proportional demand.
- */
-double Utility::getReservoirDraw(const int water_source_id) {
-    return split_demands_among_sources.at(water_source_id);
+        total_treatment_capacity += water_source->max_treatment_capacity;
+    }
 }
 
 /**
@@ -151,6 +142,23 @@ void Utility::splitDemands(int week) {
     }
 }
 
+void Utility::setWaterSourceOnline(int source_id) {
+    water_sources.at(source_id)->setOnline();
+    total_storage_capacity += water_sources.at(source_id)->capacity;
+    total_treatment_capacity += water_sources.at(source_id)->max_treatment_capacity;
+}
+
+/**
+ * Assigns a fraction of the total weekly demand to a reservoir according to its current storage in relation
+ * to the combined current stored of all reservoirs where the utility has .
+ * @param week
+ * @param water_source_id
+ * @return proportional demand.
+ */
+double Utility::getReservoirDraw(const int water_source_id) {
+    return split_demands_among_sources.at(water_source_id);
+}
+
 const map<int, WaterSource *> &Utility::getWaterSource() const {
     return water_sources;
 }
@@ -177,4 +185,17 @@ double Utility::getRisk_of_failure() const {
 
 void Utility::setRisk_of_failure(double risk_of_failure) {
     this->risk_of_failure = risk_of_failure;
+}
+
+double Utility::getTotal_treatment_capacity() const {
+    return total_treatment_capacity;
+}
+
+double Utility::getTotal_available_volume() const {
+    double total_available_volume = 0;
+    for (auto & ws : water_sources) {
+        total_available_volume += ws.second->getAvailable_volume();
+    }
+
+    return total_available_volume;
 }

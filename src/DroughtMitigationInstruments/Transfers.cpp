@@ -17,7 +17,25 @@ void Transfers::addSourceUtility(Utility *source_utility) {
     this->source_utility = source_utility;
 }
 
+/**
+ * Adds buying utility.
+ * @param utility
+ */
+void Transfers::addUtility(Utility *utility) {
+    buying_utilities.push_back(utility);
+}
+
 void Transfers::applyPolicy(int week) {
-    double available_volume;
+    /// Calculate total volume available for transfers in source utility.
+    double available_transfer_volume = (source_utility->getTotal_treatment_capacity() - source_treatment_buffer) *
+                              PEAKING_FACTOR - source_utility->getDemand(week);
+
+    /// Check which utilities need transfers.
+    vector<Utility *> utilities_requesting_transfers;
+    for (unsigned int i = 0; i < utilities_ids.size(); ++i) {
+        if (buying_utilities.at(i)->getRisk_of_failure() > buyers_transfer_triggers.at(i))
+            utilities_requesting_transfers.push_back(buying_utilities[i]);
+    }
+
 
 }

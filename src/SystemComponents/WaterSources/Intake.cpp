@@ -49,9 +49,13 @@ Intake::~Intake() {
  * balance: outflow equals the sum of the inflows. The water volume that will be for sure available for the next time
  * step is the catchment inflows of next week plus the upstream sources' minimum environmental inflow minus the intake's
  * own environmental inflow. The actually available volume may be greater is the reservoirs above are overflowing, but
- * since the spilover for the next time step hasn't been calculated yet, this value cannot be used. This doesn't matter
+ * since the spillover for the next time step hasn't been calculated yet, this value cannot be used. This doesn't matter
  * anyways because if the reservoir is overflowing -- there is no need to say that intake will have a greater water
  * availability to save water from the upstream reservoirs if they themselves are overflowing.
+ *
+ * It may also look that the code assumes the intake operators know what the inflow will be in the following week. This
+ * is not a problem because this information is actually used in the following week, when they are measuring the inflow
+ * of the stream where the intake is located.
  *
  * @param week
  * @param upstream_source_inflow upstream sources current outflow.

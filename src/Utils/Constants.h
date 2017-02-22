@@ -11,7 +11,7 @@
 namespace Constants {
     const int WEEKS_IN_YEAR = 52;
     const int WEEKS_ROF_SHORT_TERM = 52;
-//    const int WEEKS_ROF_LONG_TERM = 78;
+    const int WEEKS_ROF_LONG_TERM = 78;
     const int SHORT_TERM_ROF = 0;
     const int NUMBER_REALIZATIONS_ROF = 50;
     const bool ONLINE = true;
@@ -22,6 +22,7 @@ namespace Constants {
     const int NONE = 0;
     const int INTAKE = 0;
     const int RESERVOIR = 1;
+    const double PEAKING_FACTOR = 0.85;
 };
 
 

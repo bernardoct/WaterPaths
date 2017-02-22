@@ -9,11 +9,11 @@ using namespace std;
 
 WaterSource::WaterSource(const string &reservoir_name, const int id, const double min_environmental_outflow,
                          const vector<Catchment *> &catchments, bool online, const double capacity,
-                         const int source_type)
+                         const double max_treatment_capacity, const int source_type)
         : name(reservoir_name), capacity(capacity),
           min_environmental_outflow(min_environmental_outflow),
           catchments(catchments), online(online),
-          available_volume(capacity), id(id), source_type(source_type) {
+          available_volume(capacity), id(id), source_type(source_type), max_treatment_capacity(max_treatment_capacity) {
     cout << "Reservoir " << reservoir_name << " created" << endl;
     total_outflow = min_environmental_outflow;
 }
@@ -34,7 +34,9 @@ WaterSource::WaterSource(const WaterSource &water_source) : capacity(water_sourc
                                                             upstream_min_env_inflow(
                                                                     water_source.upstream_min_env_inflow),
                                                             upstream_catchment_inflow(
-                                                                    water_source.upstream_catchment_inflow) {
+                                                                    water_source.upstream_catchment_inflow),
+                                                            max_treatment_capacity(
+                                                                    water_source.max_treatment_capacity) {
     catchments.clear();
     for (Catchment *c : water_source.catchments) {
         catchments.push_back(new Catchment(*c));

@@ -14,7 +14,8 @@ ContinuityModelROF::ContinuityModelROF(const vector<WaterSource *> &water_source
                                                                                                        water_sources_graph,
                                                                                                        water_sources_to_utilities),
                                                              rof_type(rof_type), realization_id(realization_id) {
-    // calculate total combined storage volumes (here, it equals sum of reservoirs capacities.
+
+    /// update utilities' total stored volume
     for (Utility *u : this->utilities) {
         u->updateTotalStoredVolume();
     }
@@ -30,18 +31,18 @@ vector<double> ContinuityModelROF::calculateROF(int week) {
     vector<double> risk_of_failure(utilities.size(), 0.0);
     vector<double> year_failure(utilities.size(), 0.0);
 
-    // short-term rof calculations.
+    /// short-term rof calculations.
     if (rof_type == SHORT_TERM_ROF) {
 
-        // perform a continuity simulation for 50 yearly realization.
+        /// perform a continuity simulation for NUMBER_REALIZATIONS_ROF (50) yearly realization.
         for (int r = 0; r < NUMBER_REALIZATIONS_ROF; ++r) {
             for (int w = week; w < week + WEEKS_ROF_SHORT_TERM; ++w) {
 
-                // one week continuity time-step.
+                /// one week continuity time-step.
                 this->continuityStep(w, r);
 
-                // check total available storage for each utility and, if smaller than the fail ration,
-                // increase the rof of that utility to 1 / (50 [yearly realizations] * 52 [short-term rof])
+                /// check total available storage for each utility and, if smaller than the fail ration,
+                /// increase the number of failed years of that utility by 1 (FAILURE).
                 for (int i = 0; i < utilities.size(); ++i) {
                     if (utilities[i]->getStorageToCapacityRatio() <= STORAGE_CAPACITY_RATIO_FAIL)
                         year_failure[i] = FAILURE;
@@ -53,8 +54,8 @@ vector<double> ContinuityModelROF::calculateROF(int week) {
                 year_failure[j] = NON_FAILURE;
             }
 
-            // reset reservoirs' and utilities' storage and combined storage, respectively, they currently
-            // have in the corresponding realization simulation.
+            /// reset reservoirs' and utilities' storage and combined storage, respectively, they currently
+            /// have in the corresponding realization simulation.
             this->resetUtilitiesAndReservoirs();
         }
     }
@@ -72,13 +73,13 @@ vector<double> ContinuityModelROF::calculateROF(int week) {
  */
 void ContinuityModelROF::resetUtilitiesAndReservoirs() {
 
-    // update water sources info.
+    /// update water sources info.
     for (int i = 0; i < water_sources.size(); ++i) {
         water_sources[i]->setAvailable_volume(water_sources_realization[i]->getAvailable_volume());
         water_sources[i]->setOutflow_previous_week(water_sources_realization[i]->getTotal_outflow());
     }
 
-    // update utilities combined storage.
+    /// update utilities combined storage.
     for (Utility *u : this->utilities) {
         u->updateTotalStoredVolume();
     }

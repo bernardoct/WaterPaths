@@ -31,10 +31,11 @@ public:
     const double min_environmental_outflow;
     const string name;
     const int source_type;
+    const double max_treatment_capacity;
 
     WaterSource(const string &source_name, const int id, const double min_environmental_outflow,
                 const vector<Catchment *> &catchments, bool online, const double capacity,
-                const int source_type);
+                const double max_treatment_capacity, const int source_type);
 
     WaterSource(const WaterSource &water_source);
 

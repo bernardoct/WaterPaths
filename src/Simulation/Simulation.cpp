@@ -15,11 +15,11 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_source
         number_of_realizations(number_of_realizations), data_collector(data_collector),
         drought_mitigation_policies(drought_mitigation_policies) {
 
-    // Sort water sources and utilities by their IDs.
+    /// Sort water sources and utilities by their IDs.
     sort(water_sources.begin(), water_sources.end());
     sort(utilities.begin(), utilities.end());
 
-    // Pass sum of minimum environmental inflows of upstream sources to intakes.
+    /// Pass sum of minimum environmental inflows of upstream sources to intakes.
     double upstream_min_env_flow;
     for (WaterSource *ws : water_sources) {
         upstream_min_env_flow = 0;
@@ -30,17 +30,16 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_source
         }
     }
 
-    // Creates the data collector for the simulation.
+    /// Creates the data collector for the simulation.
     this->data_collector = new DataCollector(utilities, water_sources, drought_mitigation_policies,
                                              number_of_realizations);
 
-    // Creates the realization and ROF models.
+    /// Creates the realization and ROF models.
     vector<WaterSource *> water_sources_realization;
     vector<DroughtMitigationPolicy *> drought_mitigation_policies_realization;
     for (int r = 0; r < number_of_realizations; ++r) {
-        // Creates realization models by copying the water sources and utilities.
+        /// Creates realization models by copying the water sources and utilities.
         water_sources_realization = Aux::copyWaterSourceVector(water_sources);
-//        drought_mitigation_policies_realization = ;
         realization_models.push_back(new ContinuityModelRealization(water_sources_realization,
                                                                     water_sources_graph,
                                                                     water_sources_to_utilities,
@@ -49,14 +48,17 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_source
                                                                             drought_mitigation_policies),
                                                                     r));
 
-        // Creates rof models by copying the water utilities and sources.
+        /// Creates rof models by copying the water utilities and sources.
         rof_models.push_back(new ContinuityModelROF(Aux::copyWaterSourceVector(water_sources),
                                                     water_sources_graph,
                                                     water_sources_to_utilities,
                                                     Aux::copyUtilityVector(utilities),
                                                     SHORT_TERM_ROF, r));
 
+        /// Initializes rof models.
         rof_models[r]->setWater_sources_realization(water_sources_realization);
+
+        /// Clear vectors for reuse in the setup of next realization.
         water_sources_realization.clear();
         drought_mitigation_policies_realization.clear();
     }
@@ -66,17 +68,19 @@ void Simulation::runFullSimulation() {
 
     int n_utilities = (int) realization_models[0]->getUtilities().size();
     vector<double> risks_of_failure_week((unsigned long) n_utilities, 0.0);
+
+    /// Run realizations.
     for (int r = 0; r < number_of_realizations; ++r) {
-        cout << "Realization: " << r << endl;
+        cout << "Realization " << r << endl;
         for (int w = 0; w < total_simulation_time; ++w) {
-            realization_models[r]->applyRestrictionsAndTransfers(w);
+            realization_models[r]->applyDroughtMitigationPolicies(w);
             realization_models[r]->continuityStep(w);
-            risks_of_failure_week = rof_models[r]->calculateROF(w);
-            realization_models[r]->setRisks_of_failure(risks_of_failure_week);
+            realization_models[r]->setRisks_of_failure(rof_models[r]->calculateROF(w));
             data_collector->collectData(realization_models[r], w);
         }
     }
 
+    /// Print output files.
     data_collector->printUtilityOutput(true);
     data_collector->printReservoirOutput(true);
     data_collector->printPoliciesOutput(true);

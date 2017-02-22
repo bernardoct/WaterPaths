@@ -15,6 +15,7 @@ ContinuityModelRealization::ContinuityModelRealization(const vector<WaterSource 
                         water_sources_to_utilities),
         realization_id(realization_index), drought_mitigation_policies(drought_mitigation_policies) {
 
+    /// Pass corresponding utilities to drought mitigation instruments.
     for (DroughtMitigationPolicy *dmp : this->drought_mitigation_policies) {
         for (int i : dmp->utilities_ids) {
             dmp->addUtility(this->utilities.at((unsigned long) i));
@@ -32,7 +33,7 @@ void ContinuityModelRealization::setRisks_of_failure(const vector<double> &risks
     }
 }
 
-void ContinuityModelRealization::applyRestrictionsAndTransfers(int week) {
+void ContinuityModelRealization::applyDroughtMitigationPolicies(int week) {
     for (unsigned long i = 0; i < drought_mitigation_policies.size(); ++i) {
         drought_mitigation_policies.at(i)->applyPolicy(week);
     }

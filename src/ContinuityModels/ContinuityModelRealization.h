@@ -28,7 +28,7 @@ public:
 
     void setRisks_of_failure(const vector<double> &risks_of_failure);
 
-    void applyRestrictionsAndTransfers(int week);
+    void applyDroughtMitigationPolicies(int week);
 
     const vector<DroughtMitigationPolicy *> getDrought_mitigation_policies() const;
 };

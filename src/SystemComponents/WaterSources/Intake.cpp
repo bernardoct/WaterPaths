@@ -6,15 +6,11 @@
 #include "Intake.h"
 
 Intake::Intake(const string &source_name, const int id, const double min_environmental_outflow,
-               const vector<Catchment *> &catchments, bool online)
-        : WaterSource(source_name,
-                      id,
-                      min_environmental_outflow,
-                      catchments,
-                      online,
-                      NONE,
-                      INTAKE) {
+               const vector<Catchment *> &catchments, bool online, double max_treatment_capacity)
+        : WaterSource(source_name, id, min_environmental_outflow, catchments,
+                      online, NONE, max_treatment_capacity, INTAKE) {
 
+    /// Update total catchment inflow, demand, and available water volume for week 0;
     this->upstream_catchment_inflow = 0;
     for (Catchment *c : catchments) {
         this->upstream_catchment_inflow = c->getStreamflow(0);
@@ -63,21 +59,22 @@ Intake::~Intake() {
  */
 void Intake::applyContinuity(int week, double upstream_source_inflow, double demand) {
 
-    // Mass balance for current time step.
+    /// Get all upstream catchment inflow.
     upstream_catchment_inflow = 0;
     for (Catchment *c : catchments)
         upstream_catchment_inflow += c->getStreamflow(week);
 
+    /// Mass balance for current time step.
     this->total_outflow = upstream_source_inflow + upstream_catchment_inflow - demand;
 
-    // Water availability for next ime step.
-    double upstream_catchment_inflow = 0;
+    /// Water availability for next ime step.
+    double next_upstream_catchment_inflow = 0;
     for (Catchment *c : catchments)
-        upstream_catchment_inflow += c->getStreamflow(week + 1);
+        next_upstream_catchment_inflow += c->getStreamflow(week + 1);
 
-    this->available_volume = upstream_min_env_inflow + upstream_catchment_inflow - min_environmental_outflow;
+    this->available_volume = upstream_min_env_inflow + next_upstream_catchment_inflow - min_environmental_outflow;
 
-    // Records for the sake of output.
+    /// Records for the sake of output.
     this->demand = demand;
     this->upstream_source_inflow = upstream_source_inflow;
 }

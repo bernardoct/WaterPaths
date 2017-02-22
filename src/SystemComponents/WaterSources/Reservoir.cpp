@@ -9,13 +9,10 @@ using namespace std;
 
 
 Reservoir::Reservoir(const string &source_name, const int id, const double min_environmental_outflow,
-                     const vector<Catchment *> &catchments, bool online, const double capacity) : WaterSource(
-        source_name, id,
-        min_environmental_outflow,
-        catchments, online,
-        capacity,
-        RESERVOIR) {
-}
+                     const vector<Catchment *> &catchments, bool online, const double capacity,
+                     double max_treatment_capacity)
+        : WaterSource(source_name, id, min_environmental_outflow, catchments,
+                      online, capacity, max_treatment_capacity, RESERVOIR) {}
 
 /**
  * Copy constructor.

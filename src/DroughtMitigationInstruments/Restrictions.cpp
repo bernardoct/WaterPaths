@@ -6,15 +6,18 @@
 
 Restrictions::Restrictions(const int id, const vector<double> &stage_multipliers,
                            const vector<double> &stage_triggers, const vector<int> utilities_ids)
-        : DroughtMitigationPolicy(id, utilities_ids),
+        : DroughtMitigationPolicy(id),
           stage_multipliers(stage_multipliers),
-          stage_triggers(stage_triggers) {}
+          stage_triggers(stage_triggers) {
+    this->utilities_ids = utilities_ids;
+}
 
-Restrictions::Restrictions(const Restrictions &restrictions) : DroughtMitigationPolicy(restrictions.id,
-                                                                                       restrictions.utilities_ids),
+Restrictions::Restrictions(const Restrictions &restrictions) : DroughtMitigationPolicy(restrictions.id),
                                                                stage_multipliers(restrictions.stage_multipliers),
                                                                stage_triggers(restrictions.stage_triggers),
-                                                               utility(restrictions.utility) {}
+                                                               utility(restrictions.utility) {
+    this->utilities_ids = restrictions.utilities_ids;
+}
 
 Restrictions::~Restrictions() {}
 

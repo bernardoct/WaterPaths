@@ -62,7 +62,7 @@ public:
 
     double getTotal_treatment_capacity() const;
 
-    double Utility::getTotal_available_volume() const;
+    double getTotal_available_volume() const;
 };
 
 

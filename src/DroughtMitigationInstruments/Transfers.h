@@ -10,18 +10,20 @@
 class Transfers : public DroughtMitigationPolicy {
 private:
     const int source_utility_id;
-    Utility *source_utility;
     const double source_treatment_buffer;
-    const vector<double> buyers_transfer_capacities;
-    const vector<double> buyers_transfer_triggers;
-    vector<Utility *> buying_utilities;
+    const vector<vector<int>> buyers_ids;
+    vector<double> buyers_transfer_capacities;
+    vector<double> buyers_transfer_triggers;
+    Utility *source_utility;
+    map<int, Utility *> buying_utilities;
+    unsigned long highest_utility_id = 0;
 
 public:
-    Transfers(const int id, const vector<int> &utilities_id, const int source_utility_id,
-              const double source_treatment_buffer, const vector<double> &buyers_transfer_capacities,
-              const vector<double> &buyers_transfer_triggers);
 
-    void addSourceUtility(Utility *source_utility);
+    Transfers(const int id, const int source_utility_id,
+              const double source_treatment_buffer, const vector<vector<int>> &buyers_ids,
+              const vector<vector<double>> &buyers_transfer_capacities,
+              const vector<vector<double>> &buyers_transfer_triggers);
 
     virtual void applyPolicy(int week) override;
 

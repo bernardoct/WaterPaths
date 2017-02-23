@@ -17,7 +17,7 @@ ContinuityModelRealization::ContinuityModelRealization(const vector<WaterSource 
 
     /// Pass corresponding utilities to drought mitigation instruments.
     for (DroughtMitigationPolicy *dmp : this->drought_mitigation_policies) {
-        for (int i : dmp->utilities_ids) {
+        for (int i : dmp->getUtilities_ids()) {
             dmp->addUtility(this->utilities.at((unsigned long) i));
         }
     }

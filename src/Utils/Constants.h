@@ -9,6 +9,7 @@
 #include <map>
 
 namespace Constants {
+    const double PEAKING_FACTOR = 0.85;
     const int WEEKS_IN_YEAR = 52;
     const int WEEKS_ROF_SHORT_TERM = 52;
     const int WEEKS_ROF_LONG_TERM = 78;
@@ -22,7 +23,6 @@ namespace Constants {
     const int NONE = 0;
     const int INTAKE = 0;
     const int RESERVOIR = 1;
-    const double PEAKING_FACTOR = 0.85;
 };
 
 

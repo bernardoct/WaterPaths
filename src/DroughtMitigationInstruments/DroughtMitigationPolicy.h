@@ -7,18 +7,22 @@
 
 
 #include "../SystemComponents/Utility.h"
+#include "../Utils/Constants.h"
 
 class DroughtMitigationPolicy {
+protected:
+    vector<int> utilities_ids;
 
 public:
-    const vector<int> utilities_ids;
     const int id;
 
-    DroughtMitigationPolicy(const int id, vector<int> utilities_id);
+    DroughtMitigationPolicy(const int id);
 
     virtual void applyPolicy(int week)= 0;
 
     virtual void addUtility(Utility *utility) = 0;
+
+    const vector<int> &getUtilities_ids() const;
 
 };
 

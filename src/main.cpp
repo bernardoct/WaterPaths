@@ -465,10 +465,12 @@ void simulationTest() {
 void simulation3U5RTest() {
     cout << "BEGINNING ROF TEST" << endl << endl;
 
+    /// Read streamflows
     int streamflow_n_weeks = 52 * 70;
     double **streamflows_test = Aux::parse2DCsvFile("../TestFiles/"
                                                             "inflowsLong.csv", 2, streamflow_n_weeks);
 
+    /// Create catchments and corresponding vectors
     Catchment c1(streamflows_test[0], streamflow_n_weeks);
     Catchment c2(streamflows_test[1], streamflow_n_weeks);
 
@@ -480,15 +482,12 @@ void simulation3U5RTest() {
     catchments2.push_back(&c2);
     catchments3.push_back(&c1);
 
+    /// Create reservoirs and corresponding vector
     Reservoir r1("R1", 0, 3.0, catchments1, ONLINE, 200.0, 20);
     Reservoir r2("R2", 1, 3.0, catchments2, ONLINE, 275.0, 20);
     Reservoir r3("R3", 2, 2.0, catchments3, ONLINE, 400.0, 20);
     Reservoir r4("R4", 3, 3.0, catchments2, ONLINE, 400.0, 20);
     Reservoir r5("R5", 4, 2.0, catchments3, ONLINE, 300.0, 20);
-
-    Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
-    Utility u2("U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
-    Utility u3("U3", 2, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
 
     vector<WaterSource *> water_sources;
     water_sources.push_back(&r1);
@@ -496,6 +495,11 @@ void simulation3U5RTest() {
     water_sources.push_back(&r3);
     water_sources.push_back(&r4);
     water_sources.push_back(&r5);
+
+    /// Create catchments and corresponding vector
+    Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
+    Utility u2("U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
+    Utility u3("U3", 2, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
 
     vector<Utility *> utilities;
     utilities.push_back(&u1);
@@ -520,12 +524,14 @@ void simulation3U5RTest() {
     g.addEdge(2, 3);
     g.addEdge(4, 3);
 
+    /// Reservoir-utility connectivity matrix (i.e. each row represents reservoirs owned by one utility
     vector<vector<int>> reservoir_utility_connectivity_matrix = {
             {0, 2},
             {1, 4},
             {3}
     };
 
+    /// Restriction policies
     vector<double> restriction_stage_multipliers1 = {0.9, 0.7};
     vector<double> restriction_stage_triggers1 = {0.02, 0.04};
 
@@ -538,8 +544,10 @@ void simulation3U5RTest() {
 
     vector<DroughtMitigationPolicy *> restrictions = {&rp1, &rp2, &rp3};
 
+    /// Data collector pointer
     DataCollector *data_collector = nullptr;
 
+    /// Creates simulation object
     Simulation s(water_sources, g, reservoir_utility_connectivity_matrix, utilities, restrictions, 104, 2,
                  data_collector);
     cout << "Beginning U3R5 simulation" << endl;

@@ -18,6 +18,8 @@ private:
     map<int, Utility *> buying_utilities;
     unsigned long highest_utility_id = 0;
 
+    Tableau buildTransferAllocationTableu(vector<double> rofs, vector<double> capacities, double total_flow_rate);
+
 public:
 
     Transfers(const int id, const int source_utility_id,

@@ -8,6 +8,9 @@
 
 #include <map>
 
+#define M 20
+#define N 20
+
 namespace Constants {
     const double PEAKING_FACTOR = 0.85;
     const int WEEKS_IN_YEAR = 52;
@@ -23,6 +26,11 @@ namespace Constants {
     const int NONE = 0;
     const int INTAKE = 0;
     const int RESERVOIR = 1;
+
+    typedef struct {
+        int m, n; // m=rows, n=columns, mat[m x n]
+        double mat[M][N];
+    } Tableau;
 };
 
 

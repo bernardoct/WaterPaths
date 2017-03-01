@@ -67,6 +67,7 @@ void Transfers::applyPolicy(int week) {
     if (sum_rofs > 0) {
 
         vector<double> transfer_volumes(highest_utility_id, 0);
+        vector<bool> transfer_request(highest_utility_id, false);
 
         /// Calculate total volume available for transfers in source utility.
         double available_transfer_volume = (source_utility->getTotal_treatment_capacity() - source_treatment_buffer) *
@@ -75,6 +76,7 @@ void Transfers::applyPolicy(int week) {
 
         for (int i = 0; i < transfer_volumes.size(); ++i) {
             transfer_volumes[i] = available_transfer_volume * requesting_utilities_rofs[i] / sum_rofs;
+            transfer_request[i] = true;
         }
 
         // IMPLEMENT THE CHECKS TO SEE IF TRANSFER VOLUMES ARE OK GIVEN CAPACITIES AND OTHER REQUIREMENTS.
@@ -87,4 +89,55 @@ void Transfers::applyPolicy(int week) {
 
 }
 
+void applyMinTransferConstrain(double available_transfer_volume,
+                               vector<double> transfer_volumes_requests, vector<double> requesting_utilities_rofs,
+                               vector<bool> requests_transfers) {
+
+    double rofs_partial_sum = 0;
+    int n_transfer_requests = 0;
+    double fill_in_volume = 0;
+    double extra_volume = 0;
+    vector<double> transfer_volumes_min_constrained;
+
+    for (auto r : requests_transfers) n_transfer_requests += r;
+    double min_transfer_volume_constrain = available_transfer_volume / (n_transfer_requests + 1);
+
+    for (int i = 0; i < transfer_volumes_requests.size(); ++i) {
+        extra_volume += transfer_volumes_requests[i] - min_transfer_volume_constrain;
+    }
+
+
+    for (int i = 0; i < transfer_volumes_requests[i]; ++i) {
+        if (transfer_volumes_requests[i] < min_transfer_volume_constrain)
+            transfer_volumes_requests[i] = min_transfer_volume_constrain;
+        else
+
+    }
+
+
+    if(durhamRequest < transferFloor*caryExtraCapacity*durhamRequestO)
+    {
+        durhamRequest = transferFloor*caryExtraCapacity*durhamRequestO;
+
+        owasaRequest = ((caryExtraCapacity-durhamRequest)*owasaRisk*owasaRequestO)/(raleighRisk*raleighRequestO+owasaRisk*owasaRequestO+.00001);
+
+        raleighRequest = ((caryExtraCapacity-durhamRequest)*raleighRisk*raleighRequestO)/(raleighRisk*raleighRequestO+owasaRisk*owasaRequestO+.00001);
+
+        if(owasaRequest < transferFloor*caryExtraCapacity*owasaRequestO)
+        {
+            owasaRequest = transferFloor*caryExtraCapacity*owasaRequestO;
+
+            raleighRequest = (caryExtraCapacity-durhamRequest-owasaRequest)*raleighRequestO;
+        }
+        if(raleighRequest < transferFloor*caryExtraCapacity*raleighRequestO)
+        {
+            raleighRequest = transferFloor*caryExtraCapacity*raleighRequestO;
+
+            owasaRequest = (caryExtraCapacity - durhamRequest - raleighRequest)*owasaRequestO;
+        }
+    }
+
+
+
+}
 

@@ -14,21 +14,21 @@ Transfers::Transfers(const int id, const int source_utility_id,
                                                                                buyers_ids(buyers_ids) {
     for (vector<int> ids : buyers_ids)
         for (int id : ids) {
-            if (id > highest_utility_id) highest_utility_id = id;
+            if (id > highest_utility_id) highest_utility_id = (unsigned long) id;
         }
 
     this->buyers_transfer_capacities.resize(highest_utility_id, 0);
     this->buyers_transfer_triggers.resize(highest_utility_id, 0);
 
     /// Create vector with ids of all utilities involved in the transfer from source utility.
-    int id;
+    int bid;
     utilities_ids.push_back(source_utility_id);
     for (int i = 0; i < buyers_ids.size(); ++i)
         for (int j = 0; j < buyers_ids[i].size(); ++j) {
-            id = buyers_ids[i][j];
-            utilities_ids.push_back(id);
-            this->buyers_transfer_capacities.at((unsigned long) id) = buyers_transfer_capacities[i][j];
-            this->buyers_transfer_triggers.at((unsigned long) id) = buyers_transfer_triggers[i][j];
+            bid = buyers_ids[i][j];
+            utilities_ids.push_back(bid);
+            this->buyers_transfer_capacities.at((unsigned long) bid) = buyers_transfer_capacities[i][j];
+            this->buyers_transfer_triggers.at((unsigned long) bid) = buyers_transfer_triggers[i][j];
         }
 }
 
@@ -80,6 +80,11 @@ void Transfers::applyPolicy(int week) {
         // IMPLEMENT THE CHECKS TO SEE IF TRANSFER VOLUMES ARE OK GIVEN CAPACITIES AND OTHER REQUIREMENTS.
         // IMPLEMENT THE APPLICATION OF TRANSFERS AND DATA COLLECTION.
         // SETUP A CONSTRAINED ALLOCATION PROBLEM TO BE SOLVED WITH LP. MINIMIZE DEVIATION FROM ROF VALUES.
+
+
+
     }
 
 }
+
+

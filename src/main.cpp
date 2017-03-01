@@ -3,6 +3,7 @@
 #include "SystemComponents/Utility.h"
 #include "Utils/Aux.h"
 #include "Simulation/Simulation.h"
+#include "Utils/LpSimplexSolver.h"
 
 
 int regionOneUtilitiesTwoReservoirsContinuityTest();
@@ -555,6 +556,31 @@ void simulation3U5RTest() {
     cout << "Ending U3R5 simulation" << endl;
 }
 
+void testLPSolver() {
+//    Tableau tab  = { 4, 5, {                     // Size of tableau [4 rows x 5 columns ]
+//            {  0.0 , -0.5 , -3.0 ,-1.0 , -4.0,   },  // Max: z = 0.5*x + 3*y + z + 4*w,
+//            { 40.0 ,  1.0 ,  1.0 , 1.0 ,  1.0,   },  //    x + y + z + w <= 40 .. b1
+//            { 10.0 , -2.0 , -1.0 , 1.0 ,  1.0,   },  //  -2x - y + z + w <= 10 .. b2
+//            { 10.0 ,  0.0 ,  1.0 , 0.0 , -1.0,   },  //        y     - w <= 10 .. b3
+//        }
+//    };
+    Tableau tab = {6, 3, {                     // Size of tableau [4 rows x 5 columns ]
+            {0.0, -3.0, -2.0, 0.0, 0.0, 0.0},  // Max: z = 0.5*x + 3*y + z + 4*w,
+            {18.0, 2.0, 1.0, 1.0, 0.0, 0.0},  //    x + y + z + w <= 40 .. b1
+            {42.0, 2.0, 3.0, 0.0, 1.0, 0.0},  //  -2x - y + z + w <= 10 .. b2
+            {24.0, 3.0, 1.0, 0.0, 0.0, 1.0},  //        y     - w <= 10 .. b3
+//            {  0.0 , 1.0 ,  0.0 , 0.0 , 0.0 , 0.0},  //        y     - w <= 10 .. b3
+//            {  0.0 , 0.0 ,  1.0 , 0.0 , 0.0 , 0.0},  //        y     - w <= 10 .. b3
+    }
+    };
+
+
+    LpSimplexSolver::print_tableau(&tab, "Initial");
+    LpSimplexSolver::simplex(&tab);
+
+    cout << tab.mat[0][1] << endl;
+}
+
 void simulation1U1R1ITest() {
     cout << "BEGINNING INTAKE TEST" << endl << endl;
 
@@ -620,8 +646,9 @@ int main() {
 //    ::rofCalculationsTest();
 //    ::simulationTest();
 //    ::graphTest();
-    ::simulation3U5RTest();
+//    ::simulation3U5RTest();
 //    ::simulation1U1R1ITest();
+    ::testLPSolver();
 
     return 0;
 }

@@ -12,7 +12,7 @@
 #define N 20
 
 namespace Constants {
-    const double PEAKING_FACTOR = 0.85;
+    const double PEAKING_FACTOR = 0.85; ///Peaking factor used to move from daily capacity to average weekly capacity.
     const int WEEKS_IN_YEAR = 52;
     const int WEEKS_ROF_SHORT_TERM = 52;
     const int WEEKS_ROF_LONG_TERM = 78;

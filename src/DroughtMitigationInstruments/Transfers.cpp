@@ -4,6 +4,15 @@
 
 #include "Transfers.h"
 
+/**
+ *
+ * @param id
+ * @param source_utility_id
+ * @param source_treatment_buffer
+ * @param buyers_ids
+ * @param buyers_transfer_capacities
+ * @param buyers_transfer_triggers
+ */
 Transfers::Transfers(const int id, const int source_utility_id,
                      const double source_treatment_buffer, const vector<vector<int>> &buyers_ids,
                      const vector<vector<double>> &buyers_transfer_capacities,
@@ -20,7 +29,9 @@ Transfers::Transfers(const int id, const int source_utility_id,
     this->buyers_transfer_capacities.resize(highest_utility_id, 0);
     this->buyers_transfer_triggers.resize(highest_utility_id, 0);
 
-    /// Create vector with ids of all utilities involved in the transfer from source utility.
+    /// Create vector with ids of all utilities involved in the transfer from source utility, another one with their
+    /// transfer capacities, and another one with their trigger values. This is effectively unrolling the vectors of
+    /// vectors in the constructor.
     int bid;
     utilities_ids.push_back(source_utility_id);
     for (int i = 0; i < buyers_ids.size(); ++i)
@@ -92,50 +103,6 @@ void Transfers::applyPolicy(int week) {
 void applyMinTransferConstrain(double available_transfer_volume,
                                vector<double> transfer_volumes_requests, vector<double> requesting_utilities_rofs,
                                vector<bool> requests_transfers) {
-
-    double rofs_partial_sum = 0;
-    int n_transfer_requests = 0;
-    double fill_in_volume = 0;
-    double extra_volume = 0;
-    vector<double> transfer_volumes_min_constrained;
-
-    for (auto r : requests_transfers) n_transfer_requests += r;
-    double min_transfer_volume_constrain = available_transfer_volume / (n_transfer_requests + 1);
-
-    for (int i = 0; i < transfer_volumes_requests.size(); ++i) {
-        extra_volume += transfer_volumes_requests[i] - min_transfer_volume_constrain;
-    }
-
-
-    for (int i = 0; i < transfer_volumes_requests[i]; ++i) {
-        if (transfer_volumes_requests[i] < min_transfer_volume_constrain)
-            transfer_volumes_requests[i] = min_transfer_volume_constrain;
-        else
-
-    }
-
-
-    if(durhamRequest < transferFloor*caryExtraCapacity*durhamRequestO)
-    {
-        durhamRequest = transferFloor*caryExtraCapacity*durhamRequestO;
-
-        owasaRequest = ((caryExtraCapacity-durhamRequest)*owasaRisk*owasaRequestO)/(raleighRisk*raleighRequestO+owasaRisk*owasaRequestO+.00001);
-
-        raleighRequest = ((caryExtraCapacity-durhamRequest)*raleighRisk*raleighRequestO)/(raleighRisk*raleighRequestO+owasaRisk*owasaRequestO+.00001);
-
-        if(owasaRequest < transferFloor*caryExtraCapacity*owasaRequestO)
-        {
-            owasaRequest = transferFloor*caryExtraCapacity*owasaRequestO;
-
-            raleighRequest = (caryExtraCapacity-durhamRequest-owasaRequest)*raleighRequestO;
-        }
-        if(raleighRequest < transferFloor*caryExtraCapacity*raleighRequestO)
-        {
-            raleighRequest = transferFloor*caryExtraCapacity*raleighRequestO;
-
-            owasaRequest = (caryExtraCapacity - durhamRequest - raleighRequest)*owasaRequestO;
-        }
-    }
 
 
 

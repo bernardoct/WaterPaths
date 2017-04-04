@@ -49,11 +49,8 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_source
                                                                     r));
 
         /// Creates rof models by copying the water utilities and sources.
-        rof_models.push_back(new ContinuityModelROF(Aux::copyWaterSourceVector(water_sources),
-                                                    water_sources_graph,
-                                                    water_sources_to_utilities,
-                                                    Aux::copyUtilityVector(utilities),
-                                                    SHORT_TERM_ROF, r));
+        rof_models.push_back(new ContinuityModelROF(Aux::copyWaterSourceVector(water_sources), water_sources_graph,
+                                                    water_sources_to_utilities, Aux::copyUtilityVector(utilities), r));
 
         /// Initializes rof models.
         rof_models[r]->setWater_sources_realization(water_sources_realization);
@@ -75,7 +72,7 @@ void Simulation::runFullSimulation() {
         for (int w = 0; w < total_simulation_time; ++w) {
             realization_models[r]->applyDroughtMitigationPolicies(w);
             realization_models[r]->continuityStep(w);
-            realization_models[r]->setRisks_of_failure(rof_models[r]->calculateROF(w));
+            realization_models[r]->setRisks_of_failure(rof_models[r]->calculateROF(w, 0));
             data_collector->collectData(realization_models[r], w);
         }
     }

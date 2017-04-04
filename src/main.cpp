@@ -646,9 +646,9 @@ int main() {
 //    ::rofCalculationsTest();
 //    ::simulationTest();
 //    ::graphTest();
-//    ::simulation3U5RTest();
+    ::simulation3U5RTest();
 //    ::simulation1U1R1ITest();
-    ::testLPSolver();
+//    ::testLPSolver();
 
     return 0;
 }

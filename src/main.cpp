@@ -486,11 +486,11 @@ void simulation3U5RTest() {
     catchments3.push_back(&c1);
 
     /// Create reservoirs and corresponding vector
-    Reservoir r1("R1", 0, 3.0, catchments1, ONLINE, 200.0, 20);
-    Reservoir r2("R2", 1, 3.0, catchments2, ONLINE, 275.0, 20);
+    Reservoir r1("R1", 0, 3.0, catchments1, ONLINE, 100.0, 20);
+    Reservoir r2("R2", 1, 3.0, catchments2, ONLINE, 375.0, 20);
     Reservoir r3("R3", 2, 2.0, catchments3, ONLINE, 400.0, 20);
-    Reservoir r4("R4", 3, 3.0, catchments2, ONLINE, 400.0, 20);
-    Reservoir r5("R5", 4, 2.0, catchments3, ONLINE, 300.0, 20);
+    Reservoir r4("R4", 3, 3.0, catchments2, ONLINE, 550.0, 20);
+    Reservoir r5("R5", 4, 2.0, catchments3, ONLINE, 500.0, 20);
 
     vector<WaterSource *> water_sources;
     water_sources.push_back(&r1);
@@ -500,9 +500,9 @@ void simulation3U5RTest() {
     water_sources.push_back(&r5);
 
     /// Create catchments and corresponding vector
-    Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0, 0);
-    Utility u2("U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0, 0);
-    Utility u3("U3", 2, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0, 0);
+    Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.03, 1);
+    Utility u2("U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.07, 1);
+    Utility u3("U3", 2, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.05, 1);
 
     vector<Utility *> utilities;
     utilities.push_back(&u1);
@@ -557,31 +557,6 @@ void simulation3U5RTest() {
     s.runFullSimulation();
     cout << "Ending U3R5 simulation" << endl;
 }
-
-//void testLPSolver() {
-////    Tableau tab  = { 4, 5, {                     // Size of tableau [4 rows x 5 columns ]
-////            {  0.0 , -0.5 , -3.0 ,-1.0 , -4.0,   },  // Max: z = 0.5*x + 3*y + z + 4*w,
-////            { 40.0 ,  1.0 ,  1.0 , 1.0 ,  1.0,   },  //    x + y + z + w <= 40 .. b1
-////            { 10.0 , -2.0 , -1.0 , 1.0 ,  1.0,   },  //  -2x - y + z + w <= 10 .. b2
-////            { 10.0 ,  0.0 ,  1.0 , 0.0 , -1.0,   },  //        y     - w <= 10 .. b3
-////        }
-////    };
-//    Tableau tab = {6, 3, {                     // Size of tableau [4 rows x 5 columns ]
-//            {0.0, -3.0, -2.0, 0.0, 0.0, 0.0},  // Max: z = 0.5*x + 3*y + z + 4*w,
-//            {18.0, 2.0, 1.0, 1.0, 0.0, 0.0},  //    x + y + z + w <= 40 .. b1
-//            {42.0, 2.0, 3.0, 0.0, 1.0, 0.0},  //  -2x - y + z + w <= 10 .. b2
-//            {24.0, 3.0, 1.0, 0.0, 0.0, 1.0},  //        y     - w <= 10 .. b3
-////            {  0.0 , 1.0 ,  0.0 , 0.0 , 0.0 , 0.0},  //        y     - w <= 10 .. b3
-////            {  0.0 , 0.0 ,  1.0 , 0.0 , 0.0 , 0.0},  //        y     - w <= 10 .. b3
-//    }
-//    };
-//
-//
-//    LpSimplexSolver::print_tableau(&tab, "Initial");
-//    LpSimplexSolver::simplex(&tab);
-//
-//    cout << tab.mat[0][1] << endl;
-//}
 
 void simulation1U1R1ITest() {
     cout << "BEGINNING INTAKE TEST" << endl << endl;

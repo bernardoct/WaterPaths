@@ -25,10 +25,28 @@ Graph::Graph(int V) {
 /**
  * Add conection (stream) between water sources.
  * @param u Upstream source.
- * @param v Downstream source
+ * @param v Downstream source.
  */
 void Graph::addEdge(int u, int v) {
     adj[u].push_back(v);
+    edges.push_back(vector<int>{u, v});
+}
+
+/**
+ * Returns graph's triangular adjacency matrix multiplier by a constant.
+ * @param index multiplying constant.
+ * @return adjacency matrix.
+ */
+vector<vector<int>> Graph::getTriangularAdjacencyMatrix(int multiplier) {
+    vector<vector<int>> adj_matrix((unsigned long) V, vector<int>((unsigned long) V));
+
+    for (int u = 0; u < adj->size(); ++u) {
+        for (int & v : adj[u]) {
+            adj_matrix[u][v] = multiplier;
+        }
+    }
+
+    return adj_matrix;
 }
 
 /**
@@ -111,4 +129,8 @@ vector<int> Graph::topologicalSort() const {
     cout << endl;
 
     return top_order;
+}
+
+const vector<vector<int>> &Graph::getEdges() const {
+    return edges;
 }

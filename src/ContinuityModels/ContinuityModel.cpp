@@ -46,15 +46,12 @@ void ContinuityModel::continuityStep(int week, int id_rof) {
     double demands[water_sources.size()] = {};
     double upstream_spillage[water_sources.size()] = {};
 
-
-
     /*
      * Split weekly demands among each reservoir for each utility. For each water source:
      * (1) sums the demands of each drawing utility to come up with the total demand for
      * that week for that water source, and (2) sums the flow contributions of upstream
      * reservoirs.
      */
-
     for (Utility *u : utilities) {
         u->splitDemands(week);
     }

@@ -90,8 +90,8 @@ int regionTwoUtilitiesTwoReservoirsContinuityTest() {
     Reservoir r1("R1", 0, 1.0, catchments1, ONLINE, 15.0, 0);
     Reservoir r2("R2", 1, 0.5, catchments2, ONLINE, 10.0, 0);
 
-    Utility u1("U1", 0, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demands.csv", streamflow_n_weeks);
-    Utility u2("U2", 1, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demands.csv", streamflow_n_weeks);
+    Utility u1("U1", 0, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demands.csv", streamflow_n_weeks, 0, 0);
+    Utility u2("U2", 1, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demands.csv", streamflow_n_weeks, 0, 0);
 
     vector<WaterSource *> reservoirs;
     reservoirs.push_back(&r1);
@@ -153,7 +153,7 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
     Reservoir r1("R1", 0, 1.0, catchments1, ONLINE, 15.0, 0);
     Reservoir r2("R2", 1, 0.5, catchments2, ONLINE, 10.0, 0);
 
-    Utility u1("U1", 0, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demands.csv", streamflow_n_weeks);
+    Utility u1("U1", 0, "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demands.csv", streamflow_n_weeks, 0, 0);
 
     vector<WaterSource *> reservoirs;
     reservoirs.push_back(&r1);
@@ -393,8 +393,8 @@ void simulationTest() {
     Reservoir r1("R1", 0, 3.0, catchments1, ONLINE, 500.0, 0);
     Reservoir r2("R2", 1, 3.0, catchments2, ONLINE, 575.0, 0);
 
-    Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
-    Utility u2("U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
+    Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0, 0);
+    Utility u2("U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0, 0);
 
     vector<WaterSource *> water_sources;
     water_sources.push_back(&r1);
@@ -500,9 +500,9 @@ void simulation3U5RTest() {
     water_sources.push_back(&r5);
 
     /// Create catchments and corresponding vector
-    Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
-    Utility u2("U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
-    Utility u3("U3", 2, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
+    Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0, 0);
+    Utility u2("U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0, 0);
+    Utility u3("U3", 2, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0, 0);
 
     vector<Utility *> utilities;
     utilities.push_back(&u1);
@@ -604,7 +604,7 @@ void simulation1U1R1ITest() {
     Intake i1("I1", 1, 1.0, catchments2, OFFLINE, 0);
     Reservoir r2("R1", 2, 1.0, catchments1, ONLINE, 200.0, 0);
 
-    Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
+    Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0, 0);
 
     vector<WaterSource *> water_sources;
     water_sources.push_back(&r1);
@@ -891,7 +891,7 @@ int main() {
 //    ::rofCalculationsTest();
 //    ::simulationTest();
 //    ::graphTest();
-//    ::simulation3U5RTest();
+    ::simulation3U5RTest();
 //    ::simulation1U1R1ITest();
 //    ::testLPSolver();
 //    ::test_QP();

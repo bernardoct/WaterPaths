@@ -17,15 +17,12 @@ private:
     double total_storage_capacity;
     double total_stored_volume;
     double total_treatment_capacity;
+    double demand_multiplier = 1;
     double contingency_fund;
-    double water_price_per_volume;
-public:
-    double getWater_price_per_volume() const;
-
-private:
+    const double percent_contingency_fund_contribution;
+    const double water_price_per_volume;
     map<int, WaterSource *> water_sources;
     map<int, double> split_demands_among_sources;
-
     void setWaterSourceOnline(int source_id);
 
 public:
@@ -38,7 +35,8 @@ public:
     const int number_of_week_demands;
     const string name;
 
-    Utility(string const name, int id, char const *demand_file_name, int number_of_week_demands);
+    Utility(string name, int id, char const *demand_file_name, int number_of_week_demands,
+                const double percent_contingency_fund_contribution, const double water_price_per_volume);
 
     Utility(Utility &utility);
 
@@ -64,15 +62,21 @@ public:
 
     void splitDemands(int week);
 
+    double getWater_price_per_volume() const;
+
     double getTotal_storage_capacity() const;
 
-    void setDemand(int week, double weekly_demand);
+    void setDemand_multiplier(double demand_multiplier);
 
     double getDemand(const int week);
 
     double getTotal_treatment_capacity() const;
 
     double getTotal_available_volume() const;
+
+    void updateContingencyFund();
+
+    void updateContingencyFund(int week);
 };
 
 

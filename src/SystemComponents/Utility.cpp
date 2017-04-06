@@ -13,8 +13,11 @@
  * @param demand_file_name Text file containing utility's demand series.
  * @param number_of_week_demands Length of weeks in demand series.
  */
-Utility::Utility(string name, int id, char const *demand_file_name, int number_of_week_demands) :
-        name(name), id(id), number_of_week_demands(number_of_week_demands) {
+Utility::Utility(string name, int id, char const *demand_file_name, int number_of_week_demands,
+                 const double percent_contingency_fund_contribution, const double water_price_per_volume) :
+        name(name), id(id), number_of_week_demands(number_of_week_demands),
+        percent_contingency_fund_contribution(percent_contingency_fund_contribution),
+        water_price_per_volume(water_price_per_volume) {
 
     demand_series = Aux::parse1DCsvFile(demand_file_name, number_of_week_demands);
     cout << "Utility " << name << " created." << endl;
@@ -28,8 +31,11 @@ Utility::Utility(string name, int id, char const *demand_file_name, int number_o
 Utility::Utility(Utility &utility) : id(utility.id), number_of_week_demands(utility.number_of_week_demands),
                                      total_storage_capacity(utility.total_storage_capacity),
                                      total_stored_volume(utility.total_stored_volume),
-                                     demand_series(new double[utility.number_of_week_demands]) {
+                                     demand_series(new double[utility.number_of_week_demands]),
+                                     percent_contingency_fund_contribution(utility.percent_contingency_fund_contribution),
+                                     water_price_per_volume(utility.water_price_per_volume) {
 
+    /// Create copies of sources
     water_sources.clear();
     for (map<int, WaterSource *>::value_type &ws : utility.water_sources) {
         if (ws.second->source_type == RESERVOIR) {
@@ -41,6 +47,7 @@ Utility::Utility(Utility &utility) : id(utility.id), number_of_week_demands(util
         }
     }
 
+    /// Copy demand series so that restrictions in one realization do not affect other realizations.
     std::copy(utility.demand_series, utility.demand_series + utility.number_of_week_demands, demand_series);
 }
 
@@ -59,6 +66,7 @@ Utility::~Utility() {
 Utility &Utility::operator=(const Utility &utility) {
     double *demand_series_temp = demand_series;
 
+    /// Create copies of sources
     water_sources.clear();
     for (auto &ws : utility.water_sources) {
         if (ws.second->source_type == RESERVOIR) {
@@ -70,6 +78,8 @@ Utility &Utility::operator=(const Utility &utility) {
         }
     }
 
+
+    /// Copy demand series so that restrictions in one realization do not affect other realizations.
     std::copy(utility.demand_series, utility.demand_series + utility.number_of_week_demands, demand_series_temp);
     delete[] demand_series;
     demand_series = demand_series_temp;
@@ -119,7 +129,7 @@ void Utility::addWaterSource(WaterSource *water_source) {
 void Utility::splitDemands(int week) {
     int i;
     double intake_demand;
-    double remaining_demand = demand_series[week];
+    double remaining_demand = demand_series[week] * demand_multiplier;
 
     /// Allocates demand to intakes.
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
@@ -140,6 +150,17 @@ void Utility::splitDemands(int week) {
                                                 total_stored_volume;
         }
     }
+
+    /// Update contingency fund
+    this->updateContingencyFund(week);
+
+    /// Reset demand multiplier.
+    demand_multiplier = 1;
+}
+
+void Utility::updateContingencyFund(int week) {
+    contingency_fund += percent_contingency_fund_contribution * demand_series[week] * water_price_per_volume;
+    contingency_fund -= demand_series[week] * (1 - demand_multiplier) * water_price_per_volume;
 }
 
 void Utility::setWaterSourceOnline(int source_id) {
@@ -175,10 +196,6 @@ double Utility::getTotal_storage_capacity() const {
     return total_storage_capacity;
 }
 
-void Utility::setDemand(int week, double demand_multiplier) {
-    demand_series[week] *= demand_multiplier;
-}
-
 double Utility::getRisk_of_failure() const {
     return risk_of_failure;
 }
@@ -210,4 +227,8 @@ void Utility::drawFromContingencyFund(double amount) {
 
 void Utility::addToContingencyFund(double amount) {
 
+}
+
+void Utility::setDemand_multiplier(double demand_multiplier) {
+    Utility::demand_multiplier = demand_multiplier;
 }

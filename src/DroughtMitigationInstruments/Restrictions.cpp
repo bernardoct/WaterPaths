@@ -30,7 +30,7 @@ void Restrictions::applyPolicy(int week) {
         } else break;
     }
 
-    utility->setDemand(week, current_multiplier);
+    utility->setDemand_multiplier(current_multiplier);
 }
 
 double Restrictions::getCurrent_multiplier() const {

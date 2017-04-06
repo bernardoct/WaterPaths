@@ -22,10 +22,6 @@ Transfers::Transfers(const int id, const int source_utility_id, const double sou
           source_treatment_buffer(source_treatment_buffer),
           buyers_ids(buyers_ids) {
 
-        for (int idd : buyers_ids) {
-            if (idd > highest_utility_id) highest_utility_id = (unsigned long) idd;
-        }
-
     /// Create QP matrices and vectors.
     /// min f(x) = 1/2 x G x + g0 x
     /// s.t.
@@ -80,7 +76,7 @@ void Transfers::addUtility(Utility *utility) {
 
 void Transfers::applyPolicy(int week) {
 
-    vector<double> requesting_utilities_rofs(highest_utility_id, 0);
+    vector<double> requesting_utilities_rofs(buyers_ids.size(), 0);
 
     /**
      * Get summation of rofs of utilities needing transfers. This is for splitting the available flow rate and for
@@ -88,42 +84,54 @@ void Transfers::applyPolicy(int week) {
      */
     int id;
     double sum_rofs = 0;
+    int utilities_requesting_transfers = 0;
     for (auto u : buying_utilities) {
         id = u.second->id;
         if (u.second->getRisk_of_failure() > buyers_transfer_triggers[id]) {
             sum_rofs += u.second->getRisk_of_failure();
             requesting_utilities_rofs[id] = u.second->getRisk_of_failure();
+            utilities_requesting_transfers++;
         }
     }
 
     /// Check if transfers will be needed and, if so, perform the transfers.
     if (sum_rofs > 0) {
+        vector<double> transfer_requests(buyers_ids.size(), 0);
 
-        vector<double> transfer_volumes(highest_utility_id, 0);
-        vector<bool> transfer_request(highest_utility_id, false);
-
-        /// Calculate total volume available for transfers in source utility.
+        /// Total volume available for transfers in source utility.
         double available_transfer_volume = (source_utility->getTotal_treatment_capacity() - source_treatment_buffer) *
                                            PEAKING_FACTOR - source_utility->getDemand(week);
 
+        /// Minimum volume to be allocated to any utility.
+        double min_transfer_volume = available_transfer_volume / (utilities_requesting_transfers + 1);
 
-        for (int i = 0; i < transfer_volumes.size(); ++i) {
-            transfer_volumes[i] = available_transfer_volume * requesting_utilities_rofs[i] / sum_rofs;
+        /// Split up total volume available among the utilities proportionally to their ROFs.
+        for (int i = 0; i < transfer_requests.size(); ++i) {
+            transfer_requests[i] = available_transfer_volume * requesting_utilities_rofs[i] / sum_rofs;
         }
 
-        // FIXME: ADD QP SOLVER HERE.
-
+        /// Calculate allocations and flow rates through inter-utility connections.
+        vector<double> flow_rates_and_allocations = solve_QP(transfer_requests,
+                                                             available_transfer_volume, min_transfer_volume);
 
 
     }
 
 }
 
+/**
+ * Solves Quadratic Programming problem to find optimal allocations given transfer requests and constraints in
+ * conveyance capacities.
+ * @param allocation_requests allocations requested by each utility (0 for utilities not requesting transfers).
+ * @param available_transfer_volume Total volume available for transfer from source utility.
+ * @param min_transfer_volume minimum transfer to be made to each utility.
+ * @return
+ */
 vector<double> Transfers::solve_QP(vector<double> allocation_requests, double available_transfer_volume,
                                    double min_transfer_volume) {
 
     unsigned int n_allocations = (unsigned int) allocation_requests.size();
-    unsigned int n_flow_rates = (unsigned int) g0.size() - n_allocations;
+    unsigned int n_flow_rates = g0.size() - n_allocations;
     unsigned int n_vars = g0.size();
     vector<double> flow_rates_and_allocations;
 
@@ -149,7 +157,7 @@ vector<double> Transfers::solve_QP(vector<double> allocation_requests, double av
     }
 
 
-    cout << "G" << endl;
+/*    cout << "G" << endl;
     for (int i = 0; i < G.nrows(); ++i) {
         for (int j = 0; j < G.ncols(); ++j)
             cout << G[i][j] << " ";
@@ -186,7 +194,7 @@ vector<double> Transfers::solve_QP(vector<double> allocation_requests, double av
     for (int i = 0; i < ci0.size(); ++i) {
         cout << ci0[i] << " ";
     }
-    cout << endl;
+    cout << endl; */
 
     Vector<double> x(n_vars);
 

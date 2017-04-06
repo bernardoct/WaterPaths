@@ -17,6 +17,12 @@ private:
     double total_storage_capacity;
     double total_stored_volume;
     double total_treatment_capacity;
+    double contingency_fund;
+    double water_price_per_volume;
+public:
+    double getWater_price_per_volume() const;
+
+private:
     map<int, WaterSource *> water_sources;
     map<int, double> split_demands_among_sources;
 
@@ -43,6 +49,10 @@ public:
     bool operator<(const Utility *utility);
 
     double getReservoirDraw(const int water_source_id);
+
+    void drawFromContingencyFund(double amount);
+
+    void addToContingencyFund(double amount);
 
     void updateTotalStoredVolume();
 

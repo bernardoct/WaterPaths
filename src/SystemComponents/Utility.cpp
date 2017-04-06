@@ -199,3 +199,15 @@ double Utility::getTotal_available_volume() const {
 
     return total_available_volume;
 }
+
+double Utility::getWater_price_per_volume() const {
+    return water_price_per_volume;
+}
+
+void Utility::drawFromContingencyFund(double amount) {
+
+}
+
+void Utility::addToContingencyFund(double amount) {
+
+}

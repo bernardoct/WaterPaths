@@ -14,11 +14,9 @@ private:
     const int source_utility_id;
     const double source_treatment_buffer;
     const vector<int> buyers_ids;
-    vector<double> buyers_transfer_capacities;
     vector<double> buyers_transfer_triggers;
     Utility *source_utility;
     map<int, Utility *> buying_utilities;
-    unsigned long highest_utility_id = 0;
     Matrix<double> G, CE, CI;
     Vector<double> g0, ce0, ci0, x;
 

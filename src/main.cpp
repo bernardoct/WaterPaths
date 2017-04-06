@@ -720,106 +720,106 @@ void test_QP() {
 
     // ===== Carolina test
 
-    unsigned int nvar = 7;
-    G.resize(0, nvar, nvar);
-
-    G[0][0] = 1e-6;
-    G[1][1] = 1e-6;
-    G[2][2] = 1e-6;
-    G[3][3] = 1e-6;
-    G[4][4] = 2;
-    G[5][5] = 2;
-    G[6][6] = 2;
-
-    cout << "G" << endl;
-    for (int i = 0; i < G.nrows(); ++i) {
-        for (int j = 0; j < G.ncols(); ++j)
-            cout << G[i][j] << " ";
-        cout << endl;
-    }
-
-
-    cout << "g0" << endl;
-    g0.resize(0, nvar);
-    g0[4] = -1;
-    g0[5] = -9;//0;
-    g0[6] = -2;
-
-    for (int i = 0; i < nvar; ++i)
-        cout << g0[i] << " ";
-    cout << endl;
-
-    CE.resize(0, nvar, 4);
-    CE[2][0] = -1;
-    CE[1][0] = 1;
-    CE[4][0] = -1;
-    CE[0][1] = 1;
-    CE[2][1] = 1;
-    CE[3][1] = -1;
-    CE[5][1] = -1;
-    CE[3][2] = 1;
-    CE[6][2] = -1;
-    CE[0][3] = 1;
-    CE[1][3] = 1;
-
-    cout << "CE" << endl;
-    for (int i = 0; i < CE.nrows(); ++i) {
-        for (int j = 0; j < CE.ncols(); ++j)
-            cout << CE[i][j] << " ";
-        cout << endl;
-    }
-
-    ce0.resize(0, 4);
-    ce0[3] = -5;
-
-    cout << "ce0" << endl;
-    for (int i = 0; i < 4; ++i)
-        cout << ce0[i] << " ";
-    cout << endl;
-
-    CI.resize(0, nvar, nvar * 2);
-    CI[0][0] = 1;
-    CI[1][1] = 1;
-    CI[2][2] = 1;
-    CI[3][3] = 1;
-    CI[4][4] = 1;
-    CI[5][5] = 1;
-    CI[6][6] = 1;
-    CI[0][7] = -1;
-    CI[1][8] = -1;
-    CI[2][9] = -1;
-    CI[3][10] = -1;
-    CI[4][11] = -1;
-    CI[5][12] = -1;
-    CI[6][13] = -1;
-
-    cout << "CI" << endl;
-    for (int i = 0; i < CI.nrows(); ++i) {
-        for (int j = 0; j < CI.ncols(); ++j)
-            cout << CI[i][j] << " ";
-        cout << endl;
-    }
-
-    ci0.resize(0, nvar * 2);
-    ci0[0] = 3;
-    ci0[1] = 3;
-    ci0[2] = 1;
-    ci0[3] = 1;
-    ci0[4] = -0.5;
-    ci0[5] = -0.5;//0;
-    ci0[6] = -0.5;
-    ci0[7] = 3;
-    ci0[8] = 3;
-    ci0[9] = 1;
-    ci0[10] = 1;
-    ci0[11] = 5;
-    ci0[12] = 5;//0;
-    ci0[13] = 5;
-
-    cout << "ci0" << endl;
-    for (int i = 0; i < nvar * 2; ++i)
-        cout << ci0[i] << " ";
-    cout << endl;
+//    unsigned int nvar = 7;
+//    G.resize(0, nvar, nvar);
+//
+//    G[0][0] = 1e-6;
+//    G[1][1] = 1e-6;
+//    G[2][2] = 1e-6;
+//    G[3][3] = 1e-6;
+//    G[4][4] = 2;
+//    G[5][5] = 2;
+//    G[6][6] = 2;
+//
+//    cout << "G" << endl;
+//    for (int i = 0; i < G.nrows(); ++i) {
+//        for (int j = 0; j < G.ncols(); ++j)
+//            cout << G[i][j] << " ";
+//        cout << endl;
+//    }
+//
+//
+//    cout << "g0" << endl;
+//    g0.resize(0, nvar);
+//    g0[4] = -1;
+//    g0[5] = -9;//0;
+//    g0[6] = -2;
+//
+//    for (int i = 0; i < nvar; ++i)
+//        cout << g0[i] << " ";
+//    cout << endl;
+//
+//    CE.resize(0, nvar, 4);
+//    CE[2][0] = -1;
+//    CE[1][0] = 1;
+//    CE[4][0] = -1;
+//    CE[0][1] = 1;
+//    CE[2][1] = 1;
+//    CE[3][1] = -1;
+//    CE[5][1] = -1;
+//    CE[3][2] = 1;
+//    CE[6][2] = -1;
+//    CE[0][3] = 1;
+//    CE[1][3] = 1;
+//
+//    cout << "CE" << endl;
+//    for (int i = 0; i < CE.nrows(); ++i) {
+//        for (int j = 0; j < CE.ncols(); ++j)
+//            cout << CE[i][j] << " ";
+//        cout << endl;
+//    }
+//
+//    ce0.resize(0, 4);
+//    ce0[3] = -5;
+//
+//    cout << "ce0" << endl;
+//    for (int i = 0; i < 4; ++i)
+//        cout << ce0[i] << " ";
+//    cout << endl;
+//
+//    CI.resize(0, nvar, nvar * 2);
+//    CI[0][0] = 1;
+//    CI[1][1] = 1;
+//    CI[2][2] = 1;
+//    CI[3][3] = 1;
+//    CI[4][4] = 1;
+//    CI[5][5] = 1;
+//    CI[6][6] = 1;
+//    CI[0][7] = -1;
+//    CI[1][8] = -1;
+//    CI[2][9] = -1;
+//    CI[3][10] = -1;
+//    CI[4][11] = -1;
+//    CI[5][12] = -1;
+//    CI[6][13] = -1;
+//
+//    cout << "CI" << endl;
+//    for (int i = 0; i < CI.nrows(); ++i) {
+//        for (int j = 0; j < CI.ncols(); ++j)
+//            cout << CI[i][j] << " ";
+//        cout << endl;
+//    }
+//
+//    ci0.resize(0, nvar * 2);
+//    ci0[0] = 3;
+//    ci0[1] = 3;
+//    ci0[2] = 1;
+//    ci0[3] = 1;
+//    ci0[4] = -0.5;
+//    ci0[5] = -0.5;//0;
+//    ci0[6] = -0.5;
+//    ci0[7] = 3;
+//    ci0[8] = 3;
+//    ci0[9] = 1;
+//    ci0[10] = 1;
+//    ci0[11] = 5;
+//    ci0[12] = 5;//0;
+//    ci0[13] = 5;
+//
+//    cout << "ci0" << endl;
+//    for (int i = 0; i < nvar * 2; ++i)
+//        cout << ci0[i] << " ";
+//    cout << endl;
 
 
     cout << "calling solver" << endl;
@@ -849,6 +849,8 @@ void test_QP() {
         sum += g0[i] * x[i];
     std::cout << sum << std::endl;
 
+    // answer should be x1 = 1 and x2 = 2
+
 
 }
 
@@ -856,7 +858,7 @@ void test_transfers() {
 
     vector<int> buyers_ids = {1, 2, 3};
     vector<double> buyers_transfers_capaities = {3, 3, 1, 1};
-    vector<double> buyers_transfers_trigger = {0.1, 0.9, 0.2};
+    vector<double> buyers_transfers_trigger = {0.05, 0.08, 0.02};
     vector<vector<double>> continuity_matrix = {
             {0, 1, 0, 1},
             {1, 0, 0, 1},
@@ -871,6 +873,7 @@ void test_transfers() {
     vector<double> allocations = t.solve_QP(*(new vector<double>{0.5, 4.5, 1}), 5, 0.5);
 
     for (double & a : allocations) cout << a << " ";
+    // answer: 3 2 1 0.5 1 3.5 0.5
 
 }
 
@@ -892,7 +895,7 @@ int main() {
 //    ::simulation1U1R1ITest();
 //    ::testLPSolver();
 //    ::test_QP();
-    ::test_transfers();
+//    ::test_transfers();
 
     return 0;
 }

@@ -77,6 +77,8 @@ public:
     void updateContingencyFund();
 
     void updateContingencyFund(int week);
+
+    double getContingency_fund() const;
 };
 
 

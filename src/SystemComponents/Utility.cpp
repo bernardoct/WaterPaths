@@ -232,3 +232,7 @@ void Utility::addToContingencyFund(double amount) {
 void Utility::setDemand_multiplier(double demand_multiplier) {
     Utility::demand_multiplier = demand_multiplier;
 }
+
+double Utility::getContingency_fund() const {
+    return contingency_fund;
+}

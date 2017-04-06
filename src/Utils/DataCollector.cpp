@@ -50,6 +50,7 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
                                                      u->getTotal_storage_capacity());
         utilities_t[r][i].rof.push_back(u->getRisk_of_failure());
         utilities_t[r][i].demand.push_back(u->getDemand(week));
+        utilities_t[r][i].contingency_fund_size.push_back(u->getContingency_fund());
     }
 
     /// Get reservoirs data.
@@ -133,7 +134,8 @@ void DataCollector::printUtilityOutput(bool toFile, string fileName) {
         for (int i = 0; i < utilities_t[r].size(); ++i) {
             outStream << setw(16) << "Sto_vol"
                       << setw(8) << "ROF"
-                      << setw(8) << "Demand";
+                      << setw(8) << "Demand"
+                      << setw(8) << "C. fund";
         }
         outStream << endl;
 
@@ -143,7 +145,8 @@ void DataCollector::printUtilityOutput(bool toFile, string fileName) {
             for (int i = 0; i < utilities_t[r].size(); ++i) {
                 outStream << setw(16) << setprecision(4) << utilities_t[r][i].combined_storage[w]
                           << setw(8) << setprecision(4) << utilities_t[r][i].rof[w]
-                          << setw(8) << setprecision(4) << utilities_t[r][i].demand[w];
+                          << setw(8) << setprecision(4) << utilities_t[r][i].demand[w]
+                          << setw(8) << setprecision(4) << utilities_t[r][i].contingency_fund_size[w];
             }
             outStream << endl;
         }

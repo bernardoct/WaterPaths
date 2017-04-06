@@ -15,6 +15,7 @@ struct Utility_t {
     vector<double> rof;
     vector<double> combined_storage;
     vector<double> demand;
+    vector<double> contingency_fund_size;
     double capacity;
     int id;
     string name;
@@ -46,7 +47,7 @@ private:
     vector<vector<Utility_t>> utilities_t;
     vector<vector<WaterSource_t>> reservoir_t;
     vector<vector<RestrictionPolicy_t>> restriction_policy_t;
-    string output_directory = "/home/bernardo/ClionProjects/TriangleModel/TestFiles/";
+    string output_directory = "/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/";
 
 public:
     DataCollector(const vector<Utility *> &utilities, const vector<WaterSource *> &water_sources,

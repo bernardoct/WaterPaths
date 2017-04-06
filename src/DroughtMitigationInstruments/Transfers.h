@@ -15,6 +15,7 @@ private:
     const double source_treatment_buffer;
     const vector<int> buyers_ids;
     vector<double> buyers_transfer_triggers;
+    vector<double> flow_rates_and_allocations;
     Utility *source_utility;
     map<int, Utility *> buying_utilities;
     Matrix<double> G, CE, CI;
@@ -32,6 +33,8 @@ public:
 
     vector<double>
     solve_QP(vector<double> allocation_requests, double available_transfer_volume, double min_transfer_volume);
+
+    vector<double> getTransfers();
 };
 
 

@@ -23,7 +23,7 @@ Transfers::Transfers(const int id, const int source_utility_id, const double sou
           buyers_ids(buyers_ids) {
 
     /// Create QP matrices and vectors.
-    /// min f(x) = 1/2 x G x + g0 x
+    /// min f(x) = 1/2 x G x' + g0 x'
     /// s.t.
     /// CE.x = ce0
     /// CI.x >= ci0
@@ -38,7 +38,8 @@ Transfers::Transfers(const int id, const int source_utility_id, const double sou
 
     g0.resize(0, n_vars);
 
-    /// size is number of variables x number of utilities (source + requestors)
+    /// size is number of variables x number of utilities (source + requesting utilities).
+    /// Continuity matrix: +1 for pipe entering utility and -1 for leaving.
     CE.resize(0, n_vars, n_allocations + 1);
     for (unsigned int i = 0; i < continuity_matrix.size(); ++i) {
         for (unsigned int j = 0; j < continuity_matrix[i].size(); ++j) {
@@ -48,6 +49,7 @@ Transfers::Transfers(const int id, const int source_utility_id, const double sou
 
     ce0.resize(0, n_allocations + 1);
 
+    /// +1 for >= constraints and -1 for <= to account for bi-directional pipes.
     CI.resize(0, n_vars, 2 * n_vars);
     for (int i = 0; i < n_vars; ++i) {
         CI[i][i] = 1;
@@ -114,9 +116,7 @@ void Transfers::applyPolicy(int week) {
         vector<double> flow_rates_and_allocations = solve_QP(transfer_requests,
                                                              available_transfer_volume, min_transfer_volume);
 
-
     }
-
 }
 
 /**
@@ -133,7 +133,6 @@ vector<double> Transfers::solve_QP(vector<double> allocation_requests, double av
     unsigned int n_allocations = (unsigned int) allocation_requests.size();
     unsigned int n_flow_rates = g0.size() - n_allocations;
     unsigned int n_vars = g0.size();
-    vector<double> flow_rates_and_allocations;
 
     /// Set g0 vector to allocated to 2 * target_allocation.
     for (int i = 0; i < allocation_requests.size(); ++i) {
@@ -155,8 +154,6 @@ vector<double> Transfers::solve_QP(vector<double> allocation_requests, double av
             ci0[i + n_flow_rates + n_vars] = available_transfer_volume;
         }
     }
-
-
 /*    cout << "G" << endl;
     for (int i = 0; i < G.nrows(); ++i) {
         for (int j = 0; j < G.ncols(); ++j)
@@ -198,7 +195,6 @@ vector<double> Transfers::solve_QP(vector<double> allocation_requests, double av
 
     Vector<double> x(n_vars);
 
-
     /// Run quadratic programming solver.
     std::cout << "f: " << solve_quadprog(G, g0, CE, ce0, CI, ci0, x) << std::endl;
 
@@ -210,3 +206,7 @@ vector<double> Transfers::solve_QP(vector<double> allocation_requests, double av
     return flow_rates_and_allocations;
 }
 
+vector<double> Transfers::getTransfers() {
+    return *(new vector<double>(&flow_rates_and_allocations[flow_rates_and_allocations.size() - buyers_ids.size()],
+                                &flow_rates_and_allocations[flow_rates_and_allocations.size() - 1]));
+}

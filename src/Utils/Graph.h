@@ -15,6 +15,7 @@ class Graph {
 
     // Pointer to an array containing adjacency lists
     list<int> *adj;
+    vector<vector<int>> edges;
 
 public:
     Graph(int V);   // Constructor
@@ -26,6 +27,10 @@ public:
     vector<int> topologicalSort() const;
 
     vector<int> getUpstreamSources(int id);
+
+    vector<vector<int>> getTriangularAdjacencyMatrix(int index);
+
+    const vector<vector<int>> &getEdges() const;
 };
 
 

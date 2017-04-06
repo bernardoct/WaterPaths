@@ -1,9 +1,11 @@
 #include <iostream>
+#include <sstream>
 #include "SystemComponents/WaterSources/Reservoir.h"
 #include "SystemComponents/Utility.h"
 #include "Utils/Aux.h"
 #include "Simulation/Simulation.h"
-#include "Utils/LpSimplexSolver.h"
+#include "Utils/QPSolver/QuadProg++.hh"
+#include "DroughtMitigationInstruments/Transfers.h"
 
 
 int regionOneUtilitiesTwoReservoirsContinuityTest();
@@ -556,30 +558,30 @@ void simulation3U5RTest() {
     cout << "Ending U3R5 simulation" << endl;
 }
 
-void testLPSolver() {
-//    Tableau tab  = { 4, 5, {                     // Size of tableau [4 rows x 5 columns ]
-//            {  0.0 , -0.5 , -3.0 ,-1.0 , -4.0,   },  // Max: z = 0.5*x + 3*y + z + 4*w,
-//            { 40.0 ,  1.0 ,  1.0 , 1.0 ,  1.0,   },  //    x + y + z + w <= 40 .. b1
-//            { 10.0 , -2.0 , -1.0 , 1.0 ,  1.0,   },  //  -2x - y + z + w <= 10 .. b2
-//            { 10.0 ,  0.0 ,  1.0 , 0.0 , -1.0,   },  //        y     - w <= 10 .. b3
-//        }
+//void testLPSolver() {
+////    Tableau tab  = { 4, 5, {                     // Size of tableau [4 rows x 5 columns ]
+////            {  0.0 , -0.5 , -3.0 ,-1.0 , -4.0,   },  // Max: z = 0.5*x + 3*y + z + 4*w,
+////            { 40.0 ,  1.0 ,  1.0 , 1.0 ,  1.0,   },  //    x + y + z + w <= 40 .. b1
+////            { 10.0 , -2.0 , -1.0 , 1.0 ,  1.0,   },  //  -2x - y + z + w <= 10 .. b2
+////            { 10.0 ,  0.0 ,  1.0 , 0.0 , -1.0,   },  //        y     - w <= 10 .. b3
+////        }
+////    };
+//    Tableau tab = {6, 3, {                     // Size of tableau [4 rows x 5 columns ]
+//            {0.0, -3.0, -2.0, 0.0, 0.0, 0.0},  // Max: z = 0.5*x + 3*y + z + 4*w,
+//            {18.0, 2.0, 1.0, 1.0, 0.0, 0.0},  //    x + y + z + w <= 40 .. b1
+//            {42.0, 2.0, 3.0, 0.0, 1.0, 0.0},  //  -2x - y + z + w <= 10 .. b2
+//            {24.0, 3.0, 1.0, 0.0, 0.0, 1.0},  //        y     - w <= 10 .. b3
+////            {  0.0 , 1.0 ,  0.0 , 0.0 , 0.0 , 0.0},  //        y     - w <= 10 .. b3
+////            {  0.0 , 0.0 ,  1.0 , 0.0 , 0.0 , 0.0},  //        y     - w <= 10 .. b3
+//    }
 //    };
-    Tableau tab = {6, 3, {                     // Size of tableau [4 rows x 5 columns ]
-            {0.0, -3.0, -2.0, 0.0, 0.0, 0.0},  // Max: z = 0.5*x + 3*y + z + 4*w,
-            {18.0, 2.0, 1.0, 1.0, 0.0, 0.0},  //    x + y + z + w <= 40 .. b1
-            {42.0, 2.0, 3.0, 0.0, 1.0, 0.0},  //  -2x - y + z + w <= 10 .. b2
-            {24.0, 3.0, 1.0, 0.0, 0.0, 1.0},  //        y     - w <= 10 .. b3
-//            {  0.0 , 1.0 ,  0.0 , 0.0 , 0.0 , 0.0},  //        y     - w <= 10 .. b3
-//            {  0.0 , 0.0 ,  1.0 , 0.0 , 0.0 , 0.0},  //        y     - w <= 10 .. b3
-    }
-    };
-
-
-    LpSimplexSolver::print_tableau(&tab, "Initial");
-    LpSimplexSolver::simplex(&tab);
-
-    cout << tab.mat[0][1] << endl;
-}
+//
+//
+//    LpSimplexSolver::print_tableau(&tab, "Initial");
+//    LpSimplexSolver::simplex(&tab);
+//
+//    cout << tab.mat[0][1] << endl;
+//}
 
 void simulation1U1R1ITest() {
     cout << "BEGINNING INTAKE TEST" << endl << endl;
@@ -632,6 +634,246 @@ void simulation1U1R1ITest() {
     cout << "Ending 1U1R1I simulation" << endl;
 }
 
+void test_QP() {
+    Matrix<double> G, CE, CI;
+    Vector<double> g0, ce0, ci0, x;
+    unsigned int n, m, p;
+    double sum = 0.0;
+    char ch;
+
+//    Given:
+//    G =  4 -2   g0^T = [6 0]
+//        -2  4
+//
+//    Solve:
+//    min f(x) = 1/2 x G x + g0 x
+//    s.t.
+//            x_1 + x_2 = 3
+//    x_1 >= 0
+//    x_2 >= 0
+//    x_1 + x_2 >= 2
+//
+//    The solution is x^T = [1 2] and f(x) = 12
+
+    n = 2;
+    G.resize(n, n);
+    {
+        std::istringstream is("4, -2, -2, 4");
+
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                is >> G[i][j] >> ch;
+    }
+
+    g0.resize(n);
+    {
+        std::istringstream is("6.0, 0.0 ");
+
+        for (int i = 0; i < n; i++)
+            is >> g0[i] >> ch;
+    }
+
+    m = 1;
+    CE.resize(n, m);
+    {
+        std::istringstream is("1.0, 1.0 ");
+
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < m; j++)
+                is >> CE[i][j] >> ch;
+    }
+
+    ce0.resize(m);
+    {
+        std::istringstream is("-3.0 ");
+
+        for (int j = 0; j < m; j++)
+            is >> ce0[j] >> ch;
+    }
+
+    p = 3;
+    CI.resize(n, p);
+    {
+        std::istringstream is("1.0, 0.0, 1.0, 0.0, 1.0, 1.0 ");
+
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < p; j++)
+                is >> CI[i][j] >> ch;
+    }
+
+    ci0.resize(p);
+    {
+        std::istringstream is("0.0, 0.0, -2.0 ");
+
+        for (int j = 0; j < p; j++)
+            is >> ci0[j] >> ch;
+    }
+    x.resize(n);
+
+//    cout << "CE" << endl;
+//    for (int i = 0; i < CE.nrows(); ++i) {
+//        for (int j = 0; j < CE.ncols(); ++j)
+//            cout << CE[i][j] << " ";
+//        cout << endl;
+//    }
+
+
+    // ===== Carolina test
+
+    unsigned int nvar = 7;
+    G.resize(0, nvar, nvar);
+
+    G[0][0] = 1e-6;
+    G[1][1] = 1e-6;
+    G[2][2] = 1e-6;
+    G[3][3] = 1e-6;
+    G[4][4] = 2;
+    G[5][5] = 2;
+    G[6][6] = 2;
+
+    cout << "G" << endl;
+    for (int i = 0; i < G.nrows(); ++i) {
+        for (int j = 0; j < G.ncols(); ++j)
+            cout << G[i][j] << " ";
+        cout << endl;
+    }
+
+
+    cout << "g0" << endl;
+    g0.resize(0, nvar);
+    g0[4] = -1;
+    g0[5] = -9;//0;
+    g0[6] = -2;
+
+    for (int i = 0; i < nvar; ++i)
+        cout << g0[i] << " ";
+    cout << endl;
+
+    CE.resize(0, nvar, 4);
+    CE[2][0] = -1;
+    CE[1][0] = 1;
+    CE[4][0] = -1;
+    CE[0][1] = 1;
+    CE[2][1] = 1;
+    CE[3][1] = -1;
+    CE[5][1] = -1;
+    CE[3][2] = 1;
+    CE[6][2] = -1;
+    CE[0][3] = 1;
+    CE[1][3] = 1;
+
+    cout << "CE" << endl;
+    for (int i = 0; i < CE.nrows(); ++i) {
+        for (int j = 0; j < CE.ncols(); ++j)
+            cout << CE[i][j] << " ";
+        cout << endl;
+    }
+
+    ce0.resize(0, 4);
+    ce0[3] = -5;
+
+    cout << "ce0" << endl;
+    for (int i = 0; i < 4; ++i)
+        cout << ce0[i] << " ";
+    cout << endl;
+
+    CI.resize(0, nvar, nvar * 2);
+    CI[0][0] = 1;
+    CI[1][1] = 1;
+    CI[2][2] = 1;
+    CI[3][3] = 1;
+    CI[4][4] = 1;
+    CI[5][5] = 1;
+    CI[6][6] = 1;
+    CI[0][7] = -1;
+    CI[1][8] = -1;
+    CI[2][9] = -1;
+    CI[3][10] = -1;
+    CI[4][11] = -1;
+    CI[5][12] = -1;
+    CI[6][13] = -1;
+
+    cout << "CI" << endl;
+    for (int i = 0; i < CI.nrows(); ++i) {
+        for (int j = 0; j < CI.ncols(); ++j)
+            cout << CI[i][j] << " ";
+        cout << endl;
+    }
+
+    ci0.resize(0, nvar * 2);
+    ci0[0] = 3;
+    ci0[1] = 3;
+    ci0[2] = 1;
+    ci0[3] = 1;
+    ci0[4] = -0.5;
+    ci0[5] = -0.5;//0;
+    ci0[6] = -0.5;
+    ci0[7] = 3;
+    ci0[8] = 3;
+    ci0[9] = 1;
+    ci0[10] = 1;
+    ci0[11] = 5;
+    ci0[12] = 5;//0;
+    ci0[13] = 5;
+
+    cout << "ci0" << endl;
+    for (int i = 0; i < nvar * 2; ++i)
+        cout << ci0[i] << " ";
+    cout << endl;
+
+
+    cout << "calling solver" << endl;
+    std::cout << "f: " << solve_quadprog(G, g0, CE, ce0, CI, ci0, x) << std::endl;
+    std::cout << "x: " << x << std::endl;
+//    for (int i = 0; i < n; i++)
+//    std::cout << x[i] << ' ';
+//	  std::cout << std::endl;
+
+    /* FOR DOUBLE CHECKING COST since in the solve_quadprog routine the matrix G is modified */
+
+    {
+        std::istringstream is("4, -2, -2, 4 ");
+
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                is >> G[i][j] >> ch;
+    }
+
+    std::cout << "Double checking cost: ";
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            sum += x[i] * G[i][j] * x[j];
+    sum *= 0.5;
+
+    for (int i = 0; i < n; i++)
+        sum += g0[i] * x[i];
+    std::cout << sum << std::endl;
+
+
+}
+
+void test_transfers() {
+
+    vector<int> buyers_ids = {1, 2, 3};
+    vector<double> buyers_transfers_capaities = {3, 3, 1, 1};
+    vector<double> buyers_transfers_trigger = {0.1, 0.9, 0.2};
+    vector<vector<double>> continuity_matrix = {
+            {0, 1, 0, 1},
+            {1, 0, 0, 1},
+            {-1, 1, 0, 0},
+            {0, -1, 1, 0},
+            {-1, 0, 0, 0},
+            {0, -1, 0, 0},
+            {0, 0, -1, 0}
+    };
+
+    Transfers t(0, 0, 0, buyers_ids, buyers_transfers_capaities, buyers_transfers_trigger, continuity_matrix);
+    vector<double> allocations = t.solve_QP(*(new vector<double>{0.5, 4.5, 1}), 5, 0.5);
+
+    for (double & a : allocations) cout << a << " ";
+
+}
+
 int main() {
 //
 // Uncomment the lines below to run the tests.
@@ -646,9 +888,11 @@ int main() {
 //    ::rofCalculationsTest();
 //    ::simulationTest();
 //    ::graphTest();
-    ::simulation3U5RTest();
+//    ::simulation3U5RTest();
 //    ::simulation1U1R1ITest();
 //    ::testLPSolver();
+//    ::test_QP();
+    ::test_transfers();
 
     return 0;
 }

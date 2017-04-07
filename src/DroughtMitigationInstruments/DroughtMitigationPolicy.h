@@ -15,12 +15,13 @@ protected:
 
 public:
     const int id;
+    const int type;
 
-    DroughtMitigationPolicy(const int id);
+    DroughtMitigationPolicy(const int id, const int type);
 
     virtual void applyPolicy(int week)= 0;
 
-    virtual void addUtility(Utility *utility) = 0;
+    virtual void addUtility(Utility *utility)= 0;
 
     const vector<int> &getUtilities_ids() const;
 

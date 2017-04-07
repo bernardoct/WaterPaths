@@ -26,6 +26,8 @@ namespace Constants {
     const int NONE = 0;
     const int INTAKE = 0;
     const int RESERVOIR = 1;
+    const int TRANSFERS = 0;
+    const int RESTRICTIONS = 1;
 
     typedef struct {
         int m, n; // m=rows, n=columns, mat[m x n]

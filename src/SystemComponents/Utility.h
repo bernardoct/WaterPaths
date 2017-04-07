@@ -18,6 +18,11 @@ private:
     double total_stored_volume;
     double total_treatment_capacity;
     double demand_multiplier = 1;
+    double demand_offset = 0;
+public:
+    void setDemand_offset(double demand_offset);
+
+private:
     double contingency_fund;
     const double percent_contingency_fund_contribution;
     const double water_price_per_volume;

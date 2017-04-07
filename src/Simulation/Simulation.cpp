@@ -24,7 +24,7 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_source
     for (WaterSource *ws : water_sources) {
         upstream_min_env_flow = 0;
         if (ws->source_type == INTAKE) {
-            for (int &i : water_sources_graph.getUpstreamSources(ws->id))
+            for (int &i : water_sources_graph.findUpstreamSources(ws->id))
                 upstream_min_env_flow += water_sources[i]->min_environmental_outflow;
             dynamic_cast<Intake *>(ws)->setUpstream_min_env_flow(upstream_min_env_flow);
         }

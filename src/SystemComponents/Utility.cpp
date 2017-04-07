@@ -21,7 +21,8 @@ Utility::Utility(string name, int id, char const *demand_file_name, int number_o
 
     demand_series = Utils::parse1DCsvFile(demand_file_name, number_of_week_demands);
     cout << "Utility " << name << " created." << endl;
-
+    total_stored_volume = -1;
+    total_storage_capacity = 1;
 }
 
 /**

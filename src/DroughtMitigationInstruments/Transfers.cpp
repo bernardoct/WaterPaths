@@ -16,11 +16,12 @@
  */
 Transfers::Transfers(const int id, const int source_utility_id, const double source_treatment_buffer,
                      const vector<int> &buyers_ids, const vector<double> &buyers_transfer_capacities,
-                     const vector<double> &buyers_transfer_triggers, vector<vector<double>> continuity_matrix)
+                     const vector<double> &buyers_transfer_triggers, const Graph utilities_connectivity_graph)
         : DroughtMitigationPolicy(id, TRANSFERS),
           source_utility_id(source_utility_id),
           source_treatment_buffer(source_treatment_buffer),
-          buyers_ids(buyers_ids) {
+          buyers_ids(buyers_ids),
+          buyers_transfer_triggers(buyers_transfer_triggers) {
 
     utilities_ids = buyers_ids;
     utilities_ids.push_back(source_utility_id);
@@ -41,12 +42,13 @@ Transfers::Transfers(const int id, const int source_utility_id, const double sou
 
     g0.resize(0, n_vars);
 
+    //FIXME: CREATE CONNECTIVITY MATRIX FROM GRAPH.
     /// size is number of variables x number of utilities (source + requesting utilities).
     /// Continuity matrix: +1 for pipe entering utility and -1 for leaving.
     CE.resize(0, n_vars, n_allocations + 1);
-    for (unsigned int i = 0; i < continuity_matrix.size(); ++i) {
-        for (unsigned int j = 0; j < continuity_matrix[i].size(); ++j) {
-            CE[i][j] = continuity_matrix.at(i).at(j);
+    for (unsigned int i = 0; i < utilities_connectivity_graph.size(); ++i) {
+        for (unsigned int j = 0; j < utilities_connectivity_graph[i].size(); ++j) {
+            CE[i][j] = utilities_connectivity_graph.at(i).at(j);
         }
     }
 
@@ -69,11 +71,35 @@ Transfers::Transfers(const int id, const int source_utility_id, const double sou
 Transfers::Transfers(const Transfers &transfers) : DroughtMitigationPolicy(transfers.id, TRANSFERS),
                                                    source_utility_id(transfers.source_utility_id),
                                                    source_treatment_buffer(transfers.source_treatment_buffer) {
-    //FIXME: COPY QP MATRICES AND VECTORS. ASK DAVE FOR A SMART WAY OF DOING THIS.
+
+    buyers_ids = transfers.buyers_ids;
+    buyers_transfer_triggers = transfers.buyers_transfer_triggers;
+    flow_rates_and_allocations = transfers.flow_rates_and_allocations;
+//    if (transfers.source_utility)
+//        FIXME: VALGRIND COMPLAINS ABOUT THIS LINE ABOVE EVEN IF IT'S NOT SUPPOSED TO BE CALLED.
+//        source_utility = new Utility(*transfers.source_utility);
+
+    /// Create new map of utilities because it's a map of pointers.
+    buying_utilities.clear();
+    for (const map<int, Utility *>::value_type &u : transfers.buying_utilities) {
+        buying_utilities.insert(pair<int, Utility *>(u.first, new Utility(*u.second)));
+    }
+
+    G = transfers.G;
+    CE = transfers.CE;
+    CI = transfers.CI;
+    g0 = transfers.g0;
+    ce0 = transfers.ce0;
+    ci0 = transfers.ci0;
+    x = transfers.x;
+
     this->utilities_ids = transfers.utilities_ids;
 }
 
-Transfers::~Transfers() {}
+Transfers::~Transfers() {
+    //FIXME: VALGIND COMPLAINS ABOUT DELETING UTILITY HERE.
+//    delete source_utility;
+}
 
 /**
  * Adds source and buying utility.
@@ -124,11 +150,10 @@ void Transfers::applyPolicy(int week) {
         }
 
         /// Calculate allocations and flow rates through inter-utility connections.
-        vector<double> flow_rates_and_allocations = solve_QP(transfer_requests,
-                                                             available_transfer_volume, min_transfer_volume);
+        flow_rates_and_allocations = solve_QP(transfer_requests, available_transfer_volume, min_transfer_volume);
 
         /// Mitigate demands.
-        for (int i = 0; i < buyers_ids.size(); ++i) {
+        for (int & i : buyers_ids) {
             buying_utilities[i]->setDemand_offset(getFlowRates()[i]);
         }
 
@@ -212,12 +237,14 @@ vector<double> Transfers::solve_QP(vector<double> allocation_requests, double av
     Vector<double> x(n_vars);
 
     /// Run quadratic programming solver.
-    std::cout << "f: " << solve_quadprog(G, g0, CE, ce0, CI, ci0, x) << std::endl;
+    solve_quadprog(G, g0, CE, ce0, CI, ci0, x);
 
     /// Convert Vector x into a vector.
     for (int i = 0; i < x.size(); ++i) {
         flow_rates_and_allocations.push_back(x[i]);
+        cout << x[i] << " ";
     }
+    cout << endl;
 
     return flow_rates_and_allocations;
 }

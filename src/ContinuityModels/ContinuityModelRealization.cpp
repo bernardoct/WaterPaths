@@ -34,8 +34,8 @@ void ContinuityModelRealization::setRisks_of_failure(const vector<double> &risks
 }
 
 void ContinuityModelRealization::applyDroughtMitigationPolicies(int week) {
-    for (unsigned long i = 0; i < drought_mitigation_policies.size(); ++i) {
-        drought_mitigation_policies.at(i)->applyPolicy(week);
+    for (DroughtMitigationPolicy* dmp : drought_mitigation_policies) {
+        dmp->applyPolicy(week);
     }
 }
 

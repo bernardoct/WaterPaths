@@ -9,6 +9,11 @@
 #include "../SystemComponents/Utility.h"
 #include "../ContinuityModels/ContinuityModelRealization.h"
 
+/*
+ * One class for storage (instead of structures) and a class that just collects that data (generic infoCollector
+ * class, which is extended to utilityCollector and so on). Info collector
+ */
+
 struct Utility_t {
     Utility_t(int id, double capacity, string name) : id(id), capacity(capacity) {};
 
@@ -47,7 +52,8 @@ private:
     vector<vector<Utility_t>> utilities_t;
     vector<vector<WaterSource_t>> reservoir_t;
     vector<vector<RestrictionPolicy_t>> restriction_policy_t;
-    string output_directory = "/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/";
+//    string output_directory = "/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/";
+    string output_directory = "/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/";
 
 public:
     DataCollector(const vector<Utility *> &utilities, const vector<WaterSource *> &water_sources,

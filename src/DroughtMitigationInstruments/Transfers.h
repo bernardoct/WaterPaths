@@ -26,7 +26,7 @@ public:
 
     Transfers(const int id, const int source_utility_id, const double source_treatment_buffer,
               const vector<int> &buyers_ids, const vector<double> &buyers_transfer_capacities,
-              const vector<double> &buyers_transfer_triggers, vector<vector<double>> continuity_matrix);
+              const vector<double> &buyers_transfer_triggers, const Graph utilities_connectivity_graph);
 
     Transfers(const Transfers &transfers);
 

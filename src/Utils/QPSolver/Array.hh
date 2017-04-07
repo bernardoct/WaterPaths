@@ -173,7 +173,7 @@ inline void Vector<T>::set(const T* a, unsigned int n)
 template <typename T>
 inline Vector<T> Vector<T>::extract(const std::set<unsigned int>& indexes) const
 {
-    Vector<T> tmp(indexes.size());
+    Vector<T> tmp((const unsigned int) indexes.size());
     unsigned int i = 0;
 
     for (std::set<unsigned int>::const_iterator el = indexes.begin(); el != indexes.end(); el++)
@@ -618,22 +618,6 @@ inline T mean(const Vector<T>& v)
 }
 
 template <typename T>
-inline T median(const Vector<T>& v)
-{
-    Vector<T> tmp = sort(v);
-    if (v.size() % 2 == 1) // it is an odd-sized vector
-        return tmp[v.size() / 2];
-    else
-        return 0.5 * (tmp[v.size() / 2 - 1] + tmp[v.size() / 2]);
-}
-
-template <typename T>
-inline T stdev(const Vector<T>& v, bool sample_correction = false)
-{
-    return sqrt(var(v, sample_correction));
-}
-
-template <typename T>
 inline T var(const Vector<T>& v, bool sample_correction = false)
 {
     T sum = (T)0, ssum = (T)0;
@@ -647,6 +631,12 @@ inline T var(const Vector<T>& v, bool sample_correction = false)
         return (ssum / n) - (sum / n) * (sum / n);
     else
         return n * ((ssum / n) - (sum / n) * (sum / n)) / (n - 1);
+}
+
+template <typename T>
+inline T stdev(const Vector<T>& v, bool sample_correction = false)
+{
+    return sqrt(var(v, sample_correction));
 }
 
 template <typename T>
@@ -806,6 +796,16 @@ inline Vector<T> sort(const Vector<T>& v)
     quicksort<T>(tmp, 0, tmp.size() - 1);
 
     return tmp;
+}
+
+template <typename T>
+inline T median(const Vector<T>& v)
+{
+    Vector<T> tmp = sort(v);
+    if (v.size() % 2 == 1) // it is an odd-sized vector
+        return tmp[v.size() / 2];
+    else
+        return 0.5 * (tmp[v.size() / 2 - 1] + tmp[v.size() / 2]);
 }
 
 template <typename T>
@@ -1921,7 +1921,7 @@ int lu(const Matrix<T>& A, Matrix<T>& LU, Vector<unsigned int>& index)
 {
     if (A.ncols() != A.nrows())
         throw std::logic_error("Error in LU decomposition: matrix must be squared");
-    int i, p, j, k, n = A.ncols(), ex;
+    unsigned int i, p, j, k, n = A.ncols(), ex;
     T val, tmp;
     Vector<T> d(n);
     LU = A;
@@ -1956,7 +1956,7 @@ int lu(const Matrix<T>& A, Matrix<T>& LU, Vector<unsigned int>& index)
             std::logic_error("Error in LU decomposition: matrix was singular");
         if (p > k)
         {
-            ex = -ex;
+            ex = (unsigned int) -ex;
             std::swap(index[k], index[p]);
             std::swap(d[k], d[p]);
             for (j = 0; j < n; j++)
@@ -2090,24 +2090,6 @@ Matrix<T> cholesky(const Matrix<T> A)
 }
 
 template <typename T>
-Vector<T> cholesky_solve(const Matrix<T>& LL, const Vector<T>& b)
-{
-    if (LL.ncols() != LL.nrows())
-        throw std::logic_error("Error in Cholesky solve: matrix must be squared");
-    unsigned int n = LL.ncols();
-    if (b.size() != n)
-        throw std::logic_error("Error in Cholesky decomposition: b vector must be of the same dimensions of LU matrix");
-    Vector<T> x, y;
-
-    /* Solve L * y = b */
-    forward_elimination(LL, y, b);
-    /* Solve L^T * x = y */
-    backward_elimination(LL, x, y);
-
-    return x;
-}
-
-template <typename T>
 void cholesky_solve(const Matrix<T>& LL, Vector<T>& x, const Vector<T>& b)
 {
     x = cholesky_solve(LL, b);
@@ -2167,6 +2149,24 @@ Vector<T> backward_elimination(const Matrix<T>& U, const Vector<T> y)
 {
     Vector<T> x;
     forward_elimination(U, x, y);
+
+    return x;
+}
+
+template <typename T>
+Vector<T> cholesky_solve(const Matrix<T>& LL, const Vector<T>& b)
+{
+    if (LL.ncols() != LL.nrows())
+        throw std::logic_error("Error in Cholesky solve: matrix must be squared");
+    unsigned int n = LL.ncols();
+    if (b.size() != n)
+        throw std::logic_error("Error in Cholesky decomposition: b vector must be of the same dimensions of LU matrix");
+    Vector<T> x, y;
+
+    /* Solve L * y = b */
+    forward_elimination(LL, y, b);
+    /* Solve L^T * x = y */
+    backward_elimination(LL, x, y);
 
     return x;
 }

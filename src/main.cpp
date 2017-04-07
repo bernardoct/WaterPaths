@@ -457,7 +457,7 @@ void simulationTest() {
 //    g.topologicalSort();
 //
 //
-//    vector<int> upstream = g.getUpstreamSources(6);
+//    vector<int> upstream = g.findUpstreamSources(6);
 //
 //    for (int & n : upstream) {
 //        cout << n << " ";
@@ -571,14 +571,14 @@ void simulation3U5RTest() {
 
     //FIXME: UNCOMMENT LINES BELOW AND FIX TRANSFERS COPY CONSTRUCTOR.
     Transfers t(0, 0, 0, buyers_ids, buyers_transfers_capacities, buyers_transfers_trigger, continuity_matrix);
-//    drought_mitigation_policies.push_back(&t);
+    drought_mitigation_policies.push_back(&t);
 
     /// Data collector pointer
     DataCollector *data_collector = nullptr;
 
     /// Creates simulation object
-    Simulation s(water_sources, g, reservoir_utility_connectivity_matrix, utilities, drought_mitigation_policies, 104, 2,
-                 data_collector);
+    Simulation s(water_sources, g, reservoir_utility_connectivity_matrix, utilities, drought_mitigation_policies,
+                 104, 2, data_collector);
     cout << "Beginning U3R5 simulation" << endl;
     s.runFullSimulation();
     cout << "Ending U3R5 simulation" << endl;

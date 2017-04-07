@@ -23,13 +23,22 @@ Graph::Graph(int V) {
 }
 
 /**
- * Add conection (stream) between water sources.
+ * Add connection (stream) between water sources.
  * @param u Upstream source.
  * @param v Downstream source.
  */
 void Graph::addEdge(int u, int v) {
     adj[u].push_back(v);
     edges.push_back(vector<int>{u, v});
+
+    /// Sort graph based on the edges added to it so far.
+    topologial_order = topologicalSort();
+
+    /// Figure out sources upstream of each vertex added so far.
+    upstream_sources = *new vector<vector<int>>(topologial_order.size(), vector<int>());
+    for (int& i : topologial_order) {
+        upstream_sources[i] = findUpstreamSources(i);
+    }
 }
 
 /**
@@ -54,7 +63,7 @@ vector<vector<int>> Graph::getTriangularAdjacencyMatrix(int multiplier) {
  * @param id
  * @return vector with id's of upstream sources.
  */
-vector<int> Graph::getUpstreamSources(int id) {
+vector<int> Graph::findUpstreamSources(int id) const {
     vector<int> upstream_sources;
     for (int i = 0; i < V; ++i) {
         if (std::find(adj[i].begin(), adj[i].end(), id) != adj[i].end())
@@ -68,7 +77,7 @@ vector<int> Graph::getUpstreamSources(int id) {
  * Sort sources from upstream to downsteram.
  * @return
  */
-vector<int> Graph::topologicalSort() const {
+vector<int> Graph::topologicalSort() {
     // Create a vector to store indegrees of all
     // vertices. Initialize all indegrees as 0.
     vector<int> in_degree((unsigned long) V, 0);
@@ -133,4 +142,12 @@ vector<int> Graph::topologicalSort() const {
 
 const vector<vector<int>> &Graph::getEdges() const {
     return edges;
+}
+
+vector<int> &Graph::getUpstream_sourses(int i) {
+    return upstream_sources[i];
+}
+
+const vector<int> &Graph::getTopologial_order() const {
+    return topologial_order;
 }

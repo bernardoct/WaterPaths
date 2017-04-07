@@ -17,10 +17,13 @@
 Transfers::Transfers(const int id, const int source_utility_id, const double source_treatment_buffer,
                      const vector<int> &buyers_ids, const vector<double> &buyers_transfer_capacities,
                      const vector<double> &buyers_transfer_triggers, vector<vector<double>> continuity_matrix)
-        : DroughtMitigationPolicy(id),
+        : DroughtMitigationPolicy(id, TRANSFERS),
           source_utility_id(source_utility_id),
           source_treatment_buffer(source_treatment_buffer),
           buyers_ids(buyers_ids) {
+
+    utilities_ids = buyers_ids;
+    utilities_ids.push_back(source_utility_id);
 
     /// Create QP matrices and vectors.
     /// min f(x) = 1/2 x G x' + g0 x'
@@ -63,9 +66,17 @@ Transfers::Transfers(const int id, const int source_utility_id, const double sou
     }
 }
 
+Transfers::Transfers(const Transfers &transfers) : DroughtMitigationPolicy(transfers.id, TRANSFERS),
+                                                   source_utility_id(transfers.source_utility_id),
+                                                   source_treatment_buffer(transfers.source_treatment_buffer) {
+    //FIXME: COPY QP MATRICES AND VECTORS. ASK DAVE FOR A SMART WAY OF DOING THIS.
+    this->utilities_ids = transfers.utilities_ids;
+}
+
+Transfers::~Transfers() {}
+
 /**
- * Adds source and buying utility. The highest utility ID is used to create vectors of appropriate length in other
- * methods.
+ * Adds source and buying utility.
  * @param utility Utility to be added.
  */
 void Transfers::addUtility(Utility *utility) {
@@ -115,6 +126,11 @@ void Transfers::applyPolicy(int week) {
         /// Calculate allocations and flow rates through inter-utility connections.
         vector<double> flow_rates_and_allocations = solve_QP(transfer_requests,
                                                              available_transfer_volume, min_transfer_volume);
+
+        /// Mitigate demands.
+        for (int i = 0; i < buyers_ids.size(); ++i) {
+            buying_utilities[i]->setDemand_offset(getFlowRates()[i]);
+        }
 
     }
 }
@@ -198,15 +214,22 @@ vector<double> Transfers::solve_QP(vector<double> allocation_requests, double av
     /// Run quadratic programming solver.
     std::cout << "f: " << solve_quadprog(G, g0, CE, ce0, CI, ci0, x) << std::endl;
 
+    /// Convert Vector x into a vector.
     for (int i = 0; i < x.size(); ++i) {
         flow_rates_and_allocations.push_back(x[i]);
     }
-
 
     return flow_rates_and_allocations;
 }
 
 vector<double> Transfers::getTransfers() {
-    return *(new vector<double>(&flow_rates_and_allocations[flow_rates_and_allocations.size() - buyers_ids.size()],
-                                &flow_rates_and_allocations[flow_rates_and_allocations.size() - 1]));
+    vector<double> transfers = *(new vector<double>(flow_rates_and_allocations.end() - buyers_ids.size(),
+                                                     flow_rates_and_allocations.end()));
+    return transfers;
+}
+
+vector<double> Transfers::getFlowRates() {
+    vector<double> transfers = *(new vector<double>(flow_rates_and_allocations.begin(),
+                                                    flow_rates_and_allocations.end() - buyers_ids.size()));
+    return transfers;
 }

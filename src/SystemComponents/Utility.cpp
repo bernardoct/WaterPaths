@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include "Utility.h"
-#include "../Utils/Aux.h"
+#include "../Utils/Utils.h"
 
 /**
  * Main constructor for the Utility class.
@@ -19,7 +19,7 @@ Utility::Utility(string name, int id, char const *demand_file_name, int number_o
         percent_contingency_fund_contribution(percent_contingency_fund_contribution),
         water_price_per_volume(water_price_per_volume) {
 
-    demand_series = Aux::parse1DCsvFile(demand_file_name, number_of_week_demands);
+    demand_series = Utils::parse1DCsvFile(demand_file_name, number_of_week_demands);
     cout << "Utility " << name << " created." << endl;
 
 }
@@ -154,8 +154,9 @@ void Utility::splitDemands(int week) {
     /// Update contingency fund
     this->updateContingencyFund(week);
 
-    /// Reset demand multiplier.
+    /// Reset demand multiplier and offset.
     demand_multiplier = 1;
+    demand_offset = 0;
 }
 
 void Utility::updateContingencyFund(int week) {
@@ -235,4 +236,8 @@ void Utility::setDemand_multiplier(double demand_multiplier) {
 
 double Utility::getContingency_fund() const {
     return contingency_fund;
+}
+
+void Utility::setDemand_offset(double demand_offset) {
+    Utility::demand_offset = demand_offset;
 }

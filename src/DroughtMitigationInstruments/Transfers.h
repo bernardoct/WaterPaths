@@ -11,9 +11,10 @@
 
 class Transfers : public DroughtMitigationPolicy {
 private:
+
     const int source_utility_id;
     const double source_treatment_buffer;
-    const vector<int> buyers_ids;
+    vector<int> buyers_ids;
     vector<double> buyers_transfer_triggers;
     vector<double> flow_rates_and_allocations;
     Utility *source_utility;
@@ -27,6 +28,10 @@ public:
               const vector<int> &buyers_ids, const vector<double> &buyers_transfer_capacities,
               const vector<double> &buyers_transfer_triggers, vector<vector<double>> continuity_matrix);
 
+    Transfers(const Transfers &transfers);
+
+    ~Transfers();
+
     virtual void applyPolicy(int week) override;
 
     virtual void addUtility(Utility *utility) override;
@@ -35,6 +40,8 @@ public:
     solve_QP(vector<double> allocation_requests, double available_transfer_volume, double min_transfer_volume);
 
     vector<double> getTransfers();
+
+    vector<double> getFlowRates();
 };
 
 

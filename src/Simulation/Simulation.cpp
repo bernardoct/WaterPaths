@@ -3,7 +3,7 @@
 //
 
 #include "Simulation.h"
-#include "../Utils/Aux.h"
+#include "../Utils/Utils.h"
 #include <iostream>
 #include <algorithm>
 
@@ -39,18 +39,18 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_source
     vector<DroughtMitigationPolicy *> drought_mitigation_policies_realization;
     for (int r = 0; r < number_of_realizations; ++r) {
         /// Creates realization models by copying the water sources and utilities.
-        water_sources_realization = Aux::copyWaterSourceVector(water_sources);
+        water_sources_realization = Utils::copyWaterSourceVector(water_sources);
         realization_models.push_back(new ContinuityModelRealization(water_sources_realization,
                                                                     water_sources_graph,
                                                                     water_sources_to_utilities,
-                                                                    Aux::copyUtilityVector(utilities),
-                                                                    Aux::copyDroughtMitigationPolicyVector(
+                                                                    Utils::copyUtilityVector(utilities),
+                                                                    Utils::copyDroughtMitigationPolicyVector(
                                                                             drought_mitigation_policies),
                                                                     r));
 
         /// Creates rof models by copying the water utilities and sources.
-        rof_models.push_back(new ContinuityModelROF(Aux::copyWaterSourceVector(water_sources), water_sources_graph,
-                                                    water_sources_to_utilities, Aux::copyUtilityVector(utilities), r));
+        rof_models.push_back(new ContinuityModelROF(Utils::copyWaterSourceVector(water_sources), water_sources_graph,
+                                                    water_sources_to_utilities, Utils::copyUtilityVector(utilities), r));
 
         /// Initializes rof models.
         rof_models[r]->setWater_sources_realization(water_sources_realization);

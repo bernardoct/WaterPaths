@@ -5,7 +5,7 @@
 #include "DroughtMitigationPolicy.h"
 
 
-DroughtMitigationPolicy::DroughtMitigationPolicy(const int id) : id(id) {}
+DroughtMitigationPolicy::DroughtMitigationPolicy(const int id, const int type) : id(id), type(type) {}
 
 const vector<int> &DroughtMitigationPolicy::getUtilities_ids() const {
     return utilities_ids;

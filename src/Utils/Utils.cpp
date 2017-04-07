@@ -2,7 +2,8 @@
 // Created by bernardo on 1/13/17.
 //
 
-#include "Aux.h"
+#include "Utils.h"
+#include "../DroughtMitigationInstruments/Transfers.h"
 #include <fstream>
 #include <sstream>
 
@@ -14,7 +15,7 @@
  * @param number_of_weeks Number of time steps in each year (52 weeks, 365 days, etc.)
  * @return Double pointer array containing years in rows and time steps in columns.
  */
-double **Aux::parse2DCsvFile(char const *file_name, int number_of_records, int number_of_weeks) {
+double **Utils::parse2DCsvFile(char const *file_name, int number_of_records, int number_of_weeks) {
 
     double **data = 0;
     data = new double *[number_of_records];
@@ -44,7 +45,7 @@ double **Aux::parse2DCsvFile(char const *file_name, int number_of_records, int n
     return data;
 }
 
-double *Aux::parse1DCsvFile(char const *file_name, int number_of_weeks) {
+double *Utils::parse1DCsvFile(char const *file_name, int number_of_weeks) {
 
     double *data = new double[number_of_weeks];
 
@@ -63,7 +64,7 @@ double *Aux::parse1DCsvFile(char const *file_name, int number_of_weeks) {
     return data;
 }
 
-vector<WaterSource *> Aux::copyWaterSourceVector(vector<WaterSource *> water_sources_original) {
+vector<WaterSource *> Utils::copyWaterSourceVector(vector<WaterSource *> water_sources_original) {
     vector<WaterSource *> water_sources_new;
 
     for (WaterSource *ws : water_sources_original) {
@@ -77,7 +78,7 @@ vector<WaterSource *> Aux::copyWaterSourceVector(vector<WaterSource *> water_sou
     return water_sources_new;
 }
 
-vector<Utility *> Aux::copyUtilityVector(vector<Utility *> utility_original) {
+vector<Utility *> Utils::copyUtilityVector(vector<Utility *> utility_original) {
     vector<Utility *> utility_new;
 
     for (Utility *u : utility_original) {
@@ -88,11 +89,14 @@ vector<Utility *> Aux::copyUtilityVector(vector<Utility *> utility_original) {
 }
 
 vector<DroughtMitigationPolicy *>
-Aux::copyDroughtMitigationPolicyVector(vector<DroughtMitigationPolicy *> drought_mitigation_policy_original) {
+Utils::copyDroughtMitigationPolicyVector(vector<DroughtMitigationPolicy *> drought_mitigation_policy_original) {
     vector<DroughtMitigationPolicy *> drought_mitigation_policy_new;
 
     for (DroughtMitigationPolicy *dmp : drought_mitigation_policy_original) {
-        drought_mitigation_policy_new.push_back(new Restrictions(*dynamic_cast<Restrictions *>(dmp)));
+        if (dmp->type == RESTRICTIONS)
+            drought_mitigation_policy_new.push_back(new Restrictions(*dynamic_cast<Restrictions *>(dmp)));
+        else if (dmp->type == TRANSFERS)
+            drought_mitigation_policy_new.push_back(new Transfers(*dynamic_cast<Transfers *>(dmp)));
     }
 
     return drought_mitigation_policy_new;

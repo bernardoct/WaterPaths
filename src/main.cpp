@@ -2,7 +2,7 @@
 #include <sstream>
 #include "SystemComponents/WaterSources/Reservoir.h"
 #include "SystemComponents/Utility.h"
-#include "Utils/Aux.h"
+#include "Utils/Utils.h"
 #include "Simulation/Simulation.h"
 #include "Utils/QPSolver/QuadProg++.hh"
 #include "DroughtMitigationInstruments/Transfers.h"
@@ -18,7 +18,7 @@ using namespace Constants;
 //int reservoirAndCatchmentTest() {
 //    cout << "BEGINNING RESERVOIR TEST" << endl << endl;
 //
-//    double **streamflows_test = Aux::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
+//    double **streamflows_test = Utils::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
 //                                                            "inflowsLakeTest.csv", 2, 52);
 //    Catchment catchment_test(streamflows_test[0]);
 //
@@ -41,7 +41,7 @@ using namespace Constants;
 //    // 2D
 //    cout << "2-D " << endl;
 //    char const *file_name_2d = "/home/bernardo/ClionProjects/TriangleModel/TestFiles/inflowsLakeTest.csv";
-//    double **test_data_2d = Aux::parse2DCsvFile(file_name_2d, 2, 5);
+//    double **test_data_2d = Utils::parse2DCsvFile(file_name_2d, 2, 5);
 //
 //    for (int i = 0; i < 2; i++) {
 //        for (int j = 0; j < 4; j++) {
@@ -54,7 +54,7 @@ using namespace Constants;
 //    // 1D
 //    cout << "1-D " << endl;
 //    char const *file_name_1d = "/home/bernardo/ClionProjects/TriangleModel/TestFiles/demands.csv";
-//    double *test_data_1d = Aux::parse1DCsvFile(file_name_1d, 52);
+//    double *test_data_1d = Utils::parse1DCsvFile(file_name_1d, 52);
 //
 //    for (int i = 0; i < 5; i++) {
 //        cout << test_data_1d[i] << endl;
@@ -75,7 +75,7 @@ int regionTwoUtilitiesTwoReservoirsContinuityTest() {
     cout << "BEGINNING 2 RESERVOIRS 2 UTILITIES READ TEST" << endl << endl;
 
     int streamflow_n_weeks = 2652;
-    double **streamflows_test = Aux::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
+    double **streamflows_test = Utils::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
                                                             "inflowsLakeTest.csv", 2, streamflow_n_weeks);
 
     Catchment c1(streamflows_test[0], streamflow_n_weeks);
@@ -137,7 +137,7 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
 
     cout << "BEGINNING 2 RESERVOIRS 1 UTILITY READ TEST" << endl << endl;
     int streamflow_n_weeks = 2652;
-    double **streamflows_test = Aux::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
+    double **streamflows_test = Utils::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
                                                             "inflowsLakeTest.csv", 2, streamflow_n_weeks);
 
     Catchment c1(streamflows_test[0], streamflow_n_weeks);
@@ -194,7 +194,7 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
 //void catchmentCopy() {
 //    cout << "BEGINNING CATCHMENT COPY READ TEST" << endl << endl;
 //    int streamflow_n_weeks = 52;
-//    double **streamflows_test = Aux::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
+//    double **streamflows_test = Utils::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
 //                                                            "inflowsLakeTest.csv", 2, streamflow_n_weeks);
 //
 //    Catchment c1(streamflows_test[0], streamflow_n_weeks);
@@ -233,7 +233,7 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
 //void reservoirCopy() {
 //    cout << "BEGINNING RESERVOIR COPY TEST" << endl << endl;
 //    int streamflow_n_weeks = 52;
-//    double **streamflows_test = Aux::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
+//    double **streamflows_test = Utils::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
 //                                                            "inflowsLakeTest.csv", 2, streamflow_n_weeks);
 //
 //    Catchment c1(streamflows_test[0], streamflow_n_weeks);
@@ -261,7 +261,7 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
 //void utilityCopy() {
 //    cout << "BEGINNING 2 RESERVOIRS 1 UTILITY READ TEST" << endl << endl;
 //    int streamflow_n_weeks = 52;
-//    double **streamflows_test = Aux::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
+//    double **streamflows_test = Utils::parse2DCsvFile("/home/bernardo/ClionProjects/TriangleModel/TestFiles/"
 //                                                            "inflowsLakeTest.csv", 2, streamflow_n_weeks);
 //
 //    Catchment c1(streamflows_test[0], streamflow_n_weeks);
@@ -317,7 +317,7 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
 //    cout << "BEGINNING ROF TEST" << endl << endl;
 //
 //    int streamflow_n_weeks = 52 * 70;
-//    double **streamflows_test = Aux::parse2DCsvFile("../TestFiles/"
+//    double **streamflows_test = Utils::parse2DCsvFile("../TestFiles/"
 //                                                            "inflowsLong.csv", 2, streamflow_n_weeks);
 //
 //    Catchment c1(streamflows_test[0], streamflow_n_weeks);
@@ -353,9 +353,9 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
 //            {0, 1}
 //    };
 //
-//    ContinuityModelROF* crof = new ContinuityModelROF(Aux::copyWaterSourceVector(water_sources),
+//    ContinuityModelROF* crof = new ContinuityModelROF(Utils::copyWaterSourceVector(water_sources),
 //                                                      water_sources_adjacency_matrix,
-//                                                      Aux::copyUtilityVector(utilities),
+//                                                      Utils::copyUtilityVector(utilities),
 //                                                      water_sources_utility_adjacency_matrix,
 //                                                      SHORT_TERM_ROF, 0);
 //    vector<double> risks_of_failure;
@@ -378,7 +378,7 @@ void simulationTest() {
     cout << "BEGINNING ROF TEST" << endl << endl;
 
     int streamflow_n_weeks = 52 * 70;
-    double **streamflows_test = Aux::parse2DCsvFile("../TestFiles/"
+    double **streamflows_test = Utils::parse2DCsvFile("../TestFiles/"
                                                             "inflowsLong.csv", 2, streamflow_n_weeks);
 
     Catchment c1(streamflows_test[0], streamflow_n_weeks);
@@ -470,7 +470,7 @@ void simulation3U5RTest() {
 
     /// Read streamflows
     int streamflow_n_weeks = 52 * 70;
-    double **streamflows_test = Aux::parse2DCsvFile("../TestFiles/"
+    double **streamflows_test = Utils::parse2DCsvFile("../TestFiles/"
                                                             "inflowsLong.csv", 2, streamflow_n_weeks);
 
     /// Create catchments and corresponding vectors
@@ -545,13 +545,39 @@ void simulation3U5RTest() {
     Restrictions rp2(1, restriction_stage_multipliers2, restriction_stage_triggers2, vector<int>(1, 1));
     Restrictions rp3(2, restriction_stage_multipliers1, restriction_stage_triggers1, vector<int>(1, 2));
 
-    vector<DroughtMitigationPolicy *> restrictions = {&rp1, &rp2, &rp3};
+    vector<DroughtMitigationPolicy *> drought_mitigation_policies = {&rp1, &rp2, &rp3};
+
+    /// Transfer policy
+
+    /*
+     *      0
+     *     / \
+     *  0 v   v 1
+     *   /     \
+     *  1--->---2
+     *      2
+     */
+
+    vector<int> buyers_ids = {1, 2};
+    vector<double> buyers_transfers_capacities = {0.5, 0.3, 0.2};
+    vector<double> buyers_transfers_trigger = {0.07, 0.05};
+    vector<vector<double>> continuity_matrix = {
+            {1, 1, 0},
+            {0, 1, -1},
+            {-1, 0, -1},
+            {-1, 0, 0},
+            {0, -1, 0}
+    };
+
+    //FIXME: UNCOMMENT LINES BELOW AND FIX TRANSFERS COPY CONSTRUCTOR.
+    Transfers t(0, 0, 0, buyers_ids, buyers_transfers_capacities, buyers_transfers_trigger, continuity_matrix);
+//    drought_mitigation_policies.push_back(&t);
 
     /// Data collector pointer
     DataCollector *data_collector = nullptr;
 
     /// Creates simulation object
-    Simulation s(water_sources, g, reservoir_utility_connectivity_matrix, utilities, restrictions, 104, 2,
+    Simulation s(water_sources, g, reservoir_utility_connectivity_matrix, utilities, drought_mitigation_policies, 104, 2,
                  data_collector);
     cout << "Beginning U3R5 simulation" << endl;
     s.runFullSimulation();
@@ -562,7 +588,7 @@ void simulation1U1R1ITest() {
     cout << "BEGINNING INTAKE TEST" << endl << endl;
 
     int streamflow_n_weeks = 52 * 70;
-    double **streamflows_test = Aux::parse2DCsvFile("../TestFiles/"
+    double **streamflows_test = Utils::parse2DCsvFile("../TestFiles/"
                                                             "inflowsLong.csv", 2, streamflow_n_weeks);
 
     Catchment c1(streamflows_test[0], streamflow_n_weeks);
@@ -848,8 +874,11 @@ void test_transfers() {
     vector<double> allocations = t.solve_QP(*(new vector<double>{0.5, 4.5, 1}), 5, 0.5);
 
     for (double & a : allocations) cout << a << " ";
+    cout << endl;
     // answer: 3 2 1 0.5 1 3.5 0.5
-
+    for (double & a : t.getFlowRates()) cout << a << " ";
+    for (double & a : t.getTransfers()) cout << a << " ";
+    // answer: 3 2 1 0.5 1 3.5 0.5
 }
 
 int main() {

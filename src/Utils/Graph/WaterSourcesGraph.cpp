@@ -1,25 +1,17 @@
 //
-// Created by bernardo on 2/2/17.
+// Created by bernardoct on 4/8/17.
+//
+// topologicalSort function written by Chirag Agarwal, found at:
+// http://www.geeksforgeeks.org/topological-sorting-indegree-based-solution/
 //
 
-#include "Graph.h"
+#include <iostream>
+#include <queue>
+#include <algorithm>
+#include "WaterSourcesGraph.h"
 
-// A C++ program to print topological sorting of a graph
-// using indegrees.
-#include<bits/stdc++.h>
+WaterSourceGraph::WaterSourceGraph(int V) : Graph(V) {
 
-using namespace std;
-
-// Class to represent a graph
-
-
-/**
- * Constructor.
- * @param V Number of water sources.
- */
-Graph::Graph(int V) {
-    this->V = V;
-    adj = new list<int>[V];
 }
 
 /**
@@ -27,57 +19,24 @@ Graph::Graph(int V) {
  * @param u Upstream source.
  * @param v Downstream source.
  */
-void Graph::addEdge(int u, int v) {
-    adj[u].push_back(v);
-    edges.push_back(vector<int>{u, v});
+void WaterSourceGraph::addEdge(int u, int v) {
+    this->addEdgeToEdgesList(u, v);
 
     /// Sort graph based on the edges added to it so far.
-    topologial_order = topologicalSort();
+    topological_order = topologicalSort();
 
     /// Figure out sources upstream of each vertex added so far.
-    upstream_sources = *new vector<vector<int>>(topologial_order.size(), vector<int>());
-    for (int& i : topologial_order) {
+    upstream_sources = *new vector<vector<int>>(topological_order.size(), vector<int>());
+    for (int& i : topological_order) {
         upstream_sources[i] = findUpstreamSources(i);
     }
 }
 
 /**
- * Returns graph's triangular adjacency matrix multiplier by a constant.
- * @param index multiplying constant.
- * @return adjacency matrix.
- */
-vector<vector<int>> Graph::getTriangularAdjacencyMatrix(int multiplier) {
-    vector<vector<int>> adj_matrix((unsigned long) V, vector<int>((unsigned long) V));
-
-    for (int u = 0; u < adj->size(); ++u) {
-        for (int & v : adj[u]) {
-            adj_matrix[u][v] = multiplier;
-        }
-    }
-
-    return adj_matrix;
-}
-
-/**
- * Get all sources upstream water source <id>.
- * @param id
- * @return vector with id's of upstream sources.
- */
-vector<int> Graph::findUpstreamSources(int id) const {
-    vector<int> upstream_sources;
-    for (int i = 0; i < V; ++i) {
-        if (std::find(adj[i].begin(), adj[i].end(), id) != adj[i].end())
-            upstream_sources.push_back(i);
-    }
-
-    return upstream_sources;
-}
-
-/**
- * Sort sources from upstream to downsteram.
+ * Sort sources from upstream to downstream.
  * @return
  */
-vector<int> Graph::topologicalSort() {
+vector<int> WaterSourceGraph::topologicalSort() {
     // Create a vector to store indegrees of all
     // vertices. Initialize all indegrees as 0.
     vector<int> in_degree((unsigned long) V, 0);
@@ -140,14 +99,27 @@ vector<int> Graph::topologicalSort() {
     return top_order;
 }
 
-const vector<vector<int>> &Graph::getEdges() const {
-    return edges;
+/**
+ * Get all sources upstream water source <id>.
+ * @param id
+ * @return vector with id's of upstream sources.
+ */
+vector<int> WaterSourceGraph::findUpstreamSources(int id) const {
+    vector<int> upstream_sources;
+    for (int i = 0; i < V; ++i) {
+        /// If find function does not reach the end of the list while searching
+        /// for ID is because element ID exists in list.
+        if (std::find(adj[i].begin(), adj[i].end(), id) != adj[i].end())
+            upstream_sources.push_back(i);
+    }
+
+    return upstream_sources;
 }
 
-vector<int> &Graph::getUpstream_sourses(int i) {
+vector<int> &WaterSourceGraph::getUpstream_sourses(int i) {
     return upstream_sources[i];
 }
 
-const vector<int> &Graph::getTopologial_order() const {
-    return topologial_order;
+const vector<int> &WaterSourceGraph::getTopologial_order() const {
+    return topological_order;
 }

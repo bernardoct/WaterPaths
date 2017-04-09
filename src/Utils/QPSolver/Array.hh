@@ -97,8 +97,8 @@ Vector<T>::Vector(const Vector<T>& rhs)
 template <typename T>
 Vector<T>::~Vector()
 {
-    if (v != 0)
-        delete[] (v);
+//    if (v != 0)
+//        delete[] (v);
 }
 
 template <typename T>
@@ -865,6 +865,7 @@ public:
     inline Matrix<T> extractRows(const std::set<unsigned int>& indexes) const;
     inline Matrix<T> extractColumns(const std::set<unsigned int>& indexes) const;
     inline Matrix<T> extract(const std::set<unsigned int>& r_indexes, const std::set<unsigned int>& c_indexes) const;
+    inline Matrix<T> transpose();
 
     inline void set(const T* a, unsigned int n, unsigned int m);
     inline void set(const std::set<unsigned int>& r_indexes, const std::set<unsigned int>& c_indexes, const Matrix<T>& m);

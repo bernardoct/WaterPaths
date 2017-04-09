@@ -8,8 +8,6 @@
 
 #include <map>
 
-#define M 20
-#define N 20
 
 namespace Constants {
     const double PEAKING_FACTOR = 0.85; ///Peaking factor used to move from daily capacity to average weekly capacity.
@@ -28,11 +26,8 @@ namespace Constants {
     const int RESERVOIR = 1;
     const int TRANSFERS = 0;
     const int RESTRICTIONS = 1;
-
-    typedef struct {
-        int m, n; // m=rows, n=columns, mat[m x n]
-        double mat[M][N];
-    } Tableau;
+    const int UTILITIES = 0;
+    const int RESERVOIRS = 1;
 };
 
 

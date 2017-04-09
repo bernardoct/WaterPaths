@@ -7,26 +7,27 @@
 
 #include "DroughtMitigationPolicy.h"
 #include "../Utils/QPSolver/QuadProg++.hh"
-#include "../Utils/Graph.h"
+#include "../Utils/Graph/Graph.h"
 
 class Transfers : public DroughtMitigationPolicy {
 private:
 
     const int source_utility_id;
     const double source_treatment_buffer;
+    map<int, int>* util_id_to_vertex_id = new map<int, int>();
     vector<int> buyers_ids;
     vector<double> buyers_transfer_triggers;
     vector<double> flow_rates_and_allocations;
     Utility *source_utility;
-    map<int, Utility *> buying_utilities;
+    vector<Utility *> buying_utilities;
     Matrix<double> G, CE, CI;
-    Vector<double> g0, ce0, ci0, x;
+    Vector<double> g0, ce0, ci0, x, lb, ub;
 
 public:
 
     Transfers(const int id, const int source_utility_id, const double source_treatment_buffer,
-              const vector<int> &buyers_ids, const vector<double> &buyers_transfer_capacities,
-              const vector<double> &buyers_transfer_triggers, const Graph utilities_connectivity_graph);
+              const vector<int> &buyers_ids, const vector<double> &pipe_transfer_capacities,
+              const vector<double> &buyers_transfer_triggers, const vector<vector<double>>* continuity_matrix);
 
     Transfers(const Transfers &transfers);
 

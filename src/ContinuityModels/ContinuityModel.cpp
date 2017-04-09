@@ -4,10 +4,11 @@
 
 #include <iostream>
 #include "ContinuityModel.h"
+#include "../Utils/Graph/WaterSourcesGraph.h"
 
 
 ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, const vector<Utility *> &utilities,
-                                 const Graph &water_sources_graph,
+                                 const WaterSourceGraph &water_sources_graph,
                                  const vector<vector<int>> &water_sources_to_utilities) : water_sources(water_sources),
                                                                                           utilities(utilities),
                                                                                           water_sources_graph(

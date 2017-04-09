@@ -69,4 +69,15 @@ double solve_quadprog(Matrix<double>& G, Vector<double>& g0,
                       const Matrix<double>& CI, const Vector<double>& ci0, 
                       Vector<double>& x);
 
+void solve_quadprog_matlab_syntax(Matrix<double> &G, Vector<double> &g0,
+                                  const Matrix<double> &CE, const Vector<double> &ce0,
+                                  const Matrix<double> &CI, const Vector<double> &ci0,
+                                  const Vector<double> &lb, const Vector<double> &ub,
+                                  Vector<double> &x);
+
+// Utility functions for printing vectors and matrices
+void print_matrix(char *name, const Matrix<double> &A, int n = -1, int m = -1);
+
+void print_vector(char *name, const Vector<double> &v, int n = -1);
+
 #endif // #define _QUADPROGPP

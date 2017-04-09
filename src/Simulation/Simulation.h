@@ -12,6 +12,7 @@
 #include "../ContinuityModels/ContinuityModelRealization.h"
 #include "../Utils/DataCollector.h"
 #include "../DroughtMitigationInstruments/Restrictions.h"
+#include "../Utils/Graph/WaterSourcesGraph.h"
 #include <vector>
 
 using namespace Constants;
@@ -20,7 +21,7 @@ using namespace std;
 class Simulation {
 public:
 
-    Simulation(vector<WaterSource *> &water_sources, Graph &water_sources_graph,
+    Simulation(vector<WaterSource *> &water_sources, WaterSourceGraph &water_sources_graph,
                const vector<vector<int>> &water_sources_to_utilities, vector<Utility *> &utilities,
                vector<DroughtMitigationPolicy *> &drought_mitigation_policies, const int total_simulation_time,
                const int number_of_realizations, DataCollector *data_collector);

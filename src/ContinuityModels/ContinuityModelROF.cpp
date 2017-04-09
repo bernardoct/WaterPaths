@@ -5,8 +5,10 @@
 #include <iostream>
 #include "ContinuityModelROF.h"
 
-ContinuityModelROF::ContinuityModelROF(const vector<WaterSource *> &water_source, const Graph &water_sources_graph,
-                                       const vector<vector<int>> &water_sources_to_utilities, const vector<Utility *> &utilities,
+ContinuityModelROF::ContinuityModelROF(const vector<WaterSource *> &water_source,
+                                       const WaterSourceGraph &water_sources_graph,
+                                       const vector<vector<int>> &water_sources_to_utilities,
+                                       const vector<Utility *> &utilities,
                                        const int realization_id) : ContinuityModel(water_source,
                                                                                    utilities,
                                                                                    water_sources_graph,

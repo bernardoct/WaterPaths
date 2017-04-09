@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <string>
 #include "SystemComponents/WaterSources/Reservoir.h"
 #include "SystemComponents/Utility.h"
 #include "Utils/Utils.h"
@@ -101,7 +102,7 @@ int regionTwoUtilitiesTwoReservoirsContinuityTest() {
     utilities.push_back(&u1);
     utilities.push_back(&u2);
 
-    Graph g((int) reservoirs.size());
+    WaterSourceGraph g((int) reservoirs.size());
     g.addEdge(0, 1);
 
     vector<vector<int>> reservoir_utility_connectivity_matrix = {
@@ -162,7 +163,7 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
     vector<Utility *> utilities;
     utilities.push_back(&u1);
 
-    Graph g((int) reservoirs.size());
+    WaterSourceGraph g((int) reservoirs.size());
     g.addEdge(0, 1);
 
     vector<vector<int>> reservoir_utility_connectivity_matrix = {
@@ -405,7 +406,7 @@ void simulationTest() {
     utilities.push_back(&u2);
 
 
-    Graph g((int) water_sources.size());
+    WaterSourceGraph g((int) water_sources.size());
     g.addEdge(0, 1);
 
     vector<vector<int>> reservoir_utility_connectivity_matrix = {
@@ -430,7 +431,7 @@ void simulationTest() {
     cout << "Ending simulation" << endl;
 }
 
-//void graphTest() {
+//void WaterSourceGraphTest() {
 //
 ///*
 // *    5   6   7
@@ -442,8 +443,8 @@ void simulationTest() {
 // *        0
 // */
 //
-//// Create a graph given in the above diagram
-//    Graph g(8);
+//// Create a WaterSourceGraph given in the above diagram
+//    WaterSourceGraph g(8);
 //    g.addEdge(0, 1);
 //    g.addEdge(1, 2);
 //    g.addEdge(1, 3);
@@ -521,7 +522,7 @@ void simulation3U5RTest() {
      *          3
      */
 
-    Graph g((int) water_sources.size());
+    WaterSourceGraph g((int) water_sources.size());
     g.addEdge(0, 2);
     g.addEdge(1, 2);
     g.addEdge(2, 3);
@@ -559,18 +560,17 @@ void simulation3U5RTest() {
      */
 
     vector<int> buyers_ids = {1, 2};
-    vector<double> buyers_transfers_capacities = {0.5, 0.3, 0.2};
+    vector<double> buyers_transfers_capacities = {15, 10, 5};
     vector<double> buyers_transfers_trigger = {0.07, 0.05};
     vector<vector<double>> continuity_matrix = {
-            {1, 1, 0},
-            {0, 1, -1},
-            {-1, 0, -1},
-            {-1, 0, 0},
-            {0, -1, 0}
+            {-1, -1, 0, 1, 0, 0},
+            {1, 0, -1, 0, -1, 0},
+            {0, 1, 1, 0, 0, -1}
     };
 
-    //FIXME: UNCOMMENT LINES BELOW AND FIX TRANSFERS COPY CONSTRUCTOR.
-    Transfers t(0, 0, 0, buyers_ids, buyers_transfers_capacities, buyers_transfers_trigger, continuity_matrix);
+    //FIXME: WE ACTUALLY SHOULD NOT TRY TO MAXIMIZE THE AMOUNT OF AVAILABLE WATER
+    //FIXME: THAT'S USED BECAUSE UTILITIES MAY JUST NOT NEED THAT. REMOVE INJECTED WATER VARIABLE.
+    Transfers t(0, 0, 0, buyers_ids, buyers_transfers_capacities, buyers_transfers_trigger, &continuity_matrix);
     drought_mitigation_policies.push_back(&t);
 
     /// Data collector pointer
@@ -616,7 +616,7 @@ void simulation1U1R1ITest() {
     utilities.push_back(&u1);
 
 
-    Graph g((int) water_sources.size());
+    WaterSourceGraph g((int) water_sources.size());
     g.addEdge(0, 1);
     g.addEdge(1, 2);
 
@@ -665,6 +665,7 @@ void test_QP() {
             for (int j = 0; j < n; j++)
                 is >> G[i][j] >> ch;
     }
+    Matrix<double> G2 = G;
 
     g0.resize(n);
     {
@@ -711,173 +712,167 @@ void test_QP() {
     }
     x.resize(n);
 
-//    cout << "CE" << endl;
-//    for (int i = 0; i < CE.nrows(); ++i) {
-//        for (int j = 0; j < CE.ncols(); ++j)
-//            cout << CE[i][j] << " ";
-//        cout << endl;
-//    }
-
 
     // ===== Carolina test
 
-//    unsigned int nvar = 7;
-//    G.resize(0, nvar, nvar);
-//
-//    G[0][0] = 1e-6;
-//    G[1][1] = 1e-6;
-//    G[2][2] = 1e-6;
-//    G[3][3] = 1e-6;
-//    G[4][4] = 2;
-//    G[5][5] = 2;
-//    G[6][6] = 2;
-//
-//    cout << "G" << endl;
-//    for (int i = 0; i < G.nrows(); ++i) {
-//        for (int j = 0; j < G.ncols(); ++j)
-//            cout << G[i][j] << " ";
-//        cout << endl;
-//    }
-//
-//
-//    cout << "g0" << endl;
-//    g0.resize(0, nvar);
-//    g0[4] = -1;
-//    g0[5] = -9;//0;
-//    g0[6] = -2;
-//
-//    for (int i = 0; i < nvar; ++i)
-//        cout << g0[i] << " ";
-//    cout << endl;
-//
-//    CE.resize(0, nvar, 4);
-//    CE[2][0] = -1;
-//    CE[1][0] = 1;
-//    CE[4][0] = -1;
-//    CE[0][1] = 1;
-//    CE[2][1] = 1;
-//    CE[3][1] = -1;
-//    CE[5][1] = -1;
-//    CE[3][2] = 1;
-//    CE[6][2] = -1;
-//    CE[0][3] = 1;
-//    CE[1][3] = 1;
-//
-//    cout << "CE" << endl;
-//    for (int i = 0; i < CE.nrows(); ++i) {
-//        for (int j = 0; j < CE.ncols(); ++j)
-//            cout << CE[i][j] << " ";
-//        cout << endl;
-//    }
-//
-//    ce0.resize(0, 4);
-//    ce0[3] = -5;
-//
-//    cout << "ce0" << endl;
-//    for (int i = 0; i < 4; ++i)
-//        cout << ce0[i] << " ";
-//    cout << endl;
-//
-//    CI.resize(0, nvar, nvar * 2);
-//    CI[0][0] = 1;
-//    CI[1][1] = 1;
-//    CI[2][2] = 1;
-//    CI[3][3] = 1;
-//    CI[4][4] = 1;
-//    CI[5][5] = 1;
-//    CI[6][6] = 1;
-//    CI[0][7] = -1;
-//    CI[1][8] = -1;
-//    CI[2][9] = -1;
-//    CI[3][10] = -1;
-//    CI[4][11] = -1;
-//    CI[5][12] = -1;
-//    CI[6][13] = -1;
-//
-//    cout << "CI" << endl;
-//    for (int i = 0; i < CI.nrows(); ++i) {
-//        for (int j = 0; j < CI.ncols(); ++j)
-//            cout << CI[i][j] << " ";
-//        cout << endl;
-//    }
-//
-//    ci0.resize(0, nvar * 2);
-//    ci0[0] = 3;
-//    ci0[1] = 3;
-//    ci0[2] = 1;
-//    ci0[3] = 1;
-//    ci0[4] = -0.5;
-//    ci0[5] = -0.5;//0;
-//    ci0[6] = -0.5;
-//    ci0[7] = 3;
-//    ci0[8] = 3;
-//    ci0[9] = 1;
-//    ci0[10] = 1;
-//    ci0[11] = 5;
-//    ci0[12] = 5;//0;
-//    ci0[13] = 5;
-//
-//    cout << "ci0" << endl;
-//    for (int i = 0; i < nvar * 2; ++i)
-//        cout << ci0[i] << " ";
-//    cout << endl;
+    unsigned int nvar = 7;
+    G.resize(0, nvar, nvar);
+    G[0][0] = 1e-6;
+    G[1][1] = 1e-6;
+    G[2][2] = 1e-6;
+    G[3][3] = 1e-6;
+    G[4][4] = 2;
+    G[5][5] = 2;
+    G[6][6] = 2;
 
+    g0.resize(0, nvar);
+    g0[4] = -1;
+    g0[5] = -9;//0;
+    g0[6] = -2;
+
+    CE.resize(0, nvar, 4);
+    CE[2][1] = -1;
+    CE[1][1] = 1;
+    CE[4][1] = -1;
+    CE[0][2] = 1;
+    CE[2][2] = 1;
+    CE[3][2] = -1;
+    CE[5][2] = -1;
+    CE[3][3] = 1;
+    CE[6][3] = -1;
+    CE[0][0] = -1;
+    CE[1][0] = -1;
+
+    ce0.resize(0, 4);
+    ce0[0] = -5;
+
+    CI.resize(0, nvar, nvar * 2);
+    CI[0][0] = 1;
+    CI[1][1] = 1;
+    CI[2][2] = 1;
+    CI[3][3] = 1;
+    CI[4][4] = 1;
+    CI[5][5] = 1;
+    CI[6][6] = 1;
+    CI[0][7] = -1;
+    CI[1][8] = -1;
+    CI[2][9] = -1;
+    CI[3][10] = -1;
+    CI[4][11] = -1;
+    CI[5][12] = -1;
+    CI[6][13] = -1;
+
+    ci0.resize(0, nvar * 2);
+    ci0[0] = 3;
+    ci0[1] = 3;
+    ci0[2] = 1;
+    ci0[3] = 1;
+    ci0[4] = -0.5;
+    ci0[5] = -0.5;//0;
+    ci0[6] = -0.5;
+    ci0[7] = 3;
+    ci0[8] = 3;
+    ci0[9] = 1;
+    ci0[10] = 1;
+    ci0[11] = 5;
+    ci0[12] = 5;//0;
+    ci0[13] = 5;
+
+
+    print_matrix("G", G);
+    print_vector("g0", g0);
+    print_matrix("CE", CE);
+    print_vector("ce0", ce0);
+    print_matrix("CI", CI);
+    print_vector("ci0", ci0);
 
     cout << "calling solver" << endl;
-    std::cout << "f: " << solve_quadprog(G, g0, CE, ce0, CI, ci0, x) << std::endl;
-    std::cout << "x: " << x << std::endl;
-//    for (int i = 0; i < n; i++)
-//    std::cout << x[i] << ' ';
-//	  std::cout << std::endl;
+    solve_quadprog(G, g0, CE, ce0, CI, ci0, x);
 
-    /* FOR DOUBLE CHECKING COST since in the solve_quadprog routine the matrix G is modified */
+    print_vector("x", x);
 
-    {
-        std::istringstream is("4, -2, -2, 4 ");
+//    CE.resize(0, 1, 2);
+//    CE[0][0] = 1;
+//    CE[0][1] = 1;
+//
+//    ce0[0] = 3;
+//
+//    CI.resize(0, 1, 2);
+//    CI[0][0] = 1;
+//    CI[0][1] = 1;
+//
+//    ci0.resize(0, 1);
+//    ci0[0] = 2;
+//
+//    Vector<double> lb;
+//    Vector<double> ub;
+//
+//    lb.resize(0, 2);
+//    ub.resize(0, 2);
+//    ub[0] = -1e6;
+//    ub[1] = -1e6;
+//
+//    x.resize(0, 2);
 
-        for (int i = 0; i < n; i++)
-            for (int j = 0; j < n; j++)
-                is >> G[i][j] >> ch;
-    }
+//    print_matrix("G", G2);
+//    print_vector("g0", g0);
+//    print_matrix("CE", CE);
+//    print_vector("ce0", ce0);
+//    print_matrix("CI", CI);
+//    print_vector("ci0", ci0);
+//    cout << endl;
+//    solve_quadprog_matlab_syntax(G2, g0, CE, ce0, CI, ci0, lb, ub, x);
+//    print_vector("x", x);
+    // supposed to be [1, 2]
 
-    std::cout << "Double checking cost: ";
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++)
-            sum += x[i] * G[i][j] * x[j];
-    sum *= 0.5;
-
-    for (int i = 0; i < n; i++)
-        sum += g0[i] * x[i];
-    std::cout << sum << std::endl;
-
-    // answer should be x1 = 1 and x2 = 2
 
 
 }
 
 void test_transfers() {
 
+//    WaterSourceGraph gu(4, 0);
+//    gu.addEdge(3, 0);
+//    gu.addEdge(3, 1);
+//    gu.addEdge(0, 1);
+//    gu.addEdge(1, 2);
+//
+//    vector<vector<double>> cm = gu.getadjacencyMatrix();
+//    for (auto &r : cm) {
+//        for (double &c : r)
+//            cout << c << " ";
+//        cout << endl;
+//    }
+
+
+    /*
+     *      0
+     *     / \
+     *  0 v   v 1
+     *   /     \
+     *  1--->---2
+     *   \  2
+     *  3 v
+     *     \
+     *      3
+     *
+     */
+
     vector<int> buyers_ids = {1, 2, 3};
-    vector<double> buyers_transfers_capaities = {3, 3, 1, 1};
+    vector<double> buyers_transfers_capacities = {3, 3, 1, 1};
     vector<double> buyers_transfers_trigger = {0.05, 0.08, 0.02};
     vector<vector<double>> continuity_matrix = {
-            {0, 1, 0, 1},
-            {1, 0, 0, 1},
-            {-1, 1, 0, 0},
-            {0, -1, 1, 0},
-            {-1, 0, 0, 0},
-            {0, -1, 0, 0},
-            {0, 0, -1, 0}
+            {-1, -1, 0, 0, 1, 0, 0, 0},
+            {0, 1, -1, 0, 0, -1, 0, 0},
+            {1, 0, 1, -1, 0, 0, -1, 0},
+            {0, 0, 0, 1, 0, 0, 0, -1}
     };
 
-    Transfers t(0, 0, 0, buyers_ids, buyers_transfers_capaities, buyers_transfers_trigger, continuity_matrix);
-    vector<double> allocations = t.solve_QP(*(new vector<double>{0.5, 4.5, 1}), 5, 0.5);
+    Transfers t(0, 3, 0, buyers_ids, buyers_transfers_capacities, buyers_transfers_trigger, &continuity_matrix);
+    vector<double> allocations = t.solve_QP(*(new vector<double>{0.5, 4.5, 1}), 10, 0.5);
 
     for (double & a : allocations) cout << a << " ";
     cout << endl;
-    // answer: 3 2 1 0.5 1 3.5 0.5
-    for (double & a : t.getFlowRates()) cout << a << " ";
-    for (double & a : t.getTransfers()) cout << a << " ";
     // answer: 3 2 1 0.5 1 3.5 0.5
 }
 

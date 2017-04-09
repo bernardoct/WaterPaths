@@ -47,9 +47,9 @@ Transfers::Transfers(const int id, const int source_utility_id, const double sou
 
     G.resize(0, n_vars, n_vars);
     for (int i = 0; i < n_vars; ++i)
-        if (i < n_flow_rates_Q_source - 1) G[i][i] = 1e-6;
+        if (i < n_flow_rates_Q_source) G[i][i] = 1e-6;
         else G[i][i] = 2;
-    G[n_flow_rates_Q_source - 1][n_flow_rates_Q_source - 1] = 2;
+//    G[n_flow_rates_Q_source - 1][n_flow_rates_Q_source - 1] = 2;
 
     g0.resize(0, n_vars);
 
@@ -189,7 +189,7 @@ vector<double> Transfers::solve_QP(vector<double> allocation_requests, double av
     for (int i = 0; i < allocation_requests.size(); ++i) {
         g0[i + n_flow_rates_Q_source] = -2 * allocation_requests[i];
     }
-    g0[n_flow_rates_Q_source - 1] = -2 * available_transfer_volume;
+//    g0[n_flow_rates_Q_source - 1] = -2 * available_transfer_volume;
 
     /// Set allocation bounds to 0 if no allocation is requested, and to
     /// minimum allocation and available transfer volume.

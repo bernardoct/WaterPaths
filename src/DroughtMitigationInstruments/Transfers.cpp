@@ -10,17 +10,20 @@
  * and allocation requests, and between the available amount of water from source and actual
  * conveyed capacity, which is limited by pipe conveyance capacities.
  *
- * @param id transfer policy ID
- * @param source_utility_id ID of source utility
- * @param source_treatment_buffer treatment capacity to be left unused in source utility
+ * @param id transfer policy ID.
+ * @param source_utility_id ID of source utility.
+ * @param source_treatment_buffer treatment capacity to be left unused in source utility.
  * @param buyers_ids
  * @param pipe_transfer_capacities
  * @param buyers_transfer_triggers
+ * @param conveyance_costs amount charged by pipe owning utility to convey water to another utility.
+ * @param pipe_owner id of utility owning each pipe.
  */
 Transfers::Transfers(const int id, const int source_utility_id, const double source_treatment_buffer,
                      const vector<int> &buyers_ids, const vector<double> &pipe_transfer_capacities,
                      const vector<double> &buyers_transfer_triggers,
-                     const vector<vector<double>>* continuity_matrix)
+                     const vector<vector<double>> *continuity_matrix, vector<double> conveyance_costs,
+                     vector<int> pipe_owner)
         : DroughtMitigationPolicy(id, TRANSFERS),
           source_utility_id(source_utility_id),
           source_treatment_buffer(source_treatment_buffer),
@@ -45,31 +48,34 @@ Transfers::Transfers(const int id, const int source_utility_id, const double sou
     unsigned int n_allocations = (unsigned int) buyers_ids.size();
     unsigned int n_vars = n_flow_rates_Q_source + n_allocations;
 
-    G.resize(0, n_vars, n_vars);
+    H.resize(0, n_vars, n_vars);
     for (int i = 0; i < n_vars; ++i)
-        if (i < n_flow_rates_Q_source) G[i][i] = 1e-6;
-        else G[i][i] = 2;
-//    G[n_flow_rates_Q_source - 1][n_flow_rates_Q_source - 1] = 2;
+        if (i < n_flow_rates_Q_source) H[i][i] = 1e-6;
+        else H[i][i] = 2;
 
-    g0.resize(0, n_vars);
+    /// Create g0 vector of 0's to be filled when policy is applied.
+    f.resize(0, n_vars);
 
     /// size is number of variables x number of utilities (source + requesting utilities).
-    /// Continuity matrix: +1 for pipe entering utility and -1 for leaving.
-    CE.resize(0, n_allocations + 1, n_vars);
+    /// Continuity matrix: +1 for flow entering utility and -1 for leaving.
+    Aeq.resize(0, n_allocations + 1, n_vars);
     cout << endl;
     for (unsigned int i = 0; i < continuity_matrix->size(); ++i) {
         for (unsigned int j = 0; j < continuity_matrix->at(i).size(); ++j) {
-            CE[i][j] = continuity_matrix->at(i).at(j);
+            Aeq[i][j] = continuity_matrix->at(i).at(j);
         }
         cout << endl;
     }
 
-    ce0.resize(0, n_allocations + 1);
+    /// Create ce0 vector of 0 so that mass balance is enforced on the nodes (utilities).
+    beq.resize(0, n_allocations + 1);
 
-    CI.resize(0, 0);
+    /// Create empty CI and ci0. They'll be redimensioned in the QP solver.
+    A.resize(0, 0);
 
-    ci0.resize(0);
+    b.resize(0);
 
+    /// Fill in pipe capacities part of lower and upper bound vectors.
     lb.resize(0, n_vars);
     ub.resize(0, n_vars);
     for (int i = 0; i < pipe_transfer_capacities.size(); ++i) {
@@ -78,6 +84,10 @@ Transfers::Transfers(const int id, const int source_utility_id, const double sou
     }
 }
 
+/**
+ * Copy constructor
+ * @param transfers
+ */
 Transfers::Transfers(const Transfers &transfers) : DroughtMitigationPolicy(transfers.id, TRANSFERS),
                                                    source_utility_id(transfers.source_utility_id),
                                                    source_treatment_buffer(transfers.source_treatment_buffer) {
@@ -91,23 +101,27 @@ Transfers::Transfers(const Transfers &transfers) : DroughtMitigationPolicy(trans
 
     buying_utilities = Utils::copyUtilityVector(transfers.buying_utilities);
 
-    G = transfers.G;
-    CE = transfers.CE;
-    CI = transfers.CI;
-    g0 = transfers.g0;
-    ce0 = transfers.ce0;
-    ci0 = transfers.ci0;
+    H = transfers.H;
+    Aeq = transfers.Aeq;
+    A = transfers.A;
+    f = transfers.f;
+    beq = transfers.beq;
+    b = transfers.b;
     lb = transfers.lb;
     ub = transfers.ub;
-    x = transfers.x;
+    allocations = transfers.allocations;
     utilities_ids = transfers.utilities_ids;
     util_id_to_vertex_id = transfers.util_id_to_vertex_id;
 
 }
 
+/**
+ * Destructor
+ */
 Transfers::~Transfers() {
     //FIXME: VALGIND COMPLAINS ABOUT DELETING UTILITY HERE.
-//    delete source_utility;
+    if (source_utility)
+       delete source_utility;
 }
 
 /**
@@ -143,7 +157,6 @@ void Transfers::applyPolicy(int week) {
 
     /// Check if transfers will be needed and, if so, perform the transfers.
     if (sum_rofs > 0) {
-        cout << week << endl;
         vector<double> transfer_requests(buyers_ids.size(), 0);
 
         /// Total volume available for transfers in source utility.
@@ -180,62 +193,55 @@ vector<double> Transfers::solve_QP(vector<double> allocation_requests, double av
                                    double min_transfer_volume) {
 
     unsigned int n_allocations = (unsigned int) allocation_requests.size();
-    unsigned int n_flow_rates_Q_source = g0.size() - n_allocations;
-    unsigned int n_vars = g0.size();
+    unsigned int n_flow_rates_Q_source = f.size() - n_allocations;
+    unsigned int n_vars = f.size();
+    Vector<double> x;
 
-    Matrix<double> G = this->G;
+    Matrix<double> G = this->H;
 
     /// Set g0 vector to allocated to 2 * target_allocation.
     for (int i = 0; i < allocation_requests.size(); ++i) {
-        g0[i + n_flow_rates_Q_source] = -2 * allocation_requests[i];
+        f[i + n_flow_rates_Q_source] = -2 * allocation_requests[i];
     }
-//    g0[n_flow_rates_Q_source - 1] = -2 * available_transfer_volume;
 
     /// Set allocation bounds to 0 if no allocation is requested, and to
-    /// minimum allocation and available transfer volume.
+    /// available transfer volume otherwise.
     for (int i = 0; i < n_allocations; ++i) {
         if (allocation_requests[i] == NONE) {
-//            lb[i + n_flow_rates_Q_source] = NONE;
+            lb[i + n_flow_rates_Q_source] = NONE;
             ub[i + n_flow_rates_Q_source] = NONE;
         } else {
-//            lb[i + n_flow_rates_Q_source] = min_transfer_volume;
+            lb[i + n_flow_rates_Q_source] = min_transfer_volume;
             ub[i + n_flow_rates_Q_source] = available_transfer_volume;
         }
     }
 
-    /// Set the last utility (source) to total amount of water provided.
+    /// Set upper bound of the last utility (source) to total amount of water available. This allows for a
+    /// smaller transfered volume, in case pipes cannot convey full amount available, but sets the cap as
+    /// total amount available.
     ub[n_flow_rates_Q_source - 1] = available_transfer_volume;
 
     /// Prevent minimum allocation from being more than capacity of pipes connected to utility.
-//    double max_flow;
-//    for (int i = 1; i < n_allocations + 1; ++i) { // skip source
-//        max_flow = 0;
-//        for (int j = 0; j < n_flow_rates_Q_source; ++j) {
-//            max_flow += abs(CE[i][j] * ub[j]);
-//        }
-//        if (lb[n_flow_rates_Q_source + i - 1] > max_flow)
-//            lb[n_flow_rates_Q_source + i - 1] = max_flow;
-//    }
+    double max_flow;
+    for (int i = 1; i < n_allocations + 1; ++i) { // skip source
+        max_flow = 0;
+        for (int j = 0; j < n_flow_rates_Q_source; ++j) {
+            max_flow += abs(Aeq[i][j] * ub[j]);
+        }
+        if (lb[n_flow_rates_Q_source + i - 1] > max_flow)
+            lb[n_flow_rates_Q_source + i - 1] = max_flow;
+    }
 
-
-    print_matrix("G", G);
-    print_vector("g0", g0);
-    print_matrix("CE", CE);
-    print_vector("ce0", ce0);
-    print_vector("lb", lb);
-    print_vector("ub", ub);
-
-    Vector<double> x(n_vars);
+    /// Initialize allocations vector with 0s.
+    x.resize(0, n_vars);
 
     /// Run quadratic programming solver.
-    solve_quadprog_matlab_syntax(G, g0, CE, ce0, CI, ci0, lb, ub, x);
-    print_vector("x", x);
+    solve_quadprog_matlab_syntax(G, f, Aeq, beq, A, b, lb, ub, x);
 
     /// Convert Vector x into a vector.
     for (int i = 0; i < x.size(); ++i) {
         flow_rates_and_allocations.push_back(x[i]);
     }
-    cout << endl;
 
     return flow_rates_and_allocations;
 }

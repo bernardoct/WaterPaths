@@ -20,14 +20,16 @@ private:
     vector<double> flow_rates_and_allocations;
     Utility *source_utility;
     vector<Utility *> buying_utilities;
-    Matrix<double> G, CE, CI;
-    Vector<double> g0, ce0, ci0, x, lb, ub;
+    Matrix<double> H, Aeq, A;
+    Vector<double> f, beq, b, allocations, lb, ub;
 
 public:
 
     Transfers(const int id, const int source_utility_id, const double source_treatment_buffer,
-              const vector<int> &buyers_ids, const vector<double> &pipe_transfer_capacities,
-              const vector<double> &buyers_transfer_triggers, const vector<vector<double>>* continuity_matrix);
+                  const vector<int> &buyers_ids, const vector<double> &pipe_transfer_capacities,
+                  const vector<double> &buyers_transfer_triggers,
+                  const vector<vector<double>> *continuity_matrix, vector<double> conveyance_costs,
+                  vector<int> pipe_owner);
 
     Transfers(const Transfers &transfers);
 

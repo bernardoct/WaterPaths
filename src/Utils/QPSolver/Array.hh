@@ -844,7 +844,7 @@ class Matrix
 {
 public:
     Matrix(); // Default constructor
-    Matrix(const unsigned int n, const unsigned int m); // Construct a n x m matrix
+    Matrix(const unsigned int n, const unsigned int m); // Construct a n allocations m matrix
     Matrix(const T& a, const unsigned int n, const unsigned int m); // Initialize the content to constant a
     Matrix(MType t, const T& a, const T& o, const unsigned int n, const unsigned int m);
     Matrix(MType t, const Vector<T>& v, const T& o, const unsigned int n, const unsigned int m);
@@ -1902,6 +1902,17 @@ void svd(const Matrix<T>& A, Matrix<T>& U, Vector<T>& W, Matrix<T>& V)
 }
 
 template <typename T>
+Matrix<T> t(const Matrix<T>& a)
+{
+    Matrix<T> tmp(a.ncols(), a.nrows());
+    for (unsigned int i = 0; i < a.nrows(); i++)
+        for (unsigned int j = 0; j < a.ncols(); j++)
+            tmp[j][i] = a[i][j];
+
+    return tmp;
+}
+
+template <typename T>
 Matrix<T> pinv(const Matrix<T>& A)
 {
     Matrix<T> U, V, x, tmp(A.ncols(), A.nrows());
@@ -2166,7 +2177,7 @@ Vector<T> cholesky_solve(const Matrix<T>& LL, const Vector<T>& b)
 
     /* Solve L * y = b */
     forward_elimination(LL, y, b);
-    /* Solve L^T * x = y */
+    /* Solve L^T * allocations = y */
     backward_elimination(LL, x, y);
 
     return x;
@@ -2269,7 +2280,7 @@ Vector<T> mean(const Matrix<T>& m)
 template <typename T>
 Vector<T> r_mean(const Matrix<T>& m)
 {
-    Vector<T> res((T)0, m.rows());
+    Vector<T> res((T)0, m.nrows());
     for (unsigned int i = 0; i < m.nrows(); i++)
     {
         for (unsigned int j = 0; j < m.ncols(); j++)
@@ -2453,17 +2464,6 @@ Matrix<T> kron(const Vector<T>& b, const Vector<T>& a)
     for (unsigned int i = 0; i < b.size(); i++)
         for (unsigned int j = 0; j < a.size(); j++)
             tmp[i][j] = a[j] * b[i];
-
-    return tmp;
-}
-
-template <typename T>
-Matrix<T> t(const Matrix<T>& a)
-{
-    Matrix<T> tmp(a.ncols(), a.nrows());
-    for (unsigned int i = 0; i < a.nrows(); i++)
-        for (unsigned int j = 0; j < a.ncols(); j++)
-            tmp[j][i] = a[i][j];
 
     return tmp;
 }

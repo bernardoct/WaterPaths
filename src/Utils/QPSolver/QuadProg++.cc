@@ -8,7 +8,8 @@ File $Id: QuadProg++.cc 232 2007-06-21 12:29:00Z digasper $
  
  This software may be modified and distributed under the terms
  of the MIT license.  See the LICENSE file for details.
- 
+
+ Function solve_quadprog_matlab_syntax added by Bernardo Trindade
  */
 
 #include <iostream>
@@ -54,25 +55,26 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
                       const Matrix<double> &CI, const Vector<double> &ci0,
                       Vector<double> &x) {
     std::ostringstream msg;
+
     unsigned int n = G.ncols(), p = CE.ncols(), m = CI.ncols();
     if (G.nrows() != n) {
-        msg << "The matrix G is not a squared matrix (" << G.nrows() << " x " << G.ncols() << ")";
+        msg << "The matrix H is not a squared matrix (" << G.nrows() << " allocations " << G.ncols() << ")";
         throw std::logic_error(msg.str());
     }
     if (CE.nrows() != n) {
-        msg << "The matrix CE is incompatible (incorrect number of rows " << CE.nrows() << " , expecting " << n << ")";
+        msg << "The matrix Aeq is incompatible (incorrect number of rows " << CE.nrows() << " , expecting " << n << ")";
         throw std::logic_error(msg.str());
     }
     if (ce0.size() != p) {
-        msg << "The vector ce0 is incompatible (incorrect dimension " << ce0.size() << ", expecting " << p << ")";
+        msg << "The vector beq is incompatible (incorrect dimension " << ce0.size() << ", expecting " << p << ")";
         throw std::logic_error(msg.str());
     }
     if (CI.nrows() != n) {
-        msg << "The matrix CI is incompatible (incorrect number of rows " << CI.nrows() << " , expecting " << n << ")";
+        msg << "The matrix A is incompatible (incorrect number of rows " << CI.nrows() << " , expecting " << n << ")";
         throw std::logic_error(msg.str());
     }
     if (ci0.size() != m) {
-        msg << "The vector ci0 is incompatible (incorrect dimension " << ci0.size() << ", expecting " << m << ")";
+        msg << "The vector b is incompatible (incorrect dimension " << ci0.size() << ", expecting " << m << ")";
         throw std::logic_error(msg.str());
     }
     x.resize(n);
@@ -97,27 +99,27 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     q = 0;  /* size of the active set A (containing the indices of the active constraints) */
 #ifdef TRACE_SOLVER
     std::cout << std::endl << "Starting solve_quadprog" << std::endl;
-    print_matrix("G", G);
-    print_vector("g0", g0);
-    print_matrix("CE", CE);
-    print_vector("ce0", ce0);
-    print_matrix("CI", CI);
-    print_vector("ci0", ci0);
+    print_matrix("H", H);
+    print_vector("f", f);
+    print_matrix("Aeq", Aeq);
+    print_vector("beq", beq);
+    print_matrix("A", A);
+    print_vector("b", b);
 #endif
 
     /*
      * Preprocessing phase
      */
 
-    /* compute the trace of the original matrix G */
+    /* compute the trace of the original matrix H */
     c1 = 0.0;
     for (i = 0; i < n; i++) {
         c1 += G[i][i];
     }
-    /* decompose the matrix G in the form L^T L */
+    /* decompose the matrix H in the form L^T L */
     cholesky_decomposition(G);
 #ifdef TRACE_SOLVER
-    print_matrix("G", G);
+    print_matrix("H", H);
 #endif
     /* initialize the matrix R */
     for (i = 0; i < n; i++) {
@@ -127,7 +129,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     }
     R_norm = 1.0; /* this variable will hold the norm of the matrix R */
 
-    /* compute the inverse of the factorized matrix G^-1, this is the initial value for H */
+    /* compute the inverse of the factorized matrix H^-1, this is the initial value for H */
     c2 = 0.0;
     for (i = 0; i < n; i++) {
         d[i] = 1.0;
@@ -141,12 +143,12 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     print_matrix("J", J);
 #endif
 
-    /* c1 * c2 is an estimate for cond(G) */
+    /* c1 * c2 is an estimate for cond(H) */
 
     /*
-      * Find the unconstrained minimizer of the quadratic form 0.5 * x G x + g0 x
+      * Find the unconstrained minimizer of the quadratic form 0.5 * allocations H allocations + f allocations
      * this is a feasible point in the dual space
-     * x = G^-1 * g0
+     * allocations = H^-1 * f
      */
     cholesky_solve(G, x, g0);
     for (i = 0; i < n; i++)
@@ -155,7 +157,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     f_value = 0.5 * scalar_product(g0, x);
 #ifdef TRACE_SOLVER
     std::cout << "Unconstrained solution: " << f_value << std::endl;
-    print_vector("x", x);
+    print_vector("allocations", allocations);
 #endif
 
     /* Add equality constraints to the working set A */
@@ -179,7 +181,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
         if (fabs(scalar_product(z, z)) > std::numeric_limits<double>::epsilon()) // i.e. z != 0
             t2 = (-scalar_product(np, x) - ce0[i]) / scalar_product(z, np);
 
-        /* set x = x + t2 * z */
+        /* set allocations = allocations + t2 * z */
         for (k = 0; k < n; k++)
             x[k] += t2 * z[k];
 
@@ -206,7 +208,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     l1:
     iter++;
 #ifdef TRACE_SOLVER
-    print_vector("x", x);
+    print_vector("allocations", allocations);
 #endif
     /* step 1: choose a violated constraint */
     for (i = p; i < iq; i++) {
@@ -214,7 +216,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
         iai[ip] = -1;
     }
 
-    /* compute s[x] = ci^T * x + ci0 for all elements of K \ A */
+    /* compute s[allocations] = ci^T * allocations + b for all elements of K \ A */
     ss = 0.0;
     psi = 0.0; /* this value will contain the sum of all infeasibilities */
     ip = 0; /* ip will be the index of the chosen violated constraint */
@@ -244,7 +246,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
         u_old[i] = u[i];
         A_old[i] = A[i];
     }
-    /* and for x */
+    /* and for allocations */
     for (i = 0; i < n; i++)
         x_old[i] = x[i];
 
@@ -293,7 +295,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     l = 0;
     /* Compute t1: partial step length (maximum step in dual space without violating dual feasibility */
     t1 = inf; /* +inf */
-    /* find the index l s.t. it reaches the minimum of u+[x] / r */
+    /* find the index l s.t. it reaches the minimum of u+[allocations] / r */
     for (k = p; k < iq; k++) {
         if (r[k] > 0.0) {
             if (u[k] / r[k] < t1) {
@@ -337,7 +339,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
 #ifdef TRACE_SOLVER
         std::cout << " in dual space: "
           << f_value << std::endl;
-        print_vector("x", x);
+        print_vector("allocations", allocations);
         print_vector("z", z);
         print_vector("A", A, iq + 1);
 #endif
@@ -346,7 +348,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
 
     /* case (iii): step in primal and dual space */
 
-    /* set x = x + t * z */
+    /* set allocations = allocations + t * z */
     for (k = 0; k < n; k++)
         x[k] += t * z[k];
     /* update the solution value */
@@ -358,7 +360,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
 #ifdef TRACE_SOLVER
     std::cout << " in both spaces: "
       << f_value << std::endl;
-    print_vector("x", x);
+    print_vector("allocations", allocations);
     print_vector("u", u, iq + 1);
     print_vector("r", r, iq + 1);
     print_vector("A", A, iq + 1);
@@ -367,7 +369,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     if (fabs(t - t2) < std::numeric_limits<double>::epsilon()) {
 #ifdef TRACE_SOLVER
         std::cout << "Full step has taken " << t << std::endl;
-        print_vector("x", x);
+        print_vector("allocations", allocations);
 #endif
         /* full step has taken */
         /* add constraint ip to the active set*/
@@ -402,7 +404,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     /* a patial step has taken */
 #ifdef TRACE_SOLVER
     std::cout << "Partial step has taken " << t << std::endl;
-    print_vector("x", x);
+    print_vector("allocations", allocations);
 #endif
     /* drop constraint l */
     iai[l] = l;
@@ -412,7 +414,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     print_vector("A", A, iq);
 #endif
 
-    /* update s[ip] = CI * x + ci0 */
+    /* update s[ip] = A * allocations + b */
     sum = 0.0;
     for (k = 0; k < n; k++)
         sum += CI[k][ip] * x[k];
@@ -424,6 +426,18 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     goto l2a;
 }
 
+/**
+ * Wrapper for Matlab quadprog input format.
+ * @param G
+ * @param g0
+ * @param CE
+ * @param ce0
+ * @param CI
+ * @param ci0
+ * @param lb
+ * @param ub
+ * @param x
+ */
 void solve_quadprog_matlab_syntax(Matrix<double> &G, Vector<double> &g0,
                                     const Matrix<double> &CE, const Vector<double> &ce0,
                                     const Matrix<double> &CI, const Vector<double> &ci0,
@@ -431,8 +445,8 @@ void solve_quadprog_matlab_syntax(Matrix<double> &G, Vector<double> &g0,
                                     Vector<double> &x) {
     Matrix<double> CE_T;
     Matrix<double> expanded_CI;
-    CE_T.resize(CE.ncols(), CE.nrows());
-    expanded_CI.resize(CI.nrows() + lb.size() + ub.size(), CI.ncols() + lb.size());
+    CE_T.resize(0, CE.ncols(), CE.nrows());
+    expanded_CI.resize(0, CI.nrows() + lb.size() + ub.size(), CI.ncols() + lb.size());
 
     /// Transpose CE.
     for (int i = 0; i < CE.nrows(); ++i) {
@@ -442,12 +456,14 @@ void solve_quadprog_matlab_syntax(Matrix<double> &G, Vector<double> &g0,
     }
 
     /// Reverse signs of ce0 and ci0.
-    Vector<double> ce0_inv(ce0.size());
+    Vector<double> ce0_inv;
+    ce0_inv.resize(0, ce0.size());
     for (int i = 0; i < ce0.size(); ++i) {
         ce0_inv[i] = -ce0[i];
     }
     /// Expand ci0 to include the bounds.
-    Vector<double> ci0_inv(ci0.size() + lb.size() + ub.size());
+    Vector<double> ci0_inv;
+    ci0_inv.resize((0, ci0.size() + lb.size() + ub.size()));
     for (int i = 0; i < ci0.size(); ++i) {
         ci0_inv[i] = -ci0[i];
     }
@@ -479,12 +495,12 @@ void solve_quadprog_matlab_syntax(Matrix<double> &G, Vector<double> &g0,
         ci0_inv[i + lb.size()] = ub[i - CI.nrows()];
     }
 
-//    print_matrix("G", G);
-//    print_vector("g0", g0);
-//    print_matrix("CE", CE_T);
-//    print_vector("ce0", ce0_inv);
-//    print_matrix("CI", expanded_CI_inv);
-//    print_vector("ci0", ci0_inv);
+//    print_matrix("H", G);
+//    print_vector("f", g0);
+//    print_matrix("Aeq", CE_T);
+//    print_vector("beq", ce0_inv);
+//    print_matrix("A", expanded_CI_inv);
+//    print_vector("b", ci0_inv);
 
     solve_quadprog(G, g0, CE_T, ce0_inv, expanded_CI_inv, ci0_inv, x);
 }
@@ -720,7 +736,7 @@ void cholesky_solve(const Matrix<double> &L, Vector<double> &x, const Vector<dou
 
     /* Solve L * y = b */
     forward_elimination(L, y, b);
-    /* Solve L^T * x = y */
+    /* Solve L^T * allocations = y */
     backward_elimination(L, x, y);
 }
 

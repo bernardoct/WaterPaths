@@ -568,9 +568,9 @@ void simulation3U5RTest() {
             {0, 1, 1, 0, 0, -1}
     };
 
-    //FIXME: WE ACTUALLY SHOULD NOT TRY TO MAXIMIZE THE AMOUNT OF AVAILABLE WATER
-    //FIXME: THAT'S USED BECAUSE UTILITIES MAY JUST NOT NEED THAT. REMOVE INJECTED WATER VARIABLE.
-    Transfers t(0, 0, 0, buyers_ids, buyers_transfers_capacities, buyers_transfers_trigger, &continuity_matrix);
+    //FIXME: WHEN REQUEST IS MADE, UTILITY SHOULD BE ABLE TO GET AS MUCH AVAILABLE WATER AS PIPES ALLOW.
+    Transfers t(0, 0, 0, buyers_ids, buyers_transfers_capacities, buyers_transfers_trigger, &continuity_matrix,
+                vector<double>(), vector<int>());
     drought_mitigation_policies.push_back(&t);
 
     /// Data collector pointer
@@ -628,7 +628,7 @@ void simulation1U1R1ITest() {
 
     DataCollector *data_collector = nullptr;
 
-    Simulation s(water_sources, g, sources_to_utility_connectivity_matrix, utilities, restrictions, 104, 2,
+    Simulation s(water_sources, g, sources_to_utility_connectivity_matrix, utilities, restrictions, 52, 2,
                  data_collector);
     cout << "Beginning 1U1R1I simulation" << endl;
     s.runFullSimulation();
@@ -643,18 +643,18 @@ void test_QP() {
     char ch;
 
 //    Given:
-//    G =  4 -2   g0^T = [6 0]
+//    H =  4 -2   f^T = [6 0]
 //        -2  4
 //
 //    Solve:
-//    min f(x) = 1/2 x G x + g0 x
+//    min f(allocations) = 1/2 allocations H allocations + f allocations
 //    s.t.
 //            x_1 + x_2 = 3
 //    x_1 >= 0
 //    x_2 >= 0
 //    x_1 + x_2 >= 2
 //
-//    The solution is x^T = [1 2] and f(x) = 12
+//    The solution is allocations^T = [1 2] and f(allocations) = 12
 
     n = 2;
     G.resize(n, n);
@@ -779,30 +779,30 @@ void test_QP() {
     ci0[13] = 5;
 
 
-    print_matrix("G", G);
-    print_vector("g0", g0);
-    print_matrix("CE", CE);
-    print_vector("ce0", ce0);
-    print_matrix("CI", CI);
-    print_vector("ci0", ci0);
+    print_matrix("H", G);
+    print_vector("f", g0);
+    print_matrix("Aeq", CE);
+    print_vector("beq", ce0);
+    print_matrix("A", CI);
+    print_vector("b", ci0);
 
     cout << "calling solver" << endl;
     solve_quadprog(G, g0, CE, ce0, CI, ci0, x);
 
-    print_vector("x", x);
+    print_vector("allocations", x);
 
-//    CE.resize(0, 1, 2);
-//    CE[0][0] = 1;
-//    CE[0][1] = 1;
+//    Aeq.resize(0, 1, 2);
+//    Aeq[0][0] = 1;
+//    Aeq[0][1] = 1;
 //
-//    ce0[0] = 3;
+//    beq[0] = 3;
 //
-//    CI.resize(0, 1, 2);
-//    CI[0][0] = 1;
-//    CI[0][1] = 1;
+//    A.resize(0, 1, 2);
+//    A[0][0] = 1;
+//    A[0][1] = 1;
 //
-//    ci0.resize(0, 1);
-//    ci0[0] = 2;
+//    b.resize(0, 1);
+//    b[0] = 2;
 //
 //    Vector<double> lb;
 //    Vector<double> ub;
@@ -812,17 +812,17 @@ void test_QP() {
 //    ub[0] = -1e6;
 //    ub[1] = -1e6;
 //
-//    x.resize(0, 2);
+//    allocations.resize(0, 2);
 
-//    print_matrix("G", G2);
-//    print_vector("g0", g0);
-//    print_matrix("CE", CE);
-//    print_vector("ce0", ce0);
-//    print_matrix("CI", CI);
-//    print_vector("ci0", ci0);
+//    print_matrix("H", G2);
+//    print_vector("f", f);
+//    print_matrix("Aeq", Aeq);
+//    print_vector("beq", beq);
+//    print_matrix("A", A);
+//    print_vector("b", b);
 //    cout << endl;
-//    solve_quadprog_matlab_syntax(G2, g0, CE, ce0, CI, ci0, lb, ub, x);
-//    print_vector("x", x);
+//    solve_quadprog_matlab_syntax(G2, f, Aeq, beq, A, b, lb, ub, allocations);
+//    print_vector("allocations", allocations);
     // supposed to be [1, 2]
 
 
@@ -868,7 +868,8 @@ void test_transfers() {
             {0, 0, 0, 1, 0, 0, 0, -1}
     };
 
-    Transfers t(0, 3, 0, buyers_ids, buyers_transfers_capacities, buyers_transfers_trigger, &continuity_matrix);
+    Transfers t(0, 3, 0, buyers_ids, buyers_transfers_capacities, buyers_transfers_trigger, &continuity_matrix,
+                vector<double>(), vector<int>());
     vector<double> allocations = t.solve_QP(*(new vector<double>{0.5, 4.5, 1}), 10, 0.5);
 
     for (double & a : allocations) cout << a << " ";

@@ -28,6 +28,8 @@ namespace Constants {
     const int RESTRICTIONS = 1;
     const int UTILITIES = 0;
     const int RESERVOIRS = 1;
+    const int COLUMN_WIDTH = 10;
+    const int COLUMN_PRECISION = 4;
 };
 
 

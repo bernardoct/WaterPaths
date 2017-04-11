@@ -14,14 +14,17 @@ private:
 
     const int source_utility_id;
     const double source_treatment_buffer;
+    double average_pipe_capacity = 0;
     map<int, int>* util_id_to_vertex_id = new map<int, int>();
     vector<int> buyers_ids;
+    vector<double> allocations;
+    vector<double> conveyed_volumes;
     vector<double> buyers_transfer_triggers;
     vector<double> flow_rates_and_allocations;
     Utility *source_utility;
     vector<Utility *> buying_utilities;
     Matrix<double> H, Aeq, A;
-    Vector<double> f, beq, b, allocations, lb, ub;
+    Vector<double> f, beq, b, allocations_aux, lb, ub;
 
 public:
 
@@ -33,6 +36,10 @@ public:
 
     Transfers(const Transfers &transfers);
 
+    const vector<double> &getAllocations() const;
+
+    const vector<int> &getBuyers_ids() const;
+
     ~Transfers();
 
     virtual void applyPolicy(int week) override;
@@ -42,9 +49,9 @@ public:
     vector<double>
     solve_QP(vector<double> allocation_requests, double available_transfer_volume, double min_transfer_volume);
 
-    vector<double> getTransfers();
 
-    vector<double> getFlowRates();
+
+    vector<double> getConveyed_volumes();
 };
 
 

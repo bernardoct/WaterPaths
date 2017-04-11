@@ -844,7 +844,7 @@ class Matrix
 {
 public:
     Matrix(); // Default constructor
-    Matrix(const unsigned int n, const unsigned int m); // Construct a n allocations m matrix
+    Matrix(const unsigned int n, const unsigned int m); // Construct a n allocations_aux m matrix
     Matrix(const T& a, const unsigned int n, const unsigned int m); // Initialize the content to constant a
     Matrix(MType t, const T& a, const T& o, const unsigned int n, const unsigned int m);
     Matrix(MType t, const Vector<T>& v, const T& o, const unsigned int n, const unsigned int m);
@@ -2177,7 +2177,7 @@ Vector<T> cholesky_solve(const Matrix<T>& LL, const Vector<T>& b)
 
     /* Solve L * y = b */
     forward_elimination(LL, y, b);
-    /* Solve L^T * allocations = y */
+    /* Solve L^T * allocations_aux = y */
     backward_elimination(LL, x, y);
 
     return x;

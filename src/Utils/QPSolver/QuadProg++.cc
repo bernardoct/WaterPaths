@@ -19,6 +19,7 @@ File $Id: QuadProg++.cc 232 2007-06-21 12:29:00Z digasper $
 #include <sstream>
 #include <stdexcept>
 #include "QuadProg++.hh"
+#include <cmath>
 //#define TRACE_SOLVER
 
 // Utility functions for updating some data needed by the solution method 
@@ -58,7 +59,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
 
     unsigned int n = G.ncols(), p = CE.ncols(), m = CI.ncols();
     if (G.nrows() != n) {
-        msg << "The matrix H is not a squared matrix (" << G.nrows() << " allocations " << G.ncols() << ")";
+        msg << "The matrix H is not a squared matrix (" << G.nrows() << " allocations_aux " << G.ncols() << ")";
         throw std::logic_error(msg.str());
     }
     if (CE.nrows() != n) {
@@ -146,9 +147,9 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     /* c1 * c2 is an estimate for cond(H) */
 
     /*
-      * Find the unconstrained minimizer of the quadratic form 0.5 * allocations H allocations + f allocations
+      * Find the unconstrained minimizer of the quadratic form 0.5 * allocations_aux H allocations_aux + f allocations_aux
      * this is a feasible point in the dual space
-     * allocations = H^-1 * f
+     * allocations_aux = H^-1 * f
      */
     cholesky_solve(G, x, g0);
     for (i = 0; i < n; i++)
@@ -157,7 +158,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     f_value = 0.5 * scalar_product(g0, x);
 #ifdef TRACE_SOLVER
     std::cout << "Unconstrained solution: " << f_value << std::endl;
-    print_vector("allocations", allocations);
+    print_vector("allocations_aux", allocations_aux);
 #endif
 
     /* Add equality constraints to the working set A */
@@ -181,7 +182,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
         if (fabs(scalar_product(z, z)) > std::numeric_limits<double>::epsilon()) // i.e. z != 0
             t2 = (-scalar_product(np, x) - ce0[i]) / scalar_product(z, np);
 
-        /* set allocations = allocations + t2 * z */
+        /* set allocations_aux = allocations_aux + t2 * z */
         for (k = 0; k < n; k++)
             x[k] += t2 * z[k];
 
@@ -208,7 +209,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     l1:
     iter++;
 #ifdef TRACE_SOLVER
-    print_vector("allocations", allocations);
+    print_vector("allocations_aux", allocations_aux);
 #endif
     /* step 1: choose a violated constraint */
     for (i = p; i < iq; i++) {
@@ -216,7 +217,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
         iai[ip] = -1;
     }
 
-    /* compute s[allocations] = ci^T * allocations + b for all elements of K \ A */
+    /* compute s[allocations_aux] = ci^T * allocations_aux + b for all elements of K \ A */
     ss = 0.0;
     psi = 0.0; /* this value will contain the sum of all infeasibilities */
     ip = 0; /* ip will be the index of the chosen violated constraint */
@@ -246,7 +247,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
         u_old[i] = u[i];
         A_old[i] = A[i];
     }
-    /* and for allocations */
+    /* and for allocations_aux */
     for (i = 0; i < n; i++)
         x_old[i] = x[i];
 
@@ -295,7 +296,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     l = 0;
     /* Compute t1: partial step length (maximum step in dual space without violating dual feasibility */
     t1 = inf; /* +inf */
-    /* find the index l s.t. it reaches the minimum of u+[allocations] / r */
+    /* find the index l s.t. it reaches the minimum of u+[allocations_aux] / r */
     for (k = p; k < iq; k++) {
         if (r[k] > 0.0) {
             if (u[k] / r[k] < t1) {
@@ -339,7 +340,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
 #ifdef TRACE_SOLVER
         std::cout << " in dual space: "
           << f_value << std::endl;
-        print_vector("allocations", allocations);
+        print_vector("allocations_aux", allocations_aux);
         print_vector("z", z);
         print_vector("A", A, iq + 1);
 #endif
@@ -348,7 +349,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
 
     /* case (iii): step in primal and dual space */
 
-    /* set allocations = allocations + t * z */
+    /* set allocations_aux = allocations_aux + t * z */
     for (k = 0; k < n; k++)
         x[k] += t * z[k];
     /* update the solution value */
@@ -360,7 +361,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
 #ifdef TRACE_SOLVER
     std::cout << " in both spaces: "
       << f_value << std::endl;
-    print_vector("allocations", allocations);
+    print_vector("allocations_aux", allocations_aux);
     print_vector("u", u, iq + 1);
     print_vector("r", r, iq + 1);
     print_vector("A", A, iq + 1);
@@ -369,7 +370,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     if (fabs(t - t2) < std::numeric_limits<double>::epsilon()) {
 #ifdef TRACE_SOLVER
         std::cout << "Full step has taken " << t << std::endl;
-        print_vector("allocations", allocations);
+        print_vector("allocations_aux", allocations_aux);
 #endif
         /* full step has taken */
         /* add constraint ip to the active set*/
@@ -404,7 +405,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     /* a patial step has taken */
 #ifdef TRACE_SOLVER
     std::cout << "Partial step has taken " << t << std::endl;
-    print_vector("allocations", allocations);
+    print_vector("allocations_aux", allocations_aux);
 #endif
     /* drop constraint l */
     iai[l] = l;
@@ -414,7 +415,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     print_vector("A", A, iq);
 #endif
 
-    /* update s[ip] = A * allocations + b */
+    /* update s[ip] = A * allocations_aux + b */
     sum = 0.0;
     for (k = 0; k < n; k++)
         sum += CI[k][ip] * x[k];
@@ -503,6 +504,10 @@ void solve_quadprog_matlab_syntax(Matrix<double> &G, Vector<double> &g0,
 //    print_vector("b", ci0_inv);
 
     solve_quadprog(G, g0, CE_T, ce0_inv, expanded_CI_inv, ci0_inv, x);
+
+    for (int i = 0; i < x.size(); ++i) {
+        if (std::abs(x[i]) < 1e-12) x[i] = 0;
+    }
 }
 
 
@@ -736,7 +741,7 @@ void cholesky_solve(const Matrix<double> &L, Vector<double> &x, const Vector<dou
 
     /* Solve L * y = b */
     forward_elimination(L, y, b);
-    /* Solve L^T * allocations = y */
+    /* Solve L^T * allocations_aux = y */
     backward_elimination(L, x, y);
 }
 

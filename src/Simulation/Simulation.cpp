@@ -71,9 +71,9 @@ void Simulation::runFullSimulation() {
     for (int r = 0; r < number_of_realizations; ++r) {
         cout << "Realization " << r << endl;
         for (int w = 0; w < total_simulation_time; ++w) {
+            realization_models[r]->setRisks_of_failure(rof_models[r]->calculateROF(w, 0));
             realization_models[r]->applyDroughtMitigationPolicies(w);
             realization_models[r]->continuityStep(w);
-            realization_models[r]->setRisks_of_failure(rof_models[r]->calculateROF(w, 0));
             data_collector->collectData(realization_models[r], w);
         }
     }
@@ -82,5 +82,4 @@ void Simulation::runFullSimulation() {
     data_collector->printUtilityOutput(true);
     data_collector->printReservoirOutput(true);
     data_collector->printPoliciesOutput(true);
-
 }

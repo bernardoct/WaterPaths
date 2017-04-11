@@ -49,7 +49,7 @@ void ContinuityModel::continuityStep(int week, int id_rof) {
 
     /*
      * Split weekly demands among each reservoir for each utility. For each water source:
-     * (1) sums the demands of each drawing utility to come up with the total demand for
+     * (1) sums the demands of each drawing utility to come up with the total unrestricted_demand for
      * that week for that water source, and (2) sums the flow contributions of upstream
      * reservoirs.
      */

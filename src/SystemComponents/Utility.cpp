@@ -56,7 +56,9 @@ Utility::Utility(Utility &utility) : id(utility.id), number_of_week_demands(util
  * Destructor.
  */
 Utility::~Utility() {
-    delete[] demand_series;
+    //FIXME: I'M GETTING SEGMENTATION FAULT HERE.
+//    if (demand_series)
+//        delete[] demand_series;
 }
 
 /**
@@ -130,15 +132,16 @@ void Utility::addWaterSource(WaterSource *water_source) {
 void Utility::splitDemands(int week) {
     int i;
     double intake_demand;
-    double remaining_demand = demand_series[week] * demand_multiplier;
+    unrestricted_demand = demand_series[week];
+    restricted_demand = unrestricted_demand * demand_multiplier - demand_offset;
 
     /// Allocates demand to intakes.
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
         if (ws.second->source_type == INTAKE) {
             i = ws.second->id;
-            intake_demand = min(remaining_demand, ws.second->getAvailable_volume());
+            intake_demand = min(restricted_demand, ws.second->getAvailable_volume());
             split_demands_among_sources.at(i) = intake_demand;
-            remaining_demand -= intake_demand;
+            restricted_demand -= intake_demand;
         }
     }
 
@@ -146,7 +149,7 @@ void Utility::splitDemands(int week) {
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
         if (ws.second->source_type == RESERVOIR) {
             i = ws.second->id;
-            split_demands_among_sources.at(i) = remaining_demand *
+            split_demands_among_sources.at(i) = restricted_demand *
                                                 max(1.0e-6, water_sources.at(i)->getAvailable_volume()) /
                                                 total_stored_volume;
         }
@@ -160,9 +163,18 @@ void Utility::splitDemands(int week) {
     demand_offset = 0;
 }
 
+/**
+ * Update contingency fund based on regular contribution, restrictions, and transfers. This function works for both
+ * sources and receivers of transfers, and the transfer water prices are different than regular prices for both
+ * sources and receivers.
+ * @param week
+ */
 void Utility::updateContingencyFund(int week) {
+    /// Regular fund contribution.
     contingency_fund += percent_contingency_fund_contribution * demand_series[week] * water_price_per_volume;
-    contingency_fund -= demand_series[week] * (1 - demand_multiplier) * water_price_per_volume;
+    /// Deficit when restrictions and/or transfers are used.
+    contingency_fund -= demand_series[week] * (1 - demand_multiplier) * water_price_per_volume // Amount not remunerated from loss of revenues
+                        - demand_offset * (offset_rate_per_volume - water_price_per_volume); // Amount paid to transfer source utility on top of losses.
 }
 
 void Utility::setWaterSourceOnline(int source_id) {
@@ -239,6 +251,15 @@ double Utility::getContingency_fund() const {
     return contingency_fund;
 }
 
-void Utility::setDemand_offset(double demand_offset) {
+void Utility::setDemand_offset(double demand_offset, double offset_rate_per_volume) {
     Utility::demand_offset = demand_offset;
+    Utility::offset_rate_per_volume = offset_rate_per_volume;
+}
+
+double Utility::getUnrestrictedDemand(int week) const {
+    return unrestricted_demand;
+}
+
+double Utility::getRestrictedDemand(int week) const {
+    return restricted_demand;
 }

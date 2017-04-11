@@ -537,7 +537,7 @@ void simulation3U5RTest() {
 
     /// Restriction policies
     vector<double> restriction_stage_multipliers1 = {0.9, 0.7};
-    vector<double> restriction_stage_triggers1 = {0.02, 0.04};
+    vector<double> restriction_stage_triggers1 = {0.01, 0.04};
 
     vector<double> restriction_stage_multipliers2 = {0.8, 0.6};
     vector<double> restriction_stage_triggers2 = {0.03, 0.05};
@@ -560,16 +560,16 @@ void simulation3U5RTest() {
      */
 
     vector<int> buyers_ids = {1, 2};
-    vector<double> buyers_transfers_capacities = {15, 10, 5};
-    vector<double> buyers_transfers_trigger = {0.07, 0.05};
+    vector<double> buyers_transfers_capacities = {2, 1.5, 1.0};
+    vector<double> buyers_transfers_trigger = {0.04, 0.04};
+//    vector<double> buyers_transfers_trigger = {0.99, 0.99};
     vector<vector<double>> continuity_matrix = {
             {-1, -1, 0, 1, 0, 0},
             {1, 0, -1, 0, -1, 0},
             {0, 1, 1, 0, 0, -1}
     };
 
-    //FIXME: WHEN REQUEST IS MADE, UTILITY SHOULD BE ABLE TO GET AS MUCH AVAILABLE WATER AS PIPES ALLOW.
-    Transfers t(0, 0, 0, buyers_ids, buyers_transfers_capacities, buyers_transfers_trigger, &continuity_matrix,
+    Transfers t(0, 0, 5, buyers_ids, buyers_transfers_capacities, buyers_transfers_trigger, &continuity_matrix,
                 vector<double>(), vector<int>());
     drought_mitigation_policies.push_back(&t);
 
@@ -628,7 +628,7 @@ void simulation1U1R1ITest() {
 
     DataCollector *data_collector = nullptr;
 
-    Simulation s(water_sources, g, sources_to_utility_connectivity_matrix, utilities, restrictions, 52, 2,
+    Simulation s(water_sources, g, sources_to_utility_connectivity_matrix, utilities, restrictions, 104, 2,
                  data_collector);
     cout << "Beginning 1U1R1I simulation" << endl;
     s.runFullSimulation();
@@ -647,14 +647,14 @@ void test_QP() {
 //        -2  4
 //
 //    Solve:
-//    min f(allocations) = 1/2 allocations H allocations + f allocations
+//    min f(allocations_aux) = 1/2 allocations_aux H allocations_aux + f allocations_aux
 //    s.t.
 //            x_1 + x_2 = 3
 //    x_1 >= 0
 //    x_2 >= 0
 //    x_1 + x_2 >= 2
 //
-//    The solution is allocations^T = [1 2] and f(allocations) = 12
+//    The solution is allocations_aux^T = [1 2] and f(allocations_aux) = 12
 
     n = 2;
     G.resize(n, n);
@@ -779,17 +779,17 @@ void test_QP() {
     ci0[13] = 5;
 
 
-    print_matrix("H", G);
-    print_vector("f", g0);
-    print_matrix("Aeq", CE);
-    print_vector("beq", ce0);
-    print_matrix("A", CI);
-    print_vector("b", ci0);
+//    print_matrix("H", G);
+//    print_vector("f", g0);
+//    print_matrix("Aeq", CE);
+//    print_vector("beq", ce0);
+//    print_matrix("A", CI);
+//    print_vector("b", ci0);
 
     cout << "calling solver" << endl;
     solve_quadprog(G, g0, CE, ce0, CI, ci0, x);
 
-    print_vector("allocations", x);
+//    print_vector("allocations_aux", x);
 
 //    Aeq.resize(0, 1, 2);
 //    Aeq[0][0] = 1;
@@ -812,7 +812,7 @@ void test_QP() {
 //    ub[0] = -1e6;
 //    ub[1] = -1e6;
 //
-//    allocations.resize(0, 2);
+//    allocations_aux.resize(0, 2);
 
 //    print_matrix("H", G2);
 //    print_vector("f", f);
@@ -821,8 +821,8 @@ void test_QP() {
 //    print_matrix("A", A);
 //    print_vector("b", b);
 //    cout << endl;
-//    solve_quadprog_matlab_syntax(G2, f, Aeq, beq, A, b, lb, ub, allocations);
-//    print_vector("allocations", allocations);
+//    solve_quadprog_matlab_syntax(G2, f, Aeq, beq, A, b, lb, ub, allocations_aux);
+//    print_vector("allocations_aux", allocations_aux);
     // supposed to be [1, 2]
 
 

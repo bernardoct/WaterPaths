@@ -8,7 +8,6 @@
 #include "DroughtMitigationPolicy.h"
 #include "../Utils/QPSolver/QuadProg++.hh"
 #include "../Utils/Graph/Graph.h"
-#include "../Utils/Graph/WaterSourcesGraph.h"
 
 class Transfers : public DroughtMitigationPolicy {
 private:
@@ -32,7 +31,7 @@ public:
     Transfers(const int id, const int source_utility_id, const double source_treatment_buffer,
                   const vector<int> &buyers_ids, const vector<double> &pipe_transfer_capacities,
                   const vector<double> &buyers_transfer_triggers,
-                  const WaterSourceGraph utilities_graph, vector<double> conveyance_costs,
+                  const Graph utilities_graph, vector<double> conveyance_costs,
                   vector<int> pipe_owner);
 
     Transfers(const Transfers &transfers);
@@ -50,11 +49,7 @@ public:
     vector<double>
     solve_QP(vector<double> allocation_requests, double available_transfer_volume, double min_transfer_volume);
 
-
-
     vector<double> getConveyed_volumes();
-
-    vector<vector<double>> generateContinuityMatrix(Graph utilities_graph);
 };
 
 

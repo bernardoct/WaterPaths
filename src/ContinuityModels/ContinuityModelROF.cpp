@@ -6,7 +6,7 @@
 #include "ContinuityModelROF.h"
 
 ContinuityModelROF::ContinuityModelROF(const vector<WaterSource *> &water_source,
-                                       const WaterSourceGraph &water_sources_graph,
+                                       const Graph &water_sources_graph,
                                        const vector<vector<int>> &water_sources_to_utilities,
                                        const vector<Utility *> &utilities,
                                        const int realization_id) : ContinuityModel(water_source,
@@ -41,6 +41,11 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
 
     /// perform a continuity simulation for NUMBER_REALIZATIONS_ROF (50) yearly realization.
     for (int r = 0; r < NUMBER_REALIZATIONS_ROF; ++r) {
+
+        /// reset reservoirs' and utilities' storage and combined storage, respectively, they currently
+        /// have in the corresponding realization simulation.
+        this->resetUtilitiesAndReservoirs(rof_type);
+
         for (int w = week; w < week + n_weeks_rof; ++w) {
 
             /// one week continuity time-step.
@@ -58,10 +63,6 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
             risk_of_failure[j] += year_failure[j];
             year_failure[j] = NON_FAILURE;
         }
-
-        /// reset reservoirs' and utilities' storage and combined storage, respectively, they currently
-        /// have in the corresponding realization simulation.
-        this->resetUtilitiesAndReservoirs();
     }
 
     /// Finish ROF calculations
@@ -76,12 +77,18 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
  * reset reservoirs' and utilities' storage and last release, and combined storage, respectively, they
  * currently have in the corresponding realization simulation.
  */
-void ContinuityModelROF::resetUtilitiesAndReservoirs() {
+void ContinuityModelROF::resetUtilitiesAndReservoirs(int rof_type) {
 
-    /// update water sources info.
-    for (int i = 0; i < water_sources.size(); ++i) {
-        water_sources[i]->setAvailable_volume(water_sources_realization[i]->getAvailable_volume());
-        water_sources[i]->setOutflow_previous_week(water_sources_realization[i]->getTotal_outflow());
+    /// update water sources info. If short-term rof, return to current storage; if long-term, make them full.
+    if (rof_type == SHORT_TERM_ROF)
+        for (int i = 0; i < water_sources.size(); ++i) {
+            water_sources[i]->setAvailable_volume(water_sources_realization[i]->getAvailable_volume());
+            water_sources[i]->setOutflow_previous_week(water_sources_realization[i]->getTotal_outflow());
+        } else {
+        for (int i = 0; i < water_sources.size(); ++i) {
+            water_sources[i]->setAvailable_volume(water_sources_realization[i]->capacity);
+            water_sources[i]->setOutflow_previous_week(water_sources_realization[i]->getTotal_outflow());
+        }
     }
 
     /// update utilities combined storage.

@@ -4,10 +4,9 @@
 
 #include <iostream>
 #include "ContinuityModelRealization.h"
-#include "../Utils/Graph/WaterSourcesGraph.h"
 
 ContinuityModelRealization::ContinuityModelRealization(const vector<WaterSource *> &water_source,
-                                                       const WaterSourceGraph &water_sources_graph,
+                                                       const Graph &water_sources_graph,
                                                        const vector<vector<int>> &water_sources_to_utilities,
                                                        const vector<Utility *> &utilities,
                                                        const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,

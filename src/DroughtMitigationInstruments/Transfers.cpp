@@ -5,7 +5,6 @@
 #include <numeric>
 #include "Transfers.h"
 #include "../Utils/Utils.h"
-#include "../Utils/Graph/WaterSourcesGraph.h"
 
 
 /**
@@ -31,7 +30,7 @@
 Transfers::Transfers(const int id, const int source_utility_id, const double source_treatment_buffer,
                      const vector<int> &buyers_ids, const vector<double> &pipe_transfer_capacities,
                      const vector<double> &buyers_transfer_triggers,
-                     const WaterSourceGraph utilities_graph, vector<double> conveyance_costs,
+                     const Graph utilities_graph, vector<double> conveyance_costs,
                      vector<int> pipe_owner)
         : DroughtMitigationPolicy(id, TRANSFERS),
           source_utility_id(source_utility_id),

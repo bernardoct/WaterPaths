@@ -1,6 +1,5 @@
 #include <iostream>
 #include <sstream>
-#include <string>
 #include "SystemComponents/WaterSources/Reservoir.h"
 #include "SystemComponents/Utility.h"
 #include "Utils/Utils.h"
@@ -102,7 +101,7 @@ int regionTwoUtilitiesTwoReservoirsContinuityTest() {
     utilities.push_back(&u1);
     utilities.push_back(&u2);
 
-    WaterSourceGraph g((int) reservoirs.size());
+    Graph g((int) reservoirs.size());
     g.addEdge(0, 1);
 
     vector<vector<int>> reservoir_utility_connectivity_matrix = {
@@ -163,7 +162,7 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
     vector<Utility *> utilities;
     utilities.push_back(&u1);
 
-    WaterSourceGraph g((int) reservoirs.size());
+    Graph g((int) reservoirs.size());
     g.addEdge(0, 1);
 
     vector<vector<int>> reservoir_utility_connectivity_matrix = {
@@ -406,7 +405,7 @@ void simulationTest() {
     utilities.push_back(&u2);
 
 
-    WaterSourceGraph g((int) water_sources.size());
+    Graph g((int) water_sources.size());
     g.addEdge(0, 1);
 
     vector<vector<int>> reservoir_utility_connectivity_matrix = {
@@ -522,7 +521,7 @@ void simulation3U5RTest() {
      *          3
      */
 
-    WaterSourceGraph g((int) water_sources.size());
+    Graph g((int) water_sources.size());
     g.addEdge(0, 2);
     g.addEdge(1, 2);
     g.addEdge(2, 3);
@@ -568,7 +567,7 @@ void simulation3U5RTest() {
 //            {1, 0, -1, 0, -1, 0},
 //            {0, 1, 1, 0, 0, -1}
 //    };
-    WaterSourceGraph ug(3);
+    Graph ug(3);
     ug.addEdge(0, 1);
     ug.addEdge(0, 2);
     ug.addEdge(1, 2);
@@ -620,7 +619,7 @@ void simulation1U1R1ITest() {
     utilities.push_back(&u1);
 
 
-    WaterSourceGraph g((int) water_sources.size());
+    Graph g((int) water_sources.size());
     g.addEdge(0, 1);
     g.addEdge(1, 2);
 
@@ -872,7 +871,7 @@ void test_transfers() {
 //            {0, 0, 0, 1, 0, 0, 0, -1}
 //    };
 
-    WaterSourceGraph ug(4);
+    Graph ug(4);
     ug.addEdge(0, 1);
     ug.addEdge(0, 2);
     ug.addEdge(1, 2);
@@ -888,7 +887,7 @@ void test_transfers() {
 }
 
 void test_getcontinuityMatrix() {
-    WaterSourceGraph g(4);
+    Graph g(4);
     g.addEdge(0, 2);
     g.addEdge(0, 1);
     g.addEdge(1, 2);
@@ -901,7 +900,7 @@ void test_getcontinuityMatrix() {
 //            {0, 0, 0, 1, 0, 0, 0, -1}
 //    };
 
-    vector<vector<double>>  continuity_matrix = g.getContinuityMatrix();
+    vector<vector<double>> continuity_matrix = g.getContinuityMatrix();
 
     for (auto r : continuity_matrix) {
         for (double v : r)

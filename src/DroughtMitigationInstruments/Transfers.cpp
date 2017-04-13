@@ -5,6 +5,7 @@
 #include <numeric>
 #include "Transfers.h"
 #include "../Utils/Utils.h"
+#include "../Utils/Graph/WaterSourcesGraph.h"
 
 
 /**
@@ -30,7 +31,7 @@
 Transfers::Transfers(const int id, const int source_utility_id, const double source_treatment_buffer,
                      const vector<int> &buyers_ids, const vector<double> &pipe_transfer_capacities,
                      const vector<double> &buyers_transfer_triggers,
-                     const vector<vector<double>> *continuity_matrix, vector<double> conveyance_costs,
+                     const WaterSourceGraph utilities_graph, vector<double> conveyance_costs,
                      vector<int> pipe_owner)
         : DroughtMitigationPolicy(id, TRANSFERS),
           source_utility_id(source_utility_id),
@@ -38,11 +39,18 @@ Transfers::Transfers(const int id, const int source_utility_id, const double sou
           buyers_ids(buyers_ids),
           buyers_transfer_triggers(buyers_transfer_triggers) {
 
+    for (int i : buyers_ids)
+        if (i == source_utility_id)
+            throw std::invalid_argument( "Source utility cannot be a buyer utility as well." );
+
     utilities_ids = buyers_ids;
     utilities_ids.push_back(source_utility_id);
-    allocations = *new vector<double>(buyers_ids.size(), 0);
+    allocations = *new vector<double>(utilities_ids.size(), 0);
     for (const double &d : pipe_transfer_capacities)
         average_pipe_capacity += d;
+
+    vector<vector<double>> continuity_matrix = utilities_graph.getContinuityMatrix();
+    continuity_matrix[source_utility_id][continuity_matrix.size() + source_utility_id] = 1;
 
     /// Map buyer's IDs to vertexes ID starting from 0 for the sake of determining payments.
     for (int i = 0; i < buyers_ids.size(); ++i) {
@@ -70,12 +78,10 @@ Transfers::Transfers(const int id, const int source_utility_id, const double sou
     /// size is number of variables x number of utilities (source + requesting utilities).
     /// Continuity matrix: +1 for flow entering utility and -1 for leaving.
     Aeq.resize(0, n_allocations + 1, n_vars);
-    cout << endl;
-    for (unsigned int i = 0; i < continuity_matrix->size(); ++i) {
-        for (unsigned int j = 0; j < continuity_matrix->at(i).size(); ++j) {
-            Aeq[i][j] = continuity_matrix->at(i).at(j);
+    for (unsigned int i = 0; i < continuity_matrix.size(); ++i) {
+        for (unsigned int j = 0; j < continuity_matrix.at(i).size(); ++j) {
+            Aeq[i][j] = continuity_matrix.at(i).at(j);
         }
-        cout << endl;
     }
 
     /// Create ce0 vector of 0 so that mass balance is enforced on the nodes (utilities).
@@ -152,7 +158,12 @@ void Transfers::addUtility(Utility *utility) {
 void Transfers::applyPolicy(int week) {
 
     vector<double> requesting_utilities_rofs(buyers_ids.size(), 0);
-    allocations = *(new vector<double>(buyers_ids.size(), 0));
+    std::fill(allocations.begin(), allocations.end(), 0);
+
+    int n_vars = f.size();
+    int n_allocations = (int) buyers_ids.size();
+    int n_utilities = n_allocations + 1;
+    int n_pipes = n_vars - n_utilities;
 
     /**
      * Get summation of rofs of utilities needing transfers. This is for splitting the available flow rate and for
@@ -172,40 +183,49 @@ void Transfers::applyPolicy(int week) {
 
     /// Check if transfers will be needed and, if so, perform the transfers.
     if (sum_rofs > 0) {
-        vector<double> transfer_requests(buyers_ids.size(), 0);
+        vector<double> transfer_requests((unsigned long) n_allocations, 0);
 
         /// Total volume available for transfers in source utility.
         double available_transfer_volume = (source_utility->getTotal_treatment_capacity() - source_treatment_buffer) *
                                            PEAKING_FACTOR - source_utility->getDemand(week);
 
-        /// Minimum volume to be allocated to any utility.
-        double min_transfer_volume = available_transfer_volume / (utilities_requesting_transfers + 1);
+        if (available_transfer_volume > 0) {
 
-        /// Split up total volume available among the utilities proportionally to their ROFs. Requests are scaled
-        /// with the summation of the pipe capacities so to scale them down in case there is much more water
-        /// available than the pipes can convey, so to avaid the utility with the highest request from getting all
-        /// the water. Other scaling factors can be used as well.
-        //FIXME: FIGURE OUT WHAT SCALING FACTOR THAT BEST APPROXIMATES CURRENT NC TRIANGLE RULES IN HB'S MODEL.
-        for (int i = 0; i < transfer_requests.size(); ++i) {
-            transfer_requests[i] = available_transfer_volume * requesting_utilities_rofs[i] / sum_rofs *
-                    average_pipe_capacity / available_transfer_volume;
+            /// Minimum volume to be allocated to any utility.
+            double min_transfer_volume = available_transfer_volume / (utilities_requesting_transfers + 1);
+
+            /// Split up total volume available among the utilities proportionally to their ROFs. Requests are scaled
+            /// with the summation of the pipe capacities so to scale them down in case there is much more water
+            /// available than the pipes can convey, so to avaid the utility with the highest request from getting all
+            /// the water. Other scaling factors can be used as well.
+            //FIXME: FIGURE OUT WHAT SCALING FACTOR THAT BEST APPROXIMATES CURRENT NC TRIANGLE RULES IN HB'S MODEL.
+            for (int i = 0; i < n_allocations; ++i) {
+                transfer_requests[i] = available_transfer_volume * requesting_utilities_rofs[i] / sum_rofs *
+                                       average_pipe_capacity / available_transfer_volume;
+            }
+
+//            for (double a : transfer_requests)
+//                cout << a << " ";
+//            cout << endl;
+
+            /// Calculate allocations and flow rates through inter-utility connections.
+            flow_rates_and_allocations = solve_QP(transfer_requests, available_transfer_volume, min_transfer_volume);
+            conveyed_volumes = *(new vector<double>(flow_rates_and_allocations.begin(),
+                                                    flow_rates_and_allocations.begin() + n_pipes));
+
+            allocations.clear();
+            for (int id : utilities_ids)
+                allocations.push_back(flow_rates_and_allocations.at(n_pipes + id));
+
+            /// Mitigate demands.
+            double sum_allocations = 0;
+            for (int i = 0; i < n_allocations; ++i) {
+                buying_utilities[i]->setDemand_offset(allocations[i], source_utility->water_price_per_volume);
+                sum_allocations += allocations[i];
+            }
+            /// draw water from source utility.
+            source_utility->setDemand_offset(-sum_allocations, source_utility->water_price_per_volume);
         }
-
-        /// Calculate allocations and flow rates through inter-utility connections.
-        flow_rates_and_allocations = solve_QP(transfer_requests, available_transfer_volume, min_transfer_volume);
-        allocations = *(new vector<double>(flow_rates_and_allocations.end() - buyers_ids.size(),
-                                                  flow_rates_and_allocations.end()));
-        conveyed_volumes = *(new vector<double>(flow_rates_and_allocations.begin(),
-                                              flow_rates_and_allocations.end() - buyers_ids.size()));
-
-        /// Mitigate demands.
-        double sum_allocations = 0;
-        for (int i = 0; i < buying_utilities.size(); ++i) {
-            buying_utilities[i]->setDemand_offset(allocations[i], source_utility->water_price_per_volume);
-            sum_allocations += allocations[i];
-        }
-        /// draw water from source utility.
-        source_utility->setDemand_offset(-sum_allocations, source_utility->water_price_per_volume);
     }
 }
 
@@ -220,46 +240,49 @@ void Transfers::applyPolicy(int week) {
 vector<double> Transfers::solve_QP(vector<double> allocation_requests, double available_transfer_volume,
                                    double min_transfer_volume) {
 
+    vector<double> flow_rates_and_allocations;
     unsigned int n_allocations = (unsigned int) allocation_requests.size();
-    unsigned int n_flow_rates_Q_source = f.size() - n_allocations;
     unsigned int n_vars = f.size();
+    unsigned int n_pipes = n_vars - n_allocations - 1;
     Vector<double> x;
 
     Matrix<double> G = this->H;
 
     /// Set g0 vector to allocated to 2 * target_allocation.
     for (int i = 0; i < allocation_requests.size(); ++i) {
-        f[i + n_flow_rates_Q_source] = -2 * allocation_requests[i];
+        f[n_pipes + buyers_ids[i]] = -2 * allocation_requests[i];
     }
 
     /// Set allocation bounds to 0 if no allocation is requested, and to
     /// available transfer volume otherwise.
     for (int i = 0; i < n_allocations; ++i) {
         if (allocation_requests[i] == NONE) {
-            lb[i + n_flow_rates_Q_source] = NONE;
-            ub[i + n_flow_rates_Q_source] = NONE;
+            lb[n_pipes + buyers_ids[i]] = NONE;
+            ub[n_pipes + buyers_ids[i]] = NONE;
         } else {
-            lb[i + n_flow_rates_Q_source] = min_transfer_volume;
-            ub[i + n_flow_rates_Q_source] = available_transfer_volume;
+            lb[n_pipes + buyers_ids[i]] = min_transfer_volume;
+            ub[n_pipes + buyers_ids[i]] = available_transfer_volume;
         }
     }
 
     /// Set upper bound of the last utility (source) to total amount of water available. This allows for a
-    /// smaller transfered volume, in case pipes cannot convey full amount available, but sets the cap as
+    /// smaller transferred volume, in case pipes cannot convey full amount available, but sets the cap as
     /// total amount available.
-    ub[n_flow_rates_Q_source - 1] = available_transfer_volume;
+    ub[n_pipes + source_utility_id] = available_transfer_volume;
 
     /// Prevent minimum allocation from being more than capacity of pipes connected to utility. If it happens,
     /// decrease it to half of the sum of adjacent pipes capacities so that it avoid issues with bottle-necks
-    /// throught the network. The factor of 2 can be changed to any number smaller than 1.
+    /// through the network. The factor of 2 can be changed to any number smaller than 1.
     double max_flow;
-    for (int i = 1; i < n_allocations + 1; ++i) { // skip source
-        max_flow = 0;
-        for (int j = 0; j < n_flow_rates_Q_source; ++j) {
-            max_flow += abs(Aeq[i][j] * ub[j]);
+    for (int i = 0; i < n_allocations + 1; ++i) { // skip source
+        if (i != source_utility_id) {
+            max_flow = 0;
+            for (int j = 0; j < n_pipes; ++j) {
+                max_flow += abs(Aeq[i][j] * ub[j]);
+            }
+            if (lb[n_pipes + i] > max_flow)
+                lb[n_pipes + i] = max_flow / 2;
         }
-        if (lb[n_flow_rates_Q_source + i - 1] > max_flow)
-            lb[n_flow_rates_Q_source + i - 1] = max_flow / 2;
     }
 
     /// Initialize allocations vector with 0s.
@@ -267,6 +290,17 @@ vector<double> Transfers::solve_QP(vector<double> allocation_requests, double av
 
     /// Run quadratic programming solver.
     solve_quadprog_matlab_syntax(G, f, Aeq, beq, A, b, lb, ub, x);
+
+    /*
+    print_matrix("H", G);
+    print_vector("f", f);
+    print_matrix("Aeq", Aeq);
+    print_vector("beq", beq);
+    print_vector("lb", lb);
+    print_vector("ub", ub);
+    print_vector("x", x);
+    cout << "======================================================" << endl;
+    */
 
     /// Convert Vector x into a vector.
     for (int i = 0; i < x.size(); ++i) {

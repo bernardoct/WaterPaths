@@ -563,13 +563,17 @@ void simulation3U5RTest() {
     vector<double> buyers_transfers_capacities = {2, 1.5, 1.0};
     vector<double> buyers_transfers_trigger = {0.04, 0.04};
 //    vector<double> buyers_transfers_trigger = {0.99, 0.99};
-    vector<vector<double>> continuity_matrix = {
-            {-1, -1, 0, 1, 0, 0},
-            {1, 0, -1, 0, -1, 0},
-            {0, 1, 1, 0, 0, -1}
-    };
+//    vector<vector<double>> continuity_matrix = {
+//            {-1, -1, 0, 1, 0, 0}, // source utility MUST be on the top row.
+//            {1, 0, -1, 0, -1, 0},
+//            {0, 1, 1, 0, 0, -1}
+//    };
+    WaterSourceGraph ug(3);
+    ug.addEdge(0, 1);
+    ug.addEdge(0, 2);
+    ug.addEdge(1, 2);
 
-    Transfers t(0, 0, 5, buyers_ids, buyers_transfers_capacities, buyers_transfers_trigger, &continuity_matrix,
+    Transfers t(0, 0, 5, buyers_ids, buyers_transfers_capacities, buyers_transfers_trigger, ug,
                 vector<double>(), vector<int>());
     drought_mitigation_policies.push_back(&t);
 
@@ -861,20 +865,49 @@ void test_transfers() {
     vector<int> buyers_ids = {1, 2, 3};
     vector<double> buyers_transfers_capacities = {3, 3, 1, 1};
     vector<double> buyers_transfers_trigger = {0.05, 0.08, 0.02};
-    vector<vector<double>> continuity_matrix = {
-            {-1, -1, 0, 0, 1, 0, 0, 0},
-            {0, 1, -1, 0, 0, -1, 0, 0},
-            {1, 0, 1, -1, 0, 0, -1, 0},
-            {0, 0, 0, 1, 0, 0, 0, -1}
-    };
+//    vector<vector<double>> continuity_matrix = {
+//            {-1, -1, 0, 0, 1, 0, 0, 0},
+//            {0, 1, -1, 0, 0, -1, 0, 0},
+//            {1, 0, 1, -1, 0, 0, -1, 0},
+//            {0, 0, 0, 1, 0, 0, 0, -1}
+//    };
 
-    Transfers t(0, 3, 0, buyers_ids, buyers_transfers_capacities, buyers_transfers_trigger, &continuity_matrix,
+    WaterSourceGraph ug(4);
+    ug.addEdge(0, 1);
+    ug.addEdge(0, 2);
+    ug.addEdge(1, 2);
+    ug.addEdge(1, 3);
+
+    Transfers t(0, 3, 0, buyers_ids, buyers_transfers_capacities, buyers_transfers_trigger, ug,
                 vector<double>(), vector<int>());
     vector<double> allocations = t.solve_QP(*(new vector<double>{0.5, 4.5, 1}), 10, 0.5);
 
     for (double & a : allocations) cout << a << " ";
     cout << endl;
     // answer: 3 2 1 0.5 1 3.5 0.5
+}
+
+void test_getcontinuityMatrix() {
+    WaterSourceGraph g(4);
+    g.addEdge(0, 2);
+    g.addEdge(0, 1);
+    g.addEdge(1, 2);
+    g.addEdge(2, 3);
+
+//    vector<vector<double>> expected_continuity_matrix = {
+//            {-1, -1, 0, 0, 1, 0, 0, 0},
+//            {0, 1, -1, 0, 0, -1, 0, 0},
+//            {1, 0, 1, -1, 0, 0, -1, 0},
+//            {0, 0, 0, 1, 0, 0, 0, -1}
+//    };
+
+    vector<vector<double>>  continuity_matrix = g.getContinuityMatrix();
+
+    for (auto r : continuity_matrix) {
+        for (double v : r)
+            cout << v << " ";
+        cout << endl;
+    }
 }
 
 int main() {
@@ -896,6 +929,8 @@ int main() {
 //    ::testLPSolver();
 //    ::test_QP();
 //    ::test_transfers();
+//    ::test_getcontinuityMatrix();
+
 
     return 0;
 }

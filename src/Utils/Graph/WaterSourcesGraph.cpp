@@ -30,6 +30,12 @@ void WaterSourceGraph::addEdge(int u, int v) {
     for (int& i : topological_order) {
         upstream_sources[i] = findUpstreamSources(i);
     }
+
+    vector<double> pipe_connectivity(V, 0);
+    pipe_connectivity[u] = -1;
+    pipe_connectivity[v] = 1;
+
+    continuity_matrix_transpose.push_back(pipe_connectivity);
 }
 
 /**
@@ -87,14 +93,14 @@ vector<int> WaterSourceGraph::topologicalSort() {
 
     // Check if there was a cycle
     if (cnt != V) {
-        cout << "There exists a cycle in the graph\n";
+        cout << "There exists a cycle in the graph, and topological sort cannot handle that.\n";
         return top_order;
     }
 
     // Print topological order
-    for (int i = 0; i < top_order.size(); i++)
-        cout << top_order[i] << " ";
-    cout << endl;
+//    for (int i = 0; i < top_order.size(); i++)
+//        cout << top_order[i] << " ";
+//    cout << endl;
 
     return top_order;
 }
@@ -116,10 +122,37 @@ vector<int> WaterSourceGraph::findUpstreamSources(int id) const {
     return upstream_sources;
 }
 
-vector<int> &WaterSourceGraph::getUpstream_sourses(int i) {
+vector<int> &WaterSourceGraph::getUpstream_sources(int i) {
     return upstream_sources[i];
 }
 
-const vector<int> &WaterSourceGraph::getTopologial_order() const {
+const vector<int> &WaterSourceGraph::getTopological_order() const {
     return topological_order;
+}
+
+/**
+ * Returns a matrix in which rows correspond to vertexes. The first set of columns correspond to pipes and
+ * the second set to flows in and out of vertexes.
+ * @return Continuity Matrix
+ */
+const vector<vector<double>> WaterSourceGraph::getContinuityMatrix() const {
+    vector<vector<double>> continuity_matrix(continuity_matrix_transpose[0].size(),
+                                             *new vector<double>(continuity_matrix_transpose.size(), 0));
+
+    unsigned long n_pipes = continuity_matrix_transpose.size();
+
+    for (int i = 0; i < continuity_matrix.size(); ++i) {
+        for (int j = 0; j < continuity_matrix[0].size(); ++j) {
+            continuity_matrix[i][j] = continuity_matrix_transpose[j][i];
+        }
+    }
+
+    for (int i = 0; i < continuity_matrix.size(); ++i) {
+        for (int ii = 0; ii < continuity_matrix.size(); ++ii) {
+            continuity_matrix[i].push_back(0);
+        }
+        continuity_matrix[i][n_pipes + i] = -1;
+    }
+
+    return continuity_matrix;
 }

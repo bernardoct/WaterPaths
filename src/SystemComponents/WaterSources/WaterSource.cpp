@@ -17,7 +17,7 @@ WaterSource::WaterSource(const string &reservoir_name, const int id, const doubl
           max_treatment_capacity(max_treatment_capacity),
           source_type(source_type) {
 
-    cout << "Reservoir " << reservoir_name << " created" << endl;
+//    cout << "Reservoir " << reservoir_name << " created" << endl;
     total_outflow = min_environmental_outflow;
 
 }

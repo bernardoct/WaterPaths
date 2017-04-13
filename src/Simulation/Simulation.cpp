@@ -7,6 +7,7 @@
 #include "../Utils/Graph/WaterSourcesGraph.h"
 #include <iostream>
 #include <algorithm>
+#include <time.h>
 
 Simulation::Simulation(vector<WaterSource *> &water_sources, WaterSourceGraph &water_sources_graph,
                        const vector<vector<int>> &water_sources_to_utilities, vector<Utility *> &utilities,
@@ -25,7 +26,7 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, WaterSourceGraph &w
     for (WaterSource *ws : water_sources) {
         upstream_min_env_flow = 0;
         if (ws->source_type == INTAKE) {
-            for (int &i : water_sources_graph.findUpstreamSources(ws->id))
+            for (int &i : water_sources_graph.getUpstream_sources(ws->id))
                 upstream_min_env_flow += water_sources[i]->min_environmental_outflow;
             dynamic_cast<Intake *>(ws)->setUpstream_min_env_flow(upstream_min_env_flow);
         }
@@ -66,16 +67,23 @@ void Simulation::runFullSimulation() {
 
     int n_utilities = (int) realization_models[0]->getUtilities().size();
     vector<double> risks_of_failure_week((unsigned long) n_utilities, 0.0);
+    time_t timer_i;
+    time_t timer_f;
+    double seconds;
 
     /// Run realizations.
     for (int r = 0; r < number_of_realizations; ++r) {
         cout << "Realization " << r << endl;
+//        time(&timer_i);
         for (int w = 0; w < total_simulation_time; ++w) {
             realization_models[r]->setRisks_of_failure(rof_models[r]->calculateROF(w, 0));
             realization_models[r]->applyDroughtMitigationPolicies(w);
             realization_models[r]->continuityStep(w);
             data_collector->collectData(realization_models[r], w);
         }
+//        time(&timer_f);
+//        seconds = difftime(timer_f,timer_i);
+//        cout << seconds << "s" << endl;
     }
 
     /// Print output files.

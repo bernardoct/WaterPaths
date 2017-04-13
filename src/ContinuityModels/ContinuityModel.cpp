@@ -35,7 +35,7 @@ ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, con
         u->updateTotalStoredVolume();
     }
 
-    reservoir_continuity_order = water_sources_graph.getTopologial_order();
+    reservoir_continuity_order = water_sources_graph.getTopological_order();
 }
 
 /**
@@ -70,7 +70,7 @@ void ContinuityModel::continuityStep(int week, int id_rof) {
      * gotten from source catchments for each rof year realization.
      */
     for (int &i : reservoir_continuity_order) {
-        for (int &ws : water_sources_graph.getUpstream_sourses(i))
+        for (int &ws : water_sources_graph.getUpstream_sources(i))
             upstream_spillage[i] += water_sources[ws]->getTotal_outflow();
 
 

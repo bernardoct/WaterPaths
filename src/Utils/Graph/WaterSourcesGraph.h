@@ -11,24 +11,27 @@
 //FIXME: UTILITIES GRAPH THAT RETURN CONTINUITY MATRIX AND PIPE PROPERTIES. TO BE IMPLEMENTED.
 
 class WaterSourceGraph : Graph {
-public:
-    WaterSourceGraph(int V);
+private:
     vector<vector<int>> upstream_sources;
     vector<int> topological_order;
-
-    const vector<int> &getTopologial_order() const;
-
-    // function to add an edge to graph
-    void addEdge(int u, int v);
+    vector<vector<double>> continuity_matrix_transpose;
 
     // returns and prints a Topological Sort of the complete graph
     vector<int> topologicalSort();
 
     vector<int> findUpstreamSources(int id)const;
 
-    vector<int> &getUpstream_sourses(int i);
+public:
+    WaterSourceGraph(int V);
+    const vector<int> &getTopological_order() const;
+
+    // function to add an edge to graph
+    void addEdge(int u, int v);
+
+    vector<int> &getUpstream_sources(int i);
 
 
+    const vector<vector<double>> getContinuityMatrix() const;
 };
 
 

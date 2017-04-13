@@ -20,7 +20,7 @@ Utility::Utility(string name, int id, char const *demand_file_name, int number_o
         water_price_per_volume(water_price_per_volume) {
 
     demand_series = Utils::parse1DCsvFile(demand_file_name, number_of_week_demands);
-    cout << "Utility " << name << " created." << endl;
+//    cout << "Utility " << name << " created." << endl;
     total_stored_volume = -1;
     total_storage_capacity = 1;
 }
@@ -174,7 +174,7 @@ void Utility::updateContingencyFund(int week) {
     contingency_fund += percent_contingency_fund_contribution * demand_series[week] * water_price_per_volume;
     /// Deficit when restrictions and/or transfers are used.
     contingency_fund -= demand_series[week] * (1 - demand_multiplier) * water_price_per_volume // Amount not remunerated from loss of revenues
-                        - demand_offset * (offset_rate_per_volume - water_price_per_volume); // Amount paid to transfer source utility on top of losses.
+                        + demand_offset * (offset_rate_per_volume - water_price_per_volume); // Amount paid to transfer source utility on top of losses.
 }
 
 void Utility::setWaterSourceOnline(int source_id) {

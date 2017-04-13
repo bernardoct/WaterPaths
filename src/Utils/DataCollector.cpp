@@ -34,11 +34,10 @@ DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<Wa
             if (dmp->type == RESTRICTIONS)
                 restriction_policy_t[r].push_back(*new RestrictionPolicy_t(dmp->id));
             else if (dmp->type == TRANSFERS)
-                transfers_policy_t[r].push_back(*new Transfers_policy_t(dmp->id, dmp->getUtilities_ids()));
+                transfers_policy_t[r].push_back(*new Transfers_policy_t(
+                        dmp->id, dynamic_cast<Transfers *>(dmp)->getUtilities_ids()));
         }
     }
-
-    int i = 0;
 }
 
 /**
@@ -196,13 +195,15 @@ void DataCollector::printPoliciesOutput(bool toFile, string fileName) {
     for (int r = 0; r < number_of_realizations; ++r) {
         if (restriction_policy_t[r].size() > 0) {
             /// Print realization number.
+            outStream << endl;
             outStream << "Realization " << r << endl;
+            outStream << setw(COLUMN_WIDTH) << " ";
             for (int i = 0; i < restriction_policy_t[r].size(); ++i) {
-                outStream << setw(COLUMN_WIDTH) << restriction_policy_t[r][i].utility_id;
+                outStream << setw(COLUMN_WIDTH - 1) << "Restr. " << restriction_policy_t[r][i].utility_id;
             }
             for (int i = 0; i < transfers_policy_t[r].size(); ++i) {
-                for (int &buyer_id : transfers_policy_t[r][i].buying_utilities_ids)
-                    outStream << setw(COLUMN_WIDTH) << buyer_id;
+                for (int buyer_id : transfers_policy_t[r][i].utilities_ids)
+                    outStream << setw(COLUMN_WIDTH - 1) << "Transf. " << transfers_policy_t[r][i].transfer_policy_id;
             }
 
             /// Print realization header.
@@ -211,7 +212,8 @@ void DataCollector::printPoliciesOutput(bool toFile, string fileName) {
                 outStream << setw(COLUMN_WIDTH) << "Multip.";
             }
             for (int i = 0; i < transfers_policy_t[r].size(); ++i) {
-                outStream << setw(COLUMN_WIDTH) << "Alloc.";
+                for (int buyer_id : transfers_policy_t[r][i].utilities_ids)
+                    outStream << setw(COLUMN_WIDTH - 1) << "Alloc. " << buyer_id;
             }
             outStream << endl;
 

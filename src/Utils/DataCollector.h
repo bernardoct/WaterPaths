@@ -48,11 +48,11 @@ struct RestrictionPolicy_t {
 };
 
 struct Transfers_policy_t {
-    Transfers_policy_t(int transfer_policy_id, vector<int> buying_utilities_ids) :
-            buying_utilities_ids(buying_utilities_ids), transfer_policy_id(transfer_policy_id) {};
+    Transfers_policy_t(int transfer_policy_id, vector<int> utilities_ids) :
+            utilities_ids(utilities_ids), transfer_policy_id(transfer_policy_id) {};
 
     int transfer_policy_id;
-    vector<int> buying_utilities_ids;
+    vector<int> utilities_ids;
     vector<vector<double>> demand_offsets;
 };
 

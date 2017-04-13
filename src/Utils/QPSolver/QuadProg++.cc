@@ -14,13 +14,8 @@ File $Id: QuadProg++.cc 232 2007-06-21 12:29:00Z digasper $
 
 #include <iostream>
 #include <algorithm>
-#include <cmath>
-#include <limits>
 #include <sstream>
-#include <stdexcept>
 #include "QuadProg++.hh"
-#include <cmath>
-//#define TRACE_SOLVER
 
 // Utility functions for updating some data needed by the solution method 
 void compute_d(Vector<double> &d, const Matrix<double> &J, const Vector<double> &np);
@@ -85,19 +80,16 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     Vector<double> s(m + p), z(n), r(m + p), d(n), np(n), u(m + p), x_old(n), u_old(m + p);
     double f_value, psi, c1, c2, sum, ss, R_norm;
     double inf;
-    if (std::numeric_limits<double>::has_infinity)
-        inf = std::numeric_limits<double>::infinity();
-    else
-        inf = 1.0E300;
+    inf = std::numeric_limits<double>::infinity();
     double t, t1, t2; /* t is the step lenght, which is the minimum of the partial step length t1
     * and the full step length t2 */
     Vector<int> A(m + p), A_old(m + p), iai(m + p);
-    int q, iq, iter = 0;
+    int iq, iter = 0;
     Vector<bool> iaexcl(m + p);
 
     /* p is the number of equality constraints */
     /* m is the number of inequality constraints */
-    q = 0;  /* size of the active set A (containing the indices of the active constraints) */
+    /* size of the active set A (containing the indices of the active constraints) */
 #ifdef TRACE_SOLVER
     std::cout << std::endl << "Starting solve_quadprog" << std::endl;
     print_matrix("H", H);
@@ -198,7 +190,6 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
         if (!add_constraint(R, J, d, iq, R_norm)) {
             // Equality constraints are linearly dependent
             throw std::runtime_error("Constraints are linearly dependent");
-            return f_value;
         }
     }
 
@@ -237,8 +228,6 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
 
     if (fabs(psi) <= m * std::numeric_limits<double>::epsilon() * c1 * c2 * 100.0) {
         /* numerically there are not infeasibilities anymore */
-        q = iq;
-
         return f_value;
     }
 
@@ -259,8 +248,6 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
         }
     }
     if (ss >= 0.0) {
-        q = iq;
-
         return f_value;
     }
 
@@ -326,7 +313,6 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     if (t >= inf) {
         /* QPP is infeasible */
         // FIXME: unbounded to raise
-        q = iq;
         return inf;
     }
     /* case (ii): step in dual space */
@@ -724,7 +710,6 @@ void cholesky_decomposition(Matrix<double> &A) {
                     print_matrix((char *) "A", A);
                     os << "Error in cholesky decomposition, sum: " << sum;
                     throw std::logic_error(os.str());
-                    exit(-1);
                 }
                 A[i][i] = sqrt(sum);
             } else
@@ -737,7 +722,7 @@ void cholesky_decomposition(Matrix<double> &A) {
 
 void cholesky_solve(const Matrix<double> &L, Vector<double> &x, const Vector<double> &b) {
     int n = L.nrows();
-    Vector<double> y(n);
+    Vector<double> y((const unsigned int) n);
 
     /* Solve L * y = b */
     forward_elimination(L, y, b);

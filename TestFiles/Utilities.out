@@ -1,7 +1,8 @@
+
 Realization 0
    
-      Week              Stored               Rest.   Unrest.  Conting.              Stored               Rest.   Unrest.  Conting.              Stored               Rest.   Unrest.  Conting.
-                        Volume       ROF    Demand    Demand      Fund              Volume       ROF    Demand    Demand      Fund              Volume       ROF    Demand    Demand      Fund
+                        Stored               Rest.   Unrest.  Conting.              Stored               Rest.   Unrest.  Conting.              Stored               Rest.   Unrest.  Conting.
+      Week              Volume       ROF    Demand    Demand      Fund              Volume       ROF    Demand    Demand      Fund              Volume       ROF    Demand    Demand      Fund
          0                 500         0     9.062     9.062    0.2719               868.6         0     9.062     9.062    0.6343                 550         0     9.062     9.062    0.4531
          1                 500         0     8.952     8.952    0.5404               863.6         0     8.952     8.952     1.261                 550         0     8.952     8.952    0.9007
          2                 500         0     9.075     9.075    0.8126               857.2         0     9.075     9.075     1.896                 550         0     9.075     9.075     1.354
@@ -106,10 +107,11 @@ Realization 0
        101                 500         0     8.907     8.907     31.35               703.2         0     8.907     8.907     15.37                 550         0     8.907     8.907      28.7
        102                 500         0     8.821     8.821     31.61               701.1         0     8.821     8.821     15.99                 550         0     8.821     8.821     29.14
        103                 500         0      8.19      8.19     31.86               701.3         0      8.19      8.19     16.56                 550         0      8.19      8.19     29.55
+
 Realization 1
    
-      Week              Stored               Rest.   Unrest.  Conting.              Stored               Rest.   Unrest.  Conting.              Stored               Rest.   Unrest.  Conting.
-                        Volume       ROF    Demand    Demand      Fund              Volume       ROF    Demand    Demand      Fund              Volume       ROF    Demand    Demand      Fund
+                        Stored               Rest.   Unrest.  Conting.              Stored               Rest.   Unrest.  Conting.              Stored               Rest.   Unrest.  Conting.
+      Week              Volume       ROF    Demand    Demand      Fund              Volume       ROF    Demand    Demand      Fund              Volume       ROF    Demand    Demand      Fund
          0                 500         0     9.062     9.062    0.2719               868.6         0     9.062     9.062    0.6343                 550         0     9.062     9.062    0.4531
          1                 500         0     8.952     8.952    0.5404               863.6         0     8.952     8.952     1.261                 550         0     8.952     8.952    0.9007
          2                 500         0     9.075     9.075    0.8126               857.2         0     9.075     9.075     1.896                 550         0     9.075     9.075     1.354

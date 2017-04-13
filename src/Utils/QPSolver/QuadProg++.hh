@@ -80,4 +80,4 @@ void print_matrix(char *name, const Matrix<double> &A, int n = -1, int m = -1);
 
 void print_vector(char *name, const Vector<double> &v, int n = -1);
 
-#endif // #define _QUADPROGPP
+#endif

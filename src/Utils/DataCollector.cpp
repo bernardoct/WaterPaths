@@ -146,13 +146,14 @@ void DataCollector::printUtilityOutput(bool toFile, string fileName) {
     for (int r = 0; r <number_of_realizations; ++r) {
 
         /// Print realization number.
+        outStream << endl;
         outStream << "Realization " << r << endl;
         for (int i = 0; i < utilities_t[r].size(); ++i) {
             outStream << utilities_t[r][i].name << " ";
         }
 
         /// Print realization header.
-        outStream << endl << setw(COLUMN_WIDTH) << "Week";
+        outStream << endl << setw(COLUMN_WIDTH) << " ";
         for (int i = 0; i < utilities_t[r].size(); ++i) {
             outStream << setw(2 * COLUMN_WIDTH) << "Stored"
                       << setw(COLUMN_WIDTH) << " "
@@ -160,7 +161,7 @@ void DataCollector::printUtilityOutput(bool toFile, string fileName) {
                       << setw(COLUMN_WIDTH) << "Unrest."
                       << setw(COLUMN_WIDTH) << "Conting.";
         }
-        outStream << endl << setw(COLUMN_WIDTH) << " ";
+        outStream << endl << setw(COLUMN_WIDTH) << "Week";
         for (int i = 0; i < utilities_t[r].size(); ++i) {
             outStream << setw(2 * COLUMN_WIDTH) << "Volume"
                       << setw(COLUMN_WIDTH) << "ROF"

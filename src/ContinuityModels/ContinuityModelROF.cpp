@@ -84,12 +84,12 @@ void ContinuityModelROF::resetUtilitiesAndReservoirs(int rof_type) {
         for (int i = 0; i < water_sources.size(); ++i) {
             water_sources[i]->setAvailable_volume(water_sources_realization[i]->getAvailable_volume());
             water_sources[i]->setOutflow_previous_week(water_sources_realization[i]->getTotal_outflow());
-        } else {
+        }
+    else
         for (int i = 0; i < water_sources.size(); ++i) {
             water_sources[i]->setAvailable_volume(water_sources_realization[i]->capacity);
             water_sources[i]->setOutflow_previous_week(water_sources_realization[i]->getTotal_outflow());
         }
-    }
 
     /// update utilities combined storage.
     for (Utility *u : this->utilities) {

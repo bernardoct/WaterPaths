@@ -47,7 +47,8 @@ public:
     virtual void addUtility(Utility *utility) override;
 
     vector<double>
-    solve_QP(vector<double> allocation_requests, double available_transfer_volume, double min_transfer_volume);
+    solve_QP(vector<double> allocation_requests, double available_transfer_volume, double min_transfer_volume,
+                 int week);
 
     vector<double> getConveyed_volumes();
 };

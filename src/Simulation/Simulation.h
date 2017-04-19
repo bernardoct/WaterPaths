@@ -35,6 +35,10 @@ private:
     vector<ContinuityModelRealization *> realization_models;
     vector<ContinuityModelROF *> rof_models;
     DataCollector * data_collector;
+
+    bool isFirstWeekOfTheYear(int week);
+
+    vector<double> calculateObjectives();
 };
 
 

@@ -14,7 +14,12 @@ class Intake : public WaterSource {
 public:
 
     Intake(const string &source_name, const int id, const double min_environmental_outflow,
-           const vector<Catchment *> &catchments, bool online, double max_treatment_capacity);
+           const vector<Catchment *> &catchments, const double max_treatment_capacity);
+
+    Intake(const string &source_name, const int id, const double min_environmental_outflow,
+           const vector<Catchment *> &catchments, const double max_treatment_capacity,
+           const double construction_rof, const vector<double> construction_time_range,
+           double construction_price);
 
     Intake(const Intake &intake);
 

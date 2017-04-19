@@ -72,20 +72,25 @@ void Simulation::runFullSimulation() {
     /// Run realizations.
     for (int r = 0; r < number_of_realizations; ++r) {
         cout << "Realization " << r << endl;
-//        time(&timer_i);
+        time(&timer_i);
         for (int w = 0; w < total_simulation_time; ++w) {
-            realization_models[r]->setRisks_of_failure(rof_models[r]->calculateROF(w, SHORT_TERM_ROF));
+            if (isFirstWeekOfTheYear(w)) realization_models[r]->setLongTermROFs(rof_models[r]->calculateROF(w, LONG_TERM_ROF), w);
+            realization_models[r]->setShortTermROFs(rof_models[r]->calculateROF(w, SHORT_TERM_ROF));
             realization_models[r]->applyDroughtMitigationPolicies(w);
             realization_models[r]->continuityStep(w);
             data_collector->collectData(realization_models[r], w);
         }
-//        time(&timer_f);
-//        seconds = difftime(timer_f,timer_i);
-//        cout << seconds << "s" << endl;
+        time(&timer_f);
+        seconds = difftime(timer_f,timer_i);
+        cout << seconds << "s" << endl;
     }
 
     /// Print output files.
     data_collector->printUtilityOutput(true);
     data_collector->printReservoirOutput(true);
     data_collector->printPoliciesOutput(true);
+}
+
+bool Simulation::isFirstWeekOfTheYear(int week) {
+    return (week / WEEKS_IN_YEAR - (int) (week / WEEKS_IN_YEAR)) * WEEKS_IN_YEAR < 1.0;
 }

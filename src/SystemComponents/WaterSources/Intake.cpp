@@ -23,9 +23,10 @@ Intake::Intake(const string &source_name, const int id, const double min_environ
 Intake::Intake(const string &source_name, const int id, const double min_environmental_outflow,
                const vector<Catchment *> &catchments, const double max_treatment_capacity,
                const double construction_rof, const vector<double> construction_time_range,
-               double construction_price) : WaterSource(source_name, id, min_environmental_outflow, catchments,
-                                                        NONE, max_treatment_capacity, INTAKE, construction_rof,
-                                                        construction_time_range, construction_price) {
+               double construction_npv_cost_of_capital, double bond_term, double bond_interest_rate) :
+        WaterSource(source_name, id, min_environmental_outflow, catchments, NONE, max_treatment_capacity, INTAKE,
+                    construction_rof, construction_time_range, construction_npv_cost_of_capital, bond_term,
+                    bond_interest_rate) {
 
     /// Update total catchment inflow, demand, and available water volume for week 0;
     this->upstream_catchment_inflow = 0;

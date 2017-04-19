@@ -23,11 +23,13 @@ private:
     double contingency_fund;
     double restricted_demand;
     double unrestricted_demand;
+    double infrastructure_net_present_cost = 0;
     bool underConstruction = false;
     int construction_start_date = -1;
     map<int, WaterSource *> water_sources;
     map<int, double> split_demands_among_sources;
     vector<int> infrastructure_construction_order;
+    vector<vector<double>> infrastructure_built;
 
     void setWaterSourceOnline(int source_id);
 
@@ -37,13 +39,14 @@ public:
     const int number_of_week_demands;
     const string name;
     const double percent_contingency_fund_contribution;
+    const double infrastructure_discount_rate;
 
     Utility(string name, int id, char const *demand_file_name, int number_of_week_demands,
             const double percent_contingency_fund_contribution, const double water_price_per_volume);
 
     Utility(string name, int id, char const *demand_file_name, int number_of_week_demands,
                 const double percent_contingency_fund_contribution, const double water_price_per_volume,
-                const vector<int> infrastructure_build_order);
+                const vector<int> infrastructure_build_order, double infrastructure_discount_rate);
 
     Utility(Utility &utility);
 
@@ -94,6 +97,8 @@ public:
     double getDemand_multiplier() const;
 
     double getUnrestrictedDemand(int week) const;
+
+    double getInfrastructure_net_present_cost() const;
 };
 
 

@@ -18,7 +18,7 @@ Utility::Utility(string name, int id, char const *demand_file_name, int number_o
                  const double percent_contingency_fund_contribution, const double water_price_per_volume) :
         name(name), id(id), number_of_week_demands(number_of_week_demands),
         percent_contingency_fund_contribution(percent_contingency_fund_contribution),
-        water_price_per_volume(water_price_per_volume) {
+        water_price_per_volume(water_price_per_volume), infrastructure_discount_rate(NON_INITIALIZED) {
 
     demand_series = Utils::parse1DCsvFile(demand_file_name, number_of_week_demands);
 //    cout << "Utility " << name << " created." << endl;
@@ -29,15 +29,18 @@ Utility::Utility(string name, int id, char const *demand_file_name, int number_o
 
 Utility::Utility(string name, int id, char const *demand_file_name, int number_of_week_demands,
                  const double percent_contingency_fund_contribution, const double water_price_per_volume,
-                 const vector<int> infrastructure_build_order) :
+                 const vector<int> infrastructure_build_order, double infrastructure_discount_rate) :
         name(name), id(id), number_of_week_demands(number_of_week_demands),
         percent_contingency_fund_contribution(percent_contingency_fund_contribution),
-        water_price_per_volume(water_price_per_volume), infrastructure_construction_order(infrastructure_build_order) {
+        water_price_per_volume(water_price_per_volume), infrastructure_construction_order(infrastructure_build_order),
+        infrastructure_discount_rate(infrastructure_discount_rate) {
 
     if (infrastructure_build_order.size() == 0)
         throw std::invalid_argument("Infrastructure construction order vector must have at least one water source ID. "
                                             "If there's not infrastructure to be build, use the other constructor "
                                             "instead.");
+    if (infrastructure_discount_rate <= 0)
+        throw std::invalid_argument("Infrastructure discount rate must be greater than 0.");
 
     demand_series = Utils::parse1DCsvFile(demand_file_name, number_of_week_demands);
 //    cout << "Utility " << name << " created." << endl;
@@ -57,7 +60,8 @@ Utility::Utility(Utility &utility) : id(utility.id), number_of_week_demands(util
                                      demand_series(new double[utility.number_of_week_demands]),
                                      percent_contingency_fund_contribution(utility.percent_contingency_fund_contribution),
                                      water_price_per_volume(utility.water_price_per_volume),
-                                     infrastructure_construction_order(utility.infrastructure_construction_order) {
+                                     infrastructure_construction_order(utility.infrastructure_construction_order),
+                                     infrastructure_discount_rate(utility.infrastructure_discount_rate) {
 
     /// Create copies of sources
     water_sources.clear();
@@ -224,6 +228,8 @@ void Utility::checkBuildInfrastructure(double long_term_rof, int week) {
         if (long_term_rof > water_sources[infrastructure_construction_order[0]]->construction_rof
             && !underConstruction) {
             cout << "Construction began in week " << week << endl;
+            infrastructure_net_present_cost += water_sources[infrastructure_construction_order[0]]->
+                            calculateNetPresentCost(week, infrastructure_discount_rate);
             beginConstruction(week);
         }
 
@@ -232,6 +238,7 @@ void Utility::checkBuildInfrastructure(double long_term_rof, int week) {
             if (week > construction_start_date + water_sources[infrastructure_construction_order[0]]->construction_time) {
                 cout << "Construction complete in week " << week << endl;
                 setWaterSourceOnline(infrastructure_construction_order[0]);
+                // ADD INFRASTRUCTURE CONSTRUCTION RECORDING HERE
                 infrastructure_construction_order.erase(infrastructure_construction_order.begin());
             }
         }
@@ -314,4 +321,8 @@ double Utility::getDemand_multiplier() const {
 
 double Utility::getUnrestrictedDemand(int week) const {
     return demand_series[week];
+}
+
+double Utility::getInfrastructure_net_present_cost() const {
+    return infrastructure_net_present_cost;
 }

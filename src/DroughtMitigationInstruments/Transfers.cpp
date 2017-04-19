@@ -215,7 +215,7 @@ void Transfers::applyPolicy(int week) {
 
             allocations.clear();
             for (int id : utilities_ids)
-                allocations.push_back(flow_rates_and_allocations.at((unsigned long) (n_pipes + id));
+                allocations.push_back(flow_rates_and_allocations.at((unsigned long) (n_pipes + id)));
 
             /// Mitigate demands.
             double sum_allocations = 0;

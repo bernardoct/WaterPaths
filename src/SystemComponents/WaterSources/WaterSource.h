@@ -11,7 +11,7 @@
 
 using namespace std;
 using namespace Constants;
-
+const int BOND_INTEREST_PAYMENTS_PER_YEAR = 1;
 
 class WaterSource {
 protected:
@@ -33,17 +33,20 @@ public:
     const int source_type;
     const double max_treatment_capacity;
     const double construction_rof;
-    const double construction_price;
+    const double construction_cost_of_capital;
     const double construction_time;
+    const double bond_term;
+    const double bond_interest_rate;
 
     WaterSource(const string &source_name, const int id, const double min_environmental_outflow,
                 const vector<Catchment *> &catchments, const double capacity,
                 const double max_treatment_capacity, const int source_type);
 
     WaterSource(const string &source_name, const int id, const double min_environmental_outflow,
-                const vector<Catchment *> &catchments, const double capacity,
-                const double max_treatment_capacity, const int source_type, const double construction_rof,
-                const vector<double> construction_time_range, double construction_price);
+                    const vector<Catchment *> &catchments, const double capacity,
+                    const double max_treatment_capacity, const int source_type, const double construction_rof,
+                    const vector<double> construction_time_range, double construction_cost_of_capital,
+                    double bond_term, double bond_interest_rate);
 
     WaterSource(const WaterSource &water_source);
 
@@ -78,6 +81,8 @@ public:
     double getCatchment_upstream_catchment_inflow() const;
 
     void bypass(int week, double upstream_source_inflow);
+
+    double calculateNetPresentCost(int week, double discount_rate) const;
 };
 
 

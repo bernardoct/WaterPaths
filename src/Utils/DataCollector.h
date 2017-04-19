@@ -23,6 +23,7 @@ struct Utility_t {
     vector<double> restricted_demand;
     vector<double> contingency_fund_size;
     double capacity;
+    double net_present_infrastructure_cost;
     int id;
     string name;
 };
@@ -63,8 +64,8 @@ private:
     vector<vector<WaterSource_t>> reservoir_t;
     vector<vector<RestrictionPolicy_t>> restriction_policy_t;
     vector<vector<Transfers_policy_t>> transfers_policy_t;
-    string output_directory = "/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/";
-//    string output_directory = "/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/";
+//    string output_directory = "/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/";
+    string output_directory = "/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/";
     int number_of_realizations;
 
 public:

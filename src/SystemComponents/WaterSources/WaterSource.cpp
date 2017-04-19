@@ -7,20 +7,48 @@
 
 using namespace std;
 
-WaterSource::WaterSource(const string &reservoir_name, const int id, const double min_environmental_outflow,
-                         const vector<Catchment *> &catchments, bool online, const double capacity,
+/**
+ * Constructor for when water source is built and operational.
+ * @param source_name
+ * @param id
+ * @param min_environmental_outflow
+ * @param catchments
+ * @param capacity
+ * @param max_treatment_capacity
+ * @param source_type
+ */
+WaterSource::WaterSource(const string &source_name, const int id, const double min_environmental_outflow,
+                         const vector<Catchment *> &catchments, const double capacity,
                          const double max_treatment_capacity, const int source_type)
-        : name(reservoir_name), capacity(capacity),
-          min_environmental_outflow(min_environmental_outflow),
-          catchments(catchments), online(online),
-          available_volume(capacity), id(id),
-          max_treatment_capacity(max_treatment_capacity),
-          source_type(source_type) {
+        : name(source_name), capacity(capacity), min_environmental_outflow(min_environmental_outflow),
+          total_outflow(min_environmental_outflow), catchments(catchments), online(ONLINE), available_volume(capacity),
+          id(id), max_treatment_capacity(max_treatment_capacity), source_type(source_type),
+          construction_rof(NON_INITIALIZED), construction_time(NON_INITIALIZED), construction_price(NON_INITIALIZED) {}
 
-//    cout << "Reservoir " << reservoir_name << " created" << endl;
-    total_outflow = min_environmental_outflow;
-
-}
+/**
+ * Constructor for when water source does not exist in the beginning of the simulation.
+ * @param source_name
+ * @param id
+ * @param min_environmental_outflow
+ * @param catchments
+ * @param capacity
+ * @param max_treatment_capacity
+ * @param source_type
+ * @param construction_rof
+ * @param construction_time_range
+ * @param construction_price
+ */
+WaterSource::WaterSource(const string &source_name, const int id, const double min_environmental_outflow,
+                         const vector<Catchment *> &catchments, const double capacity,
+                         const double max_treatment_capacity, const int source_type, const double construction_rof,
+                         const vector<double> construction_time_range, double construction_price)
+        : name(source_name), capacity(capacity), min_environmental_outflow(min_environmental_outflow),
+          total_outflow(min_environmental_outflow), catchments(catchments), online(OFFLINE), available_volume(capacity),
+          id(id), max_treatment_capacity(max_treatment_capacity), source_type(source_type),
+          construction_rof(construction_rof),
+          construction_time(construction_time_range[0] * WEEKS_IN_YEAR +
+                                    construction_time_range[0] * (rand() % (int) WEEKS_IN_YEAR)),
+          construction_price(construction_price) {}
 
 /**
  * Copy constructor.
@@ -40,7 +68,11 @@ WaterSource::WaterSource(const WaterSource &water_source) : capacity(water_sourc
                                                             upstream_catchment_inflow(
                                                                     water_source.upstream_catchment_inflow),
                                                             max_treatment_capacity(
-                                                                    water_source.max_treatment_capacity) {
+                                                                    water_source.max_treatment_capacity),
+                                                            construction_rof(water_source.construction_rof),
+                                                            construction_time(
+                                                                    water_source.construction_time),
+                                                            construction_price(water_source.construction_price) {
     catchments.clear();
     for (Catchment *c : water_source.catchments) {
         catchments.push_back(new Catchment(*c));

@@ -23,21 +23,27 @@ private:
     double contingency_fund;
     double restricted_demand;
     double unrestricted_demand;
-    const double percent_contingency_fund_contribution;
+    bool underConstruction = false;
+    int construction_start_date = -1;
     map<int, WaterSource *> water_sources;
     map<int, double> split_demands_among_sources;
+    vector<int> infrastructure_construction_order;
+
     void setWaterSourceOnline(int source_id);
 
 public:
     const int id;
-
     const double water_price_per_volume;
-
     const int number_of_week_demands;
     const string name;
+    const double percent_contingency_fund_contribution;
 
     Utility(string name, int id, char const *demand_file_name, int number_of_week_demands,
-                const double percent_contingency_fund_contribution, const double water_price_per_volume);
+            const double percent_contingency_fund_contribution, const double water_price_per_volume);
+
+    Utility(string name, int id, char const *demand_file_name, int number_of_week_demands,
+                const double percent_contingency_fund_contribution, const double water_price_per_volume,
+                const vector<int> infrastructure_build_order);
 
     Utility(Utility &utility);
 
@@ -53,10 +59,6 @@ public:
 
     double getReservoirDraw(const int water_source_id);
 
-    void drawFromContingencyFund(double amount);
-
-    void addToContingencyFund(double amount);
-
     void updateTotalStoredVolume();
 
     const map<int, WaterSource *> &getWaterSource() const;
@@ -67,29 +69,31 @@ public:
 
     void splitDemands(int week);
 
-    double getWater_price_per_volume() const;
-
     double getTotal_storage_capacity() const;
 
     void setDemand_multiplier(double demand_multiplier);
 
     void setDemand_offset(double demand_offset, double offset_rate_per_volume);
 
-    double getDemand(const int week);
-
     double getTotal_treatment_capacity() const;
 
     double getTotal_available_volume() const;
-
-    void updateContingencyFund();
 
     void updateContingencyFund(int week);
 
     double getContingency_fund() const;
 
-    double getUnrestrictedDemand(int week) const;
+    double getUnrestrictedDemand() const;
 
-    double getRestrictedDemand(int week) const;
+    double getRestrictedDemand() const;
+
+    void beginConstruction(int week);
+
+    void checkBuildInfrastructure(double long_term_rof, int week);
+
+    double getDemand_multiplier() const;
+
+    double getUnrestrictedDemand(int week) const;
 };
 
 

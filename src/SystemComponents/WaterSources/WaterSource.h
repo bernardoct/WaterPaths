@@ -15,15 +15,15 @@ using namespace Constants;
 
 class WaterSource {
 protected:
-    vector<Catchment *> catchments;
     double available_volume = -1;
     double total_outflow = -1;
     double upstream_source_inflow = -1;
     double upstream_catchment_inflow = -1;
     double demand = -1;
     double upstream_min_env_inflow;
-    bool online = Constants::ONLINE;
+    bool online;
     int week;
+    vector<Catchment *> catchments;
 
 public:
     const int id;
@@ -32,10 +32,18 @@ public:
     const string name;
     const int source_type;
     const double max_treatment_capacity;
+    const double construction_rof;
+    const double construction_price;
+    const double construction_time;
 
     WaterSource(const string &source_name, const int id, const double min_environmental_outflow,
-                const vector<Catchment *> &catchments, bool online, const double capacity,
+                const vector<Catchment *> &catchments, const double capacity,
                 const double max_treatment_capacity, const int source_type);
+
+    WaterSource(const string &source_name, const int id, const double min_environmental_outflow,
+                const vector<Catchment *> &catchments, const double capacity,
+                const double max_treatment_capacity, const int source_type, const double construction_rof,
+                const vector<double> construction_time_range, double construction_price);
 
     WaterSource(const WaterSource &water_source);
 

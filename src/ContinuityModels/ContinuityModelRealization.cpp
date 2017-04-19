@@ -27,9 +27,15 @@ vector<WaterSource *> ContinuityModelRealization::getWater_sources() {
     return water_sources;
 }
 
-void ContinuityModelRealization::setRisks_of_failure(const vector<double> &risks_of_failure) {
+void ContinuityModelRealization::setShortTermROFs(const vector<double> &risks_of_failure) {
     for (unsigned long i = 0; i < utilities.size(); ++i) {
         utilities.at(i)->setRisk_of_failure(risks_of_failure.at(i));
+    }
+}
+
+void ContinuityModelRealization::setLongTermROFs(const vector<double> &risks_of_failure, const int week) {
+    for (unsigned long i = 0; i < utilities.size(); ++i) {
+        utilities.at(i)->checkBuildInfrastructure(risks_of_failure.at(i), week);
     }
 }
 

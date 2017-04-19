@@ -13,6 +13,7 @@
  * @param demand_file_name Text file containing utility's demand series.
  * @param number_of_week_demands Length of weeks in demand series.
  */
+
 Utility::Utility(string name, int id, char const *demand_file_name, int number_of_week_demands,
                  const double percent_contingency_fund_contribution, const double water_price_per_volume) :
         name(name), id(id), number_of_week_demands(number_of_week_demands),
@@ -25,6 +26,27 @@ Utility::Utility(string name, int id, char const *demand_file_name, int number_o
     total_storage_capacity = 1;
 }
 
+
+Utility::Utility(string name, int id, char const *demand_file_name, int number_of_week_demands,
+                 const double percent_contingency_fund_contribution, const double water_price_per_volume,
+                 const vector<int> infrastructure_build_order) :
+        name(name), id(id), number_of_week_demands(number_of_week_demands),
+        percent_contingency_fund_contribution(percent_contingency_fund_contribution),
+        water_price_per_volume(water_price_per_volume), infrastructure_construction_order(infrastructure_build_order) {
+
+    if (infrastructure_build_order.size() == 0)
+        throw std::invalid_argument("Infrastructure construction order vector must have at least one water source ID. "
+                                            "If there's not infrastructure to be build, use the other constructor "
+                                            "instead.");
+
+    demand_series = Utils::parse1DCsvFile(demand_file_name, number_of_week_demands);
+//    cout << "Utility " << name << " created." << endl;
+    total_stored_volume = -1;
+    total_storage_capacity = 1;
+}
+
+
+
 /**
  * Copy constructor.
  * @param utility
@@ -34,7 +56,8 @@ Utility::Utility(Utility &utility) : id(utility.id), number_of_week_demands(util
                                      total_stored_volume(utility.total_stored_volume),
                                      demand_series(new double[utility.number_of_week_demands]),
                                      percent_contingency_fund_contribution(utility.percent_contingency_fund_contribution),
-                                     water_price_per_volume(utility.water_price_per_volume) {
+                                     water_price_per_volume(utility.water_price_per_volume),
+                                     infrastructure_construction_order(utility.infrastructure_construction_order) {
 
     /// Create copies of sources
     water_sources.clear();
@@ -146,12 +169,17 @@ void Utility::splitDemands(int week) {
     }
 
     /// Allocates remaining demand to reservoirs.
+    double demand;
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
         if (ws.second->source_type == RESERVOIR) {
             i = ws.second->id;
-            split_demands_among_sources.at(i) = restricted_demand *
-                                                max(1.0e-6, water_sources.at(i)->getAvailable_volume()) /
-                                                total_stored_volume;
+            demand = restricted_demand *
+                     max(1.0e-6, ws.second->getAvailable_volume()) /
+                     total_stored_volume;
+            if (demand > 0)
+                split_demands_among_sources.at(i) = demand;
+            else
+                split_demands_among_sources.at(i) = 0;
         }
     }
 
@@ -184,6 +212,38 @@ void Utility::setWaterSourceOnline(int source_id) {
 }
 
 /**
+ * Checks if infrastructure should be built, triggers, and handles the process.
+ * @param long_term_rof
+ * @param week
+ */
+void Utility::checkBuildInfrastructure(double long_term_rof, int week) {
+
+    /// Checks whether the long erm ROF has been exceeded for the next infrastructure option in the list and, if not
+    /// already under construction, starts building it.
+    if (infrastructure_construction_order.size() > 0) { // if there is anything to be built
+        if (long_term_rof > water_sources[infrastructure_construction_order[0]]->construction_rof
+            && !underConstruction) {
+            cout << "Construction began in week " << week << endl;
+            beginConstruction(week);
+        }
+
+        /// If there's a water source under construction, check if it's ready and, if so, clear it from the to-build list.
+        if (underConstruction) {
+            if (week > construction_start_date + water_sources[infrastructure_construction_order[0]]->construction_time) {
+                cout << "Construction complete in week " << week << endl;
+                setWaterSourceOnline(infrastructure_construction_order[0]);
+                infrastructure_construction_order.erase(infrastructure_construction_order.begin());
+            }
+        }
+    }
+}
+
+void Utility::beginConstruction(int week) {
+    underConstruction = true;
+    construction_start_date = week;
+}
+
+/**
  * Assigns a fraction of the total weekly demand to a reservoir according to its current storage in relation
  * to the combined current stored of all reservoirs where the utility has .
  * @param week
@@ -196,10 +256,6 @@ double Utility::getReservoirDraw(const int water_source_id) {
 
 const map<int, WaterSource *> &Utility::getWaterSource() const {
     return water_sources;
-}
-
-double Utility::getDemand(const int week) {
-    return demand_series[week];
 }
 
 double Utility::getStorageToCapacityRatio() const {
@@ -231,18 +287,6 @@ double Utility::getTotal_available_volume() const {
     return total_available_volume;
 }
 
-double Utility::getWater_price_per_volume() const {
-    return water_price_per_volume;
-}
-
-void Utility::drawFromContingencyFund(double amount) {
-
-}
-
-void Utility::addToContingencyFund(double amount) {
-
-}
-
 void Utility::setDemand_multiplier(double demand_multiplier) {
     Utility::demand_multiplier = demand_multiplier;
 }
@@ -256,10 +300,18 @@ void Utility::setDemand_offset(double demand_offset, double offset_rate_per_volu
     Utility::offset_rate_per_volume = offset_rate_per_volume;
 }
 
-double Utility::getUnrestrictedDemand(int week) const {
+double Utility::getUnrestrictedDemand() const {
     return unrestricted_demand;
 }
 
-double Utility::getRestrictedDemand(int week) const {
+double Utility::getRestrictedDemand() const {
     return restricted_demand;
+}
+
+double Utility::getDemand_multiplier() const {
+    return demand_multiplier;
+}
+
+double Utility::getUnrestrictedDemand(int week) const {
+    return demand_series[week];
 }

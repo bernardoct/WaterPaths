@@ -186,7 +186,7 @@ void Transfers::applyPolicy(int week) {
 
         /// Total volume available for transfers in source utility.
         double available_transfer_volume = (source_utility->getTotal_treatment_capacity() - source_treatment_buffer) *
-                                           PEAKING_FACTOR - source_utility->getDemand(week);
+                                           PEAKING_FACTOR - source_utility->getUnrestrictedDemand();
 
         if (available_transfer_volume > 0) {
 
@@ -208,13 +208,14 @@ void Transfers::applyPolicy(int week) {
 //            cout << endl;
 
             /// Calculate allocations and flow rates through inter-utility connections.
-            flow_rates_and_allocations = solve_QP(transfer_requests, available_transfer_volume, min_transfer_volume);
+            flow_rates_and_allocations = solve_QP(transfer_requests, available_transfer_volume,
+                                                  min_transfer_volume, week);
             conveyed_volumes = *(new vector<double>(flow_rates_and_allocations.begin(),
                                                     flow_rates_and_allocations.begin() + n_pipes));
 
             allocations.clear();
             for (int id : utilities_ids)
-                allocations.push_back(flow_rates_and_allocations.at(n_pipes + id));
+                allocations.push_back(flow_rates_and_allocations.at((unsigned long) (n_pipes + id));
 
             /// Mitigate demands.
             double sum_allocations = 0;
@@ -237,7 +238,7 @@ void Transfers::applyPolicy(int week) {
  * @return
  */
 vector<double> Transfers::solve_QP(vector<double> allocation_requests, double available_transfer_volume,
-                                   double min_transfer_volume) {
+                                   double min_transfer_volume, int week) {
 
     vector<double> flow_rates_and_allocations;
     unsigned int n_allocations = (unsigned int) allocation_requests.size();
@@ -260,7 +261,9 @@ vector<double> Transfers::solve_QP(vector<double> allocation_requests, double av
             ub[n_pipes + buyers_ids[i]] = NONE;
         } else {
             lb[n_pipes + buyers_ids[i]] = min_transfer_volume;
-            ub[n_pipes + buyers_ids[i]] = available_transfer_volume;
+//            ub[n_pipes + buyers_ids[i]] = available_transfer_volume;
+            ub[n_pipes + buyers_ids[i]] = buying_utilities[i]->getUnrestrictedDemand(week)
+                                          * buying_utilities[i]->getDemand_multiplier();
         }
     }
 

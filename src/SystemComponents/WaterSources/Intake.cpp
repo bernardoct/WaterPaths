@@ -6,9 +6,8 @@
 #include "Intake.h"
 
 Intake::Intake(const string &source_name, const int id, const double min_environmental_outflow,
-               const vector<Catchment *> &catchments, bool online, double max_treatment_capacity)
-        : WaterSource(source_name, id, min_environmental_outflow, catchments,
-                      online, NONE, max_treatment_capacity, INTAKE) {
+               const vector<Catchment *> &catchments, const double max_treatment_capacity)
+        : WaterSource(source_name, id, min_environmental_outflow, catchments, NONE, max_treatment_capacity, INTAKE) {
 
     /// Update total catchment inflow, demand, and available water volume for week 0;
     this->upstream_catchment_inflow = 0;
@@ -18,6 +17,25 @@ Intake::Intake(const string &source_name, const int id, const double min_environ
 
     demand = 0;
     available_volume = this->upstream_catchment_inflow - min_environmental_outflow;
+
+}
+
+Intake::Intake(const string &source_name, const int id, const double min_environmental_outflow,
+               const vector<Catchment *> &catchments, const double max_treatment_capacity,
+               const double construction_rof, const vector<double> construction_time_range,
+               double construction_price) : WaterSource(source_name, id, min_environmental_outflow, catchments,
+                                                        NONE, max_treatment_capacity, INTAKE, construction_rof,
+                                                        construction_time_range, construction_price) {
+
+    /// Update total catchment inflow, demand, and available water volume for week 0;
+    this->upstream_catchment_inflow = 0;
+    for (Catchment *c : catchments) {
+        this->upstream_catchment_inflow = c->getStreamflow(0);
+    }
+
+    demand = 0;
+    available_volume = this->upstream_catchment_inflow - min_environmental_outflow;
+
 }
 
 /**

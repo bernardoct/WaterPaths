@@ -59,8 +59,8 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
         utilities_t[r][i].combined_storage.push_back(u->getStorageToCapacityRatio() *
                                                      u->getTotal_storage_capacity());
         utilities_t[r][i].rof.push_back(u->getRisk_of_failure());
-        utilities_t[r][i].unrestricted_demand.push_back(u->getUnrestrictedDemand(week));
-        utilities_t[r][i].restricted_demand.push_back(u->getRestrictedDemand(week));
+        utilities_t[r][i].unrestricted_demand.push_back(u->getUnrestrictedDemand());
+        utilities_t[r][i].restricted_demand.push_back(u->getRestrictedDemand());
         utilities_t[r][i].contingency_fund_size.push_back(u->getContingency_fund());
     }
 

@@ -23,6 +23,7 @@ struct Utility_t {
     vector<double> restricted_demand;
     vector<double> contingency_fund_size;
     double capacity;
+    double net_present_infrastructure_cost;
     int id;
     string name;
 };

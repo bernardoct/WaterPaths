@@ -62,6 +62,7 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
         utilities_t[r][i].unrestricted_demand.push_back(u->getUnrestrictedDemand());
         utilities_t[r][i].restricted_demand.push_back(u->getRestrictedDemand());
         utilities_t[r][i].contingency_fund_size.push_back(u->getContingency_fund());
+        utilities_t[r][i].net_present_infrastructure_cost = u->getInfrastructure_net_present_cost();
     }
 
     /// Get reservoirs data.
@@ -183,6 +184,13 @@ void DataCollector::printUtilityOutput(bool toFile, string fileName) {
             }
             outStream << endl;
         }
+
+        for (int i = 0; i < utilities_t[r].size(); ++i) {
+            outStream << utilities_t[r][i].name << " NPC of infrastructure: " << utilities_t[r][i]
+                    .net_present_infrastructure_cost << endl;
+        }
+        outStream << endl;
+
     }
 
     outStream.close();

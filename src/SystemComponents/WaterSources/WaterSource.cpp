@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <cmath>
 #include "WaterSource.h"
 
 using namespace std;
@@ -23,7 +24,9 @@ WaterSource::WaterSource(const string &source_name, const int id, const double m
         : name(source_name), capacity(capacity), min_environmental_outflow(min_environmental_outflow),
           total_outflow(min_environmental_outflow), catchments(catchments), online(ONLINE), available_volume(capacity),
           id(id), max_treatment_capacity(max_treatment_capacity), source_type(source_type),
-          construction_rof(NON_INITIALIZED), construction_time(NON_INITIALIZED), construction_price(NON_INITIALIZED) {}
+          construction_rof(NON_INITIALIZED), construction_time(NON_INITIALIZED),
+          construction_cost_of_capital(NON_INITIALIZED), bond_term(NON_INITIALIZED),
+          bond_interest_rate(NON_INITIALIZED) {}
 
 /**
  * Constructor for when water source does not exist in the beginning of the simulation.
@@ -36,19 +39,21 @@ WaterSource::WaterSource(const string &source_name, const int id, const double m
  * @param source_type
  * @param construction_rof
  * @param construction_time_range
- * @param construction_price
+ * @param construction_cost_of_capital
  */
 WaterSource::WaterSource(const string &source_name, const int id, const double min_environmental_outflow,
                          const vector<Catchment *> &catchments, const double capacity,
                          const double max_treatment_capacity, const int source_type, const double construction_rof,
-                         const vector<double> construction_time_range, double construction_price)
+                         const vector<double> construction_time_range, double construction_cost_of_capital,
+                         double bond_term, double bond_interest_rate)
         : name(source_name), capacity(capacity), min_environmental_outflow(min_environmental_outflow),
           total_outflow(min_environmental_outflow), catchments(catchments), online(OFFLINE), available_volume(capacity),
           id(id), max_treatment_capacity(max_treatment_capacity), source_type(source_type),
           construction_rof(construction_rof),
-          construction_time(construction_time_range[0] * WEEKS_IN_YEAR +
-                                    construction_time_range[0] * (rand() % (int) WEEKS_IN_YEAR)),
-          construction_price(construction_price) {}
+          construction_time(construction_time_range[0] * WEEKS_IN_YEAR + (construction_time_range[1] -
+                  construction_time_range[0]) * (rand() % (int) WEEKS_IN_YEAR)),
+          construction_cost_of_capital(construction_cost_of_capital), bond_term(bond_term),
+          bond_interest_rate(bond_interest_rate) {}
 
 /**
  * Copy constructor.
@@ -72,7 +77,10 @@ WaterSource::WaterSource(const WaterSource &water_source) : capacity(water_sourc
                                                             construction_rof(water_source.construction_rof),
                                                             construction_time(
                                                                     water_source.construction_time),
-                                                            construction_price(water_source.construction_price) {
+                                                            construction_cost_of_capital(
+                                                                    water_source.construction_cost_of_capital),
+                                                            bond_term(water_source.bond_term),
+                                                            bond_interest_rate(water_source.bond_interest_rate) {
     catchments.clear();
     for (Catchment *c : water_source.catchments) {
         catchments.push_back(new Catchment(*c));
@@ -142,6 +150,29 @@ void WaterSource::bypass(int week, double upstream_source_inflow) {
     available_volume = NONE;
     total_outflow = upstream_catchment_inflow + upstream_source_inflow;
     this->upstream_source_inflow = upstream_source_inflow;
+}
+
+/**
+ * Calculates the net present cost of the infrastructure options (water source) as a bond structured with level debt
+ * service payments, issued on a certain week.
+ * @param week
+ * @param discount_rate
+ * @return
+ */
+double WaterSource::calculateNetPresentCost(int week, double discount_rate) const {
+    double rate = bond_interest_rate / BOND_INTEREST_PAYMENTS_PER_YEAR;
+    double principal = construction_cost_of_capital;
+    double n_payments = bond_term * BOND_INTEREST_PAYMENTS_PER_YEAR;
+
+    /// Level debt service payment value
+    double level_debt_service_payment = principal * (rate * pow(1 + rate, n_payments)) /
+            (pow(1 + rate, n_payments) - 1);
+
+    /// Net present cost of stream of level debt service payments for the whole bond term, at the time of issuance.
+    double net_present_cost_at_issuance = level_debt_service_payment * (1 - pow(1 + discount_rate, -n_payments)) / discount_rate;
+
+    /// Return NPC discounted from the time of issuance to the present.
+    return net_present_cost_at_issuance / pow(1 + discount_rate, week / WEEKS_IN_YEAR);
 }
 
 double WaterSource::getAvailable_volume() const {

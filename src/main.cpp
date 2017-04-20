@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 #include "SystemComponents/WaterSources/Reservoir.h"
 #include "SystemComponents/Utility.h"
 #include "Utils/Utils.h"
@@ -1062,8 +1063,7 @@ int main() {
 //    ::test_QP();
 //    ::test_transfers();
 //    ::test_getcontinuityMatrix();
-    ::simulation3U5RInfraTest();
-
+//    ::simulation3U5RInfraTest();
 
     return 0;
 }

@@ -7,7 +7,7 @@
 #include <iostream>
 #include <algorithm>
 #include <time.h>
-
+#include <cmath>
 
 
 Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_sources_graph,
@@ -96,4 +96,35 @@ void Simulation::runFullSimulation() {
 
 bool Simulation::isFirstWeekOfTheYear(int week) {
     return (week / WEEKS_IN_YEAR - (int) (week / WEEKS_IN_YEAR)) * WEEKS_IN_YEAR < 1.0;
+}
+
+vector<double> Simulation::calculateObjectives() {
+
+    return vector<double>();
+}
+
+double Simulation::calculateReliabilityObjective(vector<Utility_t> utilities_data) {
+    unsigned long n_realizations = utilities_data.size();
+    unsigned long n_weeks = utilities_data[0].combined_storage.size();
+    unsigned long n_years = (unsigned long) ceil(n_weeks / WEEKS_IN_YEAR);
+
+    vector<int> failures_per_year(n_years, 0);
+    vector<int> failed_weeks(n_weeks, 0);
+
+    for (int w = 0; w < n_weeks; ++w) {
+        for (int r = 0; r < n_realizations; ++r) {
+            if (utilities_data[r].combined_storage[w] < STORAGE_CAPACITY_RATIO_FAIL)
+                failed_weeks[w] = FAILURE;
+        }
+    }
+
+    for (int y = 0; y < n_years; ++y) {
+        for (int w = (int) round(n_years * WEEKS_IN_YEAR); w < (int) round((n_years + 1) * WEEKS_IN_YEAR); ++w) {
+            if (failed_weeks[w] == FAILURE) {
+                failures_per_year[y] += 1.0 / n_realizations;
+            }
+        }
+    }
+
+    return *max_element(failures_per_year.begin(), failures_per_year.end());
 }

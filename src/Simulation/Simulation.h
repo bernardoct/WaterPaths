@@ -38,6 +38,8 @@ private:
 
     bool isFirstWeekOfTheYear(int week);
 
+    double calculateReliabilityObjective(vector<Utility_t> utilities_data);
+
     vector<double> calculateObjectives();
 };
 

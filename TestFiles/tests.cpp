@@ -6,6 +6,7 @@
 #include "../src/SystemComponents/WaterSources/Reservoir.h"
 #include "../src/Utils/Utils.h"
 #include "catch-main.h"
+#include "../src/Utils/DataCollector.h"
 
 TEST_CASE("Net present cost calculations", "[NPC]") {
     Reservoir r("Res", 0, 1, vector<Catchment *>(), 1, 1, 1, vector<double>(2, 1), 5000, 20, 0.05);
@@ -49,4 +50,17 @@ TEST_CASE("Split of demand among water sources of a utility proportionally to th
 
         REQUIRE(u1.getReservoirDraw(0) == Approx((9.0617079441 - (5.0 - min_env_flow_intake)) * 1 / 3));
     }
+}
+
+TEST_CASE("Test reliability objective", "[Reliability Objective") {
+    Utility_t u(0, 0, "U_test");
+
+//    0.834874330726829	0.803223272934052	0.446117291551915
+//    0.195507623927823	0.703115092725931	0.194098335461135
+//    0.915611391391226	0.375596192228751	0.754884749387044
+//    0.799908475529645	0.102013441894622	0.982775089481746
+//    0.620921073157045	0.322484128876482	0.045317683986853
+
+//    answer = 0.333 // from second row.
+
 }

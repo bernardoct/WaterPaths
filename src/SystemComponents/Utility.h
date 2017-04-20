@@ -19,25 +19,34 @@ private:
     double total_treatment_capacity;
     double demand_multiplier = 1;
     double demand_offset = 0;
+    double offset_rate_per_volume = 0;
     double contingency_fund;
-    const double percent_contingency_fund_contribution;
-    const double water_price_per_volume;
+    double restricted_demand;
+    double unrestricted_demand;
+    double infrastructure_net_present_cost = 0;
+    bool underConstruction = false;
+    int construction_start_date = -1;
     map<int, WaterSource *> water_sources;
     map<int, double> split_demands_among_sources;
+    vector<int> infrastructure_construction_order;
+    vector<vector<double>> infrastructure_built;
+
     void setWaterSourceOnline(int source_id);
 
 public:
     const int id;
-
-    double getRisk_of_failure() const;
-
-    void setRisk_of_failure(double risk_of_failure);
-
+    const double water_price_per_volume;
     const int number_of_week_demands;
     const string name;
+    const double percent_contingency_fund_contribution;
+    const double infrastructure_discount_rate;
 
     Utility(string name, int id, char const *demand_file_name, int number_of_week_demands,
-                const double percent_contingency_fund_contribution, const double water_price_per_volume);
+            const double percent_contingency_fund_contribution, const double water_price_per_volume);
+
+    Utility(string name, int id, char const *demand_file_name, int number_of_week_demands,
+                const double percent_contingency_fund_contribution, const double water_price_per_volume,
+                const vector<int> infrastructure_build_order, double infrastructure_discount_rate);
 
     Utility(Utility &utility);
 
@@ -47,11 +56,11 @@ public:
 
     bool operator<(const Utility *utility);
 
+    void setRisk_of_failure(double risk_of_failure);
+
+    double getRisk_of_failure() const;
+
     double getReservoirDraw(const int water_source_id);
-
-    void drawFromContingencyFund(double amount);
-
-    void addToContingencyFund(double amount);
 
     void updateTotalStoredVolume();
 
@@ -63,25 +72,33 @@ public:
 
     void splitDemands(int week);
 
-    double getWater_price_per_volume() const;
-
     double getTotal_storage_capacity() const;
 
     void setDemand_multiplier(double demand_multiplier);
 
-    void setDemand_offset(double demand_offset);
-
-    double getDemand(const int week);
+    void setDemand_offset(double demand_offset, double offset_rate_per_volume);
 
     double getTotal_treatment_capacity() const;
 
     double getTotal_available_volume() const;
 
-    void updateContingencyFund();
-
     void updateContingencyFund(int week);
 
     double getContingency_fund() const;
+
+    double getUnrestrictedDemand() const;
+
+    double getRestrictedDemand() const;
+
+    void beginConstruction(int week);
+
+    void checkBuildInfrastructure(double long_term_rof, int week);
+
+    double getDemand_multiplier() const;
+
+    double getUnrestrictedDemand(int week) const;
+
+    double getInfrastructure_net_present_cost() const;
 };
 
 

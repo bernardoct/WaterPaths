@@ -13,17 +13,42 @@
  * @param demand_file_name Text file containing utility's demand series.
  * @param number_of_week_demands Length of weeks in demand series.
  */
+
 Utility::Utility(string name, int id, char const *demand_file_name, int number_of_week_demands,
                  const double percent_contingency_fund_contribution, const double water_price_per_volume) :
         name(name), id(id), number_of_week_demands(number_of_week_demands),
         percent_contingency_fund_contribution(percent_contingency_fund_contribution),
-        water_price_per_volume(water_price_per_volume) {
+        water_price_per_volume(water_price_per_volume), infrastructure_discount_rate(NON_INITIALIZED) {
 
     demand_series = Utils::parse1DCsvFile(demand_file_name, number_of_week_demands);
-    cout << "Utility " << name << " created." << endl;
+//    cout << "Utility " << name << " created." << endl;
     total_stored_volume = -1;
     total_storage_capacity = 1;
 }
+
+
+Utility::Utility(string name, int id, char const *demand_file_name, int number_of_week_demands,
+                 const double percent_contingency_fund_contribution, const double water_price_per_volume,
+                 const vector<int> infrastructure_build_order, double infrastructure_discount_rate) :
+        name(name), id(id), number_of_week_demands(number_of_week_demands),
+        percent_contingency_fund_contribution(percent_contingency_fund_contribution),
+        water_price_per_volume(water_price_per_volume), infrastructure_construction_order(infrastructure_build_order),
+        infrastructure_discount_rate(infrastructure_discount_rate) {
+
+    if (infrastructure_build_order.size() == 0)
+        throw std::invalid_argument("Infrastructure construction order vector must have at least one water source ID. "
+                                            "If there's not infrastructure to be build, use the other constructor "
+                                            "instead.");
+    if (infrastructure_discount_rate <= 0)
+        throw std::invalid_argument("Infrastructure discount rate must be greater than 0.");
+
+    demand_series = Utils::parse1DCsvFile(demand_file_name, number_of_week_demands);
+//    cout << "Utility " << name << " created." << endl;
+    total_stored_volume = -1;
+    total_storage_capacity = 1;
+}
+
+
 
 /**
  * Copy constructor.
@@ -34,7 +59,9 @@ Utility::Utility(Utility &utility) : id(utility.id), number_of_week_demands(util
                                      total_stored_volume(utility.total_stored_volume),
                                      demand_series(new double[utility.number_of_week_demands]),
                                      percent_contingency_fund_contribution(utility.percent_contingency_fund_contribution),
-                                     water_price_per_volume(utility.water_price_per_volume) {
+                                     water_price_per_volume(utility.water_price_per_volume),
+                                     infrastructure_construction_order(utility.infrastructure_construction_order),
+                                     infrastructure_discount_rate(utility.infrastructure_discount_rate) {
 
     /// Create copies of sources
     water_sources.clear();
@@ -56,7 +83,9 @@ Utility::Utility(Utility &utility) : id(utility.id), number_of_week_demands(util
  * Destructor.
  */
 Utility::~Utility() {
-    delete[] demand_series;
+    //FIXME: I'M GETTING SEGMENTATION FAULT HERE.
+//    if (demand_series)
+//        delete[] demand_series;
 }
 
 /**
@@ -130,25 +159,31 @@ void Utility::addWaterSource(WaterSource *water_source) {
 void Utility::splitDemands(int week) {
     int i;
     double intake_demand;
-    double remaining_demand = demand_series[week] * demand_multiplier;
+    unrestricted_demand = demand_series[week];
+    restricted_demand = unrestricted_demand * demand_multiplier - demand_offset;
 
     /// Allocates demand to intakes.
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
         if (ws.second->source_type == INTAKE) {
             i = ws.second->id;
-            intake_demand = min(remaining_demand, ws.second->getAvailable_volume());
+            intake_demand = min(restricted_demand, ws.second->getAvailable_volume());
             split_demands_among_sources.at(i) = intake_demand;
-            remaining_demand -= intake_demand;
+            restricted_demand -= intake_demand;
         }
     }
 
     /// Allocates remaining demand to reservoirs.
+    double demand;
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
         if (ws.second->source_type == RESERVOIR) {
             i = ws.second->id;
-            split_demands_among_sources.at(i) = remaining_demand *
-                                                max(1.0e-6, water_sources.at(i)->getAvailable_volume()) /
-                                                total_stored_volume;
+            demand = restricted_demand *
+                     max(1.0e-6, ws.second->getAvailable_volume()) /
+                     total_stored_volume;
+            if (demand > 0)
+                split_demands_among_sources.at(i) = demand;
+            else
+                split_demands_among_sources.at(i) = 0;
         }
     }
 
@@ -160,15 +195,59 @@ void Utility::splitDemands(int week) {
     demand_offset = 0;
 }
 
+/**
+ * Update contingency fund based on regular contribution, restrictions, and transfers. This function works for both
+ * sources and receivers of transfers, and the transfer water prices are different than regular prices for both
+ * sources and receivers.
+ * @param week
+ */
 void Utility::updateContingencyFund(int week) {
+    /// Regular fund contribution.
     contingency_fund += percent_contingency_fund_contribution * demand_series[week] * water_price_per_volume;
-    contingency_fund -= demand_series[week] * (1 - demand_multiplier) * water_price_per_volume;
+    /// Deficit when restrictions and/or transfers are used.
+    contingency_fund -= demand_series[week] * (1 - demand_multiplier) * water_price_per_volume // Amount not remunerated from loss of revenues
+                        + demand_offset * (offset_rate_per_volume - water_price_per_volume); // Amount paid to transfer source utility on top of losses.
 }
 
 void Utility::setWaterSourceOnline(int source_id) {
     water_sources.at(source_id)->setOnline();
     total_storage_capacity += water_sources.at(source_id)->capacity;
     total_treatment_capacity += water_sources.at(source_id)->max_treatment_capacity;
+}
+
+/**
+ * Checks if infrastructure should be built, triggers, and handles the process.
+ * @param long_term_rof
+ * @param week
+ */
+void Utility::checkBuildInfrastructure(double long_term_rof, int week) {
+
+    /// Checks whether the long erm ROF has been exceeded for the next infrastructure option in the list and, if not
+    /// already under construction, starts building it.
+    if (infrastructure_construction_order.size() > 0) { // if there is anything to be built
+        if (long_term_rof > water_sources[infrastructure_construction_order[0]]->construction_rof
+            && !underConstruction) {
+            cout << "Construction began in week " << week << endl;
+            infrastructure_net_present_cost += water_sources[infrastructure_construction_order[0]]->
+                            calculateNetPresentCost(week, infrastructure_discount_rate);
+            beginConstruction(week);
+        }
+
+        /// If there's a water source under construction, check if it's ready and, if so, clear it from the to-build list.
+        if (underConstruction) {
+            if (week > construction_start_date + water_sources[infrastructure_construction_order[0]]->construction_time) {
+                cout << "Construction complete in week " << week << endl;
+                setWaterSourceOnline(infrastructure_construction_order[0]);
+                // ADD INFRASTRUCTURE CONSTRUCTION RECORDING HERE
+                infrastructure_construction_order.erase(infrastructure_construction_order.begin());
+            }
+        }
+    }
+}
+
+void Utility::beginConstruction(int week) {
+    underConstruction = true;
+    construction_start_date = week;
 }
 
 /**
@@ -184,10 +263,6 @@ double Utility::getReservoirDraw(const int water_source_id) {
 
 const map<int, WaterSource *> &Utility::getWaterSource() const {
     return water_sources;
-}
-
-double Utility::getDemand(const int week) {
-    return demand_series[week];
 }
 
 double Utility::getStorageToCapacityRatio() const {
@@ -219,18 +294,6 @@ double Utility::getTotal_available_volume() const {
     return total_available_volume;
 }
 
-double Utility::getWater_price_per_volume() const {
-    return water_price_per_volume;
-}
-
-void Utility::drawFromContingencyFund(double amount) {
-
-}
-
-void Utility::addToContingencyFund(double amount) {
-
-}
-
 void Utility::setDemand_multiplier(double demand_multiplier) {
     Utility::demand_multiplier = demand_multiplier;
 }
@@ -239,6 +302,27 @@ double Utility::getContingency_fund() const {
     return contingency_fund;
 }
 
-void Utility::setDemand_offset(double demand_offset) {
+void Utility::setDemand_offset(double demand_offset, double offset_rate_per_volume) {
     Utility::demand_offset = demand_offset;
+    Utility::offset_rate_per_volume = offset_rate_per_volume;
+}
+
+double Utility::getUnrestrictedDemand() const {
+    return unrestricted_demand;
+}
+
+double Utility::getRestrictedDemand() const {
+    return restricted_demand;
+}
+
+double Utility::getDemand_multiplier() const {
+    return demand_multiplier;
+}
+
+double Utility::getUnrestrictedDemand(int week) const {
+    return demand_series[week];
+}
+
+double Utility::getInfrastructure_net_present_cost() const {
+    return infrastructure_net_present_cost;
 }

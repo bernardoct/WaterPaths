@@ -24,7 +24,7 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_source
     for (WaterSource *ws : water_sources) {
         upstream_min_env_flow = 0;
         if (ws->source_type == INTAKE) {
-            for (int &i : water_sources_graph.findUpstreamSources(ws->id))
+            for (int &i : water_sources_graph.getUpstream_sources(ws->id))
                 upstream_min_env_flow += water_sources[i]->min_environmental_outflow;
             dynamic_cast<Intake *>(ws)->setUpstream_min_env_flow(upstream_min_env_flow);
         }
@@ -65,21 +65,32 @@ void Simulation::runFullSimulation() {
 
     int n_utilities = (int) realization_models[0]->getUtilities().size();
     vector<double> risks_of_failure_week((unsigned long) n_utilities, 0.0);
+    time_t timer_i;
+    time_t timer_f;
+    double seconds;
 
     /// Run realizations.
     for (int r = 0; r < number_of_realizations; ++r) {
         cout << "Realization " << r << endl;
+        time(&timer_i);
         for (int w = 0; w < total_simulation_time; ++w) {
+            if (isFirstWeekOfTheYear(w)) realization_models[r]->setLongTermROFs(rof_models[r]->calculateROF(w, LONG_TERM_ROF), w);
+            realization_models[r]->setShortTermROFs(rof_models[r]->calculateROF(w, SHORT_TERM_ROF));
             realization_models[r]->applyDroughtMitigationPolicies(w);
             realization_models[r]->continuityStep(w);
-            realization_models[r]->setRisks_of_failure(rof_models[r]->calculateROF(w, 0));
             data_collector->collectData(realization_models[r], w);
         }
+        time(&timer_f);
+        seconds = difftime(timer_f,timer_i);
+        cout << seconds << "s" << endl;
     }
 
     /// Print output files.
     data_collector->printUtilityOutput(true);
     data_collector->printReservoirOutput(true);
     data_collector->printPoliciesOutput(true);
+}
 
+bool Simulation::isFirstWeekOfTheYear(int week) {
+    return (week / WEEKS_IN_YEAR - (int) (week / WEEKS_IN_YEAR)) * WEEKS_IN_YEAR < 1.0;
 }

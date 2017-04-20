@@ -19,9 +19,11 @@ struct Utility_t {
 
     vector<double> rof;
     vector<double> combined_storage;
-    vector<double> demand;
+    vector<double> unrestricted_demand;
+    vector<double> restricted_demand;
     vector<double> contingency_fund_size;
     double capacity;
+    double net_present_infrastructure_cost;
     int id;
     string name;
 };
@@ -46,14 +48,25 @@ struct RestrictionPolicy_t {
     vector<double> restriction_multiplier;
 };
 
+struct Transfers_policy_t {
+    Transfers_policy_t(int transfer_policy_id, vector<int> utilities_ids) :
+            utilities_ids(utilities_ids), transfer_policy_id(transfer_policy_id) {};
+
+    int transfer_policy_id;
+    vector<int> utilities_ids;
+    vector<vector<double>> demand_offsets;
+};
+
 class DataCollector {
 
 private:
     vector<vector<Utility_t>> utilities_t;
     vector<vector<WaterSource_t>> reservoir_t;
     vector<vector<RestrictionPolicy_t>> restriction_policy_t;
+    vector<vector<Transfers_policy_t>> transfers_policy_t;
 //    string output_directory = "/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/";
     string output_directory = "/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/";
+    int number_of_realizations;
 
 public:
     DataCollector(const vector<Utility *> &utilities, const vector<WaterSource *> &water_sources,

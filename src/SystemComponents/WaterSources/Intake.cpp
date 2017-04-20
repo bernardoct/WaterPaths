@@ -10,13 +10,13 @@ Intake::Intake(const string &source_name, const int id, const double min_environ
         : WaterSource(source_name, id, min_environmental_outflow, catchments, NONE, max_treatment_capacity, INTAKE) {
 
     /// Update total catchment inflow, demand, and available water volume for week 0;
-    this->upstream_catchment_inflow = 0;
+    upstream_catchment_inflow = 0;
     for (Catchment *c : catchments) {
-        this->upstream_catchment_inflow = c->getStreamflow(0);
+        upstream_catchment_inflow += c->getStreamflow(0);
     }
 
     demand = 0;
-    available_volume = this->upstream_catchment_inflow - min_environmental_outflow;
+    available_volume = upstream_catchment_inflow - min_environmental_outflow;
 
 }
 

@@ -2,7 +2,5 @@
 // Created by bct52 on 4/19/2017.
 //
 
-#ifndef TRIANGLEMODEL_CATCH_MAIN_H
-#define TRIANGLEMODEL_CATCH_MAIN_H
-
-#endif //TRIANGLEMODEL_CATCH_MAIN_H
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"

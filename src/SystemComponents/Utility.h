@@ -14,8 +14,8 @@ class Utility {
 private:
     double *demand_series;
     double risk_of_failure;
-    double total_storage_capacity;
-    double total_stored_volume;
+    double total_storage_capacity = 0;
+    double total_stored_volume = 0;
     double total_treatment_capacity;
     double demand_multiplier = 1;
     double demand_offset = 0;
@@ -25,7 +25,7 @@ private:
     double unrestricted_demand;
     double infrastructure_net_present_cost = 0;
     bool underConstruction = false;
-    int construction_start_date = -1;
+    int construction_start_date;
     map<int, WaterSource *> water_sources;
     map<int, double> split_demands_among_sources;
     vector<int> infrastructure_construction_order;
@@ -54,7 +54,9 @@ public:
 
     Utility &operator=(const Utility &utility);
 
-    bool operator<(const Utility *utility);
+    bool operator<(const Utility* other);
+
+    bool operator>(const Utility* other);
 
     void setRisk_of_failure(double risk_of_failure);
 

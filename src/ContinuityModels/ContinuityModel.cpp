@@ -30,10 +30,10 @@ ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, con
         }
     }
 
-    /// Update all utilities' combined storage volume.
-    for (Utility *u : this->utilities) {
-        u->updateTotalStoredVolume();
-    }
+//    /// Update all utilities' combined storage volume.
+//    for (Utility *u : this->utilities) {
+//        u->updateTotalStoredVolume();
+//    }
 
     reservoir_continuity_order = water_sources_graph.getTopological_order();
 }

@@ -21,9 +21,6 @@ Utility::Utility(string name, int id, char const *demand_file_name, int number_o
         water_price_per_volume(water_price_per_volume), infrastructure_discount_rate(NON_INITIALIZED) {
 
     demand_series = Utils::parse1DCsvFile(demand_file_name, number_of_week_demands);
-//    cout << "Utility " << name << " created." << endl;
-    total_stored_volume = -1;
-    total_storage_capacity = 1;
 }
 
 
@@ -108,7 +105,6 @@ Utility &Utility::operator=(const Utility &utility) {
         }
     }
 
-
     /// Copy demand series so that restrictions in one realization do not affect other realizations.
     std::copy(utility.demand_series, utility.demand_series + utility.number_of_week_demands, demand_series_temp);
     delete[] demand_series;
@@ -127,6 +123,15 @@ bool Utility::operator<(const Utility *other) {
 }
 
 /**
+ * Sorting by id compare operator.
+ * @param other
+ * @return
+ */
+bool Utility::operator>(const Utility *other) {
+    return id > other->id;
+}
+
+/**
  * Updates the total current storage held by the utility and all its reservoirs.
  */
 void Utility::updateTotalStoredVolume() {
@@ -142,12 +147,15 @@ void Utility::updateTotalStoredVolume() {
  * @param water_source
  */
 void Utility::addWaterSource(WaterSource *water_source) {
+    if (water_sources.count(water_source->id))
+        throw std::logic_error("Attempt to add water source with duplicate ID was added to utility.");
     water_sources.insert(pair<int, WaterSource *>(water_source->id, water_source));
     split_demands_among_sources.insert(pair<int, double>(water_source->id, 0));
     if (water_source->isOnline()) {
         total_storage_capacity += water_source->capacity;
         total_treatment_capacity += water_source->max_treatment_capacity;
     }
+    total_stored_volume = total_storage_capacity;
 }
 
 /**

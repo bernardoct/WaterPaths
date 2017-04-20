@@ -15,11 +15,11 @@ const int BOND_INTEREST_PAYMENTS_PER_YEAR = 1;
 
 class WaterSource {
 protected:
-    double available_volume = -1;
-    double total_outflow = -1;
-    double upstream_source_inflow = -1;
-    double upstream_catchment_inflow = -1;
-    double demand = -1;
+    double available_volume = 0;
+    double total_outflow = 0;
+    double upstream_source_inflow = 0;
+    double upstream_catchment_inflow = 0;
+    double demand = 0;
     double upstream_min_env_inflow;
     bool online;
     int week;

@@ -29,7 +29,7 @@ private:
     map<int, WaterSource *> water_sources;
     map<int, double> split_demands_among_sources;
     vector<int> infrastructure_construction_order;
-    vector<vector<double>> infrastructure_built;
+    vector<vector<int>> infrastructure_built;
 
     void setWaterSourceOnline(int source_id);
 

@@ -235,7 +235,6 @@ void Utility::checkBuildInfrastructure(double long_term_rof, int week) {
     if (infrastructure_construction_order.size() > 0) { // if there is anything to be built
         if (long_term_rof > water_sources[infrastructure_construction_order[0]]->construction_rof
             && !underConstruction) {
-            cout << "Construction began in week " << week << endl;
             infrastructure_net_present_cost += water_sources[infrastructure_construction_order[0]]->
                             calculateNetPresentCost(week, infrastructure_discount_rate);
             beginConstruction(week);
@@ -244,9 +243,9 @@ void Utility::checkBuildInfrastructure(double long_term_rof, int week) {
         /// If there's a water source under construction, check if it's ready and, if so, clear it from the to-build list.
         if (underConstruction) {
             if (week > construction_start_date + water_sources[infrastructure_construction_order[0]]->construction_time) {
-                cout << "Construction complete in week " << week << endl;
                 setWaterSourceOnline(infrastructure_construction_order[0]);
-                // ADD INFRASTRUCTURE CONSTRUCTION RECORDING HERE
+                vector<int> infra_added = {week, infrastructure_construction_order[0]};
+                infrastructure_built.push_back(infra_added);
                 infrastructure_construction_order.erase(infrastructure_construction_order.begin());
             }
         }

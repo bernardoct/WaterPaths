@@ -17,11 +17,12 @@
 struct Utility_t {
     Utility_t(int id, double capacity, string name) : id(id), capacity(capacity) {};
 
-    vector<double> rof;
-    vector<double> combined_storage;
-    vector<double> unrestricted_demand;
-    vector<double> restricted_demand;
-    vector<double> contingency_fund_size;
+    vector<vector<double>> rof;
+    vector<vector<double>> combined_storage;
+    vector<vector<double>> unrestricted_demand;
+    vector<vector<double>> restricted_demand;
+    vector<vector<double>> contingency_fund_size;
+    vector<double> objectives;
     double capacity;
     double net_present_infrastructure_cost;
     int id;
@@ -31,11 +32,11 @@ struct Utility_t {
 struct WaterSource_t {
     WaterSource_t(int id, double capacity, string name) : id(id), capacity(capacity) {};
 
-    vector<double> available_volume;
-    vector<double> total_upstream_sources_inflows;
-    vector<double> demands;
-    vector<double> outflows;
-    vector<double> total_catchments_inflow;
+    vector<vector<double>> available_volume;
+    vector<vector<double>> total_upstream_sources_inflows;
+    vector<vector<double>> demands;
+    vector<vector<double>> outflows;
+    vector<vector<double>> total_catchments_inflow;
     double capacity;
     int id;
     string name;
@@ -45,7 +46,7 @@ struct RestrictionPolicy_t {
     RestrictionPolicy_t(int utility_id) : utility_id(utility_id) {};
 
     int utility_id;
-    vector<double> restriction_multiplier;
+    vector<vector<double>> restriction_multiplier;
 };
 
 struct Transfers_policy_t {
@@ -54,19 +55,20 @@ struct Transfers_policy_t {
 
     int transfer_policy_id;
     vector<int> utilities_ids;
-    vector<vector<double>> demand_offsets;
+    vector<vector<vector<double>>> demand_offsets;
 };
 
 class DataCollector {
 
 private:
-    vector<vector<Utility_t>> utilities_t;
-    vector<vector<WaterSource_t>> reservoir_t;
-    vector<vector<RestrictionPolicy_t>> restriction_policy_t;
-    vector<vector<Transfers_policy_t>> transfers_policy_t;
-//    string output_directory = "/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/";
-    string output_directory = "/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/";
+    vector<Utility_t> utilities_t;
+    vector<WaterSource_t> reservoir_t;
+    vector<RestrictionPolicy_t> restriction_policy_t;
+    vector<Transfers_policy_t> transfers_policy_t;
+    string output_directory = "/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/";
+//    string output_directory = "/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/";
     int number_of_realizations;
+
 
 public:
     DataCollector(const vector<Utility *> &utilities, const vector<WaterSource *> &water_sources,
@@ -79,6 +81,10 @@ public:
     void printReservoirOutput(bool toFile, string fileName = "Reservoirs.out");
 
     void printPoliciesOutput(bool toFile, string fileName = "Policies.out");
+
+    void calculateObjectives();
+
+    static double calculateReliabilityObjective(Utility_t utility);
 };
 
 

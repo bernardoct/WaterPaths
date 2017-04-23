@@ -2,14 +2,15 @@
 // Created by bernardo on 2/3/17.
 //
 
+#include <iostream>
 #include "Restrictions.h"
 
 Restrictions::Restrictions(const int id, const vector<double> &stage_multipliers,
-                           const vector<double> &stage_triggers, const vector<int> utilities_ids)
+                           const vector<double> &stage_triggers)
         : DroughtMitigationPolicy(id, RESTRICTIONS),
           stage_multipliers(stage_multipliers),
           stage_triggers(stage_triggers) {
-    this->utilities_ids = utilities_ids;
+    this->utilities_ids = vector<int>(1, id);
 }
 
 Restrictions::Restrictions(const Restrictions &restrictions) : DroughtMitigationPolicy(restrictions.id, RESTRICTIONS),
@@ -20,6 +21,14 @@ Restrictions::Restrictions(const Restrictions &restrictions) : DroughtMitigation
 }
 
 Restrictions::~Restrictions() {}
+
+bool Restrictions::operator<(const Restrictions other) {
+    return this->utilities_ids[0] < other.utilities_ids[0];
+}
+
+bool Restrictions::operator>(const Restrictions other) {
+    return this->utilities_ids[0] > other.utilities_ids[0];
+}
 
 void Restrictions::applyPolicy(int week) {
 
@@ -38,5 +47,6 @@ double Restrictions::getCurrent_multiplier() const {
 }
 
 void Restrictions::addUtility(Utility *utility) {
+//    if (utility->id != id) throw std::invalid_argument("Restriction policy ID must match utility's ID.");
     this->utility = utility;
 }

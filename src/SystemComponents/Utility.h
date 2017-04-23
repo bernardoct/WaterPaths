@@ -20,15 +20,19 @@ private:
     double demand_multiplier = 1;
     double demand_offset = 0;
     double offset_rate_per_volume = 0;
-    double contingency_fund;
+    double contingency_fund = 0;
+    double drought_mitigation_cost;
+    double insurance_payout;
     double restricted_demand;
     double unrestricted_demand;
     double infrastructure_net_present_cost = 0;
+    double current_debt_payment = 0;
     bool underConstruction = false;
     int construction_start_date;
     map<int, WaterSource *> water_sources;
     map<int, double> split_demands_among_sources;
     vector<int> infrastructure_construction_order;
+    vector<vector<double>> debt_payment_streams;
     vector<vector<int>> infrastructure_built;
 
     void setWaterSourceOnline(int source_id);
@@ -37,16 +41,16 @@ public:
     const int id;
     const double water_price_per_volume;
     const int number_of_week_demands;
-    const string name;
+    const char *name;
     const double percent_contingency_fund_contribution;
     const double infrastructure_discount_rate;
 
-    Utility(string name, int id, char const *demand_file_name, int number_of_week_demands,
+    Utility(char *name, int id, char const *demand_file_name, int number_of_week_demands,
             const double percent_contingency_fund_contribution, const double water_price_per_volume);
 
-    Utility(string name, int id, char const *demand_file_name, int number_of_week_demands,
-                const double percent_contingency_fund_contribution, const double water_price_per_volume,
-                const vector<int> infrastructure_build_order, double infrastructure_discount_rate);
+    Utility(char *name, int id, char const *demand_file_name, int number_of_week_demands,
+            const double percent_contingency_fund_contribution, const double water_price_per_volume,
+            const vector<int> infrastructure_build_order, double infrastructure_discount_rate);
 
     Utility(Utility &utility);
 
@@ -84,7 +88,7 @@ public:
 
     double getTotal_available_volume() const;
 
-    void updateContingencyFund(int week);
+    void updateContingencyFund(double unrestricted_demand, double demand_multiplier, double demand_offset);
 
     double getContingency_fund() const;
 
@@ -94,13 +98,21 @@ public:
 
     void beginConstruction(int week);
 
-    void checkBuildInfrastructure(double long_term_rof, int week);
+    void infrastructureConstructionHandler(double long_term_rof, int week);
 
     double getDemand_multiplier() const;
 
     double getUnrestrictedDemand(int week) const;
 
     double getInfrastructure_net_present_cost() const;
+
+    double getCurrent_debt_payment() const;
+
+    double updateCurrent_debt_payment(int week, vector<vector<double>> debt_payment_streams);
+
+    double getCurrent_contingency_fund_contribution() const;
+
+    double getDrought_mitigation_cost() const;
 };
 
 

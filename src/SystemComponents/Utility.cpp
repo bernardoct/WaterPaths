@@ -14,7 +14,7 @@
  * @param number_of_week_demands Length of weeks in demand series.
  */
 
-Utility::Utility(string name, int id, char const *demand_file_name, int number_of_week_demands,
+Utility::Utility(char *name, int id, char const *demand_file_name, int number_of_week_demands,
                  const double percent_contingency_fund_contribution, const double water_price_per_volume) :
         name(name), id(id), number_of_week_demands(number_of_week_demands),
         percent_contingency_fund_contribution(percent_contingency_fund_contribution),
@@ -24,7 +24,7 @@ Utility::Utility(string name, int id, char const *demand_file_name, int number_o
 }
 
 
-Utility::Utility(string name, int id, char const *demand_file_name, int number_of_week_demands,
+Utility::Utility(char *name, int id, char const *demand_file_name, int number_of_week_demands,
                  const double percent_contingency_fund_contribution, const double water_price_per_volume,
                  const vector<int> infrastructure_build_order, double infrastructure_discount_rate) :
         name(name), id(id), number_of_week_demands(number_of_week_demands),
@@ -40,7 +40,6 @@ Utility::Utility(string name, int id, char const *demand_file_name, int number_o
         throw std::invalid_argument("Infrastructure discount rate must be greater than 0.");
 
     demand_series = Utils::parse1DCsvFile(demand_file_name, number_of_week_demands);
-//    cout << "Utility " << name << " created." << endl;
     total_stored_volume = -1;
     total_storage_capacity = 1;
 }
@@ -196,7 +195,7 @@ void Utility::splitDemands(int week) {
     }
 
     /// Update contingency fund
-    this->updateContingencyFund(week);
+    this->updateContingencyFund(unrestricted_demand, demand_multiplier, demand_offset);
 
     /// Reset demand multiplier and offset.
     demand_multiplier = 1;
@@ -206,37 +205,59 @@ void Utility::splitDemands(int week) {
 /**
  * Update contingency fund based on regular contribution, restrictions, and transfers. This function works for both
  * sources and receivers of transfers, and the transfer water prices are different than regular prices for both
- * sources and receivers.
- * @param week
+ * sources and receivers. It also stores the cost of drought mitigation.
+ * @param unrestricted_demand
+ * @param demand_multiplier
+ * @param demand_offset
+ * @return contingency fund contribution or draw.
  */
-void Utility::updateContingencyFund(int week) {
-    /// Regular fund contribution.
-    contingency_fund += percent_contingency_fund_contribution * demand_series[week] * water_price_per_volume;
-    /// Deficit when restrictions and/or transfers are used.
-    contingency_fund -= demand_series[week] * (1 - demand_multiplier) * water_price_per_volume // Amount not remunerated from loss of revenues
-                        + demand_offset * (offset_rate_per_volume - water_price_per_volume); // Amount paid to transfer source utility on top of losses.
+void Utility::updateContingencyFund(double unrestricted_demand, double demand_multiplier, double demand_offset) {
+    double fund_contribution = percent_contingency_fund_contribution * unrestricted_demand * water_price_per_volume;
+    double revenue_losses = unrestricted_demand * (1 - demand_multiplier) * water_price_per_volume;
+    double transfer_costs = demand_offset * (offset_rate_per_volume - water_price_per_volume);
+
+    /// contingency fund cannot get negative.
+    contingency_fund = max(contingency_fund + fund_contribution - revenue_losses - transfer_costs, 0.0);
+
+    drought_mitigation_cost = max(revenue_losses + transfer_costs - insurance_payout, 0.0);
 }
 
 void Utility::setWaterSourceOnline(int source_id) {
+    /// Sets water source online.
     water_sources.at(source_id)->setOnline();
+    /// Updates total storage and treatment capacities.
     total_storage_capacity += water_sources.at(source_id)->capacity;
     total_treatment_capacity += water_sources.at(source_id)->max_treatment_capacity;
 }
 
 /**
- * Checks if infrastructure should be built, triggers, and handles the process.
+ * Checks if infrastructure should be built, triggers construction, sets it online, and handles accounting/financing
+ * of it.
  * @param long_term_rof
  * @param week
  */
-void Utility::checkBuildInfrastructure(double long_term_rof, int week) {
+void Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
 
     /// Checks whether the long erm ROF has been exceeded for the next infrastructure option in the list and, if not
     /// already under construction, starts building it.
-    if (infrastructure_construction_order.size() > 0) { // if there is anything to be built
-        if (long_term_rof > water_sources[infrastructure_construction_order[0]]->construction_rof
-            && !underConstruction) {
+    if (!infrastructure_construction_order.empty()) { // if there is anything to be built
+
+        /// Checks if ROF threshold for next infrastructure in line has been reached.
+        if (long_term_rof > water_sources.at(
+                infrastructure_construction_order[0])->construction_rof && !underConstruction) {
+
+            /// Add water source construction cost to the books.
+            double level_debt_service_payments;
             infrastructure_net_present_cost += water_sources[infrastructure_construction_order[0]]->
-                            calculateNetPresentCost(week, infrastructure_discount_rate);
+                    calculateNetPresentConstructionCost(week, infrastructure_discount_rate,
+                                                        &level_debt_service_payments);
+
+            /// Create stream of level debt service payments for water source.
+            debt_payment_streams.push_back(vector<double>(
+                    (unsigned long) water_sources.at(infrastructure_construction_order[0])->bond_term,
+                    level_debt_service_payments));
+
+            /// Begin construction.
             beginConstruction(week);
         }
 
@@ -244,14 +265,54 @@ void Utility::checkBuildInfrastructure(double long_term_rof, int week) {
         if (underConstruction) {
             if (week > construction_start_date + water_sources[infrastructure_construction_order[0]]->construction_time) {
                 setWaterSourceOnline(infrastructure_construction_order[0]);
+
+                /// Record ID of and when infrastructure option construction was completed.
                 vector<int> infra_added = {week, infrastructure_construction_order[0]};
                 infrastructure_built.push_back(infra_added);
+
+                /// Erase infrastructure option from vector of infrastructure to be built.
                 infrastructure_construction_order.erase(infrastructure_construction_order.begin());
             }
         }
     }
+
+    /// Calculate current annual debt payment to be made on that week (it first week of year), if any.
+    current_debt_payment = updateCurrent_debt_payment(week, debt_payment_streams);
 }
 
+/**
+ * Calculates total debt payments to be made in a week, if that's the first week of the year.
+ * @param week
+ * @param debt_payment_streams
+ * @return
+ */
+double Utility::updateCurrent_debt_payment(int week, vector<vector<double>> debt_payment_streams) {
+
+    double current_debt_payment = 0;
+
+    /// Checks if it's the first week of the year, when outstanding debt payments should be made.
+    if (Utils::isFirstWeekOfTheYear(week)) {
+        /// Checks if there's outstanding debt.
+        if (!debt_payment_streams.empty()) {
+            /// Iterate over all outstanding debt.
+            for (vector<double> &pmt : debt_payment_streams) {
+                if (!pmt.empty()) {
+                    /// Adds outstanding debt payment to total current annual payment.
+                    current_debt_payment += pmt.at(0);
+                    /// Scratch outstanding debt.
+                    pmt.erase(pmt.begin());
+                }
+            }
+        }
+    }
+
+    return current_debt_payment;
+}
+
+/**
+ * Kicks off construction and records when it was initiated.
+ * @param week
+ */
 void Utility::beginConstruction(int week) {
     underConstruction = true;
     construction_start_date = week;
@@ -332,4 +393,16 @@ double Utility::getUnrestrictedDemand(int week) const {
 
 double Utility::getInfrastructure_net_present_cost() const {
     return infrastructure_net_present_cost;
+}
+
+double Utility::getCurrent_debt_payment() const {
+    return current_debt_payment;
+}
+
+double Utility::getCurrent_contingency_fund_contribution() const {
+    return restricted_demand * percent_contingency_fund_contribution * water_price_per_volume;
+}
+
+double Utility::getDrought_mitigation_cost() const {
+    return drought_mitigation_cost;
 }

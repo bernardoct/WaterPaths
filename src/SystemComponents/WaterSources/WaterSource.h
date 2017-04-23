@@ -82,7 +82,8 @@ public:
 
     void bypass(int week, double upstream_source_inflow);
 
-    double calculateNetPresentCost(int week, double discount_rate) const;
+    double
+    calculateNetPresentConstructionCost(int week, double discount_rate, double *level_debt_service_payment) const;
 };
 
 

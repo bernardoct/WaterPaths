@@ -530,9 +530,9 @@ void simulation3U5RTest() {
     g.addEdge(4, 3);
 
     /// Create catchments and corresponding vector
-    Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.03, 1, vector<int>(), 0);
-    Utility u2("U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.07, 1, vector<int>(), 0);
-    Utility u3("U3", 2, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.05, 1, vector<int>(), 0);
+    Utility u1((char *) "U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.03, 1, vector<int>(), 0);
+    Utility u2((char *) "U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.07, 1, vector<int>(), 0);
+    Utility u3((char *) "U3", 2, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.05, 1, vector<int>(), 0);
 
     vector<Utility *> utilities;
     utilities.push_back(&u1);
@@ -554,9 +554,9 @@ void simulation3U5RTest() {
     vector<double> restriction_stage_multipliers2 = {0.8, 0.6};
     vector<double> restriction_stage_triggers2 = {0.03, 0.05};
 
-    Restrictions rp1(0, restriction_stage_multipliers1, restriction_stage_triggers1, vector<int>(1, 0));
-    Restrictions rp2(1, restriction_stage_multipliers2, restriction_stage_triggers2, vector<int>(1, 1));
-    Restrictions rp3(2, restriction_stage_multipliers1, restriction_stage_triggers1, vector<int>(1, 2));
+    Restrictions rp1(0, restriction_stage_multipliers1, restriction_stage_triggers1);
+    Restrictions rp2(1, restriction_stage_multipliers2, restriction_stage_triggers2);
+    Restrictions rp3(2, restriction_stage_multipliers1, restriction_stage_triggers1);
 
     vector<DroughtMitigationPolicy *> drought_mitigation_policies = {&rp1, &rp2, &rp3};
 
@@ -977,9 +977,9 @@ void simulation3U5RInfraTest() {
     g.addEdge(4, 3);
 
     /// Create catchments and corresponding vector
-    Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.03, 1);
-    Utility u2("U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.07, 1, vector<int>(1, 1), 0.05);
-    Utility u3("U3", 2, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.05, 1);
+    Utility u1((char *) "U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.03, 1);
+    Utility u2((char *) "U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.07, 1, vector<int>(1, 1), 0.05);
+    Utility u3((char *) "U3", 2, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.05, 1);
 
     vector<Utility *> utilities;
     utilities.push_back(&u1);
@@ -1003,11 +1003,12 @@ void simulation3U5RInfraTest() {
     vector<double> restriction_stage_multipliers2 = {0.8, 0.6};
     vector<double> restriction_stage_triggers2 = {0.03, 0.05};
 
-    Restrictions rp1(0, restriction_stage_multipliers1, restriction_stage_triggers1, vector<int>(1, 0));
-    Restrictions rp2(1, restriction_stage_multipliers2, restriction_stage_triggers2, vector<int>(1, 1));
-    Restrictions rp3(2, restriction_stage_multipliers1, restriction_stage_triggers1, vector<int>(1, 2));
+    Restrictions rp1(0, restriction_stage_multipliers1, restriction_stage_triggers1);
+    Restrictions rp2(1, restriction_stage_multipliers2, restriction_stage_triggers2);
+    Restrictions rp3(2, restriction_stage_multipliers1, restriction_stage_triggers1);
 
     drought_mitigation_policies = {&rp1, &rp2, &rp3};
+//    drought_mitigation_policies = {&rp1, &rp3};
 
     /// Transfer policy
     /*
@@ -1037,7 +1038,7 @@ void simulation3U5RInfraTest() {
 
     /// Creates simulation object
     Simulation s(water_sources, g, reservoir_utility_connectivity_matrix, utilities, drought_mitigation_policies,
-                 992, 2 , data_collector);
+                 626, 2, data_collector);
     cout << "Beginning U3R5 simulation" << endl;
     s.runFullSimulation();
     cout << "Ending U3R5 simulation" << endl;

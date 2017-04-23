@@ -25,6 +25,8 @@ public:
 
     static vector<DroughtMitigationPolicy *>
     copyDroughtMitigationPolicyVector(vector<DroughtMitigationPolicy *> drought_mitigation_policy_original);
+
+    static bool isFirstWeekOfTheYear(int week);
 };
 
 

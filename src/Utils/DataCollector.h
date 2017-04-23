@@ -15,18 +15,23 @@
  */
 
 struct Utility_t {
-    Utility_t(int id, double capacity, string name) : id(id), capacity(capacity) {};
+    Utility_t(int id, double capacity, const char *name) : id(id), capacity(capacity), name(name) {};
 
     vector<vector<double>> rof;
     vector<vector<double>> combined_storage;
     vector<vector<double>> unrestricted_demand;
     vector<vector<double>> restricted_demand;
     vector<vector<double>> contingency_fund_size;
+    vector<vector<double>> gross_revenues;
+    vector<vector<double>> contingency_fund_contribution;
+    vector<vector<double>> debt_service_payments;
+    vector<vector<double>> insurance_contract_cost;
+    vector<vector<double>> drought_mitigation_cost;
     vector<double> objectives;
     double capacity;
-    double net_present_infrastructure_cost;
+    vector<double> net_present_infrastructure_cost;
     int id;
-    string name;
+    const char *name;
 };
 
 struct WaterSource_t {
@@ -45,8 +50,12 @@ struct WaterSource_t {
 struct RestrictionPolicy_t {
     RestrictionPolicy_t(int utility_id) : utility_id(utility_id) {};
 
-    int utility_id;
+    int utility_id = NON_INITIALIZED;
     vector<vector<double>> restriction_multiplier;
+
+    bool operator<(const RestrictionPolicy_t other) { return this->utility_id < other.utility_id; };
+
+    bool operator>(const RestrictionPolicy_t other) { return this->utility_id > other.utility_id; };
 };
 
 struct Transfers_policy_t {
@@ -62,29 +71,41 @@ class DataCollector {
 
 private:
     vector<Utility_t> utilities_t;
-    vector<WaterSource_t> reservoir_t;
-    vector<RestrictionPolicy_t> restriction_policy_t;
-    vector<Transfers_policy_t> transfers_policy_t;
+    vector<WaterSource_t> reservoirs_t;
+    vector<RestrictionPolicy_t> restriction_policies_t;
+    vector<Transfers_policy_t> transfers_policies_t;
     string output_directory = "/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/";
 //    string output_directory = "/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/";
     int number_of_realizations;
 
 
 public:
+    DataCollector() {}
+
     DataCollector(const vector<Utility *> &utilities, const vector<WaterSource *> &water_sources,
                   const vector<DroughtMitigationPolicy *> &drought_mitigation_policies, int number_of_realizations);
 
-    void collectData(ContinuityModelRealization *continuity_model_realization, int week);
+    void collectData(ContinuityModelRealization *continuity_model_realization);
 
-    void printUtilityOutput(bool toFile, string fileName = "Utilities.out");
+    void printUtilityOutput(string fileName);
 
-    void printReservoirOutput(bool toFile, string fileName = "Reservoirs.out");
+    void printReservoirOutput(string fileName);
 
-    void printPoliciesOutput(bool toFile, string fileName = "Policies.out");
+    void printPoliciesOutput(string fileName);
 
     void calculateObjectives();
 
-    static double calculateReliabilityObjective(Utility_t utility);
+    double calculateReliabilityObjective(Utility_t utility);
+
+    double calculateRestrictionFrequencyObjective(RestrictionPolicy_t restriction_t);
+
+    void printObjectives(string fileName);
+
+    double calculateNetPresentCostInfrastructureObjective(Utility_t utility_t);
+
+    double calculatePeakFinancialCostsObjective(Utility_t utility_t);
+
+    double calculateWorseCaseCostsObjective(Utility_t utility_t);
 };
 
 

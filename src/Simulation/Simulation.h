@@ -29,8 +29,6 @@ public:
     const int number_of_realizations;
 
     void runFullSimulation();
-    
-    static double calculateReliabilityObjective(Utility_t utility_data);
 
 private:
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
@@ -38,11 +36,6 @@ private:
     vector<ContinuityModelROF *> rof_models;
     DataCollector * data_collector;
 
-    bool isFirstWeekOfTheYear(int week);
-
-//    static double calculateReliabilityObjective(vector<Utility_t> utilities_data);
-
-    vector<double> calculateObjectives();
 };
 
 

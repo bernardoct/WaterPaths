@@ -35,7 +35,7 @@ void ContinuityModelRealization::setShortTermROFs(const vector<double> &risks_of
 
 void ContinuityModelRealization::setLongTermROFs(const vector<double> &risks_of_failure, const int week) {
     for (unsigned long i = 0; i < utilities.size(); ++i) {
-        utilities.at(i)->checkBuildInfrastructure(risks_of_failure.at(i), week);
+        utilities.at(i)->infrastructureConstructionHandler(risks_of_failure.at(i), week);
     }
 }
 

@@ -32,6 +32,7 @@ namespace Constants {
     const int COLUMN_WIDTH = 10;
     const int COLUMN_PRECISION = 4;
     const int NON_INITIALIZED = -1;
+    const double WORSE_CASE_COST_PERCENTILE = 0.01;
 };
 
 

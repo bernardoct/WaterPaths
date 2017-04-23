@@ -11,9 +11,11 @@
 TEST_CASE("Net present cost calculations", "[NPC]") {
     Reservoir r("Res", 0, 1, vector<Catchment *>(), 1, 1, 1, vector<double>(2, 1), 5000, 20, 0.05);
 
-    REQUIRE(r.calculateNetPresentCost(0, 0.05) == Approx(5000));
-    REQUIRE(r.calculateNetPresentCost(0, 0.04) == Approx(5452.6147334301));
-    REQUIRE(r.calculateNetPresentCost(521, 0.04) == Approx(3685.751));
+    double level_debt_service_payment = 0;
+    REQUIRE(r.calculateNetPresentConstructionCost(0, 0.05, &level_debt_service_payment) == Approx(5000));
+    REQUIRE(r.calculateNetPresentConstructionCost(0, 0.04, &level_debt_service_payment) == Approx(5452.6147334301));
+    REQUIRE(level_debt_service_payment == Approx(401.21));
+    REQUIRE(r.calculateNetPresentConstructionCost(521, 0.04, &level_debt_service_payment) == Approx(3685.751));
 }
 
 TEST_CASE("Split of demand among water sources of a utility proportionally to their stored volume", "[Split Demand]") {
@@ -32,7 +34,8 @@ TEST_CASE("Split of demand among water sources of a utility proportionally to th
     Reservoir r2("R2", 1, NON_INITIALIZED, catchments1, 400.0, NON_INITIALIZED);
 
     SECTION("Split demand among reservoirs only") {
-        Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, NON_INITIALIZED, NON_INITIALIZED);
+        Utility u1((char *) "U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, NON_INITIALIZED,
+                   NON_INITIALIZED);
         u1.addWaterSource(&r1);
         u1.addWaterSource(&r2);
         u1.splitDemands(0);
@@ -41,7 +44,8 @@ TEST_CASE("Split of demand among water sources of a utility proportionally to th
     }
 
     SECTION("Split demand among intakes and reservoirs") {
-        Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, NON_INITIALIZED, NON_INITIALIZED);
+        Utility u1((char *) "U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, NON_INITIALIZED,
+                   NON_INITIALIZED);
         Intake i1("I1", 2, min_env_flow_intake, catchments1, 5);
         u1.addWaterSource(&r1);
         u1.addWaterSource(&r2);
@@ -52,7 +56,7 @@ TEST_CASE("Split of demand among water sources of a utility proportionally to th
     }
 }
 
-TEST_CASE("Test reliability objective", "[Reliability Objective") {
+TEST_CASE("Test reliability objective calculation", "[Reliability Objective]") {
     Utility_t ut(0, 1, "U_test");
 
     vector<double> r0 = {0.879610208, 0.808614682, 0.781462092, 0.475712377, 0.719329119, 0.327144427, 0.45801701, 0.408253696, 0.932861837, 0.784338214, 0.488387324, 0.463541406, 0.209524153, 0.790211379, 0.895986401, 0.423187735, 0.348933693, 0.256925067, 0.919639586, 0.582948075, 0.361630142, 0.722351342, 0.214020923, 0.885849586, 0.479475086, 0.662840717, 0.996826222, 0.32217753, 0.555636788, 0.498837212, 0.555706868, 0.578662357, 0.491266734, 0.387706791, 0.593249059, 0.440989085, 0.814609267, 0.331427329, 0.380873572, 0.90283559, 0.734539149, 0.35186071, 0.363570648, 1.009937173, 0.350060196, 0.462433995, 0.880225386, 0.899461861, 0.762633488, 0.734291971, 0.200700933, 0.581734029, 0.771740852, 0.872450344, 0.699208759, 0.649455967, 0.434226897, 0.400068323, 0.696376598, 0.521167875, 0.264386639, 0.931113646, 0.946221955, 0.989879906, 0.995535489, 0.863486818, 0.622038207, 0.763519223, 0.414976651, 0.566023527, 0.497893777, 0.660923856, 0.463099457, 0.292029229, 0.343503753, 0.327469672, 0.832542017, 0.89269047, 0.970389674, 0.932702829, 0.340027706, 0.394311858, 0.742816457, 0.270445612, 0.923389563, 0.413258974, 0.200271858, 0.347951195, 0.910902568, 0.364992328, 0.937875882, 0.715928915, 0.41907689, 1.000073311, 0.929337146, 0.21212658, 0.350135715, 0.390111745, 0.247783456, 0.354647058, 0.396974998, 0.967933571, 0.719184608, 0.469071455, 0.334837756, 0.807698416, 0.459484871, 0.920738158, 0.863659536, 0.901671559, 0.206220312, 0.961755668, 0.670177932, 0.960513128, 0.261200026, 0.228233756, 0.962722227, 0.985829044, 0.260035323, 0.24712238, 0.657189521, 0.417656613, 0.311987901, 0.855574922, 0.847262674, 0.68643373, 0.846968068, 0.715736697, 0.718420746, 0.82410525, 0.280566758, 0.961608055, 0.845058227, 0.853792474, 0.617585678, 0.239880211, 0.344657668, 0.906076043, 0.775685377, 0.415270026, 0.321544233, 0.330440254, 0.564897995, 0.859310612, 0.329299335, 0.95073489, 0.617709797, 0.889385255, 0.456758997, 0.522397293, 0.905237863, 0.435463365, 0.340234727, 0.490822265, 0.844248202, 0.407354617, 0.415129946, 0.367846256, 0.847602408, 0.272809549, 0.447633846, 0.54061436, 0.712142722, 0.977340359, 0.465318419, 0.997537698, 0.31431459, 0.272320136, 0.510910507, 0.988817437, 0.986305336, 0.645063336, 0.82949824, 0.634331876, 0.324349577, 0.205487219, 0.747190271, 0.527136295, 0.837077761, 0.268475786, 0.9450364, 0.89751259, 0.775373981, 0.900213403, 0.419704601, 0.71237588, 1.007934406, 1.007891255, 1.006047309, 0.93923597, 0.791041635, 0.262777686, 0.206195665, 0.822019713, 0.258732978, 0.458229855, 0.982943413, 0.525469408, 0.74360328, 0.693694218, 0.337206551, 0.617654995, 0.898526807, 0.650094755, 0.532921752, 0.667315502, 0.261334441, 0.917632993, 0.49165651, 0.597174158, 0.781140477, 0.442239364, 0.316158368, 0.932063534, 0.750339494, 0.903701854, 0.341967566, 0.309077821, 0.433495499, 0.741492357, 0.70963304, 0.964821268, 0.592558233, 0.445433304, 0.882581957, 0.594623699, 0.428212267, 0.266225848, 0.517337257, 0.278773582, 0.8316226, 0.720350042, 0.227074904, 0.319681869, 0.279429927, 0.96264567, 0.36617896, 0.909186223, 0.654762765, 0.880306673, 0.213655961, 0.950779985, 0.399208937, 0.682193258, 0.905101407, 0.359805365, 0.352695929, 0.891285592, 0.555427459, 0.906992384, 0.328317079, 0.655353884, 0.606608069, 0.876984511, 0.85879534, 0.988768792, 0.550604966, 0.365391559, 0.642009983, 0.368866645, 0.623762524};
@@ -67,9 +71,43 @@ TEST_CASE("Test reliability objective", "[Reliability Objective") {
     ut.combined_storage.push_back(r3);
     ut.combined_storage.push_back(r4);
 
-    double reliability = 0.4; // from second row.
+    double result = 0.4; // from second row.
 
-    REQUIRE(DataCollector::calculateReliabilityObjective(ut) == reliability);
+    DataCollector dc;
 
+    REQUIRE(dc.calculateReliabilityObjective(ut) == result);
+}
 
+TEST_CASE("Test function that checks if week is first week of the year." "[First week function]") {
+    vector<int> first_weeks_model;
+    vector<int> result = {52, 104, 156, 208, 260, 313, 365, 417, 469, 521, 573, 626, 678, 730, 782, 834, 887, 939, 991};
+
+    for (int w = 0; w < 992; ++w) {
+        if (Utils::isFirstWeekOfTheYear(w)) {
+            REQUIRE(w == result[0]);
+            result.erase(result.begin());
+        }
+    }
+}
+
+TEST_CASE("Test restriction frequency objective calculation", "[Restriction Frequency Objective]") {
+    RestrictionPolicy_t rp(0);
+
+    vector<double> r1(261, 1.);
+    vector<double> r2(261, 1.);
+
+    r1.at(10) = 0.8; // y1
+    r1.at(11) = 0.8; // y1
+    r2.at(53) = 0.8; // y2
+    r2.at(259) = 0.8; // y5
+    r2.at(260) = 0.8; // y5
+
+    rp.restriction_multiplier.push_back(r1);
+    rp.restriction_multiplier.push_back(r2);
+
+    double result = 0.3;
+
+    DataCollector dc;
+
+    REQUIRE(dc.calculateRestrictionFrequencyObjective(rp) == result);
 }

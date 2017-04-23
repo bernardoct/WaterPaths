@@ -24,8 +24,7 @@
  * @todo add the possibility of two or more sources.
  * @todo add the possibility of having a pipe belong to a utility not in the transfer agreement. This can be
  * accomplished now by adding utility to transfer agreement and set its risk of failure to 1.1 or more.
- * @todo implement graph input that includes pipe data which gets converted to a continuity matrix and data vectors
- * in the constructor.
+ * @todo calculation and charge of wheeling fees.
  */
 Transfers::Transfers(const int id, const int source_utility_id, const double source_treatment_buffer,
                      const vector<int> &buyers_ids, const vector<double> &pipe_transfer_capacities,

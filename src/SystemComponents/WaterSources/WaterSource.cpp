@@ -154,22 +154,24 @@ void WaterSource::bypass(int week, double upstream_source_inflow) {
 
 /**
  * Calculates the net present cost of the infrastructure options (water source) as a bond structured with level debt
- * service payments, issued on a certain week.
+ * service payments, issued on a given week in the future.
  * @param week
  * @param discount_rate
  * @return
  */
-double WaterSource::calculateNetPresentCost(int week, double discount_rate) const {
+double WaterSource::calculateNetPresentConstructionCost(int week, double discount_rate,
+                                                        double *level_debt_service_payment) const {
     double rate = bond_interest_rate / BOND_INTEREST_PAYMENTS_PER_YEAR;
     double principal = construction_cost_of_capital;
     double n_payments = bond_term * BOND_INTEREST_PAYMENTS_PER_YEAR;
 
     /// Level debt service payment value
-    double level_debt_service_payment = principal * (rate * pow(1 + rate, n_payments)) /
-            (pow(1 + rate, n_payments) - 1);
+    *level_debt_service_payment = principal * (rate * pow(1 + rate, n_payments)) /
+                                  (pow(1 + rate, n_payments) - 1);
 
     /// Net present cost of stream of level debt service payments for the whole bond term, at the time of issuance.
-    double net_present_cost_at_issuance = level_debt_service_payment * (1 - pow(1 + discount_rate, -n_payments)) / discount_rate;
+    double net_present_cost_at_issuance =
+            *level_debt_service_payment * (1 - pow(1 + discount_rate, -n_payments)) / discount_rate;
 
     /// Return NPC discounted from the time of issuance to the present.
     return net_present_cost_at_issuance / pow(1 + discount_rate, week / WEEKS_IN_YEAR);

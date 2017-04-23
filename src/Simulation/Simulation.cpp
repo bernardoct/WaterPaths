@@ -73,15 +73,17 @@ void Simulation::runFullSimulation() {
     double seconds;
 
     /// Run realizations.
+#pragma omp parallel for
     for (int r = 0; r < number_of_realizations; ++r) {
         cout << "Realization " << r << endl;
         time(&timer_i);
         for (int w = 0; w < total_simulation_time; ++w) {
-            if (isFirstWeekOfTheYear(w)) realization_models[r]->setLongTermROFs(rof_models[r]->calculateROF(w, LONG_TERM_ROF), w);
+            if (Utils::isFirstWeekOfTheYear(w))
+                realization_models[r]->setLongTermROFs(rof_models[r]->calculateROF(w, LONG_TERM_ROF), w);
             realization_models[r]->setShortTermROFs(rof_models[r]->calculateROF(w, SHORT_TERM_ROF));
             realization_models[r]->applyDroughtMitigationPolicies(w);
             realization_models[r]->continuityStep(w);
-            data_collector->collectData(realization_models[r], w);
+            data_collector->collectData(realization_models[r]);
         }
         time(&timer_f);
         seconds = difftime(timer_f,timer_i);
@@ -92,11 +94,8 @@ void Simulation::runFullSimulation() {
     data_collector->calculateObjectives();
 
     /// Print output files.
-    data_collector->printUtilityOutput(true);
-    data_collector->printReservoirOutput(true);
-    data_collector->printPoliciesOutput(true);
-}
-
-bool Simulation::isFirstWeekOfTheYear(int week) {
-    return (week / WEEKS_IN_YEAR - (int) (week / WEEKS_IN_YEAR)) * WEEKS_IN_YEAR < 1.0;
+    data_collector->printUtilityOutput("Utilities.out");
+    data_collector->printReservoirOutput("WaterSources.out");
+    data_collector->printPoliciesOutput("Policies.out");
+    data_collector->printObjectives("Objectives.out");
 }

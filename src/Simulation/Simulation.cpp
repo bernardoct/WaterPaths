@@ -6,6 +6,7 @@
 #include "../Utils/Utils.h"
 #include <iostream>
 #include <algorithm>
+#include <ctime>
 
 
 Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_sources_graph,
@@ -17,10 +18,10 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_source
         drought_mitigation_policies(drought_mitigation_policies) {
 
     /// Sort water sources and utilities by their IDs.
-    sort(water_sources.begin(), water_sources.end());
-    sort(utilities.begin(), utilities.end());
-//    sort(water_sources.begin(), water_sources.end(), std::greater<>());
-//    sort(utilities.begin(), utilities.end(), std::greater<>());
+//    sort(water_sources.begin(), water_sources.end());
+//    sort(utilities.begin(), utilities.end());
+    sort(water_sources.begin(), water_sources.end(), std::greater<>());
+    sort(utilities.begin(), utilities.end(), std::greater<>());
 
     /// Pass sum of minimum environmental inflows of upstream sources to intakes.
     double upstream_min_env_flow;

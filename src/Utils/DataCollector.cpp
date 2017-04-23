@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iomanip>
 #include <algorithm>
+#include <numeric>
 #include "DataCollector.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
 
@@ -384,7 +385,7 @@ double DataCollector::calculateReliabilityObjective(Utility_t utility) {
         }
     }
 
-    double check_non_zero = accumulate(year_reliabilities.rbegin(), year_reliabilities.rend(), 0);
+    double check_non_zero = accumulate(year_reliabilities.rbegin(), year_reliabilities.rend(), 0.0);
 
     /// Returns year with most realization failures, divided by the number of realizations (reliability objective).
     if (check_non_zero > 0)

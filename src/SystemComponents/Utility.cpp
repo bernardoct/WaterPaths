@@ -291,7 +291,7 @@ double Utility::updateCurrent_debt_payment(int week, vector<vector<double>> debt
     double current_debt_payment = 0;
 
     /// Checks if it's the first week of the year, when outstanding debt payments should be made.
-    if (Utils::isFirstWeekOfTheYear(week)) {
+    if (Utils::isFirstWeekOfTheYear(week + 1)) {
         /// Checks if there's outstanding debt.
         if (!debt_payment_streams.empty()) {
             /// Iterate over all outstanding debt.

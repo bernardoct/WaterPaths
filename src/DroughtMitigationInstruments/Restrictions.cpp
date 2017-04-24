@@ -5,6 +5,14 @@
 #include <iostream>
 #include "Restrictions.h"
 
+/**
+ * Restriction policy.
+ * @param id
+ * @param stage_multipliers
+ * @param stage_triggers
+ * @todo set lower ROF threshold for utilities to lift restrictions.
+ * @todo implement drought surcharges.
+ */
 Restrictions::Restrictions(const int id, const vector<double> &stage_multipliers,
                            const vector<double> &stage_triggers)
         : DroughtMitigationPolicy(id, RESTRICTIONS),
@@ -47,6 +55,6 @@ double Restrictions::getCurrent_multiplier() const {
 }
 
 void Restrictions::addUtility(Utility *utility) {
-//    if (utility->id != id) throw std::invalid_argument("Restriction policy ID must match utility's ID.");
+    if (utility->id != id) throw std::invalid_argument("Restriction policy ID must match utility's ID.");
     this->utility = utility;
 }

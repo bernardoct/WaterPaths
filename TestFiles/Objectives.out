@@ -1,4 +1,4 @@
               Reliability   Restriction Freq.  Infrastructure NPC Peak Financial Cost    Worse Case Costs
-   U1                   1              0.1667                   0                0.06                   0
-   U2                   1                   1                2150               483.4                 216
-   U3                   1              0.8333                   0                 0.1               131.2
+   U1                   1              0.2105                   0                0.03              0.2089
+   U2                   1                   1                2150                0.07               3.324
+   U3                   1              0.8947                   0                0.05              0.6615

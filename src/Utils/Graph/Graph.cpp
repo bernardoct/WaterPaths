@@ -49,7 +49,7 @@ void Graph::addEdge(int u, int v) {
         upstream_sources[i] = findUpstreamSources(i);
     }
 
-    vector<double> pipe_connectivity(V, 0);
+    vector<double> pipe_connectivity((unsigned long) V, 0);
     pipe_connectivity[u] = -1;
     pipe_connectivity[v] = 1;
 

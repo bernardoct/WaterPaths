@@ -7,10 +7,9 @@
 #include <fstream>
 #include <iomanip>
 #include <algorithm>
-#include <numeric>
 #include "DataCollector.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
-
+#include "Utils.h"
 
 
 DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<WaterSource *> &water_sources,
@@ -39,7 +38,7 @@ DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<Wa
             ut.combined_storage.push_back(vector<double>());
             ut.unrestricted_demand.push_back(vector<double>());
             ut.contingency_fund_size.push_back(vector<double>());
-            ut.net_present_infrastructure_cost.push_back(NONE);
+            ut.net_present_infrastructure_cost.push_back((double &&) NONE);
             ut.gross_revenues.push_back(vector<double>());
             ut.debt_service_payments.push_back(vector<double>());
             ut.contingency_fund_contribution.push_back(vector<double>());
@@ -90,7 +89,8 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
         utilities_t[i].gross_revenues[r].push_back(u->getRestrictedDemand() * u->water_price_per_volume);
         utilities_t[i].debt_service_payments[r].push_back(u->getCurrent_debt_payment());
         utilities_t[i].contingency_fund_contribution[r].push_back(u->getCurrent_contingency_fund_contribution());
-        utilities_t[i].insurance_contract_cost[r].push_back(NONE); //FIXME: update this once insurance is implemented.
+        utilities_t[i].insurance_contract_cost[r].push_back(
+                (double &&) NONE); //FIXME: update this once insurance is implemented.
         utilities_t[i].drought_mitigation_cost[r].push_back(u->getDrought_mitigation_cost());
     }
 
@@ -268,7 +268,7 @@ void DataCollector::printPoliciesOutput(string fileName) {
                     outStream << setw(COLUMN_WIDTH - 1) << "Restr. " << restriction_policies_t[i].utility_id;
                 }
                 for (int i = 0; i < transfers_policies_t.size(); ++i) {
-                    for (int buyer_id : transfers_policies_t[i].utilities_ids)
+                    for (int id = 0; id < transfers_policies_t[i].utilities_ids.size(); ++id)
                         outStream << setw(COLUMN_WIDTH - 1) << "Transf. " << transfers_policies_t[i].transfer_policy_id;
                 }
 
@@ -309,7 +309,7 @@ void DataCollector::printObjectives(string fileName) {
     std::ofstream outStream;
     outStream.open(output_directory + fileName);
 
-    outStream << setw(COLUMN_WIDTH / 2) << " " << setw((int) (COLUMN_WIDTH * 2)) << "Reliability"
+    outStream << setw(COLUMN_WIDTH / 2) << " " << setw((COLUMN_WIDTH * 2)) << "Reliability"
               << setw(COLUMN_WIDTH * 2) << "Restriction Freq."
               //              << setw(COLUMN_WIDTH * 2) << "Jordan Lake Alloc."
               << setw(COLUMN_WIDTH * 2) << "Infrastructure NPC"
@@ -345,7 +345,7 @@ void DataCollector::calculateObjectives() {
         if (restriction_policy != restriction_policies_t.end())
             ut.objectives.push_back(calculateRestrictionFrequencyObjective(*restriction_policy));
         else
-            ut.objectives.push_back(NONE);
+            ut.objectives.push_back((double &&) NONE);
 
         /// Calculate NPC of infrastructure objective.
         ut.objectives.push_back(calculateNetPresentCostInfrastructureObjective(ut));
@@ -435,66 +435,102 @@ double DataCollector::calculateNetPresentCostInfrastructureObjective(Utility_t u
     return infrastructure_npc / utilities_t.size();
 }
 
+/**
+ * Calculate peak financial costs objective, as the average of the highest cost year for each realization, with cost
+ * being defined as (DSP + AC + CC ) / TR, where,
+ * DSP = debt service payment
+ * AC = annual contribution to the contingency fund
+ * CC = cost of insurance contract
+ * TR = total gross revenue
+ * @param utility_t
+ * @return objective value
+ */
 double DataCollector::calculatePeakFinancialCostsObjective(Utility_t utility_t) {
-    unsigned long n_realizations = utility_t.combined_storage.size();
-    unsigned long n_weeks = utility_t.combined_storage[0].size();
+    unsigned long n_realizations = utility_t.gross_revenues.size();
+    unsigned long n_weeks = utility_t.gross_revenues[0].size();
     unsigned long n_years = (unsigned long) round(n_weeks / WEEKS_IN_YEAR);
 
-    vector<vector<double>> realizations_year_cont_fund_contribution(n_realizations, vector<double>(n_years, 0));
-    vector<vector<double>> realizations_year_gross_revenue(n_realizations, vector<double>(n_years, 0));
-    vector<vector<double>> realizations_year_debt_payment(n_realizations, vector<double>(n_years, 0));
-    vector<vector<double>> realizations_year_insurance_contract_cost(n_realizations, vector<double>(n_years, 0));
-    vector<double> average_year_financial_cost(n_years, 0);
+    double realizations_year_debt_payment = 0;
+    double realizations_year_cont_fund_contribution = 0;
+    double realizations_year_gross_revenue = 0;
+    double realizations_year_insurance_contract_cost = 0;
+    vector<double> year_financial_costs;
+    vector<double> realization_financial_costs(n_realizations, 0);
 
     /// Creates a table with years that failed in each realization.
+    int y;
     for (int r = 0; r < n_realizations; ++r) {
-        for (int y = 0; y < n_years; ++y) {
-            for (int w = (int) round(y * WEEKS_IN_YEAR); w < (int) round((y + 1) * WEEKS_IN_YEAR); ++w) {
-                realizations_year_cont_fund_contribution[r][y] += utility_t.contingency_fund_contribution[r][w];
-                realizations_year_gross_revenue[r][y] += utility_t.gross_revenues[r][w];
-                realizations_year_debt_payment[r][y] += utility_t.debt_service_payments[r][w];
-                realizations_year_insurance_contract_cost[r][y] += utility_t.insurance_contract_cost[r][w];
+        year_financial_costs.assign(n_years, 0.0);
+        y = 0;
+        for (int w = 0; w < n_weeks; ++w) {
+            /// accumulate year's info by summing weekly amounts.
+            realizations_year_debt_payment += utility_t.debt_service_payments[r][w];
+            realizations_year_cont_fund_contribution += utility_t.contingency_fund_contribution[r][w];
+            realizations_year_gross_revenue += utility_t.gross_revenues[r][w];
+            realizations_year_insurance_contract_cost += utility_t.insurance_contract_cost[r][w];
 
+            /// if last week of the year, close the books and calculate financial cost for the year.
+            if (Utils::isFirstWeekOfTheYear(w + 1)) {
+                year_financial_costs[y] += (realizations_year_debt_payment +
+                                            realizations_year_cont_fund_contribution +
+                                            realizations_year_insurance_contract_cost) /
+                                           realizations_year_gross_revenue;
+                /// update year count.
+                y++;
+
+                /// reset accounts.
+                realizations_year_debt_payment = 0;
+                realizations_year_cont_fund_contribution = 0;
+                realizations_year_gross_revenue = 0;
+                realizations_year_insurance_contract_cost = 0;
             }
-            average_year_financial_cost[y] += (realizations_year_debt_payment[r][y] +
-                                               realizations_year_cont_fund_contribution[r][y] +
-                                               realizations_year_insurance_contract_cost[r][y]) /
-                                              realizations_year_gross_revenue[r][y];
         }
+        /// store highest year cost as the cost financial cost of the realization.
+        realization_financial_costs[r] = *max_element(year_financial_costs.begin(), year_financial_costs.end());
     }
 
-    return *max_element(average_year_financial_cost.begin(), average_year_financial_cost.end());
+    /// returns average of realizations' costs.
+    return accumulate(realization_financial_costs.begin(), realization_financial_costs.end(), 0.0) / n_realizations;
 }
 
 double DataCollector::calculateWorseCaseCostsObjective(Utility_t utility_t) {
-    unsigned long n_realizations = utility_t.combined_storage.size();
-    unsigned long n_weeks = utility_t.combined_storage[0].size();
+    unsigned long n_realizations = utility_t.gross_revenues.size();
+    unsigned long n_weeks = utility_t.gross_revenues[0].size();
     unsigned long n_years = (unsigned long) round(n_weeks / WEEKS_IN_YEAR);
 
     vector<double> worse_year_financial_costs(n_realizations, 0);
-    double year_financial_cost;
-    double year_gross_revenue;
-    double year_drought_mitigation_cost;
-    int first_week;
-    int last_week;
+    vector<double> year_financial_costs;
+    double year_drought_mitigation_cost = 0;
+    double year_gross_revenue = 0;
 
     /// Creates a table with years that failed in each realization.
+    int y;
     for (int r = 0; r < n_realizations; ++r) {
-        for (int y = 0; y < n_years; ++y) {
-            year_gross_revenue = 0;
-            year_financial_cost = 0;
-            first_week = (int) round(y * WEEKS_IN_YEAR);
-            last_week = (int) round((y + 1) * WEEKS_IN_YEAR);
-            for (int w = first_week; w < last_week; ++w) {
-                year_financial_cost += utility_t.drought_mitigation_cost[r][w];
-                year_gross_revenue += utility_t.gross_revenues[r][w];
+        y = 0;
+        year_financial_costs.assign(n_years, 0);
+        for (int w = 0; w < n_weeks; ++w) {
+            /// accumulate year's info by summing weekly amounts.
+            year_drought_mitigation_cost += utility_t.drought_mitigation_cost[r][w];
+            year_gross_revenue += utility_t.gross_revenues[r][w];
+
+            /// if last week of the year, close the books and calculate financial cost for the year.
+            if (Utils::isFirstWeekOfTheYear(w + 1)) {
+                year_financial_costs[y] = max(year_drought_mitigation_cost -
+                                              utility_t.contingency_fund_size[r][w], 0.0)
+                                          / year_gross_revenue;
+
+                year_gross_revenue = 0;
+                year_drought_mitigation_cost = 0;
+                /// update year count.
+                y++;
             }
-            worse_year_financial_costs[r] = max(worse_year_financial_costs[r],
-                                                (year_financial_cost - utility_t.contingency_fund_size[r][last_week]));
         }
+        /// store highest year cost as the drought mitigation cost of the realization.
+        worse_year_financial_costs[r] = *max_element(year_financial_costs.begin(), year_financial_costs.end());
     }
 
+    /// sort costs to get the worse 1 percentile.
     sort(worse_year_financial_costs.begin(), worse_year_financial_costs.end());
 
-    return worse_year_financial_costs.at((unsigned long) ceil(WORSE_CASE_COST_PERCENTILE * n_realizations));
+    return worse_year_financial_costs.at((unsigned long) floor(WORSE_CASE_COST_PERCENTILE * n_realizations));
 }

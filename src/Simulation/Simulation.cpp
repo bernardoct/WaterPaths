@@ -18,10 +18,14 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_source
         drought_mitigation_policies(drought_mitigation_policies) {
 
     /// Sort water sources and utilities by their IDs.
-//    sort(water_sources.begin(), water_sources.end());
-//    sort(utilities.begin(), utilities.end());
+    //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
+#ifdef _WIN32
     sort(water_sources.begin(), water_sources.end(), std::greater<>());
     sort(utilities.begin(), utilities.end(), std::greater<>());
+#else
+    sort(water_sources.begin(), water_sources.end());
+    sort(utilities.begin(), utilities.end());
+#endif
 
     /// Pass sum of minimum environmental inflows of upstream sources to intakes.
     double upstream_min_env_flow;
@@ -65,7 +69,7 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_source
     }
 }
 
-void Simulation::runFullSimulation() {
+void Simulation::runFullSimulation(int num_threads) {
 
     int n_utilities = (int) realization_models[0]->getUtilities().size();
     vector<double> risks_of_failure_week((unsigned long) n_utilities, 0.0);
@@ -74,7 +78,7 @@ void Simulation::runFullSimulation() {
     double seconds;
 
     /// Run realizations.
-#pragma omp parallel for
+#pragma omp parallel for num_threads(num_threads)
     for (int r = 0; r < number_of_realizations; ++r) {
         cout << "Realization " << r << endl;
         time(&timer_i);

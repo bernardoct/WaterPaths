@@ -27,12 +27,10 @@ namespace Constants {
     const int RESERVOIR = 1;
     const int TRANSFERS = 0;
     const int RESTRICTIONS = 1;
-    const int UTILITIES = 0;
-    const int RESERVOIRS = 1;
     const int COLUMN_WIDTH = 10;
     const int COLUMN_PRECISION = 4;
     const int NON_INITIALIZED = -1;
-    const double WORSE_CASE_COST_PERCENTILE = 0.01;
+    const double WORSE_CASE_COST_PERCENTILE = 0.99;
 };
 
 

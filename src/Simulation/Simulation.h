@@ -28,7 +28,7 @@ public:
     const int total_simulation_time;
     const int number_of_realizations;
 
-    void runFullSimulation();
+    void runFullSimulation(int num_threads = 2);
 
 private:
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;

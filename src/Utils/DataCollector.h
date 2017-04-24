@@ -74,9 +74,8 @@ private:
     vector<WaterSource_t> reservoirs_t;
     vector<RestrictionPolicy_t> restriction_policies_t;
     vector<Transfers_policy_t> transfers_policies_t;
-//    string output_directory = "/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/";
-//    string output_directory = "/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/";
-    string output_directory = "..\\TestFiles\\";
+    string output_directory = "../TestFiles/";
+//    string output_directory = "..\\TestFiles\\";
     int number_of_realizations;
 
 

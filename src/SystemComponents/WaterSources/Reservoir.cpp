@@ -85,8 +85,6 @@ void Reservoir::applyContinuity(int week, double upstream_source_inflow, double 
             available_volume + upstream_source_inflow + catchment_inflow - demand_outflow - min_environmental_outflow;
     double outflow_new = min_environmental_outflow;
 
-    this->week = week;
-
     if (online) {
         if (stored_volume_new > capacity) {
             outflow_new += stored_volume_new - capacity;

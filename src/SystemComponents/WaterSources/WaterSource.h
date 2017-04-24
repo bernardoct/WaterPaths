@@ -22,7 +22,6 @@ protected:
     double demand = 0;
     double upstream_min_env_inflow;
     bool online;
-    int week;
     vector<Catchment *> catchments;
 
 public:

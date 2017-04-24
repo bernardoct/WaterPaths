@@ -16,7 +16,13 @@ class Reservoir : public WaterSource {
 public:
 
     Reservoir(const string &source_name, const int id, const double min_environmental_outflow,
-              const vector<Catchment *> &catchments, bool online, const double capacity, double max_treatment_capacity);
+              const vector<Catchment *> &catchments, const double capacity, const double max_treatment_capacity);
+
+    Reservoir(const string &source_name, const int id, const double min_environmental_outflow,
+              const vector<Catchment *> &catchments, const double capacity, const double max_treatment_capacity,
+              const double construction_rof, const vector<double> &construction_time_range, double
+              construction_npv_cost_of_capital,
+              double bond_term, double bond_interest_rate);
 
     Reservoir(const Reservoir &reservoir);
 

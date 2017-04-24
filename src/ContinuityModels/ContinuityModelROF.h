@@ -15,13 +15,13 @@ protected:
     const int realization_id;
     vector<WaterSource *> water_sources_realization;
 public:
-    ContinuityModelROF(const vector<WaterSource *> &water_source, const WaterSourceGraph &water_sources_graph,
+    ContinuityModelROF(const vector<WaterSource *> &water_source, const Graph &water_sources_graph,
                        const vector<vector<int>> &water_sources_to_utilities, const vector<Utility *> &utilities,
                        const int realization_id);
 
     vector<double> calculateROF(int week, int rof_type);
 
-    void resetUtilitiesAndReservoirs();
+    void resetUtilitiesAndReservoirs(int rof_type);
 
     void setWater_sources_realization(const vector<WaterSource *> &water_sources_realization);
 };

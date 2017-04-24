@@ -20,9 +20,13 @@ private:
 public:
 
     Restrictions(const int id, const vector<double> &stage_multipliers,
-                 const vector<double> &stage_triggers, const vector<int> utilities_id);
+                 const vector<double> &stage_triggers);
 
     Restrictions(const Restrictions &reservoir);
+
+    bool operator<(const Restrictions other);
+
+    bool operator>(const Restrictions other);
 
     virtual void applyPolicy(int week) override;
 

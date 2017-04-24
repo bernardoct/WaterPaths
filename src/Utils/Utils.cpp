@@ -5,7 +5,6 @@
 #include "Utils.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
 #include <fstream>
-#include <sstream>
 
 /**
  * Reads CSV file into 2D array.
@@ -100,4 +99,8 @@ Utils::copyDroughtMitigationPolicyVector(vector<DroughtMitigationPolicy *> droug
     }
 
     return drought_mitigation_policy_new;
+}
+
+bool Utils::isFirstWeekOfTheYear(int week) {
+    return ((week + 1) / WEEKS_IN_YEAR - (int) ((week + 1) / WEEKS_IN_YEAR)) * WEEKS_IN_YEAR < 1.0;
 }

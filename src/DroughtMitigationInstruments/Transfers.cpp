@@ -5,7 +5,6 @@
 #include <numeric>
 #include "Transfers.h"
 #include "../Utils/Utils.h"
-#include "../Utils/Graph/WaterSourcesGraph.h"
 
 
 /**
@@ -25,13 +24,12 @@
  * @todo add the possibility of two or more sources.
  * @todo add the possibility of having a pipe belong to a utility not in the transfer agreement. This can be
  * accomplished now by adding utility to transfer agreement and set its risk of failure to 1.1 or more.
- * @todo implement graph input that includes pipe data which gets converted to a continuity matrix and data vectors
- * in the constructor.
+ * @todo calculation and charge of wheeling fees.
  */
 Transfers::Transfers(const int id, const int source_utility_id, const double source_treatment_buffer,
                      const vector<int> &buyers_ids, const vector<double> &pipe_transfer_capacities,
                      const vector<double> &buyers_transfer_triggers,
-                     const WaterSourceGraph utilities_graph, vector<double> conveyance_costs,
+                     const Graph utilities_graph, vector<double> conveyance_costs,
                      vector<int> pipe_owner)
         : DroughtMitigationPolicy(id, TRANSFERS),
           source_utility_id(source_utility_id),
@@ -187,7 +185,7 @@ void Transfers::applyPolicy(int week) {
 
         /// Total volume available for transfers in source utility.
         double available_transfer_volume = (source_utility->getTotal_treatment_capacity() - source_treatment_buffer) *
-                                           PEAKING_FACTOR - source_utility->getDemand(week);
+                                           PEAKING_FACTOR - source_utility->getUnrestrictedDemand();
 
         if (available_transfer_volume > 0) {
 
@@ -209,13 +207,14 @@ void Transfers::applyPolicy(int week) {
 //            cout << endl;
 
             /// Calculate allocations and flow rates through inter-utility connections.
-            flow_rates_and_allocations = solve_QP(transfer_requests, available_transfer_volume, min_transfer_volume);
+            flow_rates_and_allocations = solve_QP(transfer_requests, available_transfer_volume,
+                                                  min_transfer_volume, week);
             conveyed_volumes = *(new vector<double>(flow_rates_and_allocations.begin(),
                                                     flow_rates_and_allocations.begin() + n_pipes));
 
             allocations.clear();
             for (int id : utilities_ids)
-                allocations.push_back(flow_rates_and_allocations.at(n_pipes + id));
+                allocations.push_back((double &&) flow_rates_and_allocations.at((unsigned long) (n_pipes + id)));
 
             /// Mitigate demands.
             double sum_allocations = 0;
@@ -238,7 +237,7 @@ void Transfers::applyPolicy(int week) {
  * @return
  */
 vector<double> Transfers::solve_QP(vector<double> allocation_requests, double available_transfer_volume,
-                                   double min_transfer_volume) {
+                                   double min_transfer_volume, int week) {
 
     vector<double> flow_rates_and_allocations;
     unsigned int n_allocations = (unsigned int) allocation_requests.size();
@@ -261,7 +260,9 @@ vector<double> Transfers::solve_QP(vector<double> allocation_requests, double av
             ub[n_pipes + buyers_ids[i]] = NONE;
         } else {
             lb[n_pipes + buyers_ids[i]] = min_transfer_volume;
-            ub[n_pipes + buyers_ids[i]] = available_transfer_volume;
+//            ub[n_pipes + buyers_ids[i]] = available_transfer_volume;
+            ub[n_pipes + buyers_ids[i]] = buying_utilities[i]->getUnrestrictedDemand(week)
+                                          * buying_utilities[i]->getDemand_multiplier();
         }
     }
 

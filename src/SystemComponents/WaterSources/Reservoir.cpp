@@ -7,12 +7,42 @@
 
 using namespace std;
 
-
+/**
+ * Constructor for when Reservoir is built and operational.
+ * @param source_name
+ * @param id
+ * @param min_environmental_outflow
+ * @param catchments
+ * @param capacity
+ * @param max_treatment_capacity
+ * @param source_type
+ */
 Reservoir::Reservoir(const string &source_name, const int id, const double min_environmental_outflow,
-                     const vector<Catchment *> &catchments, bool online, const double capacity,
-                     double max_treatment_capacity)
-        : WaterSource(source_name, id, min_environmental_outflow, catchments,
-                      online, capacity, max_treatment_capacity, RESERVOIR) {}
+                     const vector<Catchment *> &catchments, const double capacity,
+                     const double max_treatment_capacity) : WaterSource(source_name, id, min_environmental_outflow,
+                                                                        catchments, capacity, max_treatment_capacity,
+                                                                        RESERVOIR) {}
+
+/**
+ * Constructor for when Reservoir does not exist in the beginning of the simulation.
+ * @param source_name
+ * @param id
+ * @param min_environmental_outflow
+ * @param catchments
+ * @param capacity
+ * @param max_treatment_capacity
+ * @param source_type
+ * @param construction_rof
+ * @param construction_time_range
+ * @param construction_price
+ */
+Reservoir::Reservoir(const string &source_name, const int id, const double min_environmental_outflow,
+                     const vector<Catchment *> &catchments, const double capacity, const double max_treatment_capacity,
+                     const double construction_rof,
+                     const vector<double> &construction_time_range, double construction_npv_cost_of_capital,
+                     double bond_term, double bond_interest_rate) : WaterSource(
+        source_name, id, min_environmental_outflow, catchments, capacity, max_treatment_capacity, RESERVOIR,
+        construction_rof, construction_time_range, construction_npv_cost_of_capital, bond_term, bond_interest_rate) {}
 
 /**
  * Copy constructor.
@@ -54,8 +84,6 @@ void Reservoir::applyContinuity(int week, double upstream_source_inflow, double 
     double stored_volume_new =
             available_volume + upstream_source_inflow + catchment_inflow - demand_outflow - min_environmental_outflow;
     double outflow_new = min_environmental_outflow;
-
-    this->week = week;
 
     if (online) {
         if (stored_volume_new > capacity) {

@@ -4,10 +4,9 @@
 
 #include <iostream>
 #include "ContinuityModelRealization.h"
-#include "../Utils/Graph/WaterSourcesGraph.h"
 
 ContinuityModelRealization::ContinuityModelRealization(const vector<WaterSource *> &water_source,
-                                                       const WaterSourceGraph &water_sources_graph,
+                                                       const Graph &water_sources_graph,
                                                        const vector<vector<int>> &water_sources_to_utilities,
                                                        const vector<Utility *> &utilities,
                                                        const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
@@ -28,9 +27,15 @@ vector<WaterSource *> ContinuityModelRealization::getWater_sources() {
     return water_sources;
 }
 
-void ContinuityModelRealization::setRisks_of_failure(const vector<double> &risks_of_failure) {
+void ContinuityModelRealization::setShortTermROFs(const vector<double> &risks_of_failure) {
     for (unsigned long i = 0; i < utilities.size(); ++i) {
         utilities.at(i)->setRisk_of_failure(risks_of_failure.at(i));
+    }
+}
+
+void ContinuityModelRealization::setLongTermROFs(const vector<double> &risks_of_failure, const int week) {
+    for (unsigned long i = 0; i < utilities.size(); ++i) {
+        utilities.at(i)->infrastructureConstructionHandler(risks_of_failure.at(i), week);
     }
 }
 

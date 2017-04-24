@@ -4,12 +4,12 @@
 
 #include "Simulation.h"
 #include "../Utils/Utils.h"
-#include "../Utils/Graph/WaterSourcesGraph.h"
 #include <iostream>
 #include <algorithm>
-#include <time.h>
+#include <ctime>
 
-Simulation::Simulation(vector<WaterSource *> &water_sources, WaterSourceGraph &water_sources_graph,
+
+Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_sources_graph,
                        const vector<vector<int>> &water_sources_to_utilities, vector<Utility *> &utilities,
                        vector<DroughtMitigationPolicy *> &drought_mitigation_policies, const int total_simulation_time,
                        const int number_of_realizations, DataCollector *data_collector) :
@@ -18,8 +18,14 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, WaterSourceGraph &w
         drought_mitigation_policies(drought_mitigation_policies) {
 
     /// Sort water sources and utilities by their IDs.
+    //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
+#ifdef _WIN32
+    sort(water_sources.begin(), water_sources.end(), std::greater<>());
+    sort(utilities.begin(), utilities.end(), std::greater<>());
+#else
     sort(water_sources.begin(), water_sources.end());
     sort(utilities.begin(), utilities.end());
+#endif
 
     /// Pass sum of minimum environmental inflows of upstream sources to intakes.
     double upstream_min_env_flow;
@@ -63,7 +69,7 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, WaterSourceGraph &w
     }
 }
 
-void Simulation::runFullSimulation() {
+void Simulation::runFullSimulation(int num_threads) {
 
     int n_utilities = (int) realization_models[0]->getUtilities().size();
     vector<double> risks_of_failure_week((unsigned long) n_utilities, 0.0);
@@ -72,22 +78,29 @@ void Simulation::runFullSimulation() {
     double seconds;
 
     /// Run realizations.
+#pragma omp parallel for num_threads(num_threads)
     for (int r = 0; r < number_of_realizations; ++r) {
         cout << "Realization " << r << endl;
-//        time(&timer_i);
+        time(&timer_i);
         for (int w = 0; w < total_simulation_time; ++w) {
-            realization_models[r]->setRisks_of_failure(rof_models[r]->calculateROF(w, 0));
+            if (Utils::isFirstWeekOfTheYear(w))
+                realization_models[r]->setLongTermROFs(rof_models[r]->calculateROF(w, LONG_TERM_ROF), w);
+            realization_models[r]->setShortTermROFs(rof_models[r]->calculateROF(w, SHORT_TERM_ROF));
             realization_models[r]->applyDroughtMitigationPolicies(w);
             realization_models[r]->continuityStep(w);
-            data_collector->collectData(realization_models[r], w);
+            data_collector->collectData(realization_models[r]);
         }
-//        time(&timer_f);
-//        seconds = difftime(timer_f,timer_i);
-//        cout << seconds << "s" << endl;
+        time(&timer_f);
+        seconds = difftime(timer_f,timer_i);
+        cout << seconds << "s" << endl;
     }
 
+    /// Calculate objective values.
+    data_collector->calculateObjectives();
+
     /// Print output files.
-    data_collector->printUtilityOutput(true);
-    data_collector->printReservoirOutput(true);
-    data_collector->printPoliciesOutput(true);
+    data_collector->printUtilityOutput("Utilities.out");
+    data_collector->printReservoirOutput("WaterSources.out");
+    data_collector->printPoliciesOutput("Policies.out");
+    data_collector->printObjectives("Objectives.out");
 }

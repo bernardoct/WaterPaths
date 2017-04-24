@@ -9,7 +9,6 @@
 #include "ContinuityModel.h"
 #include "ContinuityModelROF.h"
 #include "../DroughtMitigationInstruments/Restrictions.h"
-#include "../Utils/Graph/WaterSourcesGraph.h"
 
 class ContinuityModelRealization : public ContinuityModel {
 private:
@@ -17,7 +16,7 @@ private:
 
 public:
     ContinuityModelRealization(const vector<WaterSource *> &water_source,
-                               const WaterSourceGraph &water_sources_graph,
+                               const Graph &water_sources_graph,
                                const vector<vector<int>> &water_sources_to_utilities,
                                const vector<Utility *> &utilities,
                                const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
@@ -27,11 +26,13 @@ public:
 
     vector<WaterSource *> getWater_sources();
 
-    void setRisks_of_failure(const vector<double> &risks_of_failure);
+    void setShortTermROFs(const vector<double> &risks_of_failure);
 
     void applyDroughtMitigationPolicies(int week);
 
     const vector<DroughtMitigationPolicy *> getDrought_mitigation_policies() const;
+
+    void setLongTermROFs(const vector<double> &risks_of_failure, const int week);
 };
 
 

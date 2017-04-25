@@ -320,7 +320,7 @@ void utilityCopy() {
 
     cout << u[0]->demand_series[0] << " " << u3.demand_series[0] << endl; // 2 30
     cout << u[0]->total_stored_volume << " " << u3.total_stored_volume << endl; // 0 5
-    cout << u[0]->getWaterSource().at(0)->name << " " << u3.getWaterSource().at(0)->name << endl;
+    cout << u[0]->getWaterSource().at(0)->name << " " << u3.getWaterSources().at(0)->name << endl;
 }
  */
 
@@ -588,7 +588,7 @@ void simulation3U5RTest() {
 
     /// Creates simulation object
     Simulation s(water_sources, g, reservoir_utility_connectivity_matrix, utilities, drought_mitigation_policies,
-                 104, 2, data_collector);
+                 104, 2, &data_collector);
     cout << "Beginning U3R5 simulation" << endl;
     s.runFullSimulation(0);
     cout << "Ending U3R5 simulation" << endl;
@@ -926,6 +926,9 @@ void simulation3U5RInfraTest() {
 
     cout << "BEGINNING ROF TEST" << endl << endl;
 
+    /// Data collector pointer
+    DataCollector *data_collector = nullptr;
+
     /// Read streamflows
     int streamflow_n_weeks = 52 * 70;
     double **streamflows_test = Utils::parse2DCsvFile("../TestFiles/"
@@ -1033,12 +1036,9 @@ void simulation3U5RInfraTest() {
                 vector<double>(), vector<int>());
     drought_mitigation_policies.push_back(&t);
 
-    /// Data collector pointer
-    DataCollector *data_collector = nullptr;
-
     /// Creates simulation object
     Simulation s(water_sources, g, reservoir_utility_connectivity_matrix, utilities, drought_mitigation_policies,
-                 992, 2, data_collector);
+                 646, 2, &data_collector);
     cout << "Beginning U3R5 simulation" << endl;
     s.runFullSimulation(2);
     cout << "Ending U3R5 simulation" << endl;

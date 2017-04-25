@@ -12,9 +12,9 @@
 Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_sources_graph,
                        const vector<vector<int>> &water_sources_to_utilities, vector<Utility *> &utilities,
                        vector<DroughtMitigationPolicy *> &drought_mitigation_policies, const int total_simulation_time,
-                       const int number_of_realizations, DataCollector *data_collector) :
+                       const int number_of_realizations, DataCollector **data_collector) :
         total_simulation_time(total_simulation_time),
-        number_of_realizations(number_of_realizations), data_collector(data_collector),
+        number_of_realizations(number_of_realizations), data_collector(*data_collector),
         drought_mitigation_policies(drought_mitigation_policies) {
 
     /// Sort water sources and utilities by their IDs.
@@ -39,8 +39,9 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_source
     }
 
     /// Creates the data collector for the simulation.
-    this->data_collector = new DataCollector(utilities, water_sources, drought_mitigation_policies,
-                                             number_of_realizations);
+    *data_collector = new DataCollector(utilities, water_sources, drought_mitigation_policies,
+                                        number_of_realizations, water_sources_graph);
+    this->data_collector = *data_collector;
 
     /// Creates the realization and ROF models.
     vector<WaterSource *> water_sources_realization;
@@ -83,6 +84,7 @@ void Simulation::runFullSimulation(int num_threads) {
         cout << "Realization " << r << endl;
         time(&timer_i);
         for (int w = 0; w < total_simulation_time; ++w) {
+            // DO NOT change the order of the steps. This would destroy dependencies.
             if (Utils::isFirstWeekOfTheYear(w))
                 realization_models[r]->setLongTermROFs(rof_models[r]->calculateROF(w, LONG_TERM_ROF), w);
             realization_models[r]->setShortTermROFs(rof_models[r]->calculateROF(w, SHORT_TERM_ROF));

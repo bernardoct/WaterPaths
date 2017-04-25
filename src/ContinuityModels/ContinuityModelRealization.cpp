@@ -5,21 +5,19 @@
 #include <iostream>
 #include "ContinuityModelRealization.h"
 
-ContinuityModelRealization::ContinuityModelRealization(const vector<WaterSource *> &water_source,
+ContinuityModelRealization::ContinuityModelRealization(const vector<WaterSource *> &water_sources,
                                                        const Graph &water_sources_graph,
                                                        const vector<vector<int>> &water_sources_to_utilities,
                                                        const vector<Utility *> &utilities,
                                                        const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
                                                        const int realization_index) :
-        ContinuityModel(water_source, utilities, water_sources_graph,
+        ContinuityModel(water_sources, utilities, water_sources_graph,
                         water_sources_to_utilities),
         realization_id(realization_index), drought_mitigation_policies(drought_mitigation_policies) {
 
     /// Pass corresponding utilities to drought mitigation instruments.
     for (DroughtMitigationPolicy *dmp : this->drought_mitigation_policies) {
-        for (int i : dmp->getUtilities_ids()) {
-            dmp->addUtility(this->utilities.at((unsigned long) i));
-        }
+        dmp->addSystemComponents(utilities, water_sources, &water_sources_graph);
     }
 }
 

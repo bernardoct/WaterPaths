@@ -20,12 +20,11 @@ public:
 
     Catchment &operator=(const Catchment &catchment);
 
-    const int series_length;
-
     double getStreamflow(int week);
 
 private:
     double *streamflows;
+    int series_length;
 };
 
 

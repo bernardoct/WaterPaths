@@ -71,7 +71,7 @@ public:
 
     void updateTotalStoredVolume();
 
-    const map<int, WaterSource *> &getWaterSource() const;
+    const map<int, WaterSource *> &getWaterSources() const;
 
     void addWaterSource(WaterSource *water_source);
 

@@ -10,7 +10,9 @@ DroughtMitigationPolicy::DroughtMitigationPolicy(const int id, const int type) :
 DroughtMitigationPolicy::DroughtMitigationPolicy(const DroughtMitigationPolicy &drought_mitigation_policy) :
         id(drought_mitigation_policy.id), type(drought_mitigation_policy.type) {
     utilities = vector<Utility *>();
-//    utilities = Utils::copyUtilityVector(drought_mitigation_policy.utilities);
+    if (utilities.size() > 0)
+        __throw_invalid_argument("Your vector of Utility pointers must be empty for you to "
+                                         "copy it.");
 }
 
 const vector<int> &DroughtMitigationPolicy::getUtilities_ids() const {

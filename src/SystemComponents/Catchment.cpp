@@ -21,9 +21,7 @@ Catchment::Catchment(double *streamflows, int series_length) : streamflows(strea
  * @param catchment
  */
 Catchment::Catchment(Catchment &catchment) : series_length(catchment.series_length),
-                                             streamflows(new double[catchment.series_length]) {
-
-    std::copy(catchment.streamflows, catchment.streamflows + catchment.series_length, streamflows);
+                                             streamflows(catchment.streamflows) {
 }
 
 /**
@@ -33,10 +31,8 @@ Catchment::Catchment(Catchment &catchment) : series_length(catchment.series_leng
  */
 Catchment &Catchment::operator=(const Catchment &catchment) {
 
-    double *streamflows_temp = streamflows; // check if it's better not to initialize it.
-    std::copy(catchment.streamflows, catchment.streamflows + catchment.series_length, streamflows_temp);
-    delete[] streamflows;
-    streamflows = streamflows_temp;
+    streamflows = catchment.streamflows;
+    series_length = catchment.series_length;
 
     return *this;
 }

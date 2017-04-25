@@ -90,7 +90,6 @@ Utility::~Utility() {
  * @return Copy of utility.
  */
 Utility &Utility::operator=(const Utility &utility) {
-    double *demand_series_temp = demand_series;
 
     /// Create copies of sources
     water_sources.clear();
@@ -103,11 +102,6 @@ Utility &Utility::operator=(const Utility &utility) {
                                          (ws.first, new Intake(*dynamic_cast<Intake *>(ws.second))));
         }
     }
-
-    /// Copy demand series so that restrictions in one realization do not affect other realizations.
-    std::copy(utility.demand_series, utility.demand_series + utility.number_of_week_demands, demand_series_temp);
-    delete[] demand_series;
-    demand_series = demand_series_temp;
 
     return *this;
 }
@@ -329,7 +323,7 @@ double Utility::getReservoirDraw(const int water_source_id) {
     return split_demands_among_sources.at(water_source_id);
 }
 
-const map<int, WaterSource *> &Utility::getWaterSource() const {
+const map<int, WaterSource *> &Utility::getWaterSources() const {
     return water_sources;
 }
 

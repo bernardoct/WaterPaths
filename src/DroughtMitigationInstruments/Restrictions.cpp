@@ -18,43 +18,42 @@ Restrictions::Restrictions(const int id, const vector<double> &stage_multipliers
         : DroughtMitigationPolicy(id, RESTRICTIONS),
           stage_multipliers(stage_multipliers),
           stage_triggers(stage_triggers) {
-    this->utilities_ids = vector<int>(1, id);
+    utilities_ids = vector<int>(1, id);
 }
 
-Restrictions::Restrictions(const Restrictions &restrictions) : DroughtMitigationPolicy(restrictions.id, RESTRICTIONS),
+Restrictions::Restrictions(const Restrictions &restrictions) : DroughtMitigationPolicy(restrictions),
                                                                stage_multipliers(restrictions.stage_multipliers),
-                                                               stage_triggers(restrictions.stage_triggers),
-                                                               utility(restrictions.utility) {
-    this->utilities_ids = restrictions.utilities_ids;
+                                                               stage_triggers(restrictions.stage_triggers) {
+    utilities_ids = restrictions.utilities_ids;
 }
 
 Restrictions::~Restrictions() {}
-
-bool Restrictions::operator<(const Restrictions other) {
-    return this->utilities_ids[0] < other.utilities_ids[0];
-}
-
-bool Restrictions::operator>(const Restrictions other) {
-    return this->utilities_ids[0] > other.utilities_ids[0];
-}
 
 void Restrictions::applyPolicy(int week) {
 
     current_multiplier = 1.0;
     for (int i = 0; i < stage_triggers.size(); ++i) {
-        if (utility->getRisk_of_failure() > stage_triggers[i]) {
+        if (utilities.at(0)->getRisk_of_failure() > stage_triggers[i]) {
             current_multiplier = stage_multipliers[i];
         } else break;
     }
 
-    utility->setDemand_multiplier(current_multiplier);
+    utilities.at(0)->setDemand_multiplier(current_multiplier);
 }
 
 double Restrictions::getCurrent_multiplier() const {
     return current_multiplier;
 }
 
-void Restrictions::addUtility(Utility *utility) {
-    if (utility->id != id) throw std::invalid_argument("Restriction policy ID must match utility's ID.");
-    this->utility = utility;
+void Restrictions::addSystemComponents(vector<Utility *> systems_utilities, vector<WaterSource *> water_sources,
+                                       const Graph *water_sources_graph) {
+    for (Utility *u : systems_utilities) {
+        if (u->id == id) {
+            if (!this->utilities.empty())
+                throw std::logic_error("This restriction policy already has a systems_utilities assigned to it.");
+            this->utilities.push_back(u);
+        }
+    }
+    if (systems_utilities.empty())
+        throw std::invalid_argument("Restriction policy ID must match systems_utilities's ID.");
 }

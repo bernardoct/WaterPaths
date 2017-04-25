@@ -23,7 +23,7 @@ public:
     Simulation(vector<WaterSource *> &water_sources, Graph &water_sources_graph,
                const vector<vector<int>> &water_sources_to_utilities, vector<Utility *> &utilities,
                vector<DroughtMitigationPolicy *> &drought_mitigation_policies, const int total_simulation_time,
-               const int number_of_realizations, DataCollector *data_collector);
+               const int number_of_realizations, DataCollector **data_collector);
 
     const int total_simulation_time;
     const int number_of_realizations;

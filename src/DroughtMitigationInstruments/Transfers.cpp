@@ -4,7 +4,6 @@
 
 #include <numeric>
 #include "Transfers.h"
-#include "../Utils/Utils.h"
 
 
 /**
@@ -114,8 +113,6 @@ Transfers::Transfers(const Transfers &transfers) : DroughtMitigationPolicy(trans
 //        FIXME: VALGRIND COMPLAINS ABOUT THIS LINE ABOVE EVEN IF IT'S NOT SUPPOSED TO BE CALLED.
 //        source_utility = new Utility(*transfers.source_utility);
 
-    buying_utilities = Utils::copyUtilityVector(transfers.buying_utilities);
-
     H = transfers.H;
     Aeq = transfers.Aeq;
     A = transfers.A;
@@ -143,14 +140,20 @@ Transfers::~Transfers() {
 
 /**
  * Adds source and buying utility.
- * @param utility Utility to be added.
+ * @param system_utilities Utility to be added.
  */
-void Transfers::addUtility(Utility *utility) {
-    if (utility->id == source_utility_id)
-        source_utility = utility;
-    else {
-        buying_utilities.push_back(utility);
-    }
+void Transfers::addSystemComponents(vector<Utility *> system_utilities, vector<WaterSource *> water_sources,
+                                    const Graph *water_sources_graph) {
+
+    if (utilities.size() > 0)
+        throw std::invalid_argument("Utilities were already assigned to transfer policy.");
+
+    for (Utility *u : system_utilities)
+        if (u->id == source_utility_id)
+            source_utility = u; // source of transfers
+        else {
+            utilities.push_back(u); //
+        }
 }
 
 void Transfers::applyPolicy(int week) {
@@ -170,7 +173,7 @@ void Transfers::applyPolicy(int week) {
     unsigned int vertex_id; // position of utility id in the buyers_transfer_triggers vector.
     double sum_rofs = 0;
     int utilities_requesting_transfers = 0;
-    for (auto u : buying_utilities) {
+    for (auto u : utilities) {
         vertex_id = (unsigned int) util_id_to_vertex_id->at((unsigned int) u->id);
         if (u->getRisk_of_failure() > buyers_transfer_triggers.at(vertex_id)) {
             sum_rofs += u->getRisk_of_failure();
@@ -202,15 +205,11 @@ void Transfers::applyPolicy(int week) {
                                        average_pipe_capacity / available_transfer_volume;
             }
 
-//            for (double a : transfer_requests)
-//                cout << a << " ";
-//            cout << endl;
-
             /// Calculate allocations and flow rates through inter-utility connections.
             flow_rates_and_allocations = solve_QP(transfer_requests, available_transfer_volume,
                                                   min_transfer_volume, week);
-            conveyed_volumes = *(new vector<double>(flow_rates_and_allocations.begin(),
-                                                    flow_rates_and_allocations.begin() + n_pipes));
+            conveyed_volumes = vector<double>(flow_rates_and_allocations.begin(),
+                                              flow_rates_and_allocations.begin() + n_pipes);
 
             allocations.clear();
             for (int id : utilities_ids)
@@ -219,7 +218,7 @@ void Transfers::applyPolicy(int week) {
             /// Mitigate demands.
             double sum_allocations = 0;
             for (int i = 0; i < n_allocations; ++i) {
-                buying_utilities[i]->setDemand_offset(allocations[i], source_utility->water_price_per_volume);
+                utilities[i]->setDemand_offset(allocations[i], source_utility->water_price_per_volume);
                 sum_allocations += allocations[i];
             }
             /// draw water from source utility.
@@ -261,8 +260,8 @@ vector<double> Transfers::solve_QP(vector<double> allocation_requests, double av
         } else {
             lb[n_pipes + buyers_ids[i]] = min_transfer_volume;
 //            ub[n_pipes + buyers_ids[i]] = available_transfer_volume;
-            ub[n_pipes + buyers_ids[i]] = buying_utilities[i]->getUnrestrictedDemand(week)
-                                          * buying_utilities[i]->getDemand_multiplier();
+            ub[n_pipes + buyers_ids[i]] = utilities[i]->getUnrestrictedDemand(week)
+                                          * utilities[i]->getDemand_multiplier();
         }
     }
 

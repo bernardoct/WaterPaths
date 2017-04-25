@@ -45,7 +45,6 @@ Utility::Utility(char *name, int id, char const *demand_file_name, int number_of
 }
 
 
-
 /**
  * Copy constructor.
  * @param utility
@@ -79,9 +78,10 @@ Utility::Utility(Utility &utility) : id(utility.id), number_of_week_demands(util
  * Destructor.
  */
 Utility::~Utility() {
-    //FIXME: I'M GETTING SEGMENTATION FAULT HERE.
+
 //    if (demand_series)
-//        delete[] demand_series;
+    //FIXME: I'M GETTING SEGMENTATION FAULT HERE WHEN RUNNING IT WITH VALGRIND.
+    delete[] demand_series;
 }
 
 /**

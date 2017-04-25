@@ -15,7 +15,7 @@ private:
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
 
 public:
-    ContinuityModelRealization(const vector<WaterSource *> &water_source,
+    ContinuityModelRealization(const vector<WaterSource *> &water_sources,
                                const Graph &water_sources_graph,
                                const vector<vector<int>> &water_sources_to_utilities,
                                const vector<Utility *> &utilities,

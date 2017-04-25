@@ -22,7 +22,6 @@ private:
     vector<double> buyers_transfer_triggers;
     vector<double> flow_rates_and_allocations;
     Utility *source_utility;
-    vector<Utility *> buying_utilities;
     Matrix<double> H, Aeq, A;
     Vector<double> f, beq, b, allocations_aux, lb, ub;
 
@@ -44,7 +43,8 @@ public:
 
     virtual void applyPolicy(int week) override;
 
-    virtual void addUtility(Utility *utility) override;
+    virtual void addSystemComponents(vector<Utility *> system_utilities, vector<WaterSource *> water_sources,
+                                     const Graph *water_sources_graph) override;
 
     vector<double>
     solve_QP(vector<double> allocation_requests, double available_transfer_volume, double min_transfer_volume,

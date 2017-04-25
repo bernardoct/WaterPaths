@@ -76,14 +76,18 @@ private:
     vector<Transfers_policy_t> transfers_policies_t;
     string output_directory = "../TestFiles/";
 //    string output_directory = "..\\TestFiles\\";
-    int number_of_realizations;
 
 
 public:
-    DataCollector() {}
+    DataCollector() : water_sources_graph(Graph(0)), number_of_realizations(NONE) {};
 
     DataCollector(const vector<Utility *> &utilities, const vector<WaterSource *> &water_sources,
-                  const vector<DroughtMitigationPolicy *> &drought_mitigation_policies, int number_of_realizations);
+                  const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
+                  int number_of_realizations, Graph water_sources_graph);
+
+    const Graph water_sources_graph;
+
+    const int number_of_realizations;
 
     void collectData(ContinuityModelRealization *continuity_model_realization);
 

@@ -8,10 +8,14 @@
 
 #include "../SystemComponents/Utility.h"
 #include "../Utils/Constants.h"
+#include "../Utils/Graph/Graph.h"
 
 class DroughtMitigationPolicy {
 protected:
+    DroughtMitigationPolicy(const DroughtMitigationPolicy &drought_mitigation_policy);
+
     vector<int> utilities_ids;
+    vector<Utility *> utilities;
 
 public:
     const int id;
@@ -21,9 +25,16 @@ public:
 
     virtual void applyPolicy(int week)= 0;
 
-    virtual void addUtility(Utility *utility)= 0;
+    virtual void addSystemComponents(vector<Utility *> utilities, vector<WaterSource *> water_sources,
+                                     const Graph *water_sources_graph)= 0;
 
     const vector<int> &getUtilities_ids() const;
+
+    bool operator<(const DroughtMitigationPolicy *other);
+
+    bool operator>(const DroughtMitigationPolicy *other);
+
+    virtual ~DroughtMitigationPolicy();
 
 };
 

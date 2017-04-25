@@ -14,7 +14,8 @@
 
 DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<WaterSource *> &water_sources,
                              const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
-                             int number_of_realizations) : number_of_realizations(number_of_realizations) {
+                             int number_of_realizations, Graph water_sources_graph) :
+        number_of_realizations(number_of_realizations), water_sources_graph(water_sources_graph) {
 
     for (Utility *u : utilities) {
         utilities_t.push_back(Utility_t(u->id, u->getTotal_storage_capacity(), u->name));

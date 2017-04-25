@@ -45,7 +45,8 @@ Catchment &Catchment::operator=(const Catchment &catchment) {
  * Destructor.
  */
 Catchment::~Catchment() {
-    delete[] streamflows;
+    if (streamflows)
+        delete[] streamflows;
 }
 
 /**

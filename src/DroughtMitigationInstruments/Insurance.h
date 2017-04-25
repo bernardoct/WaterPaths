@@ -9,6 +9,8 @@
 #include "../Utils/Constants.h"
 #include "../Utils/DataCollector.h"
 
+
+
 class Insurance : public DroughtMitigationPolicy {
 private:
     Insurance(const Insurance &insurance);
@@ -17,6 +19,9 @@ private:
     const Graph *water_sources_graph;
     vector<int> ids_of_utilities_with_policies;
     vector<vector<int>> sources_to_utilities_ids;
+    vector<vector<double>> storages;
+    vector<vector<double>> rofs;
+
 
 public:
     const vector<double> rof_triggers;

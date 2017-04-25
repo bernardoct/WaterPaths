@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iomanip>
 #include <algorithm>
+#include <numeric>
 #include "DataCollector.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
 #include "Utils.h"

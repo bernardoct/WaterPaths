@@ -34,6 +34,8 @@ void Insurance::applyPolicy(int week) {
 
         }
     }
+
+
 }
 
 void Insurance::addSystemComponents(vector<Utility *> utilities, vector<WaterSource *> water_sources,
@@ -50,10 +52,11 @@ void Insurance::addSystemComponents(vector<Utility *> utilities, vector<WaterSou
                 this->sources_to_utilities_ids[sources_to_utilities_ids.size() - 1].push_back(ws.second->id);
         }
     }
+
+    storages = std::vector<vector<double>>(water_sources.size(), vector<double>());
 }
 
 double Insurance::insurancePricing(vector<vector<double>> storage_levels) {
 
 }
-
 

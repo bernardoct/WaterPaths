@@ -91,7 +91,7 @@ WaterSource::WaterSource(const WaterSource &water_source) : capacity(water_sourc
  * Destructor.
  */
 WaterSource::~WaterSource() {
-//    catchments.clear();
+    catchments.clear();
 }
 
 /**

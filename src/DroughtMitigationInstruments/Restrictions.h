@@ -8,6 +8,7 @@
 
 #include "../SystemComponents/Utility.h"
 #include "DroughtMitigationPolicy.h"
+#include "../Utils/Graph/Graph.h"
 
 class Restrictions : public DroughtMitigationPolicy {
 
@@ -16,7 +17,6 @@ private:
     const vector<double> stage_multipliers;
     const vector<double> stage_triggers;
     double current_multiplier = 0;
-    Utility *utility;
 public:
 
     Restrictions(const int id, const vector<double> &stage_multipliers,
@@ -24,13 +24,10 @@ public:
 
     Restrictions(const Restrictions &reservoir);
 
-    bool operator<(const Restrictions other);
-
-    bool operator>(const Restrictions other);
-
     virtual void applyPolicy(int week) override;
 
-    virtual void addUtility(Utility *utility) override;
+    virtual void addSystemComponents(vector<Utility *> systems_utilities, vector<WaterSource *> water_sources,
+                                     const Graph *water_sources_graph) override;
 
     double getCurrent_multiplier() const;
 

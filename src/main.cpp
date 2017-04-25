@@ -320,7 +320,7 @@ void utilityCopy() {
 
     cout << u[0]->demand_series[0] << " " << u3.demand_series[0] << endl; // 2 30
     cout << u[0]->total_stored_volume << " " << u3.total_stored_volume << endl; // 0 5
-    cout << u[0]->getWaterSource().at(0)->name << " " << u3.getWaterSource().at(0)->name << endl;
+    cout << u[0]->getWaterSource().at(0)->name << " " << u3.getWaterSources().at(0)->name << endl;
 }
  */
 

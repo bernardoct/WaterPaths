@@ -84,6 +84,7 @@ void Simulation::runFullSimulation(int num_threads) {
         cout << "Realization " << r << endl;
         time(&timer_i);
         for (int w = 0; w < total_simulation_time; ++w) {
+            // DO NOT change the order of the steps. This would destroy dependencies.
             if (Utils::isFirstWeekOfTheYear(w))
                 realization_models[r]->setLongTermROFs(rof_models[r]->calculateROF(w, LONG_TERM_ROF), w);
             realization_models[r]->setShortTermROFs(rof_models[r]->calculateROF(w, SHORT_TERM_ROF));

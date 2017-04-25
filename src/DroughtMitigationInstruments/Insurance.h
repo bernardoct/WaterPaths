@@ -11,9 +11,12 @@
 
 class Insurance : public DroughtMitigationPolicy {
 private:
+    Insurance(const Insurance &insurance);
+
     vector<WaterSource *> water_sources;
     const Graph *water_sources_graph;
     vector<int> ids_of_utilities_with_policies;
+    vector<vector<int>> sources_to_utilities_ids;
 
 public:
     const vector<double> rof_triggers;
@@ -25,6 +28,8 @@ public:
 
     void addSystemComponents(vector<Utility *> utilities, vector<WaterSource *> water_sources,
                              const Graph *water_sources_graph) override;
+
+    double insurancePricing(vector<vector<double>> storage_levels);
 };
 
 

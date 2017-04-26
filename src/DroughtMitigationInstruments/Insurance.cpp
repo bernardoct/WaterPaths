@@ -66,23 +66,18 @@ void Insurance::addSystemComponents(vector<Utility *> utilities, vector<WaterSou
  * @return
  */
 double Insurance::priceInsurance(int week) {
-    vector<vector<vector<double>>> realizations_storages(WEEKS_ROF_SHORT_TERM,
-                                                         std::vector<vector<double>>(
-                                                                 NUMBER_REALIZATIONS_INSURANCE_PRICING,
-                                                                 vector<double>(continuity_water_sources.size(), 0.0)));
-    vector<vector<vector<int>>> realizations_week_fail(WEEKS_ROF_SHORT_TERM,
-                                                       std::vector<vector<int>>(NUMBER_REALIZATIONS_INSURANCE_PRICING,
-                                                                                vector<int>(
-                                                                                        continuity_water_sources.size(),
+    vector<vector<vector<bool>>> realizations_utility_week_fail(WEEKS_ROF_SHORT_TERM,
+                                                       std::vector<vector<bool>>(NUMBER_REALIZATIONS_INSURANCE_PRICING,
+                                                                                vector<bool>(
+                                                                                        utilities.size(),
                                                                                         NON_FAILURE)));
-
-    double **week_storages = new double *[NUMBER_REALIZATIONS_INSURANCE_PRICING];
-    double **week_storage_distances = new double *[NUMBER_REALIZATIONS_INSURANCE_PRICING];
-
-    for (int r = 0; r < NUMBER_REALIZATIONS_INSURANCE_PRICING; ++r) {
-        week_storages[r] = new double[continuity_water_sources.size()];
-        week_storage_distances[r] = new double[NUMBER_REALIZATIONS_INSURANCE_PRICING];
-    }
+    vector<vector<vector<double>>> realizations_storages(WEEKS_ROF_SHORT_TERM,
+                                                       std::vector<vector<double>>(NUMBER_REALIZATIONS_INSURANCE_PRICING,
+                                                                                 vector<double>(
+                                                                                         continuity_water_sources.size(),
+                                                                                         0.0)));
+    vector<vector<double>> week_storage_distances(NUMBER_REALIZATIONS_INSURANCE_PRICING, vector<double>
+            (NUMBER_REALIZATIONS_INSURANCE_PRICING, 0.0));
 
     /// perform a continuity simulation for NUMBER_REALIZATIONS_ROF (50) yearly realization.
     for (int r = 0; r < NUMBER_REALIZATIONS_INSURANCE_PRICING; r++) {
@@ -97,18 +92,14 @@ double Insurance::priceInsurance(int week) {
             this->continuityStep(w, r);
 
             /// record storages.
-            for (int ws = 0; ws < continuity_water_sources.size(); ++ws) {
-                realizations_storages[w][r][ws] = continuity_water_sources[ws]->getAvailable_volume();
-                if (realizations_storages[w][r][ws] < STORAGE_CAPACITY_RATIO_FAIL)
-                    realizations_week_fail[w][r][ws] = FAILURE;
-            }
-        }
-    }
+            double combined_storage;
+            for (int u = 0; u < continuity_utilities.size(); ++u) {
+                combined_storage= 0;
+                for (int ws : water_sources_to_utilities[u]) {
+                    combined_storage += continuity_water_sources[ws]->getAvailable_volume();
 
-    for (int w = 0; w < WEEKS_ROF_SHORT_TERM; ++w) {
-        for (int r = 0; r < NUMBER_REALIZATIONS_INSURANCE_PRICING; ++r) {
-            for (int ws = 0; ws < continuity_water_sources.size(); ++ws) {
-                week_storages[r][ws] = realizations_storages[w][r][ws];
+                }
+                if (combined_storage < STORAGE_CAPACITY_RATIO_FAIL) realizations_utility_week_fail[w][r][u] = FAILURE;
             }
         }
     }
@@ -116,21 +107,44 @@ double Insurance::priceInsurance(int week) {
     vector<vector<vector<double>>> distances_between_realizations(WEEKS_ROF_SHORT_TERM, std::vector<vector<double>>(
                                                                   NUMBER_REALIZATIONS_INSURANCE_PRICING,
                                                           vector<double>(NUMBER_REALIZATIONS_INSURANCE_PRICING, 0.0)));
-    vector<vector<double>> rof_series_utilities(continuity_water_sources.size(),
+    vector<vector<double>> rof_series_utilities(utilities.size(),
                                                 vector<double>(WEEKS_ROF_SHORT_TERM, 0.0));
     vector<int> indexes_realizations_rof;
-    double utility_combined_storage;
+
+    /// get utilities combined storage capacities.
     vector<double> utility_combined_capacity;
     for (Utility *u : utilities) {
         utility_combined_capacity.push_back(u->getTotal_storage_capacity());
     }
 
+    /// calculate metric (euclidian distance) for differences in storage between realizations
     for (int w = 0; w < WEEKS_ROF_SHORT_TERM - 1; ++w) {
-        for (int i = 0; i < NUMBER_REALIZATIONS_INSURANCE_PRICING; ++i) {
+        for (int i = 1; i < NUMBER_REALIZATIONS_INSURANCE_PRICING; ++i) {
             for (int j = i; j < NUMBER_REALIZATIONS_INSURANCE_PRICING; ++j) {
                 distances_between_realizations[w][i][j] = Utils::l2distanceSquare(realizations_storages[w][i],
                                                                                realizations_storages[w][j]);
                 distances_between_realizations[w][j][i] = distances_between_realizations[w][i][j];
+            }
+        }
+    }
+
+    double number_of_failed_realizations;
+    int number_of_similar_relizations = (int) INSURANCE_PRICING_SIMILARITY_QUANTILE *
+            NUMBER_REALIZATIONS_INSURANCE_PRICING;
+    double utility_stored_water, utility_storage_capacity;
+    for (int u = 0; u < utilities.size(); ++u) {
+        for (int w = 0; w < WEEKS_ROF_SHORT_TERM; ++w) {
+            for (int r = 1; r < NUMBER_REALIZATIONS_INSURANCE_PRICING; ++r) {
+                number_of_failed_realizations = 0;
+                for (int rr : Utils::getQuantileIndeces(distances_between_realizations[w][r], INSURANCE_PRICING_SIMILARITY_QUANTILE)) {
+                    for (int ww = w; ww < w + WEEKS_ROF_SHORT_TERM; ++ww) {
+                        if (ww < WEEKS_ROF_SHORT_TERM) {
+
+                        } else {
+                            // see if previous realization fails
+                        }
+                    }
+                }
             }
         }
     }

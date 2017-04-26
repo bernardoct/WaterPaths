@@ -17,8 +17,8 @@ using namespace std;
 class ContinuityModel {
 
 protected:
-    vector<WaterSource *> water_sources;
-    vector<Utility *> utilities;
+    vector<WaterSource *> continuity_water_sources;
+    vector<Utility *> continuity_utilities;
     Graph water_sources_graph;
     vector<vector<int> > water_sources_to_utilities;
     vector<vector<int> > utilities_to_water_sources;
@@ -27,6 +27,8 @@ protected:
 public:
     ContinuityModel(const vector<WaterSource *> &water_sources, const vector<Utility *> &utilities,
                     const Graph &water_sources_graph, const vector<vector<int>> &water_sources_to_utilities);
+
+    ContinuityModel();
 
     void continuityStep(int week, int rof_realization = -1);
 

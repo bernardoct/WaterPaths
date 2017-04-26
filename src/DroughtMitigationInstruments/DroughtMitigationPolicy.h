@@ -25,8 +25,7 @@ public:
 
     virtual void applyPolicy(int week)= 0;
 
-    virtual void addSystemComponents(vector<Utility *> utilities, vector<WaterSource *> water_sources,
-                                     const Graph *water_sources_graph)= 0;
+    virtual void addSystemComponents(vector<Utility *> utilities, vector<WaterSource *> water_sources)= 0;
 
     const vector<int> &getUtilities_ids() const;
 

@@ -9,7 +9,7 @@ File $Id: QuadProg++.cc 232 2007-06-21 12:29:00Z digasper $
  This software may be modified and distributed under the terms
  of the MIT license.  See the LICENSE file for details.
 
- Function solve_quadprog_matlab_syntax added by Bernardo Trindade
+ Modified by Bernardo Trindade on 04/2017
  */
 
 #include <iostream>

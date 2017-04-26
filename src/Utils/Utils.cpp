@@ -5,6 +5,7 @@
 #include "Utils.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
 #include <fstream>
+#include <algorithm>
 
 /**
  * Reads CSV file into 2D array.
@@ -103,4 +104,32 @@ Utils::copyDroughtMitigationPolicyVector(vector<DroughtMitigationPolicy *> droug
 
 bool Utils::isFirstWeekOfTheYear(int week) {
     return ((week + 1) / WEEKS_IN_YEAR - (int) ((week + 1) / WEEKS_IN_YEAR)) * WEEKS_IN_YEAR < 1.0;
+}
+
+/**
+ * distance between 2 points.
+ * @param v1
+ * @param v2
+ * @return
+ */
+double Utils::l2distanceSquare(vector<double> v1, vector<double> v2) {
+    double result = 0;
+    vector<double> difference;
+    std::transform(v1.begin(), v1.end(), v2.begin(), std::back_inserter(difference),
+                   [&](double l, double r) { return std::abs(l - r); });
+    for (double &d : difference) result += d * d;
+    return result;
+}
+
+vector<int> Utils::getQuantileIndeces(vector<double> v1, double quantile) {
+    vector<double> sorted_v1(v1);
+    vector<int> indeces_quantile;
+    std::sort(sorted_v1.begin(), sorted_v1.end());
+    double quantile_threshold = sorted_v1[(int) ceil(sorted_v1.size() * quantile)];
+
+    for (int i = 0; i < v1.size(); ++i) {
+        if (v1[i] < quantile_threshold) indeces_quantile.push_back(i);
+    }
+
+    return indeces_quantile;
 }

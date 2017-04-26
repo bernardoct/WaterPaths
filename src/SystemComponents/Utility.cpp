@@ -32,7 +32,7 @@ Utility::Utility(char *name, int id, char const *demand_file_name, int number_of
         water_price_per_volume(water_price_per_volume), infrastructure_construction_order(infrastructure_build_order),
         infrastructure_discount_rate(infrastructure_discount_rate) {
 
-    if (infrastructure_build_order.size() == 0)
+    if (infrastructure_build_order.empty())
         throw std::invalid_argument("Infrastructure construction order vector must have at least one water source ID. "
                                             "If there's not infrastructure to be build, use the other constructor "
                                             "instead.");
@@ -142,8 +142,10 @@ void Utility::updateTotalStoredVolume() {
 void Utility::addWaterSource(WaterSource *water_source) {
     if (water_sources.count(water_source->id))
         throw std::logic_error("Attempt to add water source with duplicate ID was added to utility.");
+
     water_sources.insert(pair<int, WaterSource *>(water_source->id, water_source));
     split_demands_among_sources.insert(pair<int, double>(water_source->id, 0));
+
     if (water_source->isOnline()) {
         total_storage_capacity += water_source->capacity;
         total_treatment_capacity += water_source->max_treatment_capacity;

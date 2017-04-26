@@ -29,7 +29,10 @@ protected:
 
     vector<int> findUpstreamSources(int id)const;
 public:
-    Graph(int V);   // Constructor
+    Graph(int V);
+
+    Graph();
+    // Constructor
 
     const vector<int> getTopological_order() const;
 

@@ -9,8 +9,10 @@
 
 ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, const vector<Utility *> &utilities,
                                  const Graph &water_sources_graph,
-                                 const vector<vector<int>> &water_sources_to_utilities) : water_sources(water_sources),
-                                                                                          utilities(utilities),
+                                 const vector<vector<int>> &water_sources_to_utilities) : continuity_water_sources(
+        water_sources),
+                                                                                          continuity_utilities(
+                                                                                                  utilities),
                                                                                           water_sources_graph(
                                                                                                   water_sources_graph),
                                                                                           water_sources_to_utilities(
@@ -18,7 +20,7 @@ ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, con
     /// Connect water sources to utilities.
     for (int i = 0; i < utilities.size(); ++i) {
         for (int j = 0; j < water_sources_to_utilities[i].size(); ++j) {
-            this->utilities.at((unsigned long) i)->addWaterSource(
+            this->continuity_utilities.at((unsigned long) i)->addWaterSource(
                     water_sources.at((unsigned long) water_sources_to_utilities[i][j]));
         }
     }
@@ -30,11 +32,7 @@ ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, con
         }
     }
 
-//    /// Update all utilities' combined storage volume.
-//    for (Utility *u : this->utilities) {
-//        u->updateTotalStoredVolume();
-//    }
-
+    /// Get topological order so that mass balance is ran from up to downstream.
     reservoir_continuity_order = water_sources_graph.getTopological_order();
 }
 
@@ -44,8 +42,8 @@ ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, con
  * @param rof_realization rof realization id (between 0 and 49 inclusive).
  */
 void ContinuityModel::continuityStep(int week, int rof_realization) {
-    double demands[water_sources.size()] = {};
-    double upstream_spillage[water_sources.size()] = {};
+    double demands[continuity_water_sources.size()] = {};
+    double upstream_spillage[continuity_water_sources.size()] = {};
 
     /**
      * Split weekly demands among each reservoir for each utility. For each water source:
@@ -53,14 +51,14 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
      * that week for that water source, and (2) sums the flow contributions of upstream
      * reservoirs.
      */
-    for (Utility *u : utilities) {
+    for (Utility *u : continuity_utilities) {
         u->splitDemands(week);
     }
 
-    for (int j = 0; j < water_sources.size(); ++j) {
+    for (int j = 0; j < continuity_water_sources.size(); ++j) {
         /// gets demands from utilities
         for (int &i : utilities_to_water_sources[j]) {
-            demands[j] += utilities.at((unsigned long) i)->getReservoirDraw(j);
+            demands[j] += continuity_utilities.at((unsigned long) i)->getReservoirDraw(j);
         }
     }
 
@@ -72,20 +70,21 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
      */
     for (int &i : reservoir_continuity_order) {
         for (int &ws : water_sources_graph.getUpstream_sources(i))
-            upstream_spillage[i] += water_sources[ws]->getTotal_outflow();
+            upstream_spillage[i] += continuity_water_sources[ws]->getTotal_outflow();
 
-        water_sources[i]->continuityWaterSource(week - (int) std::round((rof_realization + 1) * WEEKS_IN_YEAR),
-                                                upstream_spillage[i], demands[i]);
+        continuity_water_sources[i]->continuityWaterSource(
+                week - (int) std::round((rof_realization + 1) * WEEKS_IN_YEAR),
+                upstream_spillage[i], demands[i]);
     }
 
     /// updates combined storage for utilities.
-    for (Utility *u : utilities) {
+    for (Utility *u : continuity_utilities) {
         u->updateTotalStoredVolume();
     }
 }
 
 const vector<Utility *> &ContinuityModel::getUtilities() const {
-    return utilities;
+    return continuity_utilities;
 }
 
 

@@ -16,7 +16,7 @@ ContinuityModelROF::ContinuityModelROF(const vector<WaterSource *> &water_source
                                                                    realization_id(realization_id) {
 
     /// update utilities' total stored volume
-    for (Utility *u : this->utilities) {
+    for (Utility *u : this->continuity_utilities) {
         u->updateTotalStoredVolume();
     }
 }
@@ -28,8 +28,8 @@ ContinuityModelROF::ContinuityModelROF(const vector<WaterSource *> &water_source
 vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
 
     // vector where risks of failure will be stored.
-    vector<double> risk_of_failure(utilities.size(), 0.0);
-    vector<double> year_failure(utilities.size(), 0.0);
+    vector<double> risk_of_failure(continuity_utilities.size(), 0.0);
+    vector<double> year_failure(continuity_utilities.size(), 0.0);
 
     int n_weeks_rof;
     /// short-term rof calculations.
@@ -53,20 +53,20 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
 
             /// check total available storage for each utility and, if smaller than the fail ration,
             /// increase the number of failed years of that utility by 1 (FAILURE).
-            for (int i = 0; i < utilities.size(); ++i) {
-                if (utilities[i]->getStorageToCapacityRatio() <= STORAGE_CAPACITY_RATIO_FAIL)
+            for (int i = 0; i < continuity_utilities.size(); ++i) {
+                if (continuity_utilities[i]->getStorageToCapacityRatio() <= STORAGE_CAPACITY_RATIO_FAIL)
                     year_failure[i] = FAILURE;
             }
         }
 
-        for (int j = 0; j < utilities.size(); ++j) {
+        for (int j = 0; j < continuity_utilities.size(); ++j) {
             risk_of_failure[j] += year_failure[j];
             year_failure[j] = NON_FAILURE;
         }
     }
 
     /// Finish ROF calculations
-    for (int i = 0; i < utilities.size(); ++i) {
+    for (int i = 0; i < continuity_utilities.size(); ++i) {
         risk_of_failure[i] /= NUMBER_REALIZATIONS_ROF;
     }
 
@@ -81,18 +81,18 @@ void ContinuityModelROF::resetUtilitiesAndReservoirs(int rof_type) {
 
     /// update water sources info. If short-term rof, return to current storage; if long-term, make them full.
     if (rof_type == SHORT_TERM_ROF)
-        for (int i = 0; i < water_sources.size(); ++i) {
-            water_sources[i]->setAvailable_volume(water_sources_realization[i]->getAvailable_volume());
-            water_sources[i]->setOutflow_previous_week(water_sources_realization[i]->getTotal_outflow());
+        for (int i = 0; i < continuity_water_sources.size(); ++i) {
+            continuity_water_sources[i]->setAvailable_volume(water_sources_realization[i]->getAvailable_volume());
+            continuity_water_sources[i]->setOutflow_previous_week(water_sources_realization[i]->getTotal_outflow());
         }
     else
-        for (int i = 0; i < water_sources.size(); ++i) {
-            water_sources[i]->setAvailable_volume(water_sources_realization[i]->capacity);
-            water_sources[i]->setOutflow_previous_week(water_sources_realization[i]->getTotal_outflow());
+        for (int i = 0; i < continuity_water_sources.size(); ++i) {
+            continuity_water_sources[i]->setAvailable_volume(water_sources_realization[i]->capacity);
+            continuity_water_sources[i]->setOutflow_previous_week(water_sources_realization[i]->getTotal_outflow());
         }
 
     /// update utilities combined storage.
-    for (Utility *u : this->utilities) {
+    for (Utility *u : this->continuity_utilities) {
         u->updateTotalStoredVolume();
     }
 }

@@ -16,6 +16,7 @@ namespace Constants {
     const int WEEKS_ROF_LONG_TERM = 78;
     const int SHORT_TERM_ROF = 0;
     const int LONG_TERM_ROF = 1;
+    const int NUMBER_REALIZATIONS_INSURANCE_PRICING = 70;
     const int NUMBER_REALIZATIONS_ROF = 50;
     const bool ONLINE = true;
     const bool OFFLINE = false;

@@ -20,8 +20,8 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_source
     /// Sort water sources and utilities by their IDs.
     //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
 #ifdef _WIN32
-    sort(water_sources.begin(), water_sources.end(), std::greater<>());
-    sort(utilities.begin(), utilities.end(), std::greater<>());
+    sort(continuity_water_sources.begin(), continuity_water_sources.end(), std::greater<>());
+    sort(continuity_utilities.begin(), continuity_utilities.end(), std::greater<>());
 #else
     sort(water_sources.begin(), water_sources.end());
     sort(utilities.begin(), utilities.end());

@@ -27,6 +27,10 @@ public:
     copyDroughtMitigationPolicyVector(vector<DroughtMitigationPolicy *> drought_mitigation_policy_original);
 
     static bool isFirstWeekOfTheYear(int week);
+
+    static double l2distanceSquare(vector<double> v1, vector<double> v2);
+
+    static vector<int> getQuantileIndeces(vector<double> v1, double quantile);
 };
 
 

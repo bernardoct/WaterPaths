@@ -608,3 +608,21 @@ TEST_CASE("Test worse case cost objective calculation", "[Worse case cost object
     // margin used because numbers in excel spreadsheet have more decimals, which was screwing up the test.
     REQUIRE(peak_financial_costs == Approx(1.292).margin(0.001));
 }
+
+TEST_CASE("Quantile function", "[Quantile]") {
+    vector<double> v1 = {5, 4, 2, 8, 3, 5, 6, 9, 7, 2, 4, 0, 1};
+
+    vector<int> result = Utils::getQuantileIndeces(v1, 0.5);
+
+    REQUIRE(result[0] == 1);
+    REQUIRE(result[2] == 4);
+}
+
+TEST_CASE("Get L2 distance between points", "[Distance]") {
+    vector<double> v1 = {1, 2};
+    vector<double> v2 = {4, 6};
+
+    double result = Utils::l2distanceSquare(v1, v2);
+
+    REQUIRE(result == 25.0);
+}

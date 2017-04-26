@@ -43,8 +43,7 @@ public:
 
     virtual void applyPolicy(int week) override;
 
-    virtual void addSystemComponents(vector<Utility *> system_utilities, vector<WaterSource *> water_sources,
-                                     const Graph *water_sources_graph) override;
+    virtual void addSystemComponents(vector<Utility *> system_utilities, vector<WaterSource *> water_sources) override;
 
     vector<double>
     solve_QP(vector<double> allocation_requests, double available_transfer_volume, double min_transfer_volume,

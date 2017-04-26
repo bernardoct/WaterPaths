@@ -5,31 +5,34 @@
 #ifndef TRIANGLEMODEL_INSURANCE_H
 #define TRIANGLEMODEL_INSURANCE_H
 
+#include <x86intrin.h>
 #include "../SystemComponents/Utility.h"
 #include "../Utils/Constants.h"
 #include "../Utils/DataCollector.h"
 
-class Insurance : public DroughtMitigationPolicy {
+class Insurance : public DroughtMitigationPolicy, ContinuityModelROF {
 private:
-    Insurance(const Insurance &insurance);
-
-    vector<WaterSource *> water_sources;
-    const Graph *water_sources_graph;
+    double insurance_price;
     vector<int> ids_of_utilities_with_policies;
     vector<vector<int>> sources_to_utilities_ids;
+    vector<vector<double>> storages;
+    vector<double> rof_levels;
 
 public:
     const vector<double> rof_triggers;
     const double insurance_premium;
 
-    Insurance(const int id, const vector<double> &rof_triggers, const double insurance_premium);
+    Insurance(const int id, const vector<double> &rof_triggers, const double insurance_premium,
+              const vector<WaterSource *> &water_sources, const vector<Utility *> &utilities,
+              const Graph &water_sources_graph, const vector<vector<int>> &water_sources_to_utilities);
+
+    Insurance(const Insurance &insurance);
 
     void applyPolicy(int week) override;
 
-    void addSystemComponents(vector<Utility *> utilities, vector<WaterSource *> water_sources,
-                             const Graph *water_sources_graph) override;
+    void addSystemComponents(vector<Utility *> utilities, vector<WaterSource *> water_sources) override;
 
-    double insurancePricing(vector<vector<double>> storage_levels);
+    double priceInsurance(int week);
 };
 
 

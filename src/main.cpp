@@ -101,9 +101,9 @@ int regionTwoUtilitiesTwoReservoirsContinuityTest() {
     reservoirs.push_back(&r1);
     reservoirs.push_back(&r2);
 
-    vector<Utility *> utilities;
-    utilities.push_back(&u1);
-    utilities.push_back(&u2);
+    vector<Utility *> continuity_utilities;
+    continuity_utilities.push_back(&u1);
+    continuity_utilities.push_back(&u2);
 
     Graph g((int) reservoirs.size());
     g.addEdge(0, 1);
@@ -123,7 +123,7 @@ int regionTwoUtilitiesTwoReservoirsContinuityTest() {
 
     DataCollector *data_collector = nullptr;
 
-    Simulation s(reservoirs, g, reservoir_utility_connectivity_matrix, utilities, restrictions, 52, 1, data_collector);
+    Simulation s(reservoirs, g, reservoir_utility_connectivity_matrix, continuity_utilities, restrictions, 52, 1, data_collector);
     s.runFullSimulation();
 
     cout << endl << "END OF 2 RESERVOIRS 2 UTILITIES TEST" << endl << "---------------------"
@@ -166,8 +166,8 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
     reservoirs.push_back(&r1);
     reservoirs.push_back(&r2);
 
-    vector<Utility *> utilities;
-    utilities.push_back(&u1);
+    vector<Utility *> continuity_utilities;
+    continuity_utilities.push_back(&u1);
 
     Graph g((int) reservoirs.size());
     g.addEdge(0, 1);
@@ -185,7 +185,7 @@ int regionOneUtilitiesTwoReservoirsContinuityTest() {
 
     DataCollector *data_collector = nullptr;
 
-    Simulation s(reservoirs, g, reservoir_utility_connectivity_matrix, utilities, restrictions, 52, 1, data_collector);
+    Simulation s(reservoirs, g, reservoir_utility_connectivity_matrix, continuity_utilities, restrictions, 52, 1, data_collector);
     s.runFullSimulation();
 
 
@@ -294,8 +294,8 @@ void utilityCopy() {
     reservoirs.push_back(&r1);
     reservoirs.push_back(&r2);
 
-    vector<Utility *> utilities;
-    utilities.push_back(&u1);
+    vector<Utility *> continuity_utilities;
+    continuity_utilities.push_back(&u1);
 
     vector<vector<int>> reservoir_connectivity_matrix = {
             {0,  1},
@@ -307,7 +307,7 @@ void utilityCopy() {
     };
 
     ContinuityModelRealization cmr(reservoirs, reservoir_connectivity_matrix,
-                               utilities, reservoir_utility_connectivity_matrix, 0);
+                               continuity_utilities, reservoir_utility_connectivity_matrix, 0);
 
     vector<WaterSource* > ws = cmr.getWaterSources();
     vector<Utility* > u = cmr.getUtilities();
@@ -348,13 +348,13 @@ void rofCalculationsTest() {
     Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
     Utility u2("U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks);
 
-    vector<WaterSource *> water_sources;
-    water_sources.push_back(&r1);
-    water_sources.push_back(&r2);
+    vector<WaterSource *> continuity_water_sources;
+    continuity_water_sources.push_back(&r1);
+    continuity_water_sources.push_back(&r2);
 
-    vector<Utility *> utilities;
-    utilities.push_back(&u1);
-    utilities.push_back(&u2);
+    vector<Utility *> continuity_utilities;
+    continuity_utilities.push_back(&u1);
+    continuity_utilities.push_back(&u2);
 
     vector<vector<int>> water_sources_adjacency_matrix = {
             {0,  1},
@@ -366,17 +366,17 @@ void rofCalculationsTest() {
             {0, 1}
     };
 
-    ContinuityModelROF* crof = new ContinuityModelROF(Utils::copyWaterSourceVector(water_sources),
+    ContinuityModelROF* crof = new ContinuityModelROF(Utils::copyWaterSourceVector(continuity_water_sources),
                                                       water_sources_adjacency_matrix,
-                                                      Utils::copyUtilityVector(utilities),
+                                                      Utils::copyUtilityVector(continuity_utilities),
                                                       water_sources_utility_adjacency_matrix,
                                                       SHORT_TERM_ROF, 0);
     vector<double> risks_of_failure;
-    crof->setWater_sources_realization(water_sources);
+    crof->setWater_sources_realization(continuity_water_sources);
     risks_of_failure = crof->calculateROF(0); // beginning of 60th year.
     cout << risks_of_failure[0] << " " << risks_of_failure[1]; // The output should be split in 50 blocks of 52 rows and 2 columns.
     // The numbers in the columns are the storage/capacity ratio for
-    // each of the two utilities. The last two numbers are the risks_of_failure,
+    // each of the two continuity_utilities. The last two numbers are the risks_of_failure,
     // which must be 0.0365385 0.0665385.
 
     cout << endl << "END OF ROF TEST" << endl << "---------------------"
@@ -406,16 +406,16 @@ void simulationTest() {
     Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0, 0, vector<int>());
     Utility u2("U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0, 0, vector<int>());
 
-    vector<WaterSource *> water_sources;
-    water_sources.push_back(&r1);
-    water_sources.push_back(&r2);
+    vector<WaterSource *> continuity_water_sources;
+    continuity_water_sources.push_back(&r1);
+    continuity_water_sources.push_back(&r2);
 
-    vector<Utility *> utilities;
-    utilities.push_back(&u1);
-    utilities.push_back(&u2);
+    vector<Utility *> continuity_utilities;
+    continuity_utilities.push_back(&u1);
+    continuity_utilities.push_back(&u2);
 
 
-    Graph g((int) water_sources.size());
+    Graph g((int) continuity_water_sources.size());
     g.addEdge(0, 1);
 
     vector<vector<int>> reservoir_utility_connectivity_matrix = {
@@ -433,7 +433,7 @@ void simulationTest() {
 
     DataCollector *data_collector = nullptr;
 
-    Simulation s(water_sources, g, reservoir_utility_connectivity_matrix, utilities, restrictions, 52, 1,
+    Simulation s(continuity_water_sources, g, reservoir_utility_connectivity_matrix, continuity_utilities, restrictions, 52, 1,
                  data_collector);
     cout << "Beginning simulation" << endl;
     s.runFullSimulation();
@@ -618,16 +618,16 @@ void simulation1U1R1ITest() {
 
     Utility u1("U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0, 0, vector<int>());
 
-    vector<WaterSource *> water_sources;
-    water_sources.push_back(&r1);
-    water_sources.push_back(&i1);
-    water_sources.push_back(&r2);
+    vector<WaterSource *> continuity_water_sources;
+    continuity_water_sources.push_back(&r1);
+    continuity_water_sources.push_back(&i1);
+    continuity_water_sources.push_back(&r2);
 
-    vector<Utility *> utilities;
-    utilities.push_back(&u1);
+    vector<Utility *> continuity_utilities;
+    continuity_utilities.push_back(&u1);
 
 
-    Graph g((int) water_sources.size());
+    Graph g((int) continuity_water_sources.size());
     g.addEdge(0, 1);
     g.addEdge(1, 2);
 
@@ -639,7 +639,7 @@ void simulation1U1R1ITest() {
 
     DataCollector *data_collector = nullptr;
 
-    Simulation s(water_sources, g, sources_to_utility_connectivity_matrix, utilities, restrictions, 104, 2,
+    Simulation s(continuity_water_sources, g, sources_to_utility_connectivity_matrix, continuity_utilities, restrictions, 104, 2,
                  data_collector);
     cout << "Beginning 1U1R1I simulation" << endl;
     s.runFullSimulation();
@@ -1043,6 +1043,7 @@ void simulation3U5RInfraTest() {
     s.runFullSimulation(2);
     cout << "Ending U3R5 simulation" << endl;
 }
+
 
 int main() {
 //

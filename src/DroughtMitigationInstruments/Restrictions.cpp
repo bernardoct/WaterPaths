@@ -32,12 +32,15 @@ Restrictions::~Restrictions() {}
 void Restrictions::applyPolicy(int week) {
 
     current_multiplier = 1.0;
+    /// Loop through restriction stage rof triggers to see which stage should be applied, if any.
     for (int i = 0; i < stage_triggers.size(); ++i) {
         if (utilities.at(0)->getRisk_of_failure() > stage_triggers[i]) {
+            /// Demand multiplier to be applied, based on the rofs.
             current_multiplier = stage_multipliers[i];
         } else break;
     }
 
+    /// Apply demand multiplier
     utilities.at(0)->setDemand_multiplier(current_multiplier);
 }
 
@@ -45,12 +48,13 @@ double Restrictions::getCurrent_multiplier() const {
     return current_multiplier;
 }
 
-void Restrictions::addSystemComponents(vector<Utility *> systems_utilities, vector<WaterSource *> water_sources,
-                                       const Graph *water_sources_graph) {
+void Restrictions::addSystemComponents(vector<Utility *> systems_utilities, vector<WaterSource *> water_sources) {
+    /// Get utility whose IDs correspond to restriction policy ID.
     for (Utility *u : systems_utilities) {
         if (u->id == id) {
             if (!this->utilities.empty())
                 throw std::logic_error("This restriction policy already has a systems_utilities assigned to it.");
+            /// Link utility to policy.
             this->utilities.push_back(u);
         }
     }

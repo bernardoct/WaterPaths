@@ -26,8 +26,7 @@ public:
 
     virtual void applyPolicy(int week) override;
 
-    virtual void addSystemComponents(vector<Utility *> systems_utilities, vector<WaterSource *> water_sources,
-                                     const Graph *water_sources_graph) override;
+    virtual void addSystemComponents(vector<Utility *> systems_utilities, vector<WaterSource *> water_sources) override;
 
     double getCurrent_multiplier() const;
 

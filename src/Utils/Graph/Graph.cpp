@@ -1,4 +1,5 @@
 //
+// Created by Chirag Agarwal, at http://www.geeksforgeeks.org/topological-sorting-indegree-based-solution/
 // Created by bernardo on 2/2/17.
 //
 
@@ -174,3 +175,5 @@ const vector<vector<double>> Graph::getContinuityMatrix() const {
 
     return continuity_matrix;
 }
+
+Graph::Graph() {}

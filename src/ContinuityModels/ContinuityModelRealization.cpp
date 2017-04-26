@@ -17,23 +17,23 @@ ContinuityModelRealization::ContinuityModelRealization(const vector<WaterSource 
 
     /// Pass corresponding utilities to drought mitigation instruments.
     for (DroughtMitigationPolicy *dmp : this->drought_mitigation_policies) {
-        dmp->addSystemComponents(utilities, water_sources, &water_sources_graph);
+        dmp->addSystemComponents(utilities, water_sources);
     }
 }
 
 vector<WaterSource *> ContinuityModelRealization::getWater_sources() {
-    return water_sources;
+    return continuity_water_sources;
 }
 
 void ContinuityModelRealization::setShortTermROFs(const vector<double> &risks_of_failure) {
-    for (unsigned long i = 0; i < utilities.size(); ++i) {
-        utilities.at(i)->setRisk_of_failure(risks_of_failure.at(i));
+    for (unsigned long i = 0; i < continuity_utilities.size(); ++i) {
+        continuity_utilities.at(i)->setRisk_of_failure(risks_of_failure.at(i));
     }
 }
 
 void ContinuityModelRealization::setLongTermROFs(const vector<double> &risks_of_failure, const int week) {
-    for (unsigned long i = 0; i < utilities.size(); ++i) {
-        utilities.at(i)->infrastructureConstructionHandler(risks_of_failure.at(i), week);
+    for (unsigned long i = 0; i < continuity_utilities.size(); ++i) {
+        continuity_utilities.at(i)->infrastructureConstructionHandler(risks_of_failure.at(i), week);
     }
 }
 

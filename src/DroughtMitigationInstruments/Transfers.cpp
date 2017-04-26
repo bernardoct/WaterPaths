@@ -142,8 +142,7 @@ Transfers::~Transfers() {
  * Adds source and buying utility.
  * @param system_utilities Utility to be added.
  */
-void Transfers::addSystemComponents(vector<Utility *> system_utilities, vector<WaterSource *> water_sources,
-                                    const Graph *water_sources_graph) {
+void Transfers::addSystemComponents(vector<Utility *> system_utilities, vector<WaterSource *> water_sources) {
 
     if (utilities.size() > 0)
         throw std::invalid_argument("Utilities were already assigned to transfer policy.");

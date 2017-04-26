@@ -56,6 +56,8 @@ void Insurance::addSystemComponents(vector<Utility *> utilities, vector<WaterSou
                 this->sources_to_utilities_ids[sources_to_utilities_ids.size() - 1].push_back(ws.second->id);
         }
     }
+
+    setWater_sources_realization(water_sources);
 }
 
 /**
@@ -111,24 +113,24 @@ double Insurance::priceInsurance(int week) {
         }
     }
 
-    vector<vector<double>> distances_between_realizations(NUMBER_REALIZATIONS_INSURANCE_PRICING,
-                                                          vector<double>(NUMBER_REALIZATIONS_INSURANCE_PRICING, 0.0));
+    vector<vector<vector<double>>> distances_between_realizations(WEEKS_ROF_SHORT_TERM, std::vector<vector<double>>(
+                                                                  NUMBER_REALIZATIONS_INSURANCE_PRICING,
+                                                          vector<double>(NUMBER_REALIZATIONS_INSURANCE_PRICING, 0.0)));
     vector<vector<double>> rof_series_utilities(continuity_water_sources.size(),
                                                 vector<double>(WEEKS_ROF_SHORT_TERM, 0.0));
-    vector<int> indeces_realizations_rof;
+    vector<int> indexes_realizations_rof;
+    double utility_combined_storage;
+    vector<double> utility_combined_capacity;
+    for (Utility *u : utilities) {
+        utility_combined_capacity.push_back(u->getTotal_storage_capacity());
+    }
 
     for (int w = 0; w < WEEKS_ROF_SHORT_TERM - 1; ++w) {
         for (int i = 0; i < NUMBER_REALIZATIONS_INSURANCE_PRICING; ++i) {
             for (int j = i; j < NUMBER_REALIZATIONS_INSURANCE_PRICING; ++j) {
-                distances_between_realizations[i][j] = Utils::l2distanceSquare(realizations_storages[w][i],
+                distances_between_realizations[w][i][j] = Utils::l2distanceSquare(realizations_storages[w][i],
                                                                                realizations_storages[w][j]);
-                distances_between_realizations[j][i] = distances_between_realizations[i][j];
-            }
-
-        }
-        for (int r = 0; r < NUMBER_REALIZATIONS_INSURANCE_PRICING; ++r) {
-            for (int i : Utils::getQuantileIndeces(distances_between_realizations[i], 0.5)) {
-                // FILL IN THE REST OF THE CODE TO COUNT THE FAILURES OF EACH UTILITY BASED ON THE WATER SOURCES.
+                distances_between_realizations[w][j][i] = distances_between_realizations[w][i][j];
             }
         }
     }

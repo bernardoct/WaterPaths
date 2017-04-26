@@ -42,7 +42,7 @@ Transfers::Transfers(const int id, const int source_utility_id, const double sou
 
     utilities_ids = buyers_ids;
     utilities_ids.push_back(source_utility_id);
-    allocations = *new vector<double>(utilities_ids.size(), 0);
+    allocations = vector<double>(utilities_ids.size(), 0);
     for (const double &d : pipe_transfer_capacities)
         average_pipe_capacity += d;
 

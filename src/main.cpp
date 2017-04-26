@@ -990,7 +990,7 @@ void simulation3U5RInfraTest() {
     utilities.push_back(&u3);
 
     /// Water-source-utility connectivity matrix (each row corresponds to a utility and numbers are water
-    /// sources IDs.
+    /// sources IDs). Must be sorted by utilities IDs.
     vector<vector<int>> reservoir_utility_connectivity_matrix = {
             {0, 2},
             {1, 4},

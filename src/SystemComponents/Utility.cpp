@@ -40,8 +40,8 @@ Utility::Utility(char *name, int id, char const *demand_file_name, int number_of
         throw std::invalid_argument("Infrastructure discount rate must be greater than 0.");
 
     demand_series = Utils::parse1DCsvFile(demand_file_name, number_of_week_demands);
-    total_stored_volume = -1;
-    total_storage_capacity = 1;
+    total_stored_volume = NONE;
+    total_storage_capacity = NONE;
 }
 
 

@@ -45,7 +45,7 @@ void Graph::addEdge(int u, int v) {
     topological_order = topologicalSort();
 
     /// Figure out sources upstream of each vertex added so far.
-    upstream_sources = *new vector<vector<int>>(topological_order.size(), vector<int>());
+    upstream_sources = vector<vector<int>>(topological_order.size(), vector<int>());
     for (int& i : topological_order) {
         upstream_sources[i] = findUpstreamSources(i);
     }
@@ -156,7 +156,7 @@ const vector<int> Graph::getTopological_order() const {
  */
 const vector<vector<double>> Graph::getContinuityMatrix() const {
     vector<vector<double>> continuity_matrix(continuity_matrix_transpose[0].size(),
-                                             *new vector<double>(continuity_matrix_transpose.size(), 0));
+                                             vector<double>(continuity_matrix_transpose.size(), 0));
 
     unsigned long n_pipes = continuity_matrix_transpose.size();
 

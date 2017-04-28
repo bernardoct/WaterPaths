@@ -23,18 +23,22 @@ public:
     Simulation(vector<WaterSource *> &water_sources, Graph &water_sources_graph,
                const vector<vector<int>> &water_sources_to_utilities, vector<Utility *> &utilities,
                vector<DroughtMitigationPolicy *> &drought_mitigation_policies, const int total_simulation_time,
-               const int number_of_realizations, DataCollector **data_collector);
+               const int number_of_realizations, DataCollector *data_collector);
 
-    const int total_simulation_time;
-    const int number_of_realizations;
+    Simulation &operator=(const Simulation &simulation);
 
     void runFullSimulation(int num_threads = 2);
 
+    virtual ~Simulation();
+
 private:
+
+    int total_simulation_time;
+    int number_of_realizations;
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
     vector<ContinuityModelRealization *> realization_models;
     vector<ContinuityModelROF *> rof_models;
-    DataCollector * data_collector;
+    DataCollector *data_collector;
 
 };
 

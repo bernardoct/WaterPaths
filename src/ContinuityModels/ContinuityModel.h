@@ -28,11 +28,11 @@ public:
     ContinuityModel(const vector<WaterSource *> &water_sources, const vector<Utility *> &utilities,
                     const Graph &water_sources_graph, const vector<vector<int>> &water_sources_to_utilities);
 
-    ContinuityModel();
-
     void continuityStep(int week, int rof_realization = -1);
 
     const vector<Utility *> &getUtilities() const;
+
+    virtual ~ContinuityModel();
 };
 
 

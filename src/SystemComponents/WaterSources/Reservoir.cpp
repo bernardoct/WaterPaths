@@ -96,7 +96,7 @@ void Reservoir::applyContinuity(int week, double upstream_source_inflow, double 
     }
 
     demand = demand_outflow;
-    available_volume = stored_volume_new;
+    available_volume = max(stored_volume_new, 0.0);
     total_outflow = outflow_new;
     this->upstream_source_inflow = upstream_source_inflow;
     upstream_catchment_inflow = catchment_inflow;

@@ -21,6 +21,10 @@ ContinuityModelROF::ContinuityModelROF(const vector<WaterSource *> &water_source
     }
 }
 
+ContinuityModelROF::~ContinuityModelROF() {
+
+}
+
 /**
  * Runs one the full rof calculations for realization #realization_id for a given week.
  * @param week for which rof is to be calculated.
@@ -30,6 +34,9 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
     // vector where risks of failure will be stored.
     vector<double> risk_of_failure(continuity_utilities.size(), 0.0);
     vector<double> year_failure(continuity_utilities.size(), 0.0);
+
+    /// checks if new infrastructure became available and, if so, set the corresponding realization infrastructure online.
+    updateOnlineInfrastructure();
 
     int n_weeks_rof;
     /// short-term rof calculations.
@@ -59,6 +66,7 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
             }
         }
 
+        /// finalize ROF calculation and reset failure counter.
         for (int j = 0; j < continuity_utilities.size(); ++j) {
             risk_of_failure[j] += year_failure[j];
             year_failure[j] = NON_FAILURE;
@@ -82,13 +90,13 @@ void ContinuityModelROF::resetUtilitiesAndReservoirs(int rof_type) {
     /// update water sources info. If short-term rof, return to current storage; if long-term, make them full.
     if (rof_type == SHORT_TERM_ROF)
         for (int i = 0; i < continuity_water_sources.size(); ++i) {
-            continuity_water_sources[i]->setAvailable_volume(water_sources_realization[i]->getAvailable_volume());
-            continuity_water_sources[i]->setOutflow_previous_week(water_sources_realization[i]->getTotal_outflow());
+            continuity_water_sources[i]->setAvailable_volume(realization_water_sources[i]->getAvailable_volume());
+            continuity_water_sources[i]->setOutflow_previous_week(realization_water_sources[i]->getTotal_outflow());
         }
     else
         for (int i = 0; i < continuity_water_sources.size(); ++i) {
-            continuity_water_sources[i]->setAvailable_volume(water_sources_realization[i]->capacity);
-            continuity_water_sources[i]->setOutflow_previous_week(water_sources_realization[i]->getTotal_outflow());
+            continuity_water_sources[i]->setAvailable_volume(realization_water_sources[i]->capacity);
+            continuity_water_sources[i]->setOutflow_previous_week(realization_water_sources[i]->getTotal_outflow());
         }
 
     /// update utilities combined storage.
@@ -103,6 +111,16 @@ void ContinuityModelROF::resetUtilitiesAndReservoirs(int rof_type) {
  * the rofs' year realizations.
  * @param water_sources_realization
  */
-void ContinuityModelROF::setWater_sources_realization(const vector<WaterSource *> &water_sources_realization) {
-    ContinuityModelROF::water_sources_realization = water_sources_realization;
+void ContinuityModelROF::setRealization_water_sources(const vector<WaterSource *> &water_sources_realization) {
+    ContinuityModelROF::realization_water_sources = water_sources_realization;
+}
+
+/**
+ * Checks if new infrastructure became online.
+ */
+void ContinuityModelROF::updateOnlineInfrastructure() {
+    for (int i = 0; i < realization_water_sources.size(); ++i) {
+        if (realization_water_sources[i]->isOnline() && !continuity_water_sources[i]->isOnline())
+            continuity_water_sources[i]->setOnline();
+    }
 }

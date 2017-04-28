@@ -160,38 +160,30 @@ void Utility::addWaterSource(WaterSource *water_source) {
  * @param week
  */
 void Utility::splitDemands(int week) {
-    int i;
-    double intake_demand;
     unrestricted_demand = demand_series[week];
     restricted_demand = unrestricted_demand * demand_multiplier - demand_offset;
 
     /// Allocates demand to intakes.
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
         if (ws.second->source_type == INTAKE) {
-            i = ws.second->id;
-            intake_demand = min(restricted_demand, ws.second->getAvailable_volume());
+            int i = ws.second->id;
+            double intake_demand = min(restricted_demand, ws.second->getAvailable_volume());
             split_demands_among_sources.at(i) = intake_demand;
             restricted_demand -= intake_demand;
         }
     }
 
     /// Allocates remaining demand to reservoirs.
-    double demand;
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
         if (ws.second->source_type == RESERVOIR) {
-            i = ws.second->id;
-            demand = restricted_demand *
-                     max(1.0e-6, ws.second->getAvailable_volume()) /
-                     total_stored_volume;
-            if (demand > 0)
-                split_demands_among_sources.at(i) = demand;
-            else
-                split_demands_among_sources.at(i) = 0;
+            int i = ws.second->id;
+            double demand = restricted_demand * max(1.0e-6, ws.second->getAvailable_volume()) / total_stored_volume;
+            split_demands_among_sources.at(i) = demand;
         }
     }
 
     /// Update contingency fund
-    this->updateContingencyFund(unrestricted_demand, demand_multiplier, demand_offset);
+    updateContingencyFund(unrestricted_demand, demand_multiplier, demand_offset);
 
     /// Reset demand multiplier and offset.
     demand_multiplier = 1;

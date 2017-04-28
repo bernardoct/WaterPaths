@@ -32,7 +32,8 @@ namespace Constants {
     const int COLUMN_WIDTH = 10;
     const int COLUMN_PRECISION = 4;
     const int NON_INITIALIZED = -1;
-    const double INSURANCE_PRICING_SIMILARITY_QUANTILE = 0.5;
+    const double INSURANCE_PRICING_SIMILARITY_QUANTILE =
+            (double) NUMBER_REALIZATIONS_ROF / (double) NUMBER_REALIZATIONS_INSURANCE_PRICING;
     const double WORSE_CASE_COST_PERCENTILE = 0.99;
 };
 

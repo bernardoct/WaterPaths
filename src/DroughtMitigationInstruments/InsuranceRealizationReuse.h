@@ -12,19 +12,19 @@
 
 class Insurance : public DroughtMitigationPolicy, ContinuityModelROF {
 private:
-    double insurance_price;
+    vector<double> insurance_prices;
     vector<int> ids_of_utilities_with_policies;
-    vector<vector<int>> sources_to_utilities_ids;
-    vector<vector<double>> storages;
-    vector<double> rof_levels;
 
 public:
     const vector<double> rof_triggers;
     const double insurance_premium;
+    const vector<vector<int>> sources_to_utilities_ids;
+    const vector<double> fixed_payouts;
 
     Insurance(const int id, const vector<double> &rof_triggers, const double insurance_premium,
               const vector<WaterSource *> &water_sources, const vector<Utility *> &utilities,
-              const Graph &water_sources_graph, const vector<vector<int>> &water_sources_to_utilities);
+              const Graph &water_sources_graph, const vector<vector<int>> &water_sources_to_utilities,
+              vector<double> fixed_payouts);
 
     Insurance(const Insurance &insurance);
 
@@ -32,7 +32,16 @@ public:
 
     void addSystemComponents(vector<Utility *> utilities, vector<WaterSource *> water_sources) override;
 
-    double priceInsurance(int week);
+    vector<double> priceInsurance(int week);
+
+    double runRofSubRealization(vector<vector<bool>> *realizations_utility_week_fail, int rr, int w);
+
+    void
+    calculateRealizationsStoragesAndFailures(vector<vector<vector<bool>>> *realizations_utility_week_fail,
+                                             vector<vector<vector<double>>> *realizations_storages, int week);
+
+    double calculateUtilityInsurancePrice(vector<vector<vector<bool>>> *realizations_utility_week_fail,
+                                          vector<vector<vector<double>>> *distances_between_realizations, int u);
 };
 
 

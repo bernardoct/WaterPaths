@@ -144,14 +144,14 @@ Transfers::~Transfers() {
  */
 void Transfers::addSystemComponents(vector<Utility *> system_utilities, vector<WaterSource *> water_sources) {
 
-    if (utilities.size() > 0)
+    if (realization_utilities.size() > 0)
         throw std::invalid_argument("Utilities were already assigned to transfer policy.");
 
     for (Utility *u : system_utilities)
         if (u->id == source_utility_id)
             source_utility = u; // source of transfers
         else {
-            utilities.push_back(u); //
+            realization_utilities.push_back(u); //
         }
 }
 
@@ -172,7 +172,7 @@ void Transfers::applyPolicy(int week) {
     unsigned int vertex_id; // position of utility id in the buyers_transfer_triggers vector.
     double sum_rofs = 0;
     int utilities_requesting_transfers = 0;
-    for (auto u : utilities) {
+    for (auto u : realization_utilities) {
         vertex_id = (unsigned int) util_id_to_vertex_id->at((unsigned int) u->id);
         if (u->getRisk_of_failure() > buyers_transfer_triggers.at(vertex_id)) {
             sum_rofs += u->getRisk_of_failure();
@@ -217,7 +217,7 @@ void Transfers::applyPolicy(int week) {
             /// Mitigate demands.
             double sum_allocations = 0;
             for (int i = 0; i < n_allocations; ++i) {
-                utilities[i]->setDemand_offset(allocations[i], source_utility->water_price_per_volume);
+                realization_utilities[i]->setDemand_offset(allocations[i], source_utility->water_price_per_volume);
                 sum_allocations += allocations[i];
             }
             /// draw water from source utility.
@@ -259,8 +259,8 @@ vector<double> Transfers::solve_QP(vector<double> allocation_requests, double av
         } else {
             lb[n_pipes + buyers_ids[i]] = min_transfer_volume;
 //            ub[n_pipes + buyers_ids[i]] = available_transfer_volume;
-            ub[n_pipes + buyers_ids[i]] = utilities[i]->getUnrestrictedDemand(week)
-                                          * utilities[i]->getDemand_multiplier();
+            ub[n_pipes + buyers_ids[i]] = realization_utilities[i]->getUnrestrictedDemand(week)
+                                          * realization_utilities[i]->getDemand_multiplier();
         }
     }
 

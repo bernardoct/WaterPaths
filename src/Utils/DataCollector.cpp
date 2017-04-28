@@ -7,7 +7,6 @@
 #include <fstream>
 #include <iomanip>
 #include <algorithm>
-#include <numeric>
 #include "DataCollector.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
 #include "Utils.h"
@@ -235,14 +234,6 @@ void DataCollector::printUtilityOutput(string fileName) {
                       << utilities_t[u].net_present_infrastructure_cost[r] << endl;
         }
         outStream << endl;
-    }
-
-    /// print objectives
-    outStream << "Objectives values" << endl;
-    for (Utility_t ut : utilities_t) {
-        outStream << ut.name << " ";
-        outStream << "\t" << "Reliability: " << ut.objectives[0] << endl;
-        outStream << "\t" << "Rest. Freq. Frequency: " << ut.objectives[1] << endl;
     }
 
     outStream.close();

@@ -33,6 +33,8 @@ public:
     const vector<DroughtMitigationPolicy *> getDrought_mitigation_policies() const;
 
     void setLongTermROFs(const vector<double> &risks_of_failure, const int week);
+
+    virtual ~ContinuityModelRealization();
 };
 
 

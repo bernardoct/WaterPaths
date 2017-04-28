@@ -15,7 +15,7 @@ protected:
     DroughtMitigationPolicy(const DroughtMitigationPolicy &drought_mitigation_policy);
 
     vector<int> utilities_ids;
-    vector<Utility *> utilities;
+    vector<Utility *> realization_utilities;
 
 public:
     const int id;

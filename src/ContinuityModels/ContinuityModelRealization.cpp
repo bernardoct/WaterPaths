@@ -21,6 +21,10 @@ ContinuityModelRealization::ContinuityModelRealization(const vector<WaterSource 
     }
 }
 
+ContinuityModelRealization::~ContinuityModelRealization() {
+
+}
+
 vector<WaterSource *> ContinuityModelRealization::getWater_sources() {
     return continuity_water_sources;
 }

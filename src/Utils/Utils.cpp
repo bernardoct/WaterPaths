@@ -121,15 +121,38 @@ double Utils::l2distanceSquare(vector<double> v1, vector<double> v2) {
     return result;
 }
 
+/**
+ * Gets the indexes of elements in an array that correspond to a given quantile.
+ * @param v1
+ * @param quantile
+ * @return
+ */
 vector<int> Utils::getQuantileIndeces(vector<double> v1, double quantile) {
     vector<double> sorted_v1(v1);
     vector<int> indeces_quantile;
     std::sort(sorted_v1.begin(), sorted_v1.end());
-    double quantile_threshold = sorted_v1[(int) ceil(sorted_v1.size() * quantile)];
+    double quantile_threshold = sorted_v1[(int) ceil(v1.size() * quantile)];
 
     for (int i = 0; i < v1.size(); ++i) {
         if (v1[i] < quantile_threshold) indeces_quantile.push_back(i);
     }
 
     return indeces_quantile;
+}
+
+/**
+ * Calculates the distance^2 between all data points in a matrix.
+ * @param data_points
+ * @return
+ */
+vector<vector<double>> Utils::calculateDistances(vector<vector<double>> data_points) {
+    vector<vector<double>> distances(data_points.size(), vector<double>(data_points.size(), 0.0));
+    for (int i = 0; i < data_points.size(); ++i) {
+        for (int j = i; j < data_points.size(); ++j) {
+            distances[i][j] = Utils::l2distanceSquare(data_points[i], data_points[j]);
+            distances[j][i] = distances[i][j];
+        }
+    }
+
+    return distances;
 }

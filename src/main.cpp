@@ -372,7 +372,7 @@ void rofCalculationsTest() {
                                                       water_sources_utility_adjacency_matrix,
                                                       SHORT_TERM_ROF, 0);
     vector<double> risks_of_failure;
-    crof->setWater_sources_realization(continuity_water_sources);
+    crof->setRealization_water_sources(continuity_water_sources);
     risks_of_failure = crof->calculateROF(0); // beginning of 60th year.
     cout << risks_of_failure[0] << " " << risks_of_failure[1]; // The output should be split in 50 blocks of 52 rows and 2 columns.
     // The numbers in the columns are the storage/capacity ratio for
@@ -588,7 +588,7 @@ void simulation3U5RTest() {
 
     /// Creates simulation object
     Simulation s(water_sources, g, reservoir_utility_connectivity_matrix, utilities, drought_mitigation_policies,
-                 104, 2, &data_collector);
+                 104, 2, data_collector);
     cout << "Beginning U3R5 simulation" << endl;
     s.runFullSimulation(0);
     cout << "Ending U3R5 simulation" << endl;
@@ -921,13 +921,10 @@ void test_getcontinuityMatrix() {
 }
 */
 
-void simulation3U5RInfraTest() {
+void simulation3U5RTestInfraTest() {
     srand((unsigned int) time(NULL));
 
     cout << "BEGINNING ROF TEST" << endl << endl;
-
-    /// Data collector pointer
-    DataCollector *data_collector = nullptr;
 
     /// Read streamflows
     int streamflow_n_weeks = 52 * 70;
@@ -990,7 +987,7 @@ void simulation3U5RInfraTest() {
     utilities.push_back(&u3);
 
     /// Water-source-utility connectivity matrix (each row corresponds to a utility and numbers are water
-    /// sources IDs). Must be sorted by utilities IDs.
+    /// sources IDs.
     vector<vector<int>> reservoir_utility_connectivity_matrix = {
             {0, 2},
             {1, 4},
@@ -1036,14 +1033,18 @@ void simulation3U5RInfraTest() {
                 vector<double>(), vector<int>());
     drought_mitigation_policies.push_back(&t);
 
+    /// Data collector pointer
+    DataCollector *data_collector = nullptr;
+
     /// Creates simulation object
     Simulation s(water_sources, g, reservoir_utility_connectivity_matrix, utilities, drought_mitigation_policies,
-                 646, 2, &data_collector);
+                 104, 2, data_collector);
     cout << "Beginning U3R5 simulation" << endl;
     s.runFullSimulation(2);
     cout << "Ending U3R5 simulation" << endl;
-}
 
+    delete data_collector;
+}
 
 int main() {
 //
@@ -1065,7 +1066,9 @@ int main() {
 //    ::test_QP();
 //    ::test_transfers();
 //    ::test_getcontinuityMatrix();
-    ::simulation3U5RInfraTest();
+    ::simulation3U5RTestInfraTest();
+//    U3R5 problem(1);
+//    problem.run();
 
     return 0;
 }

@@ -36,6 +36,10 @@ ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, con
     reservoir_continuity_order = water_sources_graph.getTopological_order();
 }
 
+ContinuityModel::~ContinuityModel() {
+
+}
+
 /**
  * Calculates continuity for one week time step for streamflows of id_rof years before current week.
  * @param week current week.

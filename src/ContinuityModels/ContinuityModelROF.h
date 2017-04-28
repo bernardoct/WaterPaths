@@ -13,7 +13,7 @@ class ContinuityModelROF : public ContinuityModel {
 
 protected:
     const int realization_id;
-    vector<WaterSource *> water_sources_realization;
+    vector<WaterSource *> realization_water_sources;
 public:
     ContinuityModelROF(const vector<WaterSource *> &water_source, const Graph &water_sources_graph,
                        const vector<vector<int>> &water_sources_to_utilities, const vector<Utility *> &utilities,
@@ -23,7 +23,11 @@ public:
 
     void resetUtilitiesAndReservoirs(int rof_type);
 
-    void setWater_sources_realization(const vector<WaterSource *> &water_sources_realization);
+    void setRealization_water_sources(const vector<WaterSource *> &water_sources_realization);
+
+    void updateOnlineInfrastructure();
+
+    virtual ~ContinuityModelROF();
 };
 
 

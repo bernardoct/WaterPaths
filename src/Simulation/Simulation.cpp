@@ -12,9 +12,9 @@
 Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_sources_graph,
                        const vector<vector<int>> &water_sources_to_utilities, vector<Utility *> &utilities,
                        vector<DroughtMitigationPolicy *> &drought_mitigation_policies, const int total_simulation_time,
-                       const int number_of_realizations, DataCollector **data_collector) :
+                       const int number_of_realizations, DataCollector *data_collector) :
         total_simulation_time(total_simulation_time),
-        number_of_realizations(number_of_realizations), data_collector(*data_collector),
+        number_of_realizations(number_of_realizations), data_collector(data_collector),
         drought_mitigation_policies(drought_mitigation_policies) {
 
     /// Sort water sources and utilities by their IDs.
@@ -39,9 +39,9 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_source
     }
 
     /// Creates the data collector for the simulation.
-    *data_collector = new DataCollector(utilities, water_sources, drought_mitigation_policies,
-                                        number_of_realizations, water_sources_graph);
-    this->data_collector = *data_collector;
+    data_collector = new DataCollector(utilities, water_sources, drought_mitigation_policies,
+                                       number_of_realizations, water_sources_graph);
+    this->data_collector = data_collector;
 
     /// Creates the realization and ROF models.
     vector<WaterSource *> water_sources_realization;
@@ -62,12 +62,28 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_source
                                                     water_sources_to_utilities, Utils::copyUtilityVector(utilities), r));
 
         /// Initializes rof models.
-        rof_models[r]->setWater_sources_realization(water_sources_realization);
+        rof_models[r]->setRealization_water_sources(water_sources_realization);
 
         /// Clear vectors for reuse in the setup of next realization.
         water_sources_realization.clear();
         drought_mitigation_policies_realization.clear();
     }
+}
+
+Simulation::~Simulation() {
+
+}
+
+/**
+ * Assignment constructor
+ * @param simulation
+ * @return
+ * @todo implement assignment constructor.
+ */
+Simulation &Simulation::operator=(const Simulation &simulation) {
+    this->number_of_realizations = simulation.number_of_realizations;
+    this->total_simulation_time = simulation.total_simulation_time;
+
 }
 
 void Simulation::runFullSimulation(int num_threads) {

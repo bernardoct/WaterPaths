@@ -12,6 +12,8 @@
 
 class ContinuityModelRealization : public ContinuityModel {
 private:
+    ContinuityModelRealization(ContinuityModelRealization &continuity_model_realization);
+
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
 
 public:

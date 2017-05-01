@@ -34,11 +34,15 @@ ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, con
 
     /// Get topological order so that mass balance is ran from up to downstream.
     reservoir_continuity_order = water_sources_graph.getTopological_order();
+
+    water_sources_draws = new vector<double>(water_sources.size());
 }
 
 ContinuityModel::~ContinuityModel() {
 
 }
+
+ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) {}
 
 /**
  * Calculates continuity for one week time step for streamflows of id_rof years before current week.
@@ -56,13 +60,13 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
      * reservoirs.
      */
     for (Utility *u : continuity_utilities) {
-        u->splitDemands(week);
+        u->splitDemands(week, water_sources_draws);
     }
 
     for (int j = 0; j < continuity_water_sources.size(); ++j) {
         /// gets demands from utilities
-        for (int &i : utilities_to_water_sources[j]) {
-            demands[j] += continuity_utilities.at((unsigned long) i)->getReservoirDraw(j);
+        for (int i : utilities_to_water_sources[j]) {
+            demands[j] += (*water_sources_draws)[i];//continuity_utilities[i]->getReservoirDraw(j);
         }
     }
 
@@ -85,6 +89,7 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
     for (Utility *u : continuity_utilities) {
         u->updateTotalStoredVolume();
     }
+    water_sources_draws->clear();
 }
 
 const vector<Utility *> &ContinuityModel::getUtilities() const {

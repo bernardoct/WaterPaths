@@ -20,6 +20,10 @@ using namespace std;
  */
 Graph::Graph(int V) : V(V) {
     adj = new list<int>[V];
+    downstream_sources = vector<vector<int>>((unsigned long) V);
+}
+
+Graph::~Graph() {
 }
 
 /**
@@ -29,6 +33,7 @@ Graph::Graph(int V) : V(V) {
  */
 void Graph::addEdgeToEdgesList(int u, int v) {
     adj[u].push_back(v);
+    downstream_sources[u].push_back(v);
     n_edges++;
 }
 
@@ -45,7 +50,7 @@ void Graph::addEdge(int u, int v) {
     topological_order = topologicalSort();
 
     /// Figure out sources upstream of each vertex added so far.
-    upstream_sources = vector<vector<int>>(topological_order.size(), vector<int>());
+    upstream_sources = std::vector<vector<int>>(topological_order.size(), vector<int>());
     for (int& i : topological_order) {
         upstream_sources[i] = findUpstreamSources(i);
     }
@@ -143,6 +148,10 @@ vector<int> Graph::findUpstreamSources(int id) const {
 
 vector<int> &Graph::getUpstream_sources(int i) {
     return upstream_sources[i];
+}
+
+const vector<vector<int>> Graph::getDownSources() const {
+    return downstream_sources;
 }
 
 const vector<int> Graph::getTopological_order() const {

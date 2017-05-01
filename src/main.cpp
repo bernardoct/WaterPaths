@@ -6,6 +6,7 @@
 #include "Simulation/Simulation.h"
 #include "Utils/QPSolver/QuadProg++.hh"
 #include "DroughtMitigationInstruments/Transfers.h"
+#include "DroughtMitigationInstruments/InsurancePseudoROF.h"
 
 
 int regionOneUtilitiesTwoReservoirsContinuityTest();
@@ -1033,12 +1034,20 @@ void simulation3U5RTestInfraTest() {
                 vector<double>(), vector<int>());
     drought_mitigation_policies.push_back(&t);
 
+    vector<double> insurance_triggers = {0.06, 0.08, 0.06};
+    vector<double> fixed_payouts = {1., 1., 1.};
+    InsurancePseudoROF in(0, insurance_triggers, 1.2, water_sources, utilities, g,
+                          reservoir_utility_connectivity_matrix,
+                          fixed_payouts);
+    drought_mitigation_policies.push_back(&in);
+
+
     /// Data collector pointer
     DataCollector *data_collector = nullptr;
 
     /// Creates simulation object
     Simulation s(water_sources, g, reservoir_utility_connectivity_matrix, utilities, drought_mitigation_policies,
-                 104, 2, data_collector);
+                 104, 1, data_collector);
     cout << "Beginning U3R5 simulation" << endl;
     s.runFullSimulation(2);
     cout << "Ending U3R5 simulation" << endl;

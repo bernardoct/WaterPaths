@@ -17,12 +17,15 @@ using namespace std;
 class ContinuityModel {
 
 protected:
+    ContinuityModel(ContinuityModel &continuity_model);
+
     vector<WaterSource *> continuity_water_sources;
     vector<Utility *> continuity_utilities;
     Graph water_sources_graph;
     vector<vector<int> > water_sources_to_utilities;
     vector<vector<int> > utilities_to_water_sources;
     vector<int> reservoir_continuity_order;
+    vector<double> *water_sources_draws;
 
 public:
     ContinuityModel(const vector<WaterSource *> &water_sources, const vector<Utility *> &utilities,

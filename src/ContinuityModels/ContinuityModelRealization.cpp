@@ -21,6 +21,14 @@ ContinuityModelRealization::ContinuityModelRealization(const vector<WaterSource 
     }
 }
 
+ContinuityModelRealization::ContinuityModelRealization(ContinuityModelRealization &continuity_model_realization)
+        : ContinuityModel(continuity_model_realization.continuity_water_sources,
+                          continuity_model_realization.continuity_utilities,
+                          continuity_model_realization.water_sources_graph,
+                          continuity_model_realization.water_sources_to_utilities),
+          realization_id(continuity_model_realization.realization_id) {
+}
+
 ContinuityModelRealization::~ContinuityModelRealization() {
 
 }

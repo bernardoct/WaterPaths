@@ -7,7 +7,7 @@
 #include "../src/Utils/Utils.h"
 #include "catch-main.h"
 #include "../src/Utils/DataCollector.h"
-#include "../src/DroughtMitigationInstruments/InsuranceRealizationReuse.h"
+#include "../src/DroughtMitigationInstruments/InsurancePseudoROF.h"
 
 TEST_CASE("Net present cost calculations", "[NPC]") {
     Reservoir r("Res", 0, 1, vector<Catchment *>(), 1, 1, 1, vector<double>(2, 1), 5000, 20, 0.05);
@@ -39,9 +39,10 @@ TEST_CASE("Split of demand among water sources of a utility proportionally to th
                    NON_INITIALIZED);
         u1.addWaterSource(&r1);
         u1.addWaterSource(&r2);
-        u1.splitDemands(0);
+        vector<double> *result = new vector<double>(2, 0.0);
+        u1.splitDemands(0, result);
 
-        REQUIRE(u1.getReservoirDraw(0) == Approx(9.0617079441 * 1 / 3));
+        REQUIRE((*result)[0] == Approx(9.0617079441 * 1 / 3));
     }
 
     SECTION("Split demand among intakes and reservoirs") {
@@ -51,9 +52,10 @@ TEST_CASE("Split of demand among water sources of a utility proportionally to th
         u1.addWaterSource(&r1);
         u1.addWaterSource(&r2);
         u1.addWaterSource(&i1);
-        u1.splitDemands(0);
+        vector<double> *result = new vector<double>(2, 0.0);
+        u1.splitDemands(0, result);
 
-        REQUIRE(u1.getReservoirDraw(0) == Approx((9.0617079441 - (5.0 - min_env_flow_intake)) * 1 / 3));
+        REQUIRE((*result)[0] == Approx((9.0617079441 - (5.0 - min_env_flow_intake)) * 1 / 3));
     }
 }
 
@@ -644,7 +646,7 @@ TEST_CASE("Get the distances to the square between all points in a matrix", "[Di
     REQUIRE(result[2][0] == 100.);
 }
 
-TEST_CASE("Test calculate storages and failures", "[Insurance failures storages]") {
+TEST_CASE("Test insurance functions", "[insurance]") {
 
     /// Read streamflows
     int streamflow_n_weeks = 52 * 70;
@@ -665,11 +667,11 @@ TEST_CASE("Test calculate storages and failures", "[Insurance failures storages]
 
     /// Create reservoirs and corresponding vector
     vector<double> construction_time_interval = {1.0, 4.0};
-    Reservoir r1("R1", 0, 3.0, catchments1, 100.0, 20);
-    Reservoir r2("R2", 1, 3.0, catchments2, 275.0, 20, 0.02, construction_time_interval, 5000, 20, 0.05);
-    Reservoir r3("R3", 2, 2.0, catchments3, 400.0, 20);
-    Reservoir r4("R4", 3, 3.0, catchments2, 550.0, 20);
-    Reservoir r5("R5", 4, 2.0, catchments3, 900.0, 20);
+    Reservoir r1("R1", 0, 3.0, catchments1, 2., 20);
+    Reservoir r2("R2", 1, 3.0, catchments2, 1., 20, 0.02, construction_time_interval, 5000, 20, 0.05);
+    Reservoir r3("R3", 2, 2.0, catchments3, 1., 20);
+    Reservoir r4("R4", 3, 3.0, catchments2, 1., 20);
+    Reservoir r5("R5", 4, 2.0, catchments3, 1., 20);
 
     vector<WaterSource *> water_sources;
     water_sources.push_back(&r1);
@@ -714,171 +716,52 @@ TEST_CASE("Test calculate storages and failures", "[Insurance failures storages]
             {3}
     };
 
-    Insurance in(0, vector<double>(3, 0.05), 1.2, water_sources, utilities, water_sources_graph,
-                 reservoir_utility_connectivity_matrix, vector<double>(3, 1));
+    InsurancePseudoROF in(0, vector<double>(3, 0.4), 1.2, water_sources, utilities, water_sources_graph,
+                          reservoir_utility_connectivity_matrix, vector<double>(3, 1));
 
-    double result = 0;
+    SECTION("Shift storage curves", "[Shift storages]") {
 
-    SECTION("No failures") {
-        std::vector<vector<bool>> realizations_utility_week_fail(52, vector<bool>(50, false));
+        /*
+         * System connection diagram (water
+         * flows from top to bottom)
+         *
+         *    2.0  0   1  1.0
+         *          \ /
+         *      1.0  2   4  0.5
+         *            \ /
+         *        0.5  3
+         */
 
-        result = in.runRofSubRealization(&realizations_utility_week_fail, 2, 20);
+        vector<vector<double>> storage_series = {
+                {1.5, 1.5, 1.0, 1.1},
+                {0.5, 1.0, 0.5, 0.2},
+                {0.4, 1.0, 0.5, 0.1},
+                {0.4, 0.3, 0.2, 0.1},
+                {0.4, 0.3, 0.2, 0.1},
+        };
 
-        REQUIRE(result == NONE);
-    }
+        vector<double> storage0 = {2.0,
+                                   1.0,
+                                   1.0,
+                                   0.5,
+                                   0.5};
+        int first_week = 0;
 
-    SECTION("One failure in realization 1 before realization week.") {
-        std::vector<vector<bool>> realizations_utility_week_fail(52, vector<bool>(50, false));
-        realizations_utility_week_fail[10][0] = true;
+        vector<vector<double>> result = in.shiftStorageCurves(&storage_series, storage0, first_week, 4);
 
-        result = in.runRofSubRealization(&realizations_utility_week_fail, 2, 20);
-
-        REQUIRE(result == NONE);
-    }
-
-
-    SECTION("One failure in realization 1 before realization week.") {
-        std::vector<vector<bool>> realizations_utility_week_fail(52, vector<bool>(50, false));
-        realizations_utility_week_fail[10][1] = true;
-
-        result = in.runRofSubRealization(&realizations_utility_week_fail, 2, 20);
-
-        REQUIRE(result == 1);
-    }
-
-    SECTION("One failure in realization 1 after realization week.") {
-        std::vector<vector<bool>> realizations_utility_week_fail(52, vector<bool>(50, false));
-        realizations_utility_week_fail[40][2] = true;
-
-        result = in.runRofSubRealization(&realizations_utility_week_fail, 2, 20);
-
-        REQUIRE(result == 1);
-    }
-
-    SECTION("Two failures in the same realization after realization week - 1.") {
-        std::vector<vector<bool>> realizations_utility_week_fail(52, vector<bool>(50, false));
-        realizations_utility_week_fail[40][4] = true;
-        realizations_utility_week_fail[30][4] = true;
-
-        result = in.runRofSubRealization(&realizations_utility_week_fail, 4, 20);
-
-        REQUIRE(result == 1);
-    }
-
-    SECTION("Two failures in the same realization after realization week - 2.") {
-        std::vector<vector<bool>> realizations_utility_week_fail(52, vector<bool>(50, false));
-        realizations_utility_week_fail[40][4] = true;
-        realizations_utility_week_fail[10][3] = true;
-
-        result = in.runRofSubRealization(&realizations_utility_week_fail, 4, 20);
-
-        REQUIRE(result == 1);
-    }
-}
-
-TEST_CASE("Test function to calculate insurance price, given euclidian storage distances and failed weeks",
-          "[calculate price]") {
-
-    /// Read streamflows
-    int streamflow_n_weeks = 52 * 70;
-    double **streamflows_test = Utils::parse2DCsvFile("../TestFiles/"
-                                                              "inflowsLong.csv", 2, streamflow_n_weeks);
-
-    /// Create catchments and corresponding vectors
-    Catchment c1(streamflows_test[0], streamflow_n_weeks);
-    Catchment c2(streamflows_test[1], streamflow_n_weeks);
-
-    vector<Catchment *> catchments1;
-    vector<Catchment *> catchments2;
-    vector<Catchment *> catchments3;
-    catchments1.push_back(&c1);
-    catchments1.push_back(&c2);
-    catchments2.push_back(&c2);
-    catchments3.push_back(&c1);
-
-    /// Create reservoirs and corresponding vector
-    vector<double> construction_time_interval = {1.0, 4.0};
-    Reservoir r1("R1", 0, 3.0, catchments1, 100.0, 20);
-    Reservoir r2("R2", 1, 3.0, catchments2, 275.0, 20, 0.02, construction_time_interval, 5000, 20, 0.05);
-    Reservoir r3("R3", 2, 2.0, catchments3, 400.0, 20);
-    Reservoir r4("R4", 3, 3.0, catchments2, 550.0, 20);
-    Reservoir r5("R5", 4, 2.0, catchments3, 900.0, 20);
-
-    vector<WaterSource *> water_sources;
-    water_sources.push_back(&r1);
-    water_sources.push_back(&r2);
-    water_sources.push_back(&r3);
-    water_sources.push_back(&r4);
-    water_sources.push_back(&r5);
-
-
-    /*
-     * System connection diagram (water
-     * flows from top to bottom)
-     *
-     *      0   1
-     *       \ /
-     *        2   4
-     *         \ /
-     *          3
-     */
-
-    Graph water_sources_graph((int) water_sources.size());
-    water_sources_graph.addEdge(0, 2);
-    water_sources_graph.addEdge(1, 2);
-    water_sources_graph.addEdge(2, 3);
-    water_sources_graph.addEdge(4, 3);
-
-    /// Create catchments and corresponding vector
-    Utility u1((char *) "U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.03, 1);
-    Utility u2((char *) "U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.07, 1, vector<int>(1, 1), 0.05);
-    Utility u3((char *) "U3", 2, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.05, 1);
-
-    vector<Utility *> utilities;
-    utilities.push_back(&u1);
-    utilities.push_back(&u2);
-    utilities.push_back(&u3);
-
-    /// Water-source-utility connectivity matrix (each row corresponds to a utility and numbers are water
-    /// sources IDs.
-    vector<vector<int>> reservoir_utility_connectivity_matrix = {
-            {0, 2},
-            {1, 4},
-            {3}
-    };
-
-    Insurance in(0, vector<double>(3, 0.4), 1.2, water_sources, utilities, water_sources_graph,
-                 reservoir_utility_connectivity_matrix, vector<double>(3, 1));
-
-    std::vector<std::vector<vector<bool>>> realizations_utility_week_fail(3, std::vector<vector<bool>>(52,
-                                                                                                       vector<bool>(4,
-                                                                                                                    false)));
-    std::vector<std::vector<std::vector<double>>> distances_between_realizations(52, std::vector<vector<double>>(5));
-    for (auto &vv : distances_between_realizations) {
-        for (auto &v : vv) {
-            v = {1, 5, 3, 4, 2};
-        }
-    }
-
-    SECTION("One realization failure, which means an rof of 0.33 (<0.4, which is trigger)", "[Failure no insurance]") {
-        realizations_utility_week_fail[0][40][2] = true;
-
-        double result = in.calculateUtilityInsurancePrice(&realizations_utility_week_fail,
-                                                          &distances_between_realizations, 0);
-
-        REQUIRE(result == 0);
-        realizations_utility_week_fail[0][40][2] = false;
-    }
-
-    SECTION("One realization failure, which means an rof of 0.33 (<0.4, which is trigger)", "[Failure no insurance]") {
-        realizations_utility_week_fail[0][31][2] = true;
-        realizations_utility_week_fail[0][30][2] = true;
-
-        double result = in.calculateUtilityInsurancePrice(&realizations_utility_week_fail,
-                                                          &distances_between_realizations, 0);
-
-        REQUIRE(result == 2.4);
-        realizations_utility_week_fail[0][31][2] = false;
-        realizations_utility_week_fail[0][30][2] = false;
+        REQUIRE(result[0][0] == 2.0);
+        REQUIRE(result[1][0] == 1.0);
+        REQUIRE(result[2][0] == 1.0);
+        REQUIRE(result[1][1] == 1.0);
+        REQUIRE(result[2][1] == 1.0);
+        REQUIRE(result[4][1] == Approx(0.4));
+        REQUIRE(result[0][2] == 1.5);
+        REQUIRE(result[1][2] == 1.0);
+        REQUIRE(result[2][2] == 1.0);
+        REQUIRE(result[0][3] == 1.6);
+        REQUIRE(result[1][3] == 0.7);
+        REQUIRE(result[2][3] == 0.7);
+        REQUIRE(result[4][3] == Approx(0.2));
+        //FIXME: COME UP WITH MORE TESTS HERE.
     }
 }

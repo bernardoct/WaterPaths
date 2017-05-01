@@ -21,7 +21,7 @@ public:
 
     static vector<WaterSource *> copyWaterSourceVector(vector<WaterSource *> water_sources_original);
 
-    static vector<Utility *> copyUtilityVector(vector<Utility *> utility_original);
+    static vector<Utility *> copyUtilityVector(vector<Utility *> utility_original, bool clear_water_sources = false);
 
     static vector<DroughtMitigationPolicy *>
     copyDroughtMitigationPolicyVector(vector<DroughtMitigationPolicy *> drought_mitigation_policy_original);

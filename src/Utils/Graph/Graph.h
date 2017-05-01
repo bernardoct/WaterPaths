@@ -19,6 +19,7 @@ protected:
     // Pointer to an array containing adjacency lists
     list<int> *adj;
     vector<vector<int>> upstream_sources;
+    vector<vector<int>> downstream_sources;
     vector<int> topological_order;
     vector<vector<double>> continuity_matrix_transpose;
 
@@ -43,6 +44,10 @@ public:
 
 
     const vector<vector<double>> getContinuityMatrix() const;
+
+    virtual ~Graph();
+
+    const vector<vector<int>> getDownSources() const;
 };
 
 

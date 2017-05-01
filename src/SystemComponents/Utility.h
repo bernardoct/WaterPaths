@@ -31,7 +31,6 @@ private:
     bool underConstruction = false;
     int construction_start_date;
     map<int, WaterSource *> water_sources;
-    map<int, double> split_demands_among_sources;
     vector<int> infrastructure_construction_order;
     vector<vector<double>> debt_payment_streams;
     vector<vector<int>> infrastructure_built;
@@ -77,7 +76,7 @@ public:
 
     double getStorageToCapacityRatio() const;
 
-    void splitDemands(int week);
+    void splitDemands(int week, vector<double> *water_sources_draws);
 
     double getTotal_storage_capacity() const;
 
@@ -114,6 +113,10 @@ public:
     double getCurrent_contingency_fund_contribution() const;
 
     double getDrought_mitigation_cost() const;
+
+    void addToContingencyFund(double value);
+
+    void clearWaterSources();
 };
 
 

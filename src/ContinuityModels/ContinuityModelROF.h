@@ -16,8 +16,13 @@ protected:
 
     const int realization_id;
     vector<WaterSource *> realization_water_sources;
+    vector<vector<double>> *storage_to_rof_table;
+    vector<int> downstream_sources;
+    vector<int> sources_topological_order;
+    vector<double> capacities;
+
 public:
-    ContinuityModelROF(const vector<WaterSource *> &water_source, const Graph &water_sources_graph,
+    ContinuityModelROF(const vector<WaterSource *> &water_sources, const Graph &water_sources_graph,
                        const vector<vector<int>> &water_sources_to_utilities, const vector<Utility *> &utilities,
                        const int realization_id);
 
@@ -30,6 +35,8 @@ public:
     void updateOnlineInfrastructure();
 
     virtual ~ContinuityModelROF();
+
+    void updateStorageToROFTable(double storage_percent_increment);
 };
 
 

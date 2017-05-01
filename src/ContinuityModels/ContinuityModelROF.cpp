@@ -3,13 +3,14 @@
 //
 
 #include <iostream>
+#include <algorithm>
 #include "ContinuityModelROF.h"
 
-ContinuityModelROF::ContinuityModelROF(const vector<WaterSource *> &water_source,
+ContinuityModelROF::ContinuityModelROF(const vector<WaterSource *> &water_sources,
                                        const Graph &water_sources_graph,
                                        const vector<vector<int>> &water_sources_to_utilities,
                                        const vector<Utility *> &utilities,
-                                       const int realization_id) : ContinuityModel(water_source,
+                                       const int realization_id) : ContinuityModel(water_sources,
                                                                                    utilities,
                                                                                    water_sources_graph,
                                                                                    water_sources_to_utilities),
@@ -19,6 +20,21 @@ ContinuityModelROF::ContinuityModelROF(const vector<WaterSource *> &water_source
     for (Utility *u : this->continuity_utilities) {
         u->updateTotalStoredVolume();
     }
+
+    /// the variables below are to make the storage-ROF table calculation faster.
+    for (int ws = 0; ws < water_sources.size(); ++ws) {
+        capacities.push_back(water_sources[ws]->capacity);
+    }
+
+    for (vector<int> ds : water_sources_graph.getDownSources())
+        if (ds.empty())
+            downstream_sources.push_back(NON_INITIALIZED);
+        else
+            downstream_sources.push_back(ds[0]);
+
+    sources_topological_order = water_sources_graph.getTopological_order();
+
+    storage_to_rof_table = new vector<vector<double>>();
 
 }
 
@@ -31,7 +47,7 @@ ContinuityModelROF::ContinuityModelROF(ContinuityModelROF &continuity_model_rof)
 }
 
 ContinuityModelROF::~ContinuityModelROF() {
-
+    delete storage_to_rof_table;
 }
 
 /**
@@ -89,7 +105,32 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
     return risk_of_failure;
 }
 
+void ContinuityModelROF::updateStorageToROFTable(double storage_percent_increment, vector<double> available_volumes) {
 
+    for (double sl = 1.0; sl > 0; sl -= storage_percent_increment) {
+        vector<double> reduced_capacities;
+        vector<double> delta_storage = available_volumes;
+
+        transform(capacities.begin(), capacities.end(), reduced_capacities.begin(),
+                  bind1st(multiplies<double>(), sl));
+        transform(reduced_capacities.begin(), reduced_capacities.end(), available_volumes.begin(),
+                  back_inserter(delta_storage), minus<double>());
+
+        for (int ws : sources_topological_order) {
+            available_volumes[ws] += delta_storage[ws];
+
+            /// if source overflows, send excess downstream. Works for intakes as well, since their capacities are 0,
+            /// meaning all excess from above overflows.
+            if (available_volumes[ws] > capacities[ws]) {
+                if (downstream_sources[ws] != NON_INITIALIZED)
+                    available_volumes[downstream_sources[ws]] += available_volumes[ws] - capacities[ws];
+                available_volumes[ws] = capacities[ws];
+                /// prevent negative storages.
+            } else if (available_volumes[ws] < 0)
+                available_volumes[ws] = 0;
+        }
+    }
+}
 
 
 

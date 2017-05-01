@@ -20,15 +20,15 @@ ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, con
     /// Connect water sources to utilities.
     for (int i = 0; i < utilities.size(); ++i) {
         for (int j = 0; j < water_sources_to_utilities[i].size(); ++j) {
-            this->continuity_utilities.at((unsigned long) i)->addWaterSource(
-                    water_sources.at((unsigned long) water_sources_to_utilities[i][j]));
+            this->continuity_utilities[i]->addWaterSource(
+                    water_sources[water_sources_to_utilities[i][j]]);
         }
     }
 
     utilities_to_water_sources.assign(water_sources.size(), vector<int>(0));
     for (int i = 0; i < utilities.size(); ++i) {
-        for (const int &j : water_sources_to_utilities.at((unsigned long) i)) {
-            utilities_to_water_sources.at((unsigned long) j).push_back(i);
+        for (const int &j : water_sources_to_utilities[i]) {
+            utilities_to_water_sources[j].push_back(i);
         }
     }
 

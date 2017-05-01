@@ -16,6 +16,7 @@ protected:
 
     vector<int> utilities_ids;
     vector<Utility *> realization_utilities;
+    vector<vector<double>> *storage_to_rof_table;
 
 public:
     const int id;

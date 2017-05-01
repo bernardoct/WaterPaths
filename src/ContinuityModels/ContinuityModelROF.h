@@ -12,6 +12,8 @@
 class ContinuityModelROF : public ContinuityModel {
 
 protected:
+    ContinuityModelROF(ContinuityModelROF &continuity_model_rof);
+
     const int realization_id;
     vector<WaterSource *> realization_water_sources;
 public:

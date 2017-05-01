@@ -135,6 +135,10 @@ void Utility::updateTotalStoredVolume() {
     }
 }
 
+void Utility::clearWaterSources() {
+    water_sources.clear();
+}
+
 /**
  * Connects a reservoir to the utility.
  * @param water_source
@@ -144,7 +148,6 @@ void Utility::addWaterSource(WaterSource *water_source) {
         throw std::logic_error("Attempt to add water source with duplicate ID was added to utility.");
 
     water_sources.insert(pair<int, WaterSource *>(water_source->id, water_source));
-    split_demands_among_sources.insert(pair<int, double>(water_source->id, 0));
 
     if (water_source->isOnline()) {
         total_storage_capacity += water_source->capacity;
@@ -159,7 +162,7 @@ void Utility::addWaterSource(WaterSource *water_source) {
  * updated.
  * @param week
  */
-void Utility::splitDemands(int week) {
+void Utility::splitDemands(int week, vector<double> *water_sources_draws) {
     unrestricted_demand = demand_series[week];
     restricted_demand = unrestricted_demand * demand_multiplier - demand_offset;
 
@@ -168,7 +171,7 @@ void Utility::splitDemands(int week) {
         if (ws.second->source_type == INTAKE) {
             int i = ws.second->id;
             double intake_demand = min(restricted_demand, ws.second->getAvailable_volume());
-            split_demands_among_sources.at(i) = intake_demand;
+            (*water_sources_draws)[i] = intake_demand;
             restricted_demand -= intake_demand;
         }
     }
@@ -178,7 +181,7 @@ void Utility::splitDemands(int week) {
         if (ws.second->source_type == RESERVOIR) {
             int i = ws.second->id;
             double demand = restricted_demand * max(1.0e-6, ws.second->getAvailable_volume()) / total_stored_volume;
-            split_demands_among_sources.at(i) = demand;
+            (*water_sources_draws)[i] = demand;
         }
     }
 
@@ -306,17 +309,6 @@ void Utility::beginConstruction(int week) {
     construction_start_date = week;
 }
 
-/**
- * Assigns a fraction of the total weekly demand to a reservoir according to its current storage in relation
- * to the combined current stored of all reservoirs where the utility has .
- * @param week
- * @param water_source_id
- * @return proportional demand.
- */
-double Utility::getReservoirDraw(const int water_source_id) {
-    return split_demands_among_sources.at(water_source_id);
-}
-
 const map<int, WaterSource *> &Utility::getWaterSources() const {
     return water_sources;
 }
@@ -356,6 +348,10 @@ void Utility::setDemand_multiplier(double demand_multiplier) {
 
 double Utility::getContingency_fund() const {
     return contingency_fund;
+}
+
+void Utility::addToContingencyFund(double value) {
+    contingency_fund += value;
 }
 
 void Utility::setDemand_offset(double demand_offset, double offset_rate_per_volume) {

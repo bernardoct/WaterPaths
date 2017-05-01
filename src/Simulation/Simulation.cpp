@@ -95,7 +95,7 @@ void Simulation::runFullSimulation(int num_threads) {
     double seconds;
 
     /// Run realizations.
-#pragma omp parallel for num_threads(num_threads)
+//#pragma omp parallel for num_threads(num_threads)
     for (int r = 0; r < number_of_realizations; ++r) {
         cout << "Realization " << r << endl;
         time(&timer_i);

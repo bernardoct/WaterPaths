@@ -19,6 +19,15 @@ ContinuityModelROF::ContinuityModelROF(const vector<WaterSource *> &water_source
     for (Utility *u : this->continuity_utilities) {
         u->updateTotalStoredVolume();
     }
+
+}
+
+ContinuityModelROF::ContinuityModelROF(ContinuityModelROF &continuity_model_rof)
+        : ContinuityModel(continuity_model_rof.continuity_water_sources,
+                          continuity_model_rof.continuity_utilities,
+                          continuity_model_rof.water_sources_graph,
+                          continuity_model_rof.water_sources_to_utilities),
+          realization_id(continuity_model_rof.realization_id) {
 }
 
 ContinuityModelROF::~ContinuityModelROF() {
@@ -51,19 +60,18 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
 
         /// reset reservoirs' and utilities' storage and combined storage, respectively, they currently
         /// have in the corresponding realization simulation.
-        this->resetUtilitiesAndReservoirs(rof_type);
+        resetUtilitiesAndReservoirs(rof_type);
 
         for (int w = week; w < week + n_weeks_rof; ++w) {
 
             /// one week continuity time-step.
-            this->continuityStep(w, r);
+            continuityStep(w, r);
 
             /// check total available storage for each utility and, if smaller than the fail ration,
             /// increase the number of failed years of that utility by 1 (FAILURE).
-            for (int i = 0; i < continuity_utilities.size(); ++i) {
-                if (continuity_utilities[i]->getStorageToCapacityRatio() <= STORAGE_CAPACITY_RATIO_FAIL)
-                    year_failure[i] = FAILURE;
-            }
+            for (int u = 0; u < continuity_utilities.size(); ++u)
+                if (continuity_utilities[u]->getStorageToCapacityRatio() <= STORAGE_CAPACITY_RATIO_FAIL)
+                    year_failure[u] = FAILURE;
         }
 
         /// finalize ROF calculation and reset failure counter.
@@ -81,6 +89,40 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
     return risk_of_failure;
 }
 
+
+
+
+
+/*
+vector<vector<double>> ContinuityModelROF::shiftStorageTimeSeries(vector<vector<double>> storage_series,
+                                                                  vector<double> capacities,
+                                                                  vector<int> downstream_sources,
+                                                                  double capacity_percentile,
+                                                                  int first_week,
+                                                                  int last_week) {
+    unsigned long n_sources = storage_series.size();
+    vector<double> delta_storage(n_sources, 0.);
+
+    for (int ws = 0; ws < n_sources; ++ws) {
+        delta_storage[ws] = capacities[ws] * capacity_percentile - storage_series[ws][0];
+    }
+
+    for (int w = first_week; w < last_week; ++w) {
+        for (int ws = 0; ws < n_sources; ++ws) {
+            double capacity = capacities[ws];
+            storage_series[ws][w] = max(0.0, storage_series[ws][w] + delta_storage[ws]);
+
+            if (storage_series[ws][w] > capacity) {
+                if (downstream_sources[ws] > NON_INITIALIZED) storage_series[downstream_sources[ws]][w] +=
+                                                                      storage_series[ws][w] - capacity;
+                storage_series[ws][w] = capacity;
+            }
+        }
+    }
+
+    return storage_series;
+}
+*/
 /**
  * reset reservoirs' and utilities' storage and last release, and combined storage, respectively, they
  * currently have in the corresponding realization simulation.

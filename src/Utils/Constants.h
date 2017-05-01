@@ -16,7 +16,7 @@ namespace Constants {
     const int WEEKS_ROF_LONG_TERM = 78;
     const int SHORT_TERM_ROF = 0;
     const int LONG_TERM_ROF = 1;
-    const int NUMBER_REALIZATIONS_INSURANCE_PRICING = 70;
+    const int NUMBER_REALIZATIONS_INSURANCE_PRICING = 50;
     const int NUMBER_REALIZATIONS_ROF = 50;
     const bool ONLINE = true;
     const bool OFFLINE = false;
@@ -32,9 +32,8 @@ namespace Constants {
     const int COLUMN_WIDTH = 10;
     const int COLUMN_PRECISION = 4;
     const int NON_INITIALIZED = -1;
-    const double INSURANCE_PRICING_SIMILARITY_QUANTILE =
-            (double) NUMBER_REALIZATIONS_ROF / (double) NUMBER_REALIZATIONS_INSURANCE_PRICING;
     const double WORSE_CASE_COST_PERCENTILE = 0.99;
+    const double INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD = 0.05;
 };
 
 

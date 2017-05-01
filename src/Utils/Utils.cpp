@@ -4,6 +4,7 @@
 
 #include "Utils.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
+#include "../DroughtMitigationInstruments/InsurancePseudoROF.h"
 #include <fstream>
 #include <algorithm>
 
@@ -26,16 +27,11 @@ double **Utils::parse2DCsvFile(char const *file_name, int number_of_records, int
         data[row] = new double[number_of_weeks];
         std::string line;
         std::getline(file, line);
-//        if (!file.good())
-//            break;
-
         std::stringstream iss(line);
 
         for (int col = 0; col < number_of_weeks; col++) {
             std::string val;
             std::getline(iss, val, ',');
-//            if (!iss.good())
-//                break;
 
             std::stringstream convertor(val);
             convertor >> data[row][col];
@@ -54,8 +50,8 @@ double *Utils::parse1DCsvFile(char const *file_name, int number_of_weeks) {
     for (int row = 0; row < number_of_weeks; row++) {
         std::string line;
         std::getline(file, line);
-//        if (!file.good())
-//            break;
+        if (!file.good())
+            break;
 
 //        std::stringstream convertor(line);
         data[row] = atof(line.c_str());
@@ -78,12 +74,17 @@ vector<WaterSource *> Utils::copyWaterSourceVector(vector<WaterSource *> water_s
     return water_sources_new;
 }
 
-vector<Utility *> Utils::copyUtilityVector(vector<Utility *> utility_original) {
+vector<Utility *> Utils::copyUtilityVector(vector<Utility *> utility_original, bool clear_water_sources) {
     vector<Utility *> utility_new;
 
     for (Utility *u : utility_original) {
         utility_new.push_back(new Utility(*u));
     }
+
+    if (clear_water_sources)
+        for (Utility *u : utility_new) {
+            u->clearWaterSources();
+        }
 
     return utility_new;
 }
@@ -97,6 +98,8 @@ Utils::copyDroughtMitigationPolicyVector(vector<DroughtMitigationPolicy *> droug
             drought_mitigation_policy_new.push_back(new Restrictions(*dynamic_cast<Restrictions *>(dmp)));
         else if (dmp->type == TRANSFERS)
             drought_mitigation_policy_new.push_back(new Transfers(*dynamic_cast<Transfers *>(dmp)));
+        else if (dmp->type == INSURANCE)
+            drought_mitigation_policy_new.push_back(new InsurancePseudoROF(*dynamic_cast<InsurancePseudoROF *>(dmp)));
     }
 
     return drought_mitigation_policy_new;

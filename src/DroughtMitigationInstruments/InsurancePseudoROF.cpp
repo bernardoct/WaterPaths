@@ -37,7 +37,7 @@ InsurancePseudoROF::InsurancePseudoROF(const int id, const std::vector<double> &
     }
 
     for (int ws = 0; ws < water_sources.size(); ++ws) {
-        capacities.push_back(water_sources[ws]->capacity);
+        capacities.push_back(water_sources[ws]->getCapacity());
     }
 
     for (vector<int> ds : water_sources_graph.getDownSources())
@@ -188,8 +188,8 @@ void InsurancePseudoROF::calculatePseudoRofs(Matrix3D<double> *realizations_stor
         for (int rr = 1; rr < n_realizations; ++rr) {
             /// prevent insurance realization from using itself for rof calculations
             if (rr != r) {
-                Matrix2D<double> realization_adjusted_storage_curves(
-                        shiftStorageCurves(realizations_storages, storage0, w, rr));
+                Matrix2D<double> realization_adjusted_storage_curves = shiftStorageCurves(realizations_storages,
+                                                                                          storage0, w, rr);
 
                 /// for each utility, in every week of rof realization, check storage curves for water sources to see
                 /// if they failed for that realization
@@ -248,7 +248,7 @@ InsurancePseudoROF::shiftStorageCurves(Matrix3D<double> *storage_curves_2yrs, do
 
     if (shift_curves) {
         /// create matrix of year long curves.
-        Matrix2D<double> storage_curves(storage_curves_2yrs->get2D(rr, 'i'));
+        storage_curves = storage_curves_2yrs->get2D(rr, 'i');
 
         /// loop over time adjusting sources storages.
         for (int w = first_week; w < first_week + n_weeks; ++w) {

@@ -40,7 +40,7 @@ ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, con
     /// the variables below are to make the storage-ROF table calculation faster.
     for (int ws = 0; ws < water_sources.size(); ++ws) {
         if (water_sources[ws]->isOnline())
-            water_sources_capacities.push_back(water_sources[ws]->capacity);
+            water_sources_capacities.push_back(water_sources[ws]->getCapacity());
         else
             water_sources_capacities.push_back((double &&) NONE);
     }

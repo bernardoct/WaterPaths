@@ -5,6 +5,7 @@
 #include <iostream>
 #include "Utility.h"
 #include "../Utils/Utils.h"
+#include "WaterSources/ReservoirExpansion.h"
 
 /**
  * Main constructor for the Utility class.
@@ -79,8 +80,6 @@ Utility::Utility(Utility &utility) : id(utility.id), number_of_week_demands(util
  */
 Utility::~Utility() {
 
-//    if (demand_series)
-    //FIXME: I'M GETTING SEGMENTATION FAULT HERE WHEN RUNNING IT WITH VALGRIND.
     delete[] demand_series;
 }
 
@@ -150,7 +149,7 @@ void Utility::addWaterSource(WaterSource *water_source) {
     water_sources.insert(pair<int, WaterSource *>(water_source->id, water_source));
 
     if (water_source->isOnline()) {
-        total_storage_capacity += water_source->capacity;
+        total_storage_capacity += water_source->getCapacity();
         total_treatment_capacity += water_source->max_treatment_capacity;
     }
     total_stored_volume = total_storage_capacity;
@@ -214,10 +213,17 @@ void Utility::updateContingencyFund(double unrestricted_demand, double demand_mu
 }
 
 void Utility::setWaterSourceOnline(int source_id) {
+
     /// Sets water source online.
-    water_sources.at(source_id)->setOnline();
+    /// If reservoir expansion, add its capacity to the corresponding existing reservoir.
+    if (water_sources.at(source_id)->source_type != RESERVOIR_EXPANSION)
+        water_sources.at(source_id)->setOnline();
+    else {
+        ReservoirExpansion reservoir_expansion = *dynamic_cast<ReservoirExpansion *>(water_sources.at(source_id));
+        water_sources.at(reservoir_expansion.parent_reservoir_ID)->addCapacity(reservoir_expansion.getCapacity());
+    }
     /// Updates total storage and treatment capacities.
-    total_storage_capacity += water_sources.at(source_id)->capacity;
+    total_storage_capacity += water_sources.at(source_id)->getCapacity();
     total_treatment_capacity += water_sources.at(source_id)->max_treatment_capacity;
 }
 

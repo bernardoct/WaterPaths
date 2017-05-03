@@ -6,7 +6,7 @@
 #include "Simulation/Simulation.h"
 #include "Utils/QPSolver/QuadProg++.hh"
 #include "DroughtMitigationInstruments/Transfers.h"
-#include "DroughtMitigationInstruments/InsurancePseudoROF.h"
+#include "SystemComponents/WaterSources/ReservoirExpansion.h"
 
 
 int regionOneUtilitiesTwoReservoirsContinuityTest();
@@ -949,8 +949,9 @@ void simulation3U5RInfraTest() {
     Reservoir r1("R1", 0, 3.0, catchments1, 100.0, 20);
     Reservoir r2("R2", 1, 3.0, catchments2, 275.0, 20, 0.02, construction_time_interval, 5000, 20, 0.05);
     Reservoir r3("R3", 2, 2.0, catchments3, 400.0, 20);
-    Reservoir r4("R4", 3, 3.0, catchments2, 550.0, 20);
+    Reservoir r4("R4", 3, 3.0, catchments2, 500.0, 20);
     Reservoir r5("R5", 4, 2.0, catchments3, 900.0, 20);
+    ReservoirExpansion rex6("R6wx", 5, 3, 200.0, 0.03, construction_time_interval, 3000, 20, 0.05);
 
     vector<WaterSource *> water_sources;
     water_sources.push_back(&r1);
@@ -958,6 +959,7 @@ void simulation3U5RInfraTest() {
     water_sources.push_back(&r3);
     water_sources.push_back(&r4);
     water_sources.push_back(&r5);
+    water_sources.push_back(&rex6);
 
 
     /*
@@ -979,8 +981,8 @@ void simulation3U5RInfraTest() {
 
     /// Create catchments and corresponding vector
     Utility u1((char *) "U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.03, 1);
-    Utility u2((char *) "U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.07, 1, vector<int>(1, 1), 0.05);
-    Utility u3((char *) "U3", 2, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.05, 1);
+    Utility u2((char *) "U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.07, 1, vector<int>(1, 1), 0.04);
+    Utility u3((char *) "U3", 2, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.05, 1, vector<int>(1, 5), 0.04);
 
     vector<Utility *> utilities;
     utilities.push_back(&u1);
@@ -992,7 +994,7 @@ void simulation3U5RInfraTest() {
     vector<vector<int>> reservoir_utility_connectivity_matrix = {
             {0, 2},
             {1, 4},
-            {3}
+            {3, 5}
     };
 
     /// Restriction policies
@@ -1034,19 +1036,19 @@ void simulation3U5RInfraTest() {
                 vector<double>(), vector<int>());
     drought_mitigation_policies.push_back(&t);
 
-    vector<double> insurance_triggers = {0.06, 0.08, 0.06};
-    vector<double> fixed_payouts = {1., 1., 1.};
-    InsurancePseudoROF in(0, insurance_triggers, 1.2, water_sources, utilities, g,
-                          reservoir_utility_connectivity_matrix,
-                          fixed_payouts);
-    drought_mitigation_policies.push_back(&in);
+//    vector<double> insurance_triggers = {0.06, 0.08, 0.06};
+//    vector<double> fixed_payouts = {1., 1., 1.};
+//    InsurancePseudoROF in(0, insurance_triggers, 1.2, water_sources, utilities, g,
+//                          reservoir_utility_connectivity_matrix,
+//                          fixed_payouts);
+//    drought_mitigation_policies.push_back(&in);
 
     /// Data collector pointer
     DataCollector *data_collector = nullptr;
 
     /// Creates simulation object
     Simulation s(water_sources, g, reservoir_utility_connectivity_matrix, utilities, drought_mitigation_policies,
-                 53, 1, data_collector);
+                 992, 2, data_collector);
     cout << "Beginning U3R5 simulation" << endl;
     s.runFullSimulation(2);
     cout << "Ending U3R5 simulation" << endl;

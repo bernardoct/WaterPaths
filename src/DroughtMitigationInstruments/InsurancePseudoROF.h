@@ -11,7 +11,7 @@
 
 class InsurancePseudoROF : public DroughtMitigationPolicy, ContinuityModelROF {
 protected:
-    vector<double> insurance_prices;
+    double *insurance_prices;
     vector<int> ids_of_utilities_with_policies;
     const vector<double> rof_triggers;
     const double insurance_premium;
@@ -32,22 +32,18 @@ public:
 
     void addSystemComponents(vector<Utility *> utilities, vector<WaterSource *> water_sources) override;
 
-    vector<double> priceInsurance(int week);
-
-    void calculateRealizationsStorages(std::vector<std::vector<std::vector<double>>> *realizations_storages,
-                                       int week);
-
-    void calculatePseudoRofs(vector<vector<vector<double>>> *realizations_storages,
-                             vector<vector<double>> *realizations_rofs,
-                             unsigned long r);
-
-
-    vector<vector<double>> shiftStorageCurves(vector<vector<double>> *storage_curves_2yrs, vector<double> storage0,
-                                              unsigned long first_week);
+    void priceInsurance(int week);
 
     const double getInsurancePrice(int u) const;
 
     virtual ~InsurancePseudoROF();
+
+    void calculateRealizationsStorages(Matrix3D<double> *realizations_storages, int week);
+
+    void calculatePseudoRofs(Matrix3D<double> *realizations_storages, Matrix3D<double> *realizations_rofs, int r);
+
+    Matrix2D<double>
+    shiftStorageCurves(Matrix3D<double> *storage_curves_2yrs, double *storage0, int first_week, int rr);
 };
 
 

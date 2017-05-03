@@ -162,7 +162,7 @@ void Utility::addWaterSource(WaterSource *water_source) {
  * updated.
  * @param week
  */
-void Utility::splitDemands(int week, vector<double> *water_sources_draws) {
+void Utility::splitDemands(int week, double *water_sources_draws) {
     unrestricted_demand = demand_series[week];
     restricted_demand = unrestricted_demand * demand_multiplier - demand_offset;
 
@@ -171,7 +171,7 @@ void Utility::splitDemands(int week, vector<double> *water_sources_draws) {
         if (ws.second->source_type == INTAKE) {
             int i = ws.second->id;
             double intake_demand = min(restricted_demand, ws.second->getAvailable_volume());
-            (*water_sources_draws)[i] = intake_demand;
+            water_sources_draws[i] = intake_demand;
             restricted_demand -= intake_demand;
         }
     }
@@ -181,7 +181,7 @@ void Utility::splitDemands(int week, vector<double> *water_sources_draws) {
         if (ws.second->source_type == RESERVOIR) {
             int i = ws.second->id;
             double demand = restricted_demand * max(1.0e-6, ws.second->getAvailable_volume()) / total_stored_volume;
-            (*water_sources_draws)[i] = demand;
+            water_sources_draws[i] = demand;
         }
     }
 

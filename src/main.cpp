@@ -922,7 +922,7 @@ void test_getcontinuityMatrix() {
 }
 */
 
-void simulation3U5RTestInfraTest() {
+void simulation3U5RInfraTest() {
     srand((unsigned int) time(NULL));
 
     cout << "BEGINNING ROF TEST" << endl << endl;
@@ -1041,18 +1041,15 @@ void simulation3U5RTestInfraTest() {
                           fixed_payouts);
     drought_mitigation_policies.push_back(&in);
 
-
     /// Data collector pointer
     DataCollector *data_collector = nullptr;
 
     /// Creates simulation object
     Simulation s(water_sources, g, reservoir_utility_connectivity_matrix, utilities, drought_mitigation_policies,
-                 104, 1, data_collector);
+                 53, 1, data_collector);
     cout << "Beginning U3R5 simulation" << endl;
     s.runFullSimulation(2);
     cout << "Ending U3R5 simulation" << endl;
-
-    delete data_collector;
 }
 
 int main() {
@@ -1075,7 +1072,7 @@ int main() {
 //    ::test_QP();
 //    ::test_transfers();
 //    ::test_getcontinuityMatrix();
-    ::simulation3U5RTestInfraTest();
+    ::simulation3U5RInfraTest();
 //    U3R5 problem(1);
 //    problem.run();
 

@@ -9,6 +9,7 @@
 #include <map>
 #include "WaterSources/Reservoir.h"
 #include "../Utils/Constants.h"
+//#include "../Utils/Matrix3D.h"
 
 
 class Utility {
@@ -76,7 +77,7 @@ public:
 
     double getStorageToCapacityRatio() const;
 
-    void splitDemands(int week, vector<double> *water_sources_draws);
+    void splitDemands(int week, double *water_sources_draws);
 
     double getTotal_storage_capacity() const;
 

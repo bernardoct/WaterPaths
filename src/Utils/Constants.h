@@ -7,6 +7,7 @@
 
 
 #include <map>
+#include <cmath>
 
 
 namespace Constants {
@@ -34,6 +35,7 @@ namespace Constants {
     const int NON_INITIALIZED = -1;
     const double WORSE_CASE_COST_PERCENTILE = 0.99;
     const double INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD = 0.05;
+    const int NO_OF_INSURANCE_STORAGE_TIERS = (int) std::round(1. / INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD);
 };
 
 

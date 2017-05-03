@@ -6,7 +6,6 @@
 #include "../DroughtMitigationInstruments/Transfers.h"
 #include "../DroughtMitigationInstruments/InsurancePseudoROF.h"
 #include <fstream>
-#include <algorithm>
 
 /**
  * Reads CSV file into 2D array.
@@ -106,7 +105,7 @@ Utils::copyDroughtMitigationPolicyVector(vector<DroughtMitigationPolicy *> droug
 }
 
 bool Utils::isFirstWeekOfTheYear(int week) {
-    return ((week + 1) / WEEKS_IN_YEAR - (int) ((week + 1) / WEEKS_IN_YEAR)) * WEEKS_IN_YEAR < 1.0;
+    return ((week + 1) / WEEKS_IN_YEAR - (int) ((week + 1) / WEEKS_IN_YEAR)) * WEEKS_IN_YEAR < 1.0 || week == 0;
 }
 
 /**

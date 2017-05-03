@@ -35,7 +35,26 @@ ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, con
     /// Get topological order so that mass balance is ran from up to downstream.
     reservoir_continuity_order = water_sources_graph.getTopological_order();
 
-    water_sources_draws = new vector<double>(water_sources.size());
+    water_sources_draws = vector<double>(water_sources.size(), 0.);
+
+    /// the variables below are to make the storage-ROF table calculation faster.
+    for (int ws = 0; ws < water_sources.size(); ++ws) {
+        if (water_sources[ws]->isOnline())
+            water_sources_capacities.push_back(water_sources[ws]->capacity);
+        else
+            water_sources_capacities.push_back((double &&) NONE);
+    }
+
+    for (Utility *u : continuity_utilities)
+        utilities_capacities.push_back(u->getTotal_storage_capacity());
+
+    for (vector<int> ds : water_sources_graph.getDownSources())
+        if (ds.empty())
+            downstream_sources.push_back(NON_INITIALIZED);
+        else
+            downstream_sources.push_back(ds[0]);
+
+    sources_topological_order = water_sources_graph.getTopological_order();
 }
 
 ContinuityModel::~ContinuityModel() {
@@ -60,14 +79,7 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
      * reservoirs.
      */
     for (Utility *u : continuity_utilities) {
-        u->splitDemands(week, water_sources_draws);
-    }
-
-    for (int j = 0; j < continuity_water_sources.size(); ++j) {
-        /// gets demands from utilities
-        for (int i : utilities_to_water_sources[j]) {
-            demands[j] += (*water_sources_draws)[i];//continuity_utilities[i]->getReservoirDraw(j);
-        }
+        u->splitDemands(week, demands);
     }
 
     /**
@@ -89,7 +101,7 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
     for (Utility *u : continuity_utilities) {
         u->updateTotalStoredVolume();
     }
-    water_sources_draws->clear();
+//    water_sources_draws = vector<double<();
 }
 
 const vector<Utility *> &ContinuityModel::getUtilities() const {

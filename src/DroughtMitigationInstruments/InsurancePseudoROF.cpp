@@ -49,7 +49,8 @@ InsurancePseudoROF::InsurancePseudoROF(const int id, const std::vector<double> &
     sources_topological_order = water_sources_graph.getTopological_order();
 }
 
-InsurancePseudoROF::InsurancePseudoROF(const InsurancePseudoROF &insurance) : DroughtMitigationPolicy(insurance.id,
+InsurancePseudoROF::InsurancePseudoROF(const InsurancePseudoROF &insurance) :
+        DroughtMitigationPolicy(insurance.id,
                                                                                                       INSURANCE),
                                                                               ContinuityModelROF(
                                                                                       Utils::copyWaterSourceVector(
@@ -80,7 +81,8 @@ InsurancePseudoROF::~InsurancePseudoROF() {
 void InsurancePseudoROF::applyPolicy(int week) {
     /// if last week of the year, price insurance for coming year.
     if (Utils::isFirstWeekOfTheYear(week + 1)) {
-        insurance_prices = priceInsurance(week);
+        priceInsurance(week);
+        for (int u = 0; u < continuity_utilities.size(); ++u) cout << insurance_prices[u] << endl;
     }
 
     /// check if payouts are triggered.
@@ -97,45 +99,39 @@ void InsurancePseudoROF::addSystemComponents(vector<Utility *> utilities, std::v
     setRealization_water_sources(water_sources);
 }
 
-vector<double> InsurancePseudoROF::priceInsurance(int week) {
-    unsigned long n_utilities = continuity_utilities.size();
-    unsigned long n_water_sources = continuity_water_sources.size();
+void InsurancePseudoROF::priceInsurance(int week) {
+    int n_utilities = (int) continuity_utilities.size();
+    int n_water_sources = (int) continuity_water_sources.size();
+
+    insurance_prices = new double[continuity_utilities.size()];
+    for (int u = 0; u < n_utilities; ++u) insurance_prices[u] = 0;
 
     /// one insrance price for each utility
-    vector<double> insurance_prices(n_utilities, 0.0);
 
     /// storages for all water sources in all weeks of all realizations
-    std::vector<std::vector<std::vector<double>>> realizations_storages(NUMBER_REALIZATIONS_INSURANCE_PRICING,
-                                                                        std::vector<vector<double>>(n_water_sources,
-                                                                                                    std::vector<double>(
-                                                                                                            2 *
-                                                                                                            WEEKS_ROF_SHORT_TERM,
-                                                                                                            0.0)));
+    Matrix3D<double> realizations_storages(NUMBER_REALIZATIONS_INSURANCE_PRICING, n_water_sources,
+                                           2 * WEEKS_ROF_SHORT_TERM);
     /// rofs of all utilities in all weeks of all realizations
-    std::vector<std::vector<std::vector<double>>> realizations_rofs(NUMBER_REALIZATIONS_INSURANCE_PRICING,
-                                                                    std::vector<vector<double>>(n_utilities,
-                                                                                                vector<double>(
-                                                                                                        WEEKS_ROF_SHORT_TERM,
-                                                                                                        0.0)));
+    Matrix3D<double> realizations_rofs(NUMBER_REALIZATIONS_INSURANCE_PRICING, n_utilities, WEEKS_ROF_SHORT_TERM);
 
     /// calculate storage curves for all realizations.
     calculateRealizationsStorages(&realizations_storages, week);
 
     /// for each realization, get rofs and check insurance use for the sake of pricing it.
-    for (unsigned long r = 0; r < NUMBER_REALIZATIONS_INSURANCE_PRICING; ++r) {
+    for (int r = 0; r < NUMBER_REALIZATIONS_INSURANCE_PRICING; ++r) {
         /// Get rof series for all utilities in all weeks of realization r.
-        calculatePseudoRofs(&realizations_storages, &(realizations_rofs[r]), r);
+        calculatePseudoRofs(&realizations_storages, &realizations_rofs, r);
 
         /// Increase insurance price every time insurance is triggered in any realization.
-        for (unsigned long u = 0; u < n_utilities; ++u) {
-            for (unsigned long w = 0; w < WEEKS_ROF_SHORT_TERM; ++w) {
-                if (realizations_rofs[r][u][w] < rof_triggers[u])
+        for (int u = 0; u < n_utilities; ++u) {
+            for (int w = 0; w < WEEKS_ROF_SHORT_TERM; ++w) {
+                if (realizations_rofs(r, u, w) < rof_triggers[u])
                     insurance_prices[u] += fixed_payouts[u] * insurance_premium / NUMBER_REALIZATIONS_INSURANCE_PRICING;
             }
         }
     }
 
-    return insurance_prices;
+    return;
 }
 
 /**
@@ -145,14 +141,14 @@ vector<double> InsurancePseudoROF::priceInsurance(int week) {
  * @param week
  */
 void
-InsurancePseudoROF::calculateRealizationsStorages(std::vector<std::vector<std::vector<double>>> *realizations_storages,
+InsurancePseudoROF::calculateRealizationsStorages(Matrix3D<double> *realizations_storages,
                                                   int week) {
-    unsigned long n_utilities = continuity_utilities.size();
-    unsigned long n_water_sources = continuity_water_sources.size();
-    unsigned long n_realizations = realizations_storages->size();
+    int n_utilities = (int) continuity_utilities.size();
+    int n_water_sources = (int) continuity_water_sources.size();
+    int n_realizations = realizations_storages->get_i();
 
     /// perform a continuity simulation for NUMBER_REALIZATIONS_ROF (50) yearly realization.
-    for (unsigned long r = 0; r < n_realizations; r++) {
+    for (int r = 0; r < n_realizations; r++) {
 
         /// reset current reservoirs' and utilities' storage and combined storage in the corresponding
         /// realization simulation.
@@ -166,50 +162,46 @@ InsurancePseudoROF::calculateRealizationsStorages(std::vector<std::vector<std::v
             /// record storages and check week for failure for each utility in each realization.
             for (int ws = 0; ws < n_water_sources; ++ws) {
                 /// for each water source, record its stored volume, and add it to utility's stored ratio
-                realizations_storages->at(r)[ws][w - week] = continuity_water_sources[ws]->getAvailable_volume();
+                (*realizations_storages)(r, ws, w - week) = continuity_water_sources[ws]->getAvailable_volume();
             }
         }
     }
 }
 
-void InsurancePseudoROF::calculatePseudoRofs(vector<vector<vector<double>>> *realizations_storages,
-                                             vector<vector<double>> *realizations_rofs,
-                                             unsigned long r) {
-    int n_realizations = (int) realizations_storages->size();
-    unsigned long n_utilities = continuity_utilities.size();
-    unsigned long n_water_sources = realizations_storages->at(0).size();
+void InsurancePseudoROF::calculatePseudoRofs(Matrix3D<double> *realizations_storages,
+                                             Matrix3D<double> *realizations_rofs,
+                                             int r) {
 
-    vector<vector<double>> realization_adjusted_storage_curves;
-    vector<vector<double>> realization_adjusted_storage_curves_dummy;
-    vector<double> storage0(n_water_sources);
+    int n_realizations = realizations_storages->get_i();
+    int n_utilities = (int) continuity_utilities.size();
+    int n_water_sources = realizations_storages->get_j();
+
+    double storage0[n_water_sources];
 
     /// time loop for insurance realization
-    for (unsigned long w = 0; w < WEEKS_ROF_SHORT_TERM; ++w) {
+    for (int w = 0; w < WEEKS_ROF_SHORT_TERM; ++w) {
         /// adjust other realization curves for them to become rof realization storage curves
         for (int ws = 0; ws < n_water_sources; ++ws) {
-            storage0[ws] = realizations_storages->at(r)[ws][w];
+            storage0[ws] = (*realizations_storages)(r, ws, w);
         }
         /// rof-realization loop for insurance realization
-        for (unsigned long rr = 1; rr < n_realizations; ++rr) {
+        for (int rr = 1; rr < n_realizations; ++rr) {
             /// prevent insurance realization from using itself for rof calculations
             if (rr != r) {
-                realization_adjusted_storage_curves = shiftStorageCurves(&realizations_storages->at(rr), storage0, w);
-                if (realization_adjusted_storage_curves.empty())
-                    for (int ws = 0; ws < n_water_sources; ++ws) {
-                        realization_adjusted_storage_curves = (*realizations_storages)[r];
-                    }
+                Matrix2D<double> realization_adjusted_storage_curves(
+                        shiftStorageCurves(realizations_storages, storage0, w, rr));
 
                 /// for each utility, in every week of rof realization, check storage curves for water sources to see
                 /// if they failed for that realization
-                for (unsigned long u = 0; u < n_utilities; ++u) {
-                    for (unsigned long ww = w; ww < w + WEEKS_ROF_SHORT_TERM; ++ww) {
-                        vector<double> utilities_combined_storage(n_utilities, 0.0);
+                for (int u = 0; u < n_utilities; ++u) {
+                    for (int ww = w; ww < w + WEEKS_ROF_SHORT_TERM; ++ww) {
+                        double utilities_combined_storage[n_utilities];
                         for (int ws : water_sources_to_utilities[u]) {
-                            utilities_combined_storage[u] += realization_adjusted_storage_curves[ws][ww];
+                            utilities_combined_storage[u] += realization_adjusted_storage_curves(ws, ww);
                         }
                         /// if, at any point in time, storage-capacity ratio criteria is violated for utility u, count failure
                         if (utilities_combined_storage[u] / capacities[u] < STORAGE_CAPACITY_RATIO_FAIL) {
-                            realizations_rofs->at(u)[w] += 1;
+                            (*realizations_rofs)(r, u, w) += 1;
                             break;
                         }
                     }
@@ -219,11 +211,14 @@ void InsurancePseudoROF::calculatePseudoRofs(vector<vector<vector<double>>> *rea
     }
 
     /// normalize failure counts by number of realization for every utility.
-    for (auto &ufr : *realizations_rofs) {
-        for (double &week_failures : ufr) {
-            week_failures /= n_realizations;
+    (*realizations_rofs) / n_realizations;
+    for (int u = 0; u < realizations_rofs->get_j(); ++u) {
+        for (int w = 0; w < realizations_rofs->get_k(); ++w) {
+            (*realizations_rofs)(r, u, w) /= n_realizations;
         }
     }
+
+    return;
 }
 
 /**
@@ -233,46 +228,42 @@ void InsurancePseudoROF::calculatePseudoRofs(vector<vector<vector<double>>> *rea
  * @param first_week
  * @return
  */
-vector<vector<double>> InsurancePseudoROF::shiftStorageCurves(vector<vector<double>> *storage_curves_2yrs,
-                                                              vector<double> storage0, unsigned long first_week) {
+Matrix2D<double>
+InsurancePseudoROF::shiftStorageCurves(Matrix3D<double> *storage_curves_2yrs, double *storage0, int first_week,
+                                       int rr) {
 
-    unsigned long n_curves = storage_curves_2yrs->size();
-    unsigned long n_weeks = WEEKS_ROF_SHORT_TERM;
-    vector<vector<double>> storage_curves(n_curves, vector<double>(n_weeks, 0.));
-    // FIXME: MEMORY DEALLOCATION ERROR WHEN USING LINES 235-239 INSTEAD OF 243-247 AND 253. I COULDN'T FIGURE OUT THE DETAILS YET, BUT IT NEEDS TO BE FIXED BECAUSE IT RUNS REALLY SLOW OTHERWISE.
+    int n_curves = storage_curves_2yrs->get_j();
+    int n_weeks = WEEKS_ROF_SHORT_TERM;
+    Matrix2D<double> storage_curves(storage_curves_2yrs->get_j(), storage_curves_2yrs->get_k());
 
     /// calculate added/removed storage from week 0.
-    vector<double> delta_storage(n_curves);
+    double delta_storage[n_curves];
 
-    bool shift_curves = false;
-    for (int ws = 0; ws < n_curves; ++ws) {
-        delta_storage[ws] = storage0[ws] - (*storage_curves_2yrs)[ws][first_week];
-        if (delta_storage[ws] / capacities[ws] > INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD) shift_curves = true;
-    }
+    bool shift_curves = true;
+//    bool shift_curves = false;
+//    for (int ws = 0; ws < n_curves; ++ws) {
+//        delta_storage[ws] = storage0[ws] - (*storage_curves_2yrs)(rr, ws, first_week);
+//        if (delta_storage[ws] / capacities[ws] > INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD) shift_curves = true;
+//    }
 
     if (shift_curves) {
         /// create matrix of year long curves.
-//        for (unsigned long c = 0; c < n_curves; ++c) {
-//                storage_curves[c] = vector<double>(storage_curves_2yrs->at(c).begin() + first_week,
-//                                                   storage_curves_2yrs->at(c).end() + first_week + n_weeks);
-//
-//        }
+        Matrix2D<double> storage_curves(storage_curves_2yrs->get2D(rr, 'i'));
 
         /// loop over time adjusting sources storages.
-        for (unsigned long w = first_week; w < first_week + n_weeks; ++w) {
+        for (int w = first_week; w < first_week + n_weeks; ++w) {
             for (int ws : sources_topological_order) {
-                storage_curves[ws][w] += (*storage_curves_2yrs)[ws][w] + delta_storage[ws];
-//                storage_curves[ws][w] += delta_storage[ws];
+                storage_curves(ws, w) += delta_storage[ws];
 
                 /// if source overflows, send excess downstream. Works for intakes as well, since their capacities are 0,
                 /// meaning all excess from above overflows.
-                if (storage_curves[ws][w] > capacities[ws]) {
+                if (storage_curves(ws, w) > capacities[ws]) {
                     if (downstream_sources[ws] != NON_INITIALIZED)
-                        storage_curves[downstream_sources[ws]][w] += storage_curves[ws][w] - capacities[ws];
-                    storage_curves[ws][w] = capacities[ws];
+                        storage_curves(downstream_sources[ws], w) += storage_curves(ws, w) - capacities[ws];
+                    storage_curves(ws, w) = capacities[ws];
                     /// prevent negative storages.
-                } else if (storage_curves[ws][w] < 0)
-                    storage_curves[ws][w] = 0;
+                } else if (storage_curves(ws, w) < 0)
+                    storage_curves(ws, w) = 0;
             }
         }
     }

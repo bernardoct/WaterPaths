@@ -28,6 +28,7 @@ namespace Constants {
     const int INTAKE = 0;
     const int RESERVOIR = 1;
     const int RESERVOIR_EXPANSION = 2;
+    const int QUARRY = 3;
     const int TRANSFERS = 0;
     const int RESTRICTIONS = 1;
     const int INSURANCE = 2;

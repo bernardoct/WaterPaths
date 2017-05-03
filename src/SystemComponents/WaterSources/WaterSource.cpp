@@ -23,7 +23,7 @@ WaterSource::WaterSource(const string &source_name, const int id, const double m
                          const double max_treatment_capacity, const int source_type)
         : name(source_name), capacity(capacity), min_environmental_outflow(min_environmental_outflow),
           total_outflow(min_environmental_outflow), catchments(catchments), online(ONLINE), available_volume(capacity),
-          id(id), max_treatment_capacity(max_treatment_capacity), source_type(source_type),
+          id(id), raw_water_main_capacity(max_treatment_capacity), source_type(source_type),
           construction_rof(NON_INITIALIZED), construction_time(NON_INITIALIZED),
           construction_cost_of_capital(NON_INITIALIZED), bond_term(NON_INITIALIZED),
           bond_interest_rate(NON_INITIALIZED) {}
@@ -35,7 +35,7 @@ WaterSource::WaterSource(const string &source_name, const int id, const double m
  * @param min_environmental_outflow
  * @param catchments
  * @param capacity
- * @param max_treatment_capacity
+ * @param raw_water_main_capacity
  * @param source_type
  * @param construction_rof
  * @param construction_time_range
@@ -43,12 +43,12 @@ WaterSource::WaterSource(const string &source_name, const int id, const double m
  */
 WaterSource::WaterSource(const string &source_name, const int id, const double min_environmental_outflow,
                          const vector<Catchment *> &catchments, const double capacity,
-                         const double max_treatment_capacity, const int source_type, const double construction_rof,
+                         const double raw_water_main_capacity, const int source_type, const double construction_rof,
                          const vector<double> construction_time_range, double construction_cost_of_capital,
                          double bond_term, double bond_interest_rate)
         : name(source_name), capacity(capacity), min_environmental_outflow(min_environmental_outflow),
           total_outflow(min_environmental_outflow), catchments(catchments), online(OFFLINE), available_volume(capacity),
-          id(id), max_treatment_capacity(max_treatment_capacity), source_type(source_type),
+          id(id), raw_water_main_capacity(raw_water_main_capacity), source_type(source_type),
           construction_rof(construction_rof),
           construction_time(construction_time_range[0] * WEEKS_IN_YEAR + (construction_time_range[1] -
                   construction_time_range[0]) * (rand() % (int) WEEKS_IN_YEAR)),
@@ -72,8 +72,8 @@ WaterSource::WaterSource(const WaterSource &water_source) : capacity(water_sourc
                                                                     water_source.upstream_min_env_inflow),
                                                             upstream_catchment_inflow(
                                                                     water_source.upstream_catchment_inflow),
-                                                            max_treatment_capacity(
-                                                                    water_source.max_treatment_capacity),
+                                                            raw_water_main_capacity(
+                                                                    water_source.raw_water_main_capacity),
                                                             construction_rof(water_source.construction_rof),
                                                             construction_time(
                                                                     water_source.construction_time),
@@ -116,6 +116,15 @@ WaterSource &WaterSource::operator=(const WaterSource &water_source) {
  */
 bool WaterSource::operator<(const WaterSource *other) {
     return id < other->id;
+}
+
+/**
+ * Sorting by id compare operator.
+ * @param other
+ * @return
+ */
+bool WaterSource::operator>(const WaterSource *other) {
+    return id > other->id;
 }
 
 /**

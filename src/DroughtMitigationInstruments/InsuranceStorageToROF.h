@@ -7,6 +7,7 @@
 
 
 #include "DroughtMitigationPolicy.h"
+#include "../Utils/Matrix3D.h"
 
 class InsuranceStorageToROF : public DroughtMitigationPolicy {
 private:
@@ -19,6 +20,7 @@ public:
     const double rof_trigger;
     const double insurance_premium;
     const double fixed_payouts;
+    Matrix3D<double> *storage_rof_table;
 
 };
 

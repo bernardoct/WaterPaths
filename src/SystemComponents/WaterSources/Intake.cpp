@@ -17,14 +17,13 @@ Intake::Intake(const string &source_name, const int id, const double min_environ
 
     demand = 0;
     available_volume = upstream_catchment_inflow - min_environmental_outflow;
-
 }
 
 Intake::Intake(const string &source_name, const int id, const double min_environmental_outflow,
-               const vector<Catchment *> &catchments, const double max_treatment_capacity,
+               const vector<Catchment *> &catchments, const double raw_water_main_capacity,
                const double construction_rof, const vector<double> construction_time_range,
                double construction_npv_cost_of_capital, double bond_term, double bond_interest_rate) :
-        WaterSource(source_name, id, min_environmental_outflow, catchments, NONE, max_treatment_capacity, INTAKE,
+        WaterSource(source_name, id, min_environmental_outflow, catchments, NONE, raw_water_main_capacity, INTAKE,
                     construction_rof, construction_time_range, construction_npv_cost_of_capital, bond_term,
                     bond_interest_rate) {
 
@@ -36,7 +35,6 @@ Intake::Intake(const string &source_name, const int id, const double min_environ
 
     demand = 0;
     available_volume = this->upstream_catchment_inflow - min_environmental_outflow;
-
 }
 
 /**
@@ -88,14 +86,14 @@ void Intake::applyContinuity(int week, double upstream_source_inflow, double dem
         upstream_catchment_inflow += c->getStreamflow(week);
 
     /// Mass balance for current time step.
-    this->total_outflow = upstream_source_inflow + upstream_catchment_inflow - demand;
+    total_outflow = upstream_source_inflow + upstream_catchment_inflow - demand;
 
     /// Water availability for next ime step.
     double next_upstream_catchment_inflow = 0;
     for (Catchment *c : catchments)
         next_upstream_catchment_inflow += c->getStreamflow(week + 1);
 
-    this->available_volume = upstream_min_env_inflow + next_upstream_catchment_inflow - min_environmental_outflow;
+    available_volume = upstream_min_env_inflow + next_upstream_catchment_inflow - min_environmental_outflow;
 
     /// Records for the sake of output.
     this->demand = demand;

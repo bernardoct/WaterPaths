@@ -21,7 +21,7 @@ public:
     Reservoir(const string &source_name, const int id, const double min_environmental_outflow,
               const vector<Catchment *> &catchments, const double capacity, const double max_treatment_capacity,
               const double construction_rof, const vector<double> &construction_time_range, double
-              construction_npv_cost_of_capital,
+              construction_cost,
               double bond_term, double bond_interest_rate);
 
     Reservoir(const Reservoir &reservoir);

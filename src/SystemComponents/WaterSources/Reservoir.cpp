@@ -39,10 +39,10 @@ Reservoir::Reservoir(const string &source_name, const int id, const double min_e
 Reservoir::Reservoir(const string &source_name, const int id, const double min_environmental_outflow,
                      const vector<Catchment *> &catchments, const double capacity, const double max_treatment_capacity,
                      const double construction_rof,
-                     const vector<double> &construction_time_range, double construction_npv_cost_of_capital,
+                     const vector<double> &construction_time_range, double construction_cost,
                      double bond_term, double bond_interest_rate) : WaterSource(
         source_name, id, min_environmental_outflow, catchments, capacity, max_treatment_capacity, RESERVOIR,
-        construction_rof, construction_time_range, construction_npv_cost_of_capital, bond_term, bond_interest_rate) {}
+        construction_rof, construction_time_range, construction_cost, bond_term, bond_interest_rate) {}
 
 /**
  * Copy constructor.
@@ -105,6 +105,7 @@ void Reservoir::applyContinuity(int week, double upstream_source_inflow, double 
 void Reservoir::setOnline() {
     WaterSource::setOnline();
 
+    /// start empty and gradually fill as inflows start coming in.
     available_volume = NONE;
 }
 

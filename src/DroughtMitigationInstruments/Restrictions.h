@@ -17,6 +17,7 @@ private:
     const vector<double> stage_multipliers;
     const vector<double> stage_triggers;
     double current_multiplier = 0;
+    int current_stage = 0;
 public:
 
     Restrictions(const int id, const vector<double> &stage_multipliers,

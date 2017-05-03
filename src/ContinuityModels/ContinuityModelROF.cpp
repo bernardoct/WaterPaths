@@ -92,9 +92,8 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
                     year_failure[u] = FAILURE;
 
             /// calculated week of storage-rof table
-//            if (rof_type == SHORT_TERM_ROF)
-//                updateStorageToROFTable(INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD, week_of_the_year);
-
+            if (rof_type == SHORT_TERM_ROF)
+                updateStorageToROFTable(INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD, week_of_the_year);
         }
 
         /// update storage-rof table
@@ -259,7 +258,7 @@ void ContinuityModelROF::resetUtilitiesAndReservoirs(int rof_type) {
         }
     else
         for (int i = 0; i < continuity_water_sources.size(); ++i) {
-            continuity_water_sources[i]->setAvailable_volume(realization_water_sources[i]->capacity);
+            continuity_water_sources[i]->setAvailable_volume(realization_water_sources[i]->getCapacity());
             continuity_water_sources[i]->setOutflow_previous_week(realization_water_sources[i]->getTotal_outflow());
         }
 
@@ -286,7 +285,7 @@ void ContinuityModelROF::updateOnlineInfrastructure(int week) {
     for (int i = 0; i < realization_water_sources.size(); ++i) {
         if (realization_water_sources[i]->isOnline() && !continuity_water_sources[i]->isOnline()) {
             continuity_water_sources[i]->setOnline();
-            water_sources_capacities[i] = continuity_water_sources[i]->capacity;
+            water_sources_capacities[i] = continuity_water_sources[i]->getCapacity();
         }
     }
 

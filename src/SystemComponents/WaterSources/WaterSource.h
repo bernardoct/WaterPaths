@@ -21,12 +21,12 @@ protected:
     double upstream_catchment_inflow = 0;
     double demand = 0;
     double upstream_min_env_inflow;
+    double capacity;
     bool online;
     vector<Catchment *> catchments;
 
 public:
     const int id;
-    const double capacity = NONE;
     const double min_environmental_outflow;
     const string name;
     const int source_type;
@@ -72,6 +72,8 @@ public:
     void setOutflow_previous_week(double outflow_previous_week);
 
     double getCapacity();
+
+    void addCapacity(double capacity);
 
     double getUpstream_source_inflow() const;
 

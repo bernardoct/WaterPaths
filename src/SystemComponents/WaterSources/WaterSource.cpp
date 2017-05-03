@@ -216,3 +216,7 @@ double WaterSource::getUpstream_source_inflow() const {
 double WaterSource::getCatchment_upstream_catchment_inflow() const {
     return upstream_catchment_inflow;
 }
+
+void WaterSource::addCapacity(double capacity) {
+    WaterSource::capacity += capacity;
+}

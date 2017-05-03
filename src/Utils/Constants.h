@@ -27,6 +27,7 @@ namespace Constants {
     const int NONE = 0;
     const int INTAKE = 0;
     const int RESERVOIR = 1;
+    const int RESERVOIR_EXPANSION = 2;
     const int TRANSFERS = 0;
     const int RESTRICTIONS = 1;
     const int INSURANCE = 2;

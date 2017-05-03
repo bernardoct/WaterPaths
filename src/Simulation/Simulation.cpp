@@ -4,8 +4,6 @@
 
 #include "Simulation.h"
 #include "../Utils/Utils.h"
-#include <iostream>
-#include <algorithm>
 #include <ctime>
 
 
@@ -95,10 +93,10 @@ void Simulation::runFullSimulation(int num_threads) {
     double seconds;
 
     /// Run realizations.
-//#pragma omp parallel for num_threads(num_threads)
+    time(&timer_i);
+#pragma omp parallel for num_threads(num_threads)
     for (int r = 0; r < number_of_realizations; ++r) {
         cout << "Realization " << r << endl;
-        time(&timer_i);
         for (int w = 0; w < total_simulation_time; ++w) {
             // DO NOT change the order of the steps. This would destroy dependencies.
             if (Utils::isFirstWeekOfTheYear(w))
@@ -108,10 +106,10 @@ void Simulation::runFullSimulation(int num_threads) {
             realization_models[r]->continuityStep(w);
             data_collector->collectData(realization_models[r]);
         }
-        time(&timer_f);
-        seconds = difftime(timer_f,timer_i);
-        cout << seconds << "s" << endl;
     }
+    time(&timer_f);
+    seconds = difftime(timer_f, timer_i);
+    cout << seconds << "s" << endl;
 
     /// Calculate objective values.
     data_collector->calculateObjectives();

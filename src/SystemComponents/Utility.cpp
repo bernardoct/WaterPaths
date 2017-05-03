@@ -6,6 +6,7 @@
 #include "Utility.h"
 #include "../Utils/Utils.h"
 #include "WaterSources/ReservoirExpansion.h"
+#include "WaterSources/Quarry.h"
 
 /**
  * Main constructor for the Utility class.
@@ -21,6 +22,7 @@ Utility::Utility(char *name, int id, char const *demand_file_name, int number_of
         percent_contingency_fund_contribution(percent_contingency_fund_contribution),
         water_price_per_volume(water_price_per_volume), infrastructure_discount_rate(NON_INITIALIZED) {
 
+    /// Read demands.
     demand_series = Utils::parse1DCsvFile(demand_file_name, number_of_week_demands);
 }
 
@@ -65,9 +67,16 @@ Utility::Utility(Utility &utility) : id(utility.id), number_of_week_demands(util
         if (ws.second->source_type == RESERVOIR) {
             water_sources.insert(pair<int, WaterSource *>
                                          (ws.first, new Reservoir(*dynamic_cast<Reservoir *>(ws.second))));
-        } else {
+        } else if (ws.second->source_type == INTAKE) {
             water_sources.insert(pair<int, WaterSource *>
                                          (ws.first, new Intake(*dynamic_cast<Intake *>(ws.second))));
+        } else if (ws.second->source_type == QUARRY) {
+            water_sources.insert(pair<int, WaterSource *>
+                                         (ws.first, new Quarry(*dynamic_cast<Quarry *>(ws.second))));
+        } else {
+            string error_message = "Water source  of type " + std::to_string(ws.second->source_type) + "cannot be "
+                    "added to utility. Source ID: " + std::to_string(ws.second->id);
+            throw logic_error(error_message);
         }
     }
 
@@ -150,7 +159,7 @@ void Utility::addWaterSource(WaterSource *water_source) {
 
     if (water_source->isOnline()) {
         total_storage_capacity += water_source->getCapacity();
-        total_treatment_capacity += water_source->max_treatment_capacity;
+        total_treatment_capacity += water_source->raw_water_main_capacity;
     }
     total_stored_volume = total_storage_capacity;
 }
@@ -224,7 +233,7 @@ void Utility::setWaterSourceOnline(int source_id) {
     }
     /// Updates total storage and treatment capacities.
     total_storage_capacity += water_sources.at(source_id)->getCapacity();
-    total_treatment_capacity += water_sources.at(source_id)->max_treatment_capacity;
+    total_treatment_capacity += water_sources.at(source_id)->raw_water_main_capacity;
 }
 
 /**

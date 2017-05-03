@@ -30,18 +30,18 @@ Reservoir::Reservoir(const string &source_name, const int id, const double min_e
  * @param min_environmental_outflow
  * @param catchments
  * @param capacity
- * @param max_treatment_capacity
+ * @param raw_water_main_capacity
  * @param source_type
  * @param construction_rof
  * @param construction_time_range
  * @param construction_price
  */
 Reservoir::Reservoir(const string &source_name, const int id, const double min_environmental_outflow,
-                     const vector<Catchment *> &catchments, const double capacity, const double max_treatment_capacity,
+                     const vector<Catchment *> &catchments, const double capacity, const double raw_water_main_capacity,
                      const double construction_rof,
                      const vector<double> &construction_time_range, double construction_cost,
                      double bond_term, double bond_interest_rate) : WaterSource(
-        source_name, id, min_environmental_outflow, catchments, capacity, max_treatment_capacity, RESERVOIR,
+        source_name, id, min_environmental_outflow, catchments, capacity, raw_water_main_capacity, RESERVOIR,
         construction_rof, construction_time_range, construction_cost, bond_term, bond_interest_rate) {}
 
 /**

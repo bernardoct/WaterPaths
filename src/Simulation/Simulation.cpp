@@ -68,9 +68,7 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_source
     }
 }
 
-Simulation::~Simulation() {
-
-}
+Simulation::~Simulation() {}
 
 /**
  * Assignment constructor
@@ -81,7 +79,7 @@ Simulation::~Simulation() {
 Simulation &Simulation::operator=(const Simulation &simulation) {
     this->number_of_realizations = simulation.number_of_realizations;
     this->total_simulation_time = simulation.total_simulation_time;
-
+    return *this;
 }
 
 void Simulation::runFullSimulation(int num_threads) {

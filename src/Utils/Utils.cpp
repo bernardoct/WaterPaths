@@ -6,6 +6,7 @@
 #include "../DroughtMitigationInstruments/Transfers.h"
 #include "../DroughtMitigationInstruments/InsurancePseudoROF.h"
 #include "../SystemComponents/WaterSources/ReservoirExpansion.h"
+#include "../SystemComponents/WaterSources/Quarry.h"
 #include <fstream>
 
 /**
@@ -70,6 +71,8 @@ vector<WaterSource *> Utils::copyWaterSourceVector(vector<WaterSource *> water_s
             water_sources_new.push_back(new Intake(*dynamic_cast<Intake *>(ws)));
         } else if (ws->source_type == RESERVOIR_EXPANSION) {
             water_sources_new.push_back(new ReservoirExpansion(*dynamic_cast<ReservoirExpansion *>(ws)));
+        } else if (ws->source_type == QUARRY) {
+            water_sources_new.push_back(new Quarry(*dynamic_cast<Quarry *>(ws)));
         }
     }
 

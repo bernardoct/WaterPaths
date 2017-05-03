@@ -22,14 +22,12 @@ ContinuityModelROF::ContinuityModelROF(const vector<WaterSource *> &water_source
         u->updateTotalStoredVolume();
     }
 
-
     storage_to_rof_realization = Matrix3D<double>((unsigned int) continuity_utilities.size(),
                                                   (unsigned int) NO_OF_INSURANCE_STORAGE_TIERS,
-                                                  (unsigned int) WEEKS_IN_YEAR);
+                                                  (unsigned int) ceil(WEEKS_IN_YEAR));
     storage_to_rof_table = Matrix3D<double>((unsigned int) continuity_utilities.size(),
                                             (unsigned int) NO_OF_INSURANCE_STORAGE_TIERS,
-                                            (unsigned int) WEEKS_IN_YEAR);
-
+                                            (unsigned int) ceil(WEEKS_IN_YEAR));
 }
 
 ContinuityModelROF::ContinuityModelROF(ContinuityModelROF &continuity_model_rof)
@@ -54,10 +52,10 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
     vector<double> year_failure(continuity_utilities.size(), 0.0);
     /// If this is the first week of the year, reset storage-rof table.
     if (Utils::isFirstWeekOfTheYear(week))
-        storage_to_rof_table.reset(false);
+        storage_to_rof_table.reset(NON_FAILURE);
 
-    unsigned int week_of_the_year = (unsigned int) (((double) week / WEEKS_IN_YEAR - week / WEEKS_IN_YEAR) *
-                                                    WEEKS_IN_YEAR);
+    int week_of_the_year = (int) (((week + 0.99) / WEEKS_IN_YEAR - (int) ((week + 0.99) / WEEKS_IN_YEAR)) *
+                                  WEEKS_IN_YEAR);
 
     /// checks if new infrastructure became available and, if so, set the corresponding realization
     /// infrastructure online.
@@ -68,8 +66,14 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
     if (rof_type == SHORT_TERM_ROF)
         n_weeks_rof = WEEKS_ROF_SHORT_TERM;
     /// long-term rof calculations.
-    else
+    else {
         n_weeks_rof = WEEKS_ROF_LONG_TERM;
+    }
+
+//    if (week_of_the_year == 51) {
+//        storage_to_rof_table.print(25);
+//        cout << endl;
+//    }
 
     /// perform a continuity simulation for NUMBER_REALIZATIONS_ROF (50) yearly realization.
     for (int r = 0; r < NUMBER_REALIZATIONS_ROF; ++r) {
@@ -77,8 +81,6 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
         /// reset reservoirs' and utilities' storage and combined storage, respectively, they currently
         /// have in the corresponding realization simulation.
         resetUtilitiesAndReservoirs(rof_type);
-
-//        storage_to_rof_realization.reset(NON_FAILURE);
 
         for (int w = week; w < week + n_weeks_rof; ++w) {
 
@@ -97,7 +99,7 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
         }
 
         /// update storage-rof table
-//        storage_to_rof_table += storage_to_rof_realization / NUMBER_REALIZATIONS_ROF;
+        storage_to_rof_table += storage_to_rof_realization / NUMBER_REALIZATIONS_ROF;
 
         /// finalize ROF calculation and reset failure counter.
         for (int j = 0; j < continuity_utilities.size(); ++j) {
@@ -111,8 +113,6 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
         risk_of_failure[i] /= NUMBER_REALIZATIONS_ROF;
     }
 
-//    storage_to_rof_table.print(0);
-//    cout << endl;
     
     return risk_of_failure;
 }
@@ -126,9 +126,10 @@ void ContinuityModelROF::updateStorageToROFTable(double storage_percent_decremen
     for (int ws = 0; ws < continuity_water_sources.size(); ++ws)
         available_volumes[ws] = continuity_water_sources[ws]->getAvailable_volume();
 
-    /// loops over the percent storage levels to populate table.
-//    for (int i = NO_OF_INSURANCE_STORAGE_TIERS; i >= 0; --i) {
+    /// loops over the percent storage levels to populate table. The loop begins from two levels above the level
+    /// where at least one failure was observed in the last iteration. This saves a lot of computational time.
     for (int i = beginning_res_level; i >= 0; --i) {
+        /// calculate delta storage for all reservoirs and array that will receive the shifted storage curves.
         double percent_percent_storage_level = (double) i * storage_percent_decrement;
         double delta_storage[n_water_sources] = {};
         std::copy(available_volumes, available_volumes + n_water_sources, delta_storage);
@@ -137,9 +138,8 @@ void ContinuityModelROF::updateStorageToROFTable(double storage_percent_decremen
 
         /// calculate the difference between the simulated available water and the one for the table calculated above
         /// based on the percent decrement.
-        for (int k = 0; k < n_water_sources; ++k) delta_storage[k] =
-                                                          water_sources_capacities[k] * percent_percent_storage_level -
-                                                          available_volumes[k];
+        for (int k = 0; k < n_water_sources; ++k)
+            delta_storage[k] = water_sources_capacities[k] * percent_percent_storage_level - available_volumes[k];
 
         /// Shift storages.
         shiftStorages(available_volumes_shifted, delta_storage);
@@ -170,11 +170,12 @@ void ContinuityModelROF::updateStorageToROFTable(double storage_percent_decremen
             break;
         }
 
+        /// Sets the beginning percent storage for the next realization two levels above the first level in which
+        /// at least one failure was observed.
         if (count_fails == 0)
             beginning_res_level = i + 2;
         else if (beginning_res_level < i + 2)
             beginning_res_level = i + 2;
-//        cout << count_fails << " ";
     }
 //    cout << endl << beginning_res_level << endl;
 //    storage_to_rof_realization.print(week_of_the_year);

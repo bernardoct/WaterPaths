@@ -30,7 +30,7 @@ public:
     const double min_environmental_outflow;
     const string name;
     const int source_type;
-    const double max_treatment_capacity;
+    const double raw_water_main_capacity;
     const double construction_rof;
     const double construction_cost_of_capital;
     const double construction_time;
@@ -42,10 +42,10 @@ public:
                 const double max_treatment_capacity, const int source_type);
 
     WaterSource(const string &source_name, const int id, const double min_environmental_outflow,
-                    const vector<Catchment *> &catchments, const double capacity,
-                    const double max_treatment_capacity, const int source_type, const double construction_rof,
-                    const vector<double> construction_time_range, double construction_cost_of_capital,
-                    double bond_term, double bond_interest_rate);
+                const vector<Catchment *> &catchments, const double capacity,
+                const double raw_water_main_capacity, const int source_type, const double construction_rof,
+                const vector<double> construction_time_range, double construction_cost_of_capital,
+                double bond_term, double bond_interest_rate);
 
     WaterSource(const WaterSource &water_source);
 
@@ -54,6 +54,8 @@ public:
     WaterSource &operator=(const WaterSource &water_source);
 
     bool operator<(const WaterSource *other);
+
+    bool operator>(const WaterSource *other);
 
     void continuityWaterSource(int week, double upstream_source_inflow, double demand_outflow);
 

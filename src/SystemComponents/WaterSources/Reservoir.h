@@ -19,7 +19,7 @@ public:
               const vector<Catchment *> &catchments, const double capacity, const double max_treatment_capacity);
 
     Reservoir(const string &source_name, const int id, const double min_environmental_outflow,
-              const vector<Catchment *> &catchments, const double capacity, const double max_treatment_capacity,
+              const vector<Catchment *> &catchments, const double capacity, const double raw_water_main_capacity,
               const double construction_rof, const vector<double> &construction_time_range, double
               construction_cost,
               double bond_term, double bond_interest_rate);

@@ -7,6 +7,7 @@
 #include "Utils/QPSolver/QuadProg++.hh"
 #include "DroughtMitigationInstruments/Transfers.h"
 #include "SystemComponents/WaterSources/ReservoirExpansion.h"
+#include "SystemComponents/WaterSources/Quarry.h"
 
 
 int regionOneUtilitiesTwoReservoirsContinuityTest();
@@ -946,7 +947,8 @@ void simulation3U5RInfraTest() {
 
     /// Create reservoirs and corresponding vector
     vector<double> construction_time_interval = {1.0, 4.0};
-    Reservoir r1("R1", 0, 3.0, catchments1, 100.0, 20);
+    Quarry q1("Q1", 0, 3.0, catchments1, 100.0, 20, 20);
+//    Reservoir q1("Q1", 0, 3.0, catchments1, 100.0, 20);
     Reservoir r2("R2", 1, 3.0, catchments2, 275.0, 20, 0.02, construction_time_interval, 5000, 20, 0.05);
     Reservoir r3("R3", 2, 2.0, catchments3, 400.0, 20);
     Reservoir r4("R4", 3, 3.0, catchments2, 500.0, 20);
@@ -954,7 +956,7 @@ void simulation3U5RInfraTest() {
     ReservoirExpansion rex6("R6wx", 5, 3, 200.0, 0.03, construction_time_interval, 3000, 20, 0.05);
 
     vector<WaterSource *> water_sources;
-    water_sources.push_back(&r1);
+    water_sources.push_back(&q1);
     water_sources.push_back(&r2);
     water_sources.push_back(&r3);
     water_sources.push_back(&r4);

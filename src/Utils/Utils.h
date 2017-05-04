@@ -33,6 +33,8 @@ public:
     static vector<int> getQuantileIndeces(vector<double> v1, double quantile);
 
     static vector<vector<double>> calculateDistances(vector<vector<double>> data_points);
+
+    static int weekOfTheYear(int week);
 };
 
 

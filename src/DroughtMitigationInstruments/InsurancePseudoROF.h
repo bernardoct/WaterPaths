@@ -6,7 +6,6 @@
 #define TRIANGLEMODEL_INSURANCE_H
 
 
-#include "DroughtMitigationPolicy.h"
 #include "../ContinuityModels/ContinuityModelROF.h"
 
 class InsurancePseudoROF : public DroughtMitigationPolicy, ContinuityModelROF {
@@ -28,6 +27,8 @@ public:
 
     InsurancePseudoROF(const InsurancePseudoROF &insurance);
 
+    virtual ~InsurancePseudoROF();
+
     void applyPolicy(int week) override;
 
     void addSystemComponents(vector<Utility *> utilities, vector<WaterSource *> water_sources) override;
@@ -35,8 +36,6 @@ public:
     void priceInsurance(int week);
 
     const double getInsurancePrice(int u) const;
-
-    virtual ~InsurancePseudoROF();
 
     void calculateRealizationsStorages(Matrix3D<double> *realizations_storages, int week);
 

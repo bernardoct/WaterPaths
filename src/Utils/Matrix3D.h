@@ -6,13 +6,11 @@
 #ifndef TRIANGLEMODEL_Matrix3D3D_H
 #define TRIANGLEMODEL_Matrix3D3D_H
 
-#endif //TRIANGLEMODEL_Matrix3D3D_H
 
 #include <cstring>
 #include <bits/functexcept.h>
 #include <algorithm>
 #include <iostream>
-
 
 template<typename T>
 class Matrix2D {
@@ -328,3 +326,4 @@ int Matrix3D<T>::get_k() {
     return dk_;
 }
 
+#endif //TRIANGLEMODEL_Matrix3D3D_H

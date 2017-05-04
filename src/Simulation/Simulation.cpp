@@ -9,20 +9,19 @@
 
 Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_sources_graph,
                        const vector<vector<int>> &water_sources_to_utilities, vector<Utility *> &utilities,
-                       vector<DroughtMitigationPolicy *> &drought_mitigation_policies, const int total_simulation_time,
+                       const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
+                       const int total_simulation_time,
                        const int number_of_realizations, DataCollector *data_collector) :
         total_simulation_time(total_simulation_time),
-        number_of_realizations(number_of_realizations), data_collector(data_collector),
-        drought_mitigation_policies(drought_mitigation_policies) {
+        number_of_realizations(number_of_realizations), data_collector(data_collector) {
 
     /// Sort water sources and utilities by their IDs.
     //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
+    std::sort(water_sources.begin(), water_sources.end(), WaterSource::compare);
 #ifdef _WIN32
-    sort(continuity_water_sources.begin(), continuity_water_sources.end(), std::greater<>());
     sort(continuity_utilities.begin(), continuity_utilities.end(), std::greater<>());
 #else
-    sort(water_sources.begin(), water_sources.end());
-    sort(utilities.begin(), utilities.end());
+    std::sort(utilities.begin(), utilities.end());
 #endif
 
     /// Pass sum of minimum environmental inflows of upstream sources to intakes.
@@ -41,30 +40,39 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_source
                                        number_of_realizations, water_sources_graph);
     this->data_collector = data_collector;
 
-    /// Creates the realization and ROF models.
-    vector<WaterSource *> water_sources_realization;
-    vector<DroughtMitigationPolicy *> drought_mitigation_policies_realization;
+    /// Create the realization and ROF models.
     for (int r = 0; r < number_of_realizations; ++r) {
-        /// Creates realization models by copying the water sources and utilities.
-        water_sources_realization = Utils::copyWaterSourceVector(water_sources);
+        /// Create realization models by copying the water sources and utilities.
+        vector<WaterSource *> water_sources_realization = Utils::copyWaterSourceVector(water_sources);
+        vector<DroughtMitigationPolicy *> drought_mitigation_policies_realization =
+                Utils::copyDroughtMitigationPolicyVector(drought_mitigation_policies);
+        vector<Utility *> utilities_realization = Utils::copyUtilityVector(utilities);
+
+        /// Store realization models in vector
         realization_models.push_back(new ContinuityModelRealization(water_sources_realization,
                                                                     water_sources_graph,
                                                                     water_sources_to_utilities,
-                                                                    Utils::copyUtilityVector(utilities),
-                                                                    Utils::copyDroughtMitigationPolicyVector(
-                                                                            drought_mitigation_policies),
+                                                                    utilities_realization,
+                                                                    drought_mitigation_policies_realization,
                                                                     r));
 
-        /// Creates rof models by copying the water utilities and sources.
-        rof_models.push_back(new ContinuityModelROF(Utils::copyWaterSourceVector(water_sources), water_sources_graph,
-                                                    water_sources_to_utilities, Utils::copyUtilityVector(utilities), r));
+        /// Create rof models by copying the water utilities and sources.
+        vector<WaterSource *> water_sources_rof = Utils::copyWaterSourceVector(water_sources);
+        vector<Utility *> utilities_rof = Utils::copyUtilityVector(utilities);
 
-        /// Initializes rof models.
+        /// Store realization models in vector
+        rof_models.push_back(new ContinuityModelROF(water_sources_rof,
+                                                    water_sources_graph,
+                                                    water_sources_to_utilities,
+                                                    utilities_rof,
+                                                    r));
+
+        /// Initialize rof models.
         rof_models[r]->setRealization_water_sources(water_sources_realization);
 
-        /// Clear vectors for reuse in the setup of next realization.
-        water_sources_realization.clear();
-        drought_mitigation_policies_realization.clear();
+        /// Link storage-rof tables of policies and rof models.
+        for (DroughtMitigationPolicy *dmp : realization_models[r]->getDrought_mitigation_policies())
+            dmp->setStorage_to_rof_table_(rof_models[r]->getStorage_to_rof_table());
     }
 }
 
@@ -92,7 +100,7 @@ void Simulation::runFullSimulation(int num_threads) {
 
     /// Run realizations.
     time(&timer_i);
-#pragma omp parallel for num_threads(num_threads)
+//#pragma omp parallel for num_threads(num_threads)
     for (int r = 0; r < number_of_realizations; ++r) {
         cout << "Realization " << r << endl;
         for (int w = 0; w < total_simulation_time; ++w) {

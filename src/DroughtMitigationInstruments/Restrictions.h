@@ -8,7 +8,6 @@
 
 #include "../SystemComponents/Utility.h"
 #include "DroughtMitigationPolicy.h"
-#include "../Utils/Graph/Graph.h"
 
 class Restrictions : public DroughtMitigationPolicy {
 

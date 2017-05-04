@@ -19,23 +19,32 @@ namespace Constants {
     const int LONG_TERM_ROF = 1;
     const int NUMBER_REALIZATIONS_INSURANCE_PRICING = 50;
     const int NUMBER_REALIZATIONS_ROF = 50;
+
     const bool ONLINE = true;
     const bool OFFLINE = false;
     const double STORAGE_CAPACITY_RATIO_FAIL = 0.2;
+
     const int FAILURE = 1;
     const int NON_FAILURE = 0;
+
     const int NONE = 0;
+    const int NON_INITIALIZED = -1;
+    
     const int INTAKE = 0;
     const int RESERVOIR = 1;
     const int RESERVOIR_EXPANSION = 2;
     const int QUARRY = 3;
+
     const int TRANSFERS = 0;
     const int RESTRICTIONS = 1;
-    const int INSURANCE = 2;
+    const int INSURANCE_PSEUDO_ROF = 2;
+    const int INSURANCE_STORAGE_ROF = 3;
+    
     const int COLUMN_WIDTH = 10;
     const int COLUMN_PRECISION = 4;
-    const int NON_INITIALIZED = -1;
+
     const double WORSE_CASE_COST_PERCENTILE = 0.99;
+
     const double INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD = 0.05;
     const int NO_OF_INSURANCE_STORAGE_TIERS = (int) std::round(1. / INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD);
 };

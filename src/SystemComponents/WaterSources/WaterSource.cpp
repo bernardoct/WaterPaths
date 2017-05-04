@@ -127,6 +127,10 @@ bool WaterSource::operator>(const WaterSource *other) {
     return id > other->id;
 }
 
+bool WaterSource::compare(WaterSource *lhs, WaterSource *rhs) {
+    return lhs->id < rhs->id;
+}
+
 /**
  * Applies continuity to the water source.
  * @param week

@@ -74,8 +74,8 @@ Utility::Utility(Utility &utility) : id(utility.id), number_of_week_demands(util
             water_sources.insert(pair<int, WaterSource *>
                                          (ws.first, new Quarry(*dynamic_cast<Quarry *>(ws.second))));
         } else {
-            string error_message = "Water source  of type " + std::to_string(ws.second->source_type) + "cannot be "
-                    "added to utility. Source ID: " + std::to_string(ws.second->id);
+            string error_message = "Water source  of type " + std::to_string(ws.second->source_type) + " cannot be "
+                    "added to utility. \nSource ID: " + std::to_string(ws.second->id);
             throw logic_error(error_message);
         }
     }

@@ -7,12 +7,10 @@
 
 
 #include "ContinuityModel.h"
-#include "ContinuityModelROF.h"
-#include "../DroughtMitigationInstruments/Restrictions.h"
+#include "../DroughtMitigationInstruments/DroughtMitigationPolicy.h"
 
 class ContinuityModelRealization : public ContinuityModel {
 private:
-    ContinuityModelRealization(ContinuityModelRealization &continuity_model_realization);
 
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
 
@@ -23,6 +21,8 @@ public:
                                const vector<Utility *> &utilities,
                                const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
                                const int realization_index);
+
+    ContinuityModelRealization(ContinuityModelRealization &continuity_model_realization);
 
     const int realization_id;
 

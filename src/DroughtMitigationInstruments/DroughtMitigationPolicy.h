@@ -5,10 +5,10 @@
 #ifndef TRIANGLEMODEL_DROUGHTMITIGATIONPOLICY_H
 #define TRIANGLEMODEL_DROUGHTMITIGATIONPOLICY_H
 
-
 #include "../SystemComponents/Utility.h"
 #include "../Utils/Constants.h"
 #include "../Utils/Graph/Graph.h"
+#include "../Utils/Matrix3D.h"
 
 class DroughtMitigationPolicy {
 protected:
@@ -16,7 +16,7 @@ protected:
 
     vector<int> utilities_ids;
     vector<Utility *> realization_utilities;
-    vector<vector<double>> *storage_to_rof_table;
+    const Matrix3D<double> *storage_to_rof_table_;
 
 public:
     const int id;
@@ -34,7 +34,9 @@ public:
 
     bool operator>(const DroughtMitigationPolicy *other);
 
-    virtual ~DroughtMitigationPolicy();
+    ~DroughtMitigationPolicy();
+
+    void setStorage_to_rof_table_(const Matrix3D<double> *storage_to_rof_table_);
 
 };
 

@@ -8,6 +8,7 @@
 #include "DroughtMitigationInstruments/Transfers.h"
 #include "SystemComponents/WaterSources/ReservoirExpansion.h"
 #include "SystemComponents/WaterSources/Quarry.h"
+#include "DroughtMitigationInstruments/InsuranceStorageToROF.h"
 
 
 int regionOneUtilitiesTwoReservoirsContinuityTest();
@@ -946,14 +947,15 @@ void simulation3U5RInfraTest() {
     catchments3.push_back(&c1);
 
     /// Create reservoirs and corresponding vector
-    vector<double> construction_time_interval = {1.0, 4.0};
-    Quarry q1("Q1", 0, 3.0, catchments1, 100.0, 20, 20);
-//    Reservoir q1("Q1", 0, 3.0, catchments1, 100.0, 20);
-    Reservoir r2("R2", 1, 3.0, catchments2, 275.0, 20, 0.02, construction_time_interval, 5000, 20, 0.05);
+    vector<double> construction_time_interval_r2 = {1.0, 4.0};
+    vector<double> construction_time_interval_rex6 = {1.0, 4.0};
+
+    Quarry q1("Q1", 0, 3.0, catchments1, 100.0, 20, 10);
+    Reservoir r2("R2", 1, 3.0, catchments2, 275.0, 20, 0.02, construction_time_interval_r2, 5000, 20, 0.05);
     Reservoir r3("R3", 2, 2.0, catchments3, 400.0, 20);
     Reservoir r4("R4", 3, 3.0, catchments2, 500.0, 20);
     Reservoir r5("R5", 4, 2.0, catchments3, 900.0, 20);
-    ReservoirExpansion rex6("R6wx", 5, 3, 200.0, 0.03, construction_time_interval, 3000, 20, 0.05);
+    ReservoirExpansion rex6("R6wx", 5, 3, 200.0, 0.03, construction_time_interval_rex6, 3000, 20, 0.05);
 
     vector<WaterSource *> water_sources;
     water_sources.push_back(&q1);
@@ -1044,6 +1046,13 @@ void simulation3U5RInfraTest() {
 //                          reservoir_utility_connectivity_matrix,
 //                          fixed_payouts);
 //    drought_mitigation_policies.push_back(&in);
+
+    double insurance_triggers[3] = {0.06, 0.02, 0.02};
+    double fixed_payouts[3] = {1., 1., 1.};
+    vector<int> insured_utilities = {0, 1, 2};
+    InsuranceStorageToROF in(0, water_sources, g, reservoir_utility_connectivity_matrix, utilities, insured_utilities,
+                             insurance_triggers, 1.2, fixed_payouts);
+    drought_mitigation_policies.push_back(&in);
 
     /// Data collector pointer
     DataCollector *data_collector = nullptr;

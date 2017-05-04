@@ -87,6 +87,8 @@ public:
 
     double
     calculateNetPresentConstructionCost(int week, double discount_rate, double *level_debt_service_payment) const;
+
+    static bool compare(WaterSource *lhs, WaterSource *rhs);
 };
 
 

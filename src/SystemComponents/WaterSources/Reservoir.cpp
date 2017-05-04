@@ -81,8 +81,9 @@ void Reservoir::applyContinuity(int week, double upstream_source_inflow, double 
         catchment_inflow += c->getStreamflow((week));
     }
 
-    double stored_volume_new =
-            available_volume + upstream_source_inflow + catchment_inflow - demand_outflow - min_environmental_outflow;
+    double stored_volume_new = available_volume
+                               + upstream_source_inflow + catchment_inflow
+                               - demand_outflow - min_environmental_outflow;
     double outflow_new = min_environmental_outflow;
 
     if (online) {

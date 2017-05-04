@@ -10,9 +10,9 @@ DroughtMitigationPolicy::DroughtMitigationPolicy(const int id, const int type) :
 DroughtMitigationPolicy::DroughtMitigationPolicy(const DroughtMitigationPolicy &drought_mitigation_policy) :
         id(drought_mitigation_policy.id), type(drought_mitigation_policy.type) {
     realization_utilities = vector<Utility *>();
-    if (realization_utilities.size() > 0)
-        __throw_invalid_argument("Your vector of Utility pointers must be empty for you to "
-                                         "copy it.");
+    if (!realization_utilities.empty())
+        __throw_invalid_argument("Your vector of Utility pointers must be empty for you to copy it, otherwise this"
+                                         "policy will act either on the wrong realization or on a freed pointer");
 }
 
 const vector<int> &DroughtMitigationPolicy::getUtilities_ids() const {
@@ -29,6 +29,10 @@ bool DroughtMitigationPolicy::operator<(const DroughtMitigationPolicy *other) {
 
 bool DroughtMitigationPolicy::operator>(const DroughtMitigationPolicy *other) {
     return id > other->id;
+}
+
+void DroughtMitigationPolicy::setStorage_to_rof_table_(const Matrix3D<double> *storage_to_rof_table_) {
+    DroughtMitigationPolicy::storage_to_rof_table_ = storage_to_rof_table_;
 }
 
 

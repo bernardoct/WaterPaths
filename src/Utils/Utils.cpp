@@ -7,6 +7,7 @@
 #include "../DroughtMitigationInstruments/InsurancePseudoROF.h"
 #include "../SystemComponents/WaterSources/ReservoirExpansion.h"
 #include "../SystemComponents/WaterSources/Quarry.h"
+#include "../DroughtMitigationInstruments/InsuranceStorageToROF.h"
 #include <fstream>
 
 /**
@@ -103,8 +104,11 @@ Utils::copyDroughtMitigationPolicyVector(vector<DroughtMitigationPolicy *> droug
             drought_mitigation_policy_new.push_back(new Restrictions(*dynamic_cast<Restrictions *>(dmp)));
         else if (dmp->type == TRANSFERS)
             drought_mitigation_policy_new.push_back(new Transfers(*dynamic_cast<Transfers *>(dmp)));
-        else if (dmp->type == INSURANCE)
+        else if (dmp->type == INSURANCE_PSEUDO_ROF)
             drought_mitigation_policy_new.push_back(new InsurancePseudoROF(*dynamic_cast<InsurancePseudoROF *>(dmp)));
+        else if (dmp->type == INSURANCE_STORAGE_ROF)
+            drought_mitigation_policy_new.push_back(
+                    new InsuranceStorageToROF(*dynamic_cast<InsuranceStorageToROF *>(dmp)));
     }
 
     return drought_mitigation_policy_new;
@@ -112,6 +116,11 @@ Utils::copyDroughtMitigationPolicyVector(vector<DroughtMitigationPolicy *> droug
 
 bool Utils::isFirstWeekOfTheYear(int week) {
     return ((week + 1) / WEEKS_IN_YEAR - (int) ((week + 1) / WEEKS_IN_YEAR)) * WEEKS_IN_YEAR < 1.0 || week == 0;
+}
+
+int Utils::weekOfTheYear(int week) {
+    return (int) (((week + 0.99) / WEEKS_IN_YEAR - (int) ((week + 0.99) / WEEKS_IN_YEAR)) *
+                  WEEKS_IN_YEAR);
 }
 
 /**

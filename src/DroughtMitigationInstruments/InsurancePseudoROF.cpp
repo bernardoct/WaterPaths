@@ -22,11 +22,12 @@ InsurancePseudoROF::InsurancePseudoROF(const int id, const std::vector<double> &
                                        const Graph &water_sources_graph,
                                        const std::vector<vector<int>> &water_sources_to_utilities,
                                        const std::vector<double> fixed_payouts)
-        : DroughtMitigationPolicy(id, INSURANCE), ContinuityModelROF(Utils::copyWaterSourceVector(water_sources),
-                                                                     water_sources_graph,
-                                                                     water_sources_to_utilities,
-                                                                     Utils::copyUtilityVector(utilities),
-                                                                     NON_INITIALIZED), rof_triggers(rof_triggers),
+        : DroughtMitigationPolicy(id, INSURANCE_PSEUDO_ROF),
+          ContinuityModelROF(Utils::copyWaterSourceVector(water_sources),
+                             water_sources_graph,
+                             water_sources_to_utilities,
+                             Utils::copyUtilityVector(utilities),
+                             NON_INITIALIZED), rof_triggers(rof_triggers),
           insurance_premium(insurance_premium), fixed_payouts(fixed_payouts) {
 
     /// Register utilities with insurance policies.
@@ -50,33 +51,16 @@ InsurancePseudoROF::InsurancePseudoROF(const int id, const std::vector<double> &
 }
 
 InsurancePseudoROF::InsurancePseudoROF(const InsurancePseudoROF &insurance) :
-        DroughtMitigationPolicy(insurance.id,
-                                                                                                      INSURANCE),
-                                                                              ContinuityModelROF(
-                                                                                      Utils::copyWaterSourceVector(
-                                                                                              insurance.continuity_water_sources),
-                                                                                      insurance.water_sources_graph,
-                                                                                      insurance.water_sources_to_utilities,
-                                                                                      Utils::copyUtilityVector(
-                                                                                              insurance.continuity_utilities,
-                                                                                              true),
-                                                                                      NON_INITIALIZED),
-                                                                              insurance_premium(
-                                                                                      insurance.insurance_premium),
-                                                                              rof_triggers(insurance.rof_triggers),
-                                                                              fixed_payouts(insurance.fixed_payouts),
-                                                                              ids_of_utilities_with_policies(
-                                                                                      insurance.ids_of_utilities_with_policies),
-                                                                              downstream_sources(
-                                                                                      insurance.downstream_sources),
-                                                                              sources_topological_order(
-                                                                                      insurance.sources_topological_order),
-                                                                              capacities(insurance.capacities) {
-}
+        DroughtMitigationPolicy(insurance.id, INSURANCE_PSEUDO_ROF),
+        ContinuityModelROF(Utils::copyWaterSourceVector(insurance.continuity_water_sources),
+                           insurance.water_sources_graph, insurance.water_sources_to_utilities,
+                           Utils::copyUtilityVector(insurance.continuity_utilities, true), NON_INITIALIZED),
+        insurance_premium(insurance.insurance_premium), rof_triggers(insurance.rof_triggers),
+        fixed_payouts(insurance.fixed_payouts), ids_of_utilities_with_policies(
+        insurance.ids_of_utilities_with_policies), downstream_sources(insurance.downstream_sources),
+        sources_topological_order(insurance.sources_topological_order), capacities(insurance.capacities) {}
 
-InsurancePseudoROF::~InsurancePseudoROF() {
-
-}
+InsurancePseudoROF::~InsurancePseudoROF() {}
 
 void InsurancePseudoROF::applyPolicy(int week) {
     /// if last week of the year, price insurance for coming year.
@@ -92,9 +76,9 @@ void InsurancePseudoROF::applyPolicy(int week) {
     }
 }
 
-void InsurancePseudoROF::addSystemComponents(vector<Utility *> utilities, std::vector<WaterSource *> water_sources) {
+void InsurancePseudoROF::addSystemComponents(vector<Utility *> utilities, vector<WaterSource *> water_sources) {
     for (int i : ids_of_utilities_with_policies)
-        this->realization_utilities.push_back((Utility *&&) utilities.at((unsigned long) i));
+        realization_utilities.push_back(utilities[i]);
 
     setRealization_water_sources(water_sources);
 }

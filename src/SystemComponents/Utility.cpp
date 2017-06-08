@@ -176,7 +176,7 @@ void Utility::splitDemands(int week, double *water_sources_draws) {
 
     /// Allocates demand to intakes.
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
-        if (ws.second->source_type == INTAKE) {
+        if (ws.second->source_type == INTAKE || ws.second->source_type == WATER_REUSE) {
             int i = ws.second->id;
             double intake_demand = min(restricted_demand, ws.second->getAvailable_volume());
             water_sources_draws[i] = intake_demand;
@@ -195,10 +195,15 @@ void Utility::splitDemands(int week, double *water_sources_draws) {
 
     /// Update contingency fund
     updateContingencyFund(unrestricted_demand, demand_multiplier, demand_offset);
+}
 
-    /// Reset demand multiplier and offset.
+void Utility::resetDataColletionVariables() {
+    /// Reset demand multiplier, offset from transfers and insurance payout and price.
     demand_multiplier = 1;
     demand_offset = 0;
+    insurance_payout = 0;
+    insurance_purchase = 0;
+    drought_mitigation_cost = 0;
 }
 
 /**
@@ -365,8 +370,14 @@ double Utility::getContingency_fund() const {
     return contingency_fund;
 }
 
-void Utility::addToContingencyFund(double value) {
-    contingency_fund += value;
+void Utility::addInsurancePayout(double payout_value) {
+    contingency_fund += payout_value;
+    insurance_payout = payout_value;
+}
+
+void Utility::purchaseInsurance(double insurance_price) {
+    contingency_fund -= insurance_price;
+    insurance_purchase = insurance_price;
 }
 
 void Utility::setDemand_offset(double demand_offset, double offset_rate_per_volume) {
@@ -404,4 +415,12 @@ double Utility::getCurrent_contingency_fund_contribution() const {
 
 double Utility::getDrought_mitigation_cost() const {
     return drought_mitigation_cost;
+}
+
+double Utility::getInsurance_payout() const {
+    return insurance_payout;
+}
+
+double Utility::getInsurance_purchase() const {
+    return insurance_purchase;
 }

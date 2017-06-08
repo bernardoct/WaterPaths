@@ -15,15 +15,15 @@ using namespace std;
  * @param min_environmental_outflow
  * @param catchments
  * @param capacity
- * @param max_treatment_capacity
+ * @param raw_water_main_capacity
  * @param source_type
  */
 WaterSource::WaterSource(const string &source_name, const int id, const double min_environmental_outflow,
                          const vector<Catchment *> &catchments, const double capacity,
-                         const double max_treatment_capacity, const int source_type)
+                         const double raw_water_main_capacity, const int source_type)
         : name(source_name), capacity(capacity), min_environmental_outflow(min_environmental_outflow),
           total_outflow(min_environmental_outflow), catchments(catchments), online(ONLINE), available_volume(capacity),
-          id(id), raw_water_main_capacity(max_treatment_capacity), source_type(source_type),
+          id(id), raw_water_main_capacity(raw_water_main_capacity), source_type(source_type),
           construction_rof(NON_INITIALIZED), construction_time(NON_INITIALIZED),
           construction_cost_of_capital(NON_INITIALIZED), bond_term(NON_INITIALIZED),
           bond_interest_rate(NON_INITIALIZED) {}

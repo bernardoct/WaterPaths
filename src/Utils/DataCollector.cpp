@@ -29,7 +29,7 @@ DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<Wa
         if (dmp->type == RESTRICTIONS)
             restriction_policies_t.push_back(RestrictionPolicy_t(dmp->id));
         else if (dmp->type == TRANSFERS)
-            transfers_policies_t.push_back(Transfers_policy_t(
+            transfers_policies_t.push_back(TransfersPolicy_t(
                     dmp->id, dynamic_cast<Transfers *>(dmp)->getUtilities_ids()));
     }
 
@@ -44,6 +44,7 @@ DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<Wa
             ut.debt_service_payments.push_back(vector<double>());
             ut.contingency_fund_contribution.push_back(vector<double>());
             ut.insurance_contract_cost.push_back(vector<double>());
+            ut.insurance_payout.push_back(vector<double>());
             ut.rof.push_back(vector<double>());
             ut.drought_mitigation_cost.push_back(vector<double>());
         }
@@ -60,7 +61,7 @@ DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<Wa
             rp.restriction_multiplier.push_back(vector<double>());
         }
 
-        for (Transfers_policy_t &tp : transfers_policies_t)
+        for (TransfersPolicy_t &tp : transfers_policies_t)
             tp.demand_offsets.push_back(vector<vector<double>>());
     }
 }
@@ -90,9 +91,9 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
         utilities_t[i].gross_revenues[r].push_back(u->getRestrictedDemand() * u->water_price_per_volume);
         utilities_t[i].debt_service_payments[r].push_back(u->getCurrent_debt_payment());
         utilities_t[i].contingency_fund_contribution[r].push_back(u->getCurrent_contingency_fund_contribution());
-        utilities_t[i].insurance_contract_cost[r].push_back(
-                (double &&) NONE); //FIXME: update this once insurance is implemented.
         utilities_t[i].drought_mitigation_cost[r].push_back(u->getDrought_mitigation_cost());
+        utilities_t[i].insurance_contract_cost[r].push_back(u->getInsurance_purchase());
+        utilities_t[i].insurance_payout[r].push_back(u->getInsurance_payout());
     }
 
     /// Get reservoirs data.
@@ -124,6 +125,10 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
             transfers_policies_t[p].demand_offsets[r].push_back(tp->getAllocations());
             p++;
         }
+    }
+
+    for (Utility *uu : continuity_model_realization->getUtilities()) {
+        uu->resetDataColletionVariables();
     }
 }
 
@@ -199,7 +204,9 @@ void DataCollector::printUtilityOutput(string fileName) {
                       << setw(COLUMN_WIDTH) << " "
                       << setw(COLUMN_WIDTH) << "Rest."
                       << setw(COLUMN_WIDTH) << "Unrest."
-                      << setw(COLUMN_WIDTH) << "Conting.";
+                      << setw(COLUMN_WIDTH) << "Conting."
+                      << setw(COLUMN_WIDTH) << "Insurance"
+                      << setw(COLUMN_WIDTH) << "Insurance";
         }
         outStream << endl << setw(COLUMN_WIDTH) << "Week";
         for (int i = 0; i < utilities_t.size(); ++i) {
@@ -207,7 +214,9 @@ void DataCollector::printUtilityOutput(string fileName) {
                       << setw(COLUMN_WIDTH) << "ROF"
                       << setw(COLUMN_WIDTH) << "Demand"
                       << setw(COLUMN_WIDTH) << "Demand"
-                      << setw(COLUMN_WIDTH) << "Fund";
+                      << setw(COLUMN_WIDTH) << "Fund"
+                      << setw(COLUMN_WIDTH) << "Payout"
+                      << setw(COLUMN_WIDTH) << "Price";
         }
         outStream << endl;
 
@@ -217,13 +226,18 @@ void DataCollector::printUtilityOutput(string fileName) {
             for (int u = 0; u < utilities_t.size(); ++u) {
                 outStream << setw(2 * COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
                           << utilities_t[u].combined_storage[r][w]
-                          << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION) << utilities_t[u].rof[r][w]
+                          << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+                          << utilities_t[u].rof[r][w]
                           << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
                           << utilities_t[u].restricted_demand[r][w]
                           << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
                           << utilities_t[u].unrestricted_demand[r][w]
                           << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                          << utilities_t[u].contingency_fund_size[r][w];
+                          << utilities_t[u].contingency_fund_size[r][w]
+                          << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+                          << utilities_t[u].insurance_payout[r][w]
+                          << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+                          << utilities_t[u].insurance_contract_cost[r][w];
             }
             outStream << endl;
         }

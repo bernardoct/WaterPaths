@@ -9,6 +9,7 @@
 #include "SystemComponents/WaterSources/ReservoirExpansion.h"
 #include "SystemComponents/WaterSources/Quarry.h"
 #include "DroughtMitigationInstruments/InsuranceStorageToROF.h"
+#include "SystemComponents/WaterSources/WaterReuse.h"
 
 
 int regionOneUtilitiesTwoReservoirsContinuityTest();
@@ -956,6 +957,7 @@ void simulation3U5RInfraTest() {
     Reservoir r4("R4", 3, 3.0, catchments2, 500.0, 20);
     Reservoir r5("R5", 4, 2.0, catchments3, 900.0, 20);
     ReservoirExpansion rex6("R6wx", 5, 3, 200.0, 0.03, construction_time_interval_rex6, 3000, 20, 0.05);
+    WaterReuse wr1("WR5", 6, 1);
 
     vector<WaterSource *> water_sources;
     water_sources.push_back(&q1);
@@ -964,6 +966,7 @@ void simulation3U5RInfraTest() {
     water_sources.push_back(&r4);
     water_sources.push_back(&r5);
     water_sources.push_back(&rex6);
+    water_sources.push_back(&wr1);
 
 
     /*
@@ -997,7 +1000,7 @@ void simulation3U5RInfraTest() {
     /// sources IDs.
     vector<vector<int>> reservoir_utility_connectivity_matrix = {
             {0, 2},
-            {1, 4},
+            {1, 4, 6},
             {3, 5}
     };
 
@@ -1050,8 +1053,9 @@ void simulation3U5RInfraTest() {
     double insurance_triggers[3] = {0.06, 0.02, 0.02};
     double fixed_payouts[3] = {1., 1., 1.};
     vector<int> insured_utilities = {0, 1, 2};
-    InsuranceStorageToROF in(0, water_sources, g, reservoir_utility_connectivity_matrix, utilities, insured_utilities,
-                             insurance_triggers, 1.2, fixed_payouts);
+    InsuranceStorageToROF in(0, water_sources, g, reservoir_utility_connectivity_matrix, utilities, insurance_triggers,
+                             1.2,
+                             fixed_payouts);
     drought_mitigation_policies.push_back(&in);
 
     /// Data collector pointer

@@ -9,8 +9,7 @@
 InsuranceStorageToROF::InsuranceStorageToROF(const int id, const vector<WaterSource *> &water_sources,
                                              const Graph &water_sources_graph,
                                              const vector<vector<int>> &water_sources_to_utilities,
-                                             const vector<Utility *> &utilities, vector<int> insured_utilities_ids,
-                                             double *rof_triggers,
+                                             const vector<Utility *> &utilities, double *rof_triggers,
                                              const double insurance_premium, const double *fixed_payouts)
         : DroughtMitigationPolicy(id, INSURANCE_STORAGE_ROF),
           ContinuityModelROF(Utils::copyWaterSourceVector(water_sources),
@@ -22,7 +21,7 @@ InsuranceStorageToROF::InsuranceStorageToROF(const int id, const vector<WaterSou
           fixed_payouts(fixed_payouts),
           rof_triggers(rof_triggers) {
 
-    utilities_ids = insured_utilities_ids;
+    for (Utility *u : utilities) utilities_ids.push_back(u->id);
 
     for (Utility *u : continuity_utilities) {
         u->clearWaterSources();
@@ -47,17 +46,21 @@ InsuranceStorageToROF::~InsuranceStorageToROF() {}
 
 void InsuranceStorageToROF::applyPolicy(int week) {
     /// Calculate insurance price if it is the first week of the year.
+
+    /// Price insurance for coming year.
     if (Utils::isFirstWeekOfTheYear(week + 1)) {
         priceInsurance(Utils::weekOfTheYear(week));
     }
 
-    /// Make payouts, if needed.
-    for (int u = 0; u < continuity_utilities.size(); ++u) {
-        if (realization_utilities[u]->getRisk_of_failure() > rof_triggers[u]) {
-            realization_utilities[u]->addToContingencyFund(fixed_payouts[u]);
+    if (week > WEEKS_IN_YEAR) {
+        /// Make payouts, if needed.
+        for (int u = 0; u < continuity_utilities.size(); ++u) {
+            if (realization_utilities[u]->getRisk_of_failure() > rof_triggers[u]) {
+                realization_utilities[u]->addInsurancePayout(fixed_payouts[u]);
 
-            //FIXME: REMOVE THIS PRINT WHEN DONE DEBUGGING.
+                //FIXME: REMOVE THIS PRINT WHEN DONE DEBUGGING.
 //            std::cout << "Week " << week << ": Utility " << u << " got paid." << std::endl;
+            }
         }
     }
 }
@@ -107,10 +110,11 @@ void InsuranceStorageToROF::priceInsurance(int week) {
     /// Average out insurance price across realizations
     for (int u : utilities_ids) {
         insurance_price[u] /= NUMBER_REALIZATIONS_ROF;
+        realization_utilities[u]->purchaseInsurance(insurance_price[u]);
         //FIXME: REMOVE THIS PRINT WHEN DONE DEBUGGING.
-//        std::cout << insurance_price[u] << " ";
+        std::cout << insurance_price[u] << " ";
     }
-//    std::cout << std::endl;
+    std::cout << std::endl;
 }
 
 /**
@@ -145,6 +149,10 @@ void InsuranceStorageToROF::getUtilitiesApproxROFs(double *u_storage_capacity_ra
     }
 }
 
+/**
+ * Calculation of storage-capacity ratio within the rof model for insurance price.
+ * @return
+ */
 double *InsuranceStorageToROF::UtilitiesStorageCapacityRatio() {
 
     int n_utilities = (int) continuity_utilities.size();

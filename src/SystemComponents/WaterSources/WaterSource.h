@@ -39,7 +39,7 @@ public:
 
     WaterSource(const string &source_name, const int id, const double min_environmental_outflow,
                 const vector<Catchment *> &catchments, const double capacity,
-                const double max_treatment_capacity, const int source_type);
+                const double raw_water_main_capacity, const int source_type);
 
     WaterSource(const string &source_name, const int id, const double min_environmental_outflow,
                 const vector<Catchment *> &catchments, const double capacity,
@@ -51,7 +51,7 @@ public:
 
     virtual ~WaterSource();
 
-    WaterSource &operator=(const WaterSource &water_source);
+    virtual WaterSource &operator=(const WaterSource &water_source);
 
     bool operator<(const WaterSource *other);
 

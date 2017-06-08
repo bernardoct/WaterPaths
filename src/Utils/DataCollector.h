@@ -26,6 +26,7 @@ struct Utility_t {
     vector<vector<double>> contingency_fund_contribution;
     vector<vector<double>> debt_service_payments;
     vector<vector<double>> insurance_contract_cost;
+    vector<vector<double>> insurance_payout;
     vector<vector<double>> drought_mitigation_cost;
     vector<double> objectives;
     double capacity;
@@ -58,11 +59,11 @@ struct RestrictionPolicy_t {
     bool operator>(const RestrictionPolicy_t other) { return this->utility_id > other.utility_id; };
 };
 
-struct Transfers_policy_t {
-    Transfers_policy_t(int transfer_policy_id, vector<int> utilities_ids) :
+struct TransfersPolicy_t {
+    TransfersPolicy_t(int transfer_policy_id, vector<int> utilities_ids) :
             utilities_ids(utilities_ids), transfer_policy_id(transfer_policy_id) {};
 
-    int transfer_policy_id;
+    int transfer_policy_id = NON_INITIALIZED;
     vector<int> utilities_ids;
     vector<vector<vector<double>>> demand_offsets;
 };
@@ -73,7 +74,7 @@ private:
     vector<Utility_t> utilities_t;
     vector<WaterSource_t> reservoirs_t;
     vector<RestrictionPolicy_t> restriction_policies_t;
-    vector<Transfers_policy_t> transfers_policies_t;
+    vector<TransfersPolicy_t> transfers_policies_t;
     string output_directory = "../TestFiles/";
 //    string output_directory = "..\\TestFiles\\";
 

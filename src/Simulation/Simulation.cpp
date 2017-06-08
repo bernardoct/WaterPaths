@@ -5,6 +5,7 @@
 #include "Simulation.h"
 #include "../Utils/Utils.h"
 #include <ctime>
+#include <algorithm>
 
 
 Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_sources_graph,
@@ -100,9 +101,9 @@ void Simulation::runFullSimulation(int num_threads) {
 
     /// Run realizations.
     time(&timer_i);
-//#pragma omp parallel for num_threads(num_threads)
+#pragma omp parallel for num_threads(num_threads)
     for (int r = 0; r < number_of_realizations; ++r) {
-        cout << "Realization " << r << endl;
+        std::cout << "Realization " << r << std::endl;
         for (int w = 0; w < total_simulation_time; ++w) {
             // DO NOT change the order of the steps. This would destroy dependencies.
             if (Utils::isFirstWeekOfTheYear(w))
@@ -115,7 +116,7 @@ void Simulation::runFullSimulation(int num_threads) {
     }
     time(&timer_f);
     seconds = difftime(timer_f, timer_i);
-    cout << seconds << "s" << endl;
+    std::cout << seconds << "s" << std::endl;
 
     /// Calculate objective values.
     data_collector->calculateObjectives();

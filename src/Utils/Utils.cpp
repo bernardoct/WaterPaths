@@ -9,6 +9,7 @@
 #include "../SystemComponents/WaterSources/Quarry.h"
 #include "../DroughtMitigationInstruments/InsuranceStorageToROF.h"
 #include <fstream>
+#include <algorithm>
 
 /**
  * Reads CSV file into 2D array.

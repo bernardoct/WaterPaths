@@ -1,19 +1,21 @@
 //
-// Created by bernardoct on 5/2/17.
+// Created by bernardoct on 6/7/17.
 //
 
+#ifndef TRIANGLEMODEL_MATRICES_H
+#define TRIANGLEMODEL_MATRICES_H
 
-#ifndef TRIANGLEMODEL_Matrix3D3D_H
-#define TRIANGLEMODEL_Matrix3D3D_H
 
 
-#include <cstring>
-#include <bits/functexcept.h>
-#include <algorithm>
 #include <iostream>
+#include <cstring>
 
 template<typename T>
 class Matrix2D {
+private:
+    int di_, dj_;
+    T *data_;
+    bool not_initialized = true;
 public:
     Matrix2D();
 
@@ -40,12 +42,8 @@ public:
     int get_j();
 
     bool empty();
-    // ...
-private:
-    int di_, dj_;
-    T *data_;
-    bool not_initialized = true;
 };
+
 
 template<typename T>
 Matrix2D<T>::Matrix2D(int di, int dj) : di_(di), dj_(dj) {
@@ -154,6 +152,9 @@ bool Matrix2D<T>::empty() {
 
 template<typename T>
 class Matrix3D {
+private:
+    int di_, dj_, dk_;
+    T *data_;
 public:
     Matrix3D();
 
@@ -175,16 +176,13 @@ public:
 
     void print(int k) const;
 
-    int get_i();
+    int get_i() const;
 
-    int get_j();
+    int get_j() const;
 
-    int get_k();
-    // ...
-private:
-    int di_, dj_, dk_;
-    T *data_;
+    int get_k() const;
 };
+
 
 template<typename T>
 Matrix3D<T>::Matrix3D(int di, int dj, int dk) : di_(di), dj_(dj), dk_(dk)
@@ -202,10 +200,10 @@ Matrix3D<T>::Matrix3D(const Matrix3D<T> &m) : di_(m.di_), dj_(m.dj_), dk_(m.dk_)
     std::copy(m.data_, m.data_ + di_ * dj_ * dk_, data_);
 }
 
-template<class T>
+template<typename T>
 Matrix3D<T>::Matrix3D() {}
 
-template<class T>
+template<typename T>
 Matrix3D<T>::~Matrix3D() {
     delete[] data_;
 }
@@ -276,15 +274,16 @@ Matrix2D<T> Matrix3D<T>::get2D(int ijk, char dim) {
     Matrix2D<T> m;
 
     if (dim == 'k') {
-        data2D = new T[dj_ * dk_];
+        data2D = new T[di_ * dj_];
         for (int i = 0; i < di_; ++i) {
             for (int j = 0; j < dj_; ++j) {
                 data2D[dj_ * i + j] = data_[dj_ * dk_ * i + dk_ * j + ijk];
             }
         }
 
-        m = Matrix2D<T>(di_, dk_);
+        m = Matrix2D<T>(dj_, dk_);
         m.setData(data2D);
+
     } else if (dim == 'i') {
         data2D = new T[dj_ * dk_];
         for (int j = 0; j < dj_; ++j) {
@@ -295,6 +294,7 @@ Matrix2D<T> Matrix3D<T>::get2D(int ijk, char dim) {
 
         m = Matrix2D<T>(di_, dk_);
         m.setData(data2D);
+
     } else if (dim == 'j') {
         data2D = new T[dj_ * dk_];
         for (int i = 0; i < di_; ++i) {
@@ -308,22 +308,25 @@ Matrix2D<T> Matrix3D<T>::get2D(int ijk, char dim) {
     } else
         std::__throw_invalid_argument("the first argument must be either one of chars 'i', 'j' or 'k.'");
 
+//    delete[] data2D;
+
     return m;
 }
 
 template<typename T>
-int Matrix3D<T>::get_i() {
+int Matrix3D<T>::get_i() const {
     return di_;
 }
 
 template<typename T>
-int Matrix3D<T>::get_j() {
+int Matrix3D<T>::get_j() const {
     return dj_;
 }
 
 template<typename T>
-int Matrix3D<T>::get_k() {
+int Matrix3D<T>::get_k() const {
     return dk_;
 }
 
-#endif //TRIANGLEMODEL_Matrix3D3D_H
+
+#endif //TRIANGLEMODEL_MATRICES_H

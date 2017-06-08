@@ -8,6 +8,8 @@
 #include "catch-main.h"
 #include "../src/Utils/DataCollector.h"
 #include "../src/DroughtMitigationInstruments/InsurancePseudoROF.h"
+#include "../src/DroughtMitigationInstruments/InsuranceStorageToROF.h"
+//#include "../src/Utils/Matrix3D.h"
 
 TEST_CASE("Net present cost calculations", "[NPC]") {
     Reservoir r("Res", 0, 1, vector<Catchment *>(), 1, 1, 1, vector<double>(2, 1), 5000, 20, 0.05);
@@ -39,10 +41,10 @@ TEST_CASE("Split of demand among water sources of a utility proportionally to th
                    NON_INITIALIZED);
         u1.addWaterSource(&r1);
         u1.addWaterSource(&r2);
-        vector<double> *result = new vector<double>(2, 0.0);
+        double result[2];
         u1.splitDemands(0, result);
 
-        REQUIRE((*result)[0] == Approx(9.0617079441 * 1 / 3));
+        REQUIRE(result[0] == Approx(9.0617079441 * 1 / 3));
     }
 
     SECTION("Split demand among intakes and reservoirs") {
@@ -52,10 +54,10 @@ TEST_CASE("Split of demand among water sources of a utility proportionally to th
         u1.addWaterSource(&r1);
         u1.addWaterSource(&r2);
         u1.addWaterSource(&i1);
-        vector<double> *result = new vector<double>(2, 0.0);
+        double result[2];
         u1.splitDemands(0, result);
 
-        REQUIRE((*result)[0] == Approx((9.0617079441 - (5.0 - min_env_flow_intake)) * 1 / 3));
+        REQUIRE(result[0] == Approx((9.0617079441 - (5.0 - min_env_flow_intake)) * 1 / 3));
     }
 }
 
@@ -83,11 +85,12 @@ TEST_CASE("Test reliability objective calculation", "[Reliability Objective]") {
 
 TEST_CASE("Test function that checks if week is first week of the year." "[First week function]") {
     vector<int> first_weeks_model;
-    vector<int> result = {52, 104, 156, 208, 260, 313, 365, 417, 469, 521, 573, 626, 678, 730, 782, 834, 887, 939, 991};
+    vector<int> result = {0, 52, 104, 156, 208, 260, 313, 365, 417, 469, 521, 573, 626, 678, 730, 782, 834, 887, 939,
+                          991};
 
     for (int w = 0; w < 992; ++w) {
         if (Utils::isFirstWeekOfTheYear(w)) {
-            REQUIRE(w == result[0]);
+            REQUIRE(result[0] == w);
             result.erase(result.begin());
         }
     }
@@ -646,7 +649,209 @@ TEST_CASE("Get the distances to the square between all points in a matrix", "[Di
     REQUIRE(result[2][0] == 100.);
 }
 
-TEST_CASE("Test insurance functions", "[insurance]") {
+//TEST_CASE("Test insurance functions", "[insurance]") {
+//
+//    /// Read streamflows
+//    int streamflow_n_weeks = 52 * 70;
+//    double **streamflows_test = Utils::parse2DCsvFile("../TestFiles/"
+//                                                              "inflowsLong.csv", 2, streamflow_n_weeks);
+//
+//    /// Create catchments and corresponding vectors
+//    Catchment c1(streamflows_test[0], streamflow_n_weeks);
+//    Catchment c2(streamflows_test[1], streamflow_n_weeks);
+//
+//    vector<Catchment *> catchments1;
+//    vector<Catchment *> catchments2;
+//    vector<Catchment *> catchments3;
+//    catchments1.push_back(&c1);
+//    catchments1.push_back(&c2);
+//    catchments2.push_back(&c2);
+//    catchments3.push_back(&c1);
+//
+//    /// Create reservoirs and corresponding vector
+//    vector<double> construction_time_interval = {1.0, 4.0};
+//    Reservoir r1("R1", 0, 3.0, catchments1, 2., 20);
+//    Reservoir r2("R2", 1, 3.0, catchments2, 1., 20, 0.02, construction_time_interval, 5000, 20, 0.05);
+//    Reservoir r3("R3", 2, 2.0, catchments3, 1., 20);
+//    Reservoir r4("R4", 3, 3.0, catchments2, 1., 20);
+//    Reservoir r5("R5", 4, 2.0, catchments3, 1., 20);
+//
+//    vector<WaterSource *> water_sources;
+//    water_sources.push_back(&r1);
+//    water_sources.push_back(&r2);
+//    water_sources.push_back(&r3);
+//    water_sources.push_back(&r4);
+//    water_sources.push_back(&r5);
+//
+//
+//    /*
+//     * System connection diagram (water
+//     * flows from top to bottom)
+//     *
+//     *      0   1
+//     *       \ /
+//     *        2   4
+//     *         \ /
+//     *          3
+//     */
+//
+//    Graph water_sources_graph((int) water_sources.size());
+//    water_sources_graph.addEdge(0, 2);
+//    water_sources_graph.addEdge(1, 2);
+//    water_sources_graph.addEdge(2, 3);
+//    water_sources_graph.addEdge(4, 3);
+//
+//    /// Create catchments and corresponding vector
+//    Utility u1((char *) "U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.03, 1);
+//    Utility u2((char *) "U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.07, 1, vector<int>(1, 1), 0.05);
+//    Utility u3((char *) "U3", 2, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.05, 1);
+//
+//    vector<Utility *> utilities;
+//    utilities.push_back(&u1);
+//    utilities.push_back(&u2);
+//    utilities.push_back(&u3);
+//
+//    /// Water-source-utility connectivity matrix (each row corresponds to a utility and numbers are water
+//    /// sources IDs.
+//    vector<vector<int>> reservoir_utility_connectivity_matrix = {
+//            {0, 2},
+//            {1, 4},
+//            {3}
+//    };
+//
+//    InsurancePseudoROF in(0, vector<double>(3, 0.4), 1.2, water_sources, utilities, water_sources_graph,
+//                          reservoir_utility_connectivity_matrix, vector<double>(3, 1));
+//
+//    SECTION("Shift storage curves", "[Shift storages]") {
+//
+//        /*
+//         * System connection diagram (water
+//         * flows from top to bottom)
+//         *
+//         *    2.0  0   1  1.0
+//         *          \ /
+//         *      1.0  2   4  0.5
+//         *            \ /
+//         *        0.5  3
+//         */
+//
+//        vector<vector<double>> storage_series = {
+//                {1.5, 1.5, 1.0, 1.1},
+//                {0.5, 1.0, 0.5, 0.2},
+//                {0.4, 1.0, 0.5, 0.1},
+//                {0.4, 0.3, 0.2, 0.1},
+//                {0.4, 0.3, 0.2, 0.1},
+//        };
+//
+//        vector<double> storage0 = {2.0,
+//                                   1.0,
+//                                   1.0,
+//                                   0.5,
+//                                   0.5};
+//        unsigned long first_week = 0;
+//
+//        vector<vector<double>> result = in.shiftStorageCurves(&storage_series, storage0, first_week);
+//
+//        REQUIRE(result[0][0] == 2.0);
+//        REQUIRE(result[1][0] == 1.0);
+//        REQUIRE(result[2][0] == 1.0);
+//        REQUIRE(result[1][1] == 1.0);
+//        REQUIRE(result[2][1] == 1.0);
+//        REQUIRE(result[4][1] == Approx(0.4));
+//        REQUIRE(result[0][2] == 1.5);
+//        REQUIRE(result[1][2] == 1.0);
+//        REQUIRE(result[2][2] == 1.0);
+//        REQUIRE(result[0][3] == 1.6);
+//        REQUIRE(result[1][3] == 0.7);
+//        REQUIRE(result[2][3] == 0.7);
+//        REQUIRE(result[4][3] == Approx(0.2));
+//        //FIXME: COME UP WITH MORE TESTS HERE.
+//    }
+//}
+
+TEST_CASE("Test Matrix3D", "[Matrix3D]") {
+
+    SECTION("Matrix of doubles") {
+        Matrix3D<double> m(3, 3, 3);
+
+        m(1, 2, 0) = 5.;
+        m(2, 2, 2) = 6.;
+        m(0, 0, 0) = 7.;
+        REQUIRE(m(1, 2, 0) == 5.);
+        REQUIRE(m(2, 2, 2) == 6.);
+        REQUIRE(m(0, 0, 0) == 7.);
+        m.reset(0.);
+        REQUIRE(m(1, 2, 0) == 0.);
+        REQUIRE(m(2, 2, 2) == 0.);
+        REQUIRE(m(0, 0, 0) == 0.);
+    }
+
+    SECTION("Matrix of bools") {
+        Matrix3D<bool> m(3, 3, 3);
+
+        m(1, 2, 0) = true;
+        m(2, 2, 2) = true;
+        m(0, 0, 0) = true;
+        REQUIRE(m(1, 2, 0) == true);
+        REQUIRE(m(2, 2, 2) == true);
+        REQUIRE(m(0, 0, 0) == true);
+        m.reset(false);
+        REQUIRE(m(1, 2, 0) == false);
+        REQUIRE(m(2, 2, 2) == false);
+        REQUIRE(m(0, 0, 0) == false);
+    }
+
+    SECTION("Assignment operator") {
+        Matrix3D<double> m;
+        m = Matrix3D<double>(3, 3, 3);
+
+        m(1, 2, 0) = 5.;
+        m(2, 2, 2) = 6.;
+        m(0, 0, 0) = 7.;
+
+        REQUIRE(m(1, 2, 0) == 5.);
+        REQUIRE(m(2, 2, 2) == 6.);
+        REQUIRE(m(0, 0, 0) == 7.);
+    }
+
+    SECTION("Summation operator") {
+        Matrix3D<double> m, m2;
+        m = Matrix3D<double>(3, 3, 3);
+        m2 = Matrix3D<double>(3, 3, 3);
+        m2.reset(1.);
+
+        m(1, 2, 0) = 5.;
+        m(2, 2, 2) = 6.;
+        m(0, 0, 0) = 7.;
+
+        m += m2;
+
+        m.print(0);
+    }
+
+    SECTION("Get 2D matrix") {
+        Matrix3D<double> m(2, 2, 2);
+        m(0, 0, 0) = 0;
+        m(0, 0, 1) = 1;
+        m(0, 1, 0) = 2;
+        m(0, 1, 1) = 3;
+        m(1, 0, 0) = 4;
+        m(1, 0, 1) = 5;
+        m(1, 1, 0) = 6;
+        m(1, 1, 1) = 7;
+
+        Matrix2D<double> m2 = m.get2D(1, 'j');
+        m2.print();
+        REQUIRE(m2(1, 0) == 6.);
+
+        Matrix2D<double> m3 = m2;
+
+        m3.print();
+    }
+}
+
+TEST_CASE("Get ROF from storage-rof-table", "[rof from table]") {
+
 
     /// Read streamflows
     int streamflow_n_weeks = 52 * 70;
@@ -716,52 +921,145 @@ TEST_CASE("Test insurance functions", "[insurance]") {
             {3}
     };
 
-    InsurancePseudoROF in(0, vector<double>(3, 0.4), 1.2, water_sources, utilities, water_sources_graph,
-                          reservoir_utility_connectivity_matrix, vector<double>(3, 1));
+    //               u  s  w
+    Matrix3D<double> storage_rof(3, NO_OF_INSURANCE_STORAGE_TIERS, 2);
+    storage_rof.reset(0);
 
-    SECTION("Shift storage curves", "[Shift storages]") {
+    storage_rof(0, 0, 0) = 1;
+    storage_rof(1, 0, 0) = 1;
+    storage_rof(2, 0, 0) = 1;
+    storage_rof(0, 1, 0) = 1;
+    storage_rof(1, 1, 0) = 1;
+    storage_rof(2, 1, 0) = 1;
+    storage_rof(0, 2, 0) = 0.2;
+    storage_rof(1, 2, 0) = 0.5;
+    storage_rof(2, 2, 0) = 0.5;
+    storage_rof(0, 3, 0) = 0;
+    storage_rof(1, 3, 0) = 0;
+    storage_rof(2, 3, 0) = 0;
 
-        /*
-         * System connection diagram (water
-         * flows from top to bottom)
-         *
-         *    2.0  0   1  1.0
-         *          \ /
-         *      1.0  2   4  0.5
-         *            \ /
-         *        0.5  3
-         */
+    storage_rof.print(0);
 
-        vector<vector<double>> storage_series = {
-                {1.5, 1.5, 1.0, 1.1},
-                {0.5, 1.0, 0.5, 0.2},
-                {0.4, 1.0, 0.5, 0.1},
-                {0.4, 0.3, 0.2, 0.1},
-                {0.4, 0.3, 0.2, 0.1},
-        };
+    double result[3];
+    double storages[3] = {0.11, 0.04, 0.17};
 
-        vector<double> storage0 = {2.0,
-                                   1.0,
-                                   1.0,
-                                   0.5,
-                                   0.5};
-        int first_week = 0;
+    double triggers[3] = {0.6, 0.45, 0.4};
+    vector<int> insured_utilities_ids = {0, 1, 2};
+    double fixed_payouts[3] = {1., 1., 1.};
 
-        vector<vector<double>> result = in.shiftStorageCurves(&storage_series, storage0, first_week, 4);
+    InsuranceStorageToROF in(0, water_sources, water_sources_graph, reservoir_utility_connectivity_matrix,
+                             utilities, insured_utilities_ids, triggers, 1.2, fixed_payouts);
 
-        REQUIRE(result[0][0] == 2.0);
-        REQUIRE(result[1][0] == 1.0);
-        REQUIRE(result[2][0] == 1.0);
-        REQUIRE(result[1][1] == 1.0);
-        REQUIRE(result[2][1] == 1.0);
-        REQUIRE(result[4][1] == Approx(0.4));
-        REQUIRE(result[0][2] == 1.5);
-        REQUIRE(result[1][2] == 1.0);
-        REQUIRE(result[2][2] == 1.0);
-        REQUIRE(result[0][3] == 1.6);
-        REQUIRE(result[1][3] == 0.7);
-        REQUIRE(result[2][3] == 0.7);
-        REQUIRE(result[4][3] == Approx(0.2));
-        //FIXME: COME UP WITH MORE TESTS HERE.
-    }
+    in.getUtilitiesApproxROFs(storages, &storage_rof, 0, result);
+
+    REQUIRE(result[0] == 0.1);
+    REQUIRE(result[1] == 1.);
+    REQUIRE(result[2] == 0.);
 }
+
+//TEST_CASE("ROF storage-rof table", "[Storage-rof table]") {
+//
+//
+//    /// Read streamflows
+//    int streamflow_n_weeks = 52 * 70;
+//    double **streamflows_test = Utils::parse2DCsvFile("../TestFiles/"
+//                                                              "inflowsLong.csv", 2, streamflow_n_weeks);
+//
+//    /// Create catchments and corresponding vectors
+//    Catchment c1(streamflows_test[0], streamflow_n_weeks);
+//    Catchment c2(streamflows_test[1], streamflow_n_weeks);
+//
+//    vector<Catchment *> catchments1;
+//    vector<Catchment *> catchments2;
+//    vector<Catchment *> catchments3;
+//    catchments1.push_back(&c1);
+//    catchments1.push_back(&c2);
+//    catchments2.push_back(&c2);
+//    catchments3.push_back(&c1);
+//
+//    /// Create reservoirs and corresponding vector
+//    vector<double> construction_time_interval = {1.0, 4.0};
+//    Reservoir r1("R1", 0, 3.0, catchments1, 2., 20);
+//    Reservoir r2("R2", 1, 3.0, catchments2, 1., 20, 0.02, construction_time_interval, 5000, 20, 0.05);
+//    Reservoir r3("R3", 2, 2.0, catchments3, 1., 20);
+//    Reservoir r4("R4", 3, 3.0, catchments2, 1., 20);
+//    Reservoir r5("R5", 4, 2.0, catchments3, 1., 20);
+//
+//    vector<WaterSource *> water_sources;
+//    water_sources.push_back(&r1);
+//    water_sources.push_back(&r2);
+//    water_sources.push_back(&r3);
+//    water_sources.push_back(&r4);
+//    water_sources.push_back(&r5);
+//
+//
+//    /*
+//     * System connection diagram (water
+//     * flows from top to bottom)
+//     *
+//     *      0   1
+//     *       \ /
+//     *        2   4
+//     *         \ /
+//     *          3
+//     */
+//
+//    Graph water_sources_graph((int) water_sources.size());
+//    water_sources_graph.addEdge(0, 2);
+//    water_sources_graph.addEdge(1, 2);
+//    water_sources_graph.addEdge(2, 3);
+//    water_sources_graph.addEdge(4, 3);
+//
+//    /// Create catchments and corresponding vector
+//    Utility u1((char *) "U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.03, 1);
+//    Utility u2((char *) "U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.07, 1, vector<int>(1, 1), 0.05);
+//    Utility u3((char *) "U3", 2, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.05, 1);
+//
+//    vector<Utility *> utilities;
+//    utilities.push_back(&u1);
+//    utilities.push_back(&u2);
+//    utilities.push_back(&u3);
+//
+//    /// Water-source-utility connectivity matrix (each row corresponds to a utility and numbers are water
+//    /// sources IDs.
+//    vector<vector<int>> reservoir_utility_connectivity_matrix = {
+//            {0, 2},
+//            {1, 4},
+//            {3}
+//    };
+//
+//    ContinuityModelROF cm(water_sources, water_sources_graph, reservoir_utility_connectivity_matrix, utilities, 0);
+//
+//
+//
+//    vector<vector<double>> storage_series = {
+//            {1.5, 1.5, 1.0, 1.1},
+//            {0.5, 1.0, 0.5, 0.2},
+//            {0.4, 1.0, 0.5, 0.1},
+//            {0.4, 0.3, 0.2, 0.1},
+//            {0.4, 0.3, 0.2, 0.1},
+//    };
+//
+//    vector<double> storage_delta = {2.0,
+//                               1.0,
+//                               1.0,
+//                               0.5,
+//                               0.5};
+//    unsigned long first_week = 0;
+//
+//    vector<vector<double>> result = cm.shiftStorages()
+//
+//    REQUIRE(result[0][0] == 2.0);
+//    REQUIRE(result[1][0] == 1.0);
+//    REQUIRE(result[2][0] == 1.0);
+//    REQUIRE(result[1][1] == 1.0);
+//    REQUIRE(result[2][1] == 1.0);
+//    REQUIRE(result[4][1] == Approx(0.4));
+//    REQUIRE(result[0][2] == 1.5);
+//    REQUIRE(result[1][2] == 1.0);
+//    REQUIRE(result[2][2] == 1.0);
+//    REQUIRE(result[0][3] == 1.6);
+//    REQUIRE(result[1][3] == 0.7);
+//    REQUIRE(result[2][3] == 0.7);
+//    REQUIRE(result[4][3] == Approx(0.2));
+//}

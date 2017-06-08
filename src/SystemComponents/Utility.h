@@ -25,6 +25,7 @@ private:
     double contingency_fund = 0;
     double drought_mitigation_cost;
     double insurance_payout;
+    double insurance_purchase;
     double restricted_demand;
     double unrestricted_demand;
     double infrastructure_net_present_cost = 0;
@@ -66,8 +67,6 @@ public:
     void setRisk_of_failure(double risk_of_failure);
 
     double getRisk_of_failure() const;
-
-    double getReservoirDraw(const int water_source_id);
 
     void updateTotalStoredVolume();
 
@@ -115,9 +114,17 @@ public:
 
     double getDrought_mitigation_cost() const;
 
-    void addToContingencyFund(double value);
+    void addInsurancePayout(double payout_value);
 
     void clearWaterSources();
+
+    void purchaseInsurance(double insurance_price);
+
+    double getInsurance_payout() const;
+
+    double getInsurance_purchase() const;
+
+    void resetDataColletionVariables();
 };
 
 

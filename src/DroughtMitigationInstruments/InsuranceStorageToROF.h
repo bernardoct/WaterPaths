@@ -13,24 +13,21 @@ class InsuranceStorageToROF : public DroughtMitigationPolicy, public ContinuityM
 private:
 
     double *insurance_price;
+    const double *rof_triggers;
+    const double insurance_premium;
+    const double *fixed_payouts;
 
 public:
-    InsuranceStorageToROF(const int id, const vector<WaterSource *> &water_sources, const Graph &water_sources_graph,
-                          const vector<vector<int>> &water_sources_to_utilities, const vector<Utility *> &utilities,
-                          vector<int> insured_utilities_ids, double *rof_triggers, const double insurance_premium,
-                          const double *fixed_payouts);
+
+    InsuranceStorageToROF(const int id, const vector<WaterSource *> &water_sources,
+                          const Graph &water_sources_graph,
+                          const vector<vector<int>> &water_sources_to_utilities,
+                          const vector<Utility *> &utilities, double *rof_triggers,
+                          const double insurance_premium, const double *fixed_payouts);
 
     InsuranceStorageToROF(const InsuranceStorageToROF &insurance);
 
     virtual ~InsuranceStorageToROF();
-
-//    void addSystemComponents(vector<Utility *> utilities, vector<WaterSource *> water_sources) override;
-//
-//    void applyPolicy(int week) override;
-
-    const double *rof_triggers;
-    const double insurance_premium;
-    const double *fixed_payouts;
 
     void priceInsurance(int week);
 
@@ -42,7 +39,6 @@ public:
     void applyPolicy(int week) override;
 
     void addSystemComponents(vector<Utility *> utilities, vector<WaterSource *> water_sources) override;
-
 
 };
 

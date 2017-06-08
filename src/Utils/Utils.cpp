@@ -8,6 +8,7 @@
 #include "../SystemComponents/WaterSources/ReservoirExpansion.h"
 #include "../SystemComponents/WaterSources/Quarry.h"
 #include "../DroughtMitigationInstruments/InsuranceStorageToROF.h"
+#include "../SystemComponents/WaterSources/WaterReuse.h"
 #include <fstream>
 #include <algorithm>
 
@@ -75,6 +76,8 @@ vector<WaterSource *> Utils::copyWaterSourceVector(vector<WaterSource *> water_s
             water_sources_new.push_back(new ReservoirExpansion(*dynamic_cast<ReservoirExpansion *>(ws)));
         } else if (ws->source_type == QUARRY) {
             water_sources_new.push_back(new Quarry(*dynamic_cast<Quarry *>(ws)));
+        } else if (ws->source_type == WATER_REUSE) {
+            water_sources_new.push_back(new WaterReuse(*dynamic_cast<WaterReuse *>(ws)));
         }
     }
 

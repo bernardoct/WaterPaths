@@ -947,8 +947,9 @@ TEST_CASE("Get ROF from storage-rof-table", "[rof from table]") {
     vector<int> insured_utilities_ids = {0, 1, 2};
     double fixed_payouts[3] = {1., 1., 1.};
 
-    InsuranceStorageToROF in(0, water_sources, water_sources_graph, reservoir_utility_connectivity_matrix,
-                             utilities, insured_utilities_ids, triggers, 1.2, fixed_payouts);
+    InsuranceStorageToROF in(0, water_sources, water_sources_graph, reservoir_utility_connectivity_matrix, utilities,
+                             triggers, 1.2,
+                             fixed_payouts);
 
     in.getUtilitiesApproxROFs(storages, &storage_rof, 0, result);
 

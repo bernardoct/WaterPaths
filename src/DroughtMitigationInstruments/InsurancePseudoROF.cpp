@@ -74,7 +74,7 @@ void InsurancePseudoROF::applyPolicy(int week) {
     /// check if payouts are triggered.
     for (int u = 0; u < continuity_utilities.size(); ++u) {
         if (continuity_utilities[u]->getRisk_of_failure() > rof_triggers[u])
-            continuity_utilities[u]->addToContingencyFund(fixed_payouts[u]);
+            continuity_utilities[u]->addInsurancePayout(fixed_payouts[u]);
     }
 }
 

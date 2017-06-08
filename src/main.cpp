@@ -1059,7 +1059,7 @@ void simulation3U5RInfraTest() {
 
     /// Creates simulation object
     Simulation s(water_sources, g, reservoir_utility_connectivity_matrix, utilities, drought_mitigation_policies,
-                 992, 2, data_collector);
+                 343, 2, data_collector);
     cout << "Beginning U3R5 simulation" << endl;
     s.runFullSimulation(2);
     cout << "Ending U3R5 simulation" << endl;

@@ -7,6 +7,7 @@
 
 
 #include "../ContinuityModels/ContinuityModelROF.h"
+#include "../DroughtMitigationInstruments/DroughtMitigationPolicy.h"
 
 class InsurancePseudoROF : public DroughtMitigationPolicy, ContinuityModelROF {
 protected:

@@ -1,12 +1,12 @@
 //
 // Created by Chirag Agarwal, at http://www.geeksforgeeks.org/topological-sorting-indegree-based-solution/
-// Created by bernardo on 2/2/17.
+// Expanded by bernardo on 2/2/17.
 //
-
-#include "Graph.h"
 
 // A C++ program to print topological sorting of a graph
 // using indegrees.
+
+#include "Graph.h"
 #include<bits/stdc++.h>
 
 using namespace std;

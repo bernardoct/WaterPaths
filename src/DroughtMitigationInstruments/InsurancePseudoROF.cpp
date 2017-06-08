@@ -47,7 +47,9 @@ InsurancePseudoROF::InsurancePseudoROF(const int id, const std::vector<double> &
         else
             downstream_sources.push_back(ds[0]);
 
-    sources_topological_order = water_sources_graph.getTopological_order();
+    for (Utility *u : continuity_utilities) {
+        u->clearWaterSources();
+    }
 }
 
 InsurancePseudoROF::InsurancePseudoROF(const InsurancePseudoROF &insurance) :
@@ -168,13 +170,14 @@ void InsurancePseudoROF::calculatePseudoRofs(Matrix3D<double> *realizations_stor
         for (int ws = 0; ws < n_water_sources; ++ws) {
             storage0[ws] = (*realizations_storages)(r, ws, w);
         }
+
+        Matrix2D<double> realization_adjusted_storage_curves;
         /// rof-realization loop for insurance realization
         for (int rr = 1; rr < n_realizations; ++rr) {
             /// prevent insurance realization from using itself for rof calculations
             if (rr != r) {
-                Matrix2D<double> realization_adjusted_storage_curves = shiftStorageCurves(realizations_storages,
-                                                                                          storage0, w, rr);
-
+                realization_adjusted_storage_curves = shiftStorageCurves(realizations_storages, storage0, w, rr);
+                cout << sizeof(realization_adjusted_storage_curves);
                 /// for each utility, in every week of rof realization, check storage curves for water sources to see
                 /// if they failed for that realization
                 for (int u = 0; u < n_utilities; ++u) {
@@ -190,8 +193,14 @@ void InsurancePseudoROF::calculatePseudoRofs(Matrix3D<double> *realizations_stor
                         }
                     }
                 }
+                int i1 = 0;
+                i1++;
             }
+            int j1 = 0;
+            j1++;
         }
+        int k1 = 0;
+        k1++;
     }
 
     /// normalize failure counts by number of realization for every utility.

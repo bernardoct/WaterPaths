@@ -7,15 +7,13 @@
 
 
 #include "ContinuityModel.h"
-#include "ContinuityModelRealization.h"
-
+#include "../Utils/Matrices.h"
 
 class ContinuityModelROF : public ContinuityModel {
 private:
     Matrix3D<double> *storage_to_rof_table;
 
 protected:
-
     const int realization_id;
     Matrix3D<double> storage_to_rof_realization;
     int beginning_res_level;

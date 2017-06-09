@@ -52,14 +52,12 @@ void InsuranceStorageToROF::applyPolicy(int week) {
         priceInsurance(Utils::weekOfTheYear(week));
     }
 
+    /// Do not make payouts during the first year, when no insurance was purchased.
     if (week > WEEKS_IN_YEAR) {
         /// Make payouts, if needed.
         for (int u = 0; u < continuity_utilities.size(); ++u) {
             if (realization_utilities[u]->getRisk_of_failure() > rof_triggers[u]) {
                 realization_utilities[u]->addInsurancePayout(fixed_payouts[u]);
-
-                //FIXME: REMOVE THIS PRINT WHEN DONE DEBUGGING.
-//            std::cout << "Week " << week << ": Utility " << u << " got paid." << std::endl;
             }
         }
     }
@@ -73,6 +71,12 @@ void InsuranceStorageToROF::addSystemComponents(vector<Utility *> utilities, vec
     setRealization_water_sources(water_sources);
 }
 
+/**
+ * Runs a ROF set of 50 year long simulations in order to estimate how likely payouts are expected
+ * to occur. The price of the insurance is set as the average sum of payouts across all 50 years
+ * times the insurance premium.
+ * @param week
+ */
 void InsuranceStorageToROF::priceInsurance(int week) {
 
     int n_utilities = (int) realization_utilities.size();
@@ -101,6 +105,7 @@ void InsuranceStorageToROF::priceInsurance(int week) {
             getUtilitiesApproxROFs(UtilitiesStorageCapacityRatio(), storage_to_rof_table_,
                                    Utils::weekOfTheYear(w), utilities_rofs);
 
+            /// Increase the price of the insurance if payout is triggered.
             for (int u : utilities_ids)
                 if (utilities_rofs[u] > rof_triggers[u])
                     insurance_price[u] += fixed_payouts[u] * insurance_premium;
@@ -111,10 +116,7 @@ void InsuranceStorageToROF::priceInsurance(int week) {
     for (int u : utilities_ids) {
         insurance_price[u] /= NUMBER_REALIZATIONS_ROF;
         realization_utilities[u]->purchaseInsurance(insurance_price[u]);
-        //FIXME: REMOVE THIS PRINT WHEN DONE DEBUGGING.
-        std::cout << insurance_price[u] << " ";
     }
-    std::cout << std::endl;
 }
 
 /**

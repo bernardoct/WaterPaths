@@ -52,8 +52,9 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
     // vector where risks of failure will be stored.
     vector<double> risk_of_failure(n_utilities, 0.0);
     vector<double> year_failure(n_utilities, 0.0);
+
     /// If this is the first week of the year, reset storage-rof table.
-    if (Utils::isFirstWeekOfTheYear(week) && rof_type == SHORT_TERM_ROF)
+    if (rof_type == LONG_TERM_ROF)
         storage_to_rof_table->reset(NON_FAILURE);
 
     int week_of_the_year = Utils::weekOfTheYear(week);
@@ -94,6 +95,8 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
                 updateStorageToROFTable(INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD, week_of_the_year);
         }
 
+        //FIXME: INSTEAD OF ADDING THE 3D MATRIX EVERY WEEK (WHICH MEANS ADDING THE WHOLE YEAR TABLE EVERY WEEK),
+        //FIXME: REPLACE THIS BY A MATRIX 2D SUMMATION FOR THE SAKE OF PERFORMANCE.
         /// update storage-rof table
         if (rof_type == SHORT_TERM_ROF) {
             *storage_to_rof_table += storage_to_rof_realization / NUMBER_REALIZATIONS_ROF;
@@ -105,6 +108,13 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
             year_failure[uu] = NON_FAILURE;
         }
     }
+
+    //FIXME: REMOVE THIS AFTER DONE DEBUGING.
+//    if (rof_type == SHORT_TERM_ROF) {
+//        cout << week << endl;
+//        storage_to_rof_table->print(week_of_the_year);
+//        cout << endl;
+//    }
 
     /// Finish ROF calculations
     for (int i = 0; i < n_utilities; ++i) {
@@ -178,7 +188,7 @@ void ContinuityModelROF::updateStorageToROFTable(double storage_percent_decremen
 //    cout << endl;
 }
 
-
+//FIXME: MAKE THIS MORE EFFICIENT. THIS METHOD IS THE MOST EXPENSIVE ONE IN THE CODE.
 void ContinuityModelROF::shiftStorages(double *available_volumes_shifted, double *delta_storage) {
 
     /// Add deltas to all sources following the topological order, so that upstream is calculated before downstream.
@@ -199,10 +209,10 @@ void ContinuityModelROF::shiftStorages(double *available_volumes_shifted, double
         /// if after retrieving spill the source is full, send excess downstream. Works for intakes as well, since
         /// their capacities are 0, meaning all excess from above overflows.
         if (available_volumes_shifted[ws] > water_sources_capacities[ws]) {
-            if (no_downstream) {
+            if (no_downstream)
                 available_volumes_shifted[downstream_sources[ws]] += available_volumes_shifted[ws] -
                                                                      water_sources_capacities[ws];
-            }
+
             available_volumes_shifted[ws] = water_sources_capacities[ws];
             /// prevent negative storages.
         } else

@@ -25,16 +25,17 @@ protected:
     vector<vector<int> > water_sources_to_utilities;
     vector<vector<int> > utilities_to_water_sources;
     vector<int> reservoir_continuity_order;
-    vector<double> water_sources_draws;
     vector<int> downstream_sources;
     vector<int> sources_topological_order;
     vector<double> water_sources_capacities;
     vector<double> utilities_capacities;
-    int downstream_source;
 
 public:
+    const int realization_id;
+
     ContinuityModel(const vector<WaterSource *> &water_sources, const vector<Utility *> &utilities,
-                    const Graph &water_sources_graph, const vector<vector<int>> &water_sources_to_utilities);
+                    const Graph &water_sources_graph, const vector<vector<int>> &water_sources_to_utilities,
+                    int realization_id);
 
     void continuityStep(int week, int rof_realization = -1);
 

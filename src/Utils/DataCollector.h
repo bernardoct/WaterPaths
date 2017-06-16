@@ -36,7 +36,7 @@ struct Utility_t {
 };
 
 struct WaterSource_t {
-    WaterSource_t(int id, double capacity, string name) : id(id), capacity(capacity) {};
+    WaterSource_t(int id, double capacity, const char *name) : id(id), capacity(capacity), name(name) {};
 
     vector<vector<double>> available_volume;
     vector<vector<double>> total_upstream_sources_inflows;
@@ -45,7 +45,7 @@ struct WaterSource_t {
     vector<vector<double>> total_catchments_inflow;
     double capacity;
     int id;
-    string name;
+    const char *name;
 };
 
 struct RestrictionPolicy_t {

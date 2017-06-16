@@ -4,17 +4,17 @@
 
 #include "Quarry.h"
 
-Quarry::Quarry(const string &source_name, const int id, const double min_environmental_outflow,
+Quarry::Quarry(const char *name, const int id, const double min_environmental_outflow,
                const vector<Catchment *> &catchments, const double capacity, const double max_treatment_capacity,
-               double max_diversion) : WaterSource(source_name, id, min_environmental_outflow,
+               double max_diversion) : WaterSource(name, id, min_environmental_outflow,
                                                    catchments, capacity, max_treatment_capacity,
                                                    QUARRY), max_diversion(max_diversion) {}
 
-Quarry::Quarry(const string &source_name, const int id, const double min_environmental_outflow,
+Quarry::Quarry(const char *name, const int id, const double min_environmental_outflow,
                const vector<Catchment *> &catchments, const double capacity, const double raw_water_main_capacity,
                const double construction_rof, const vector<double> &construction_time_range,
                double construction_cost_of_capital, double bond_term, double bond_interest_rate, double max_diversion)
-        : WaterSource(source_name, id, min_environmental_outflow, catchments, capacity, raw_water_main_capacity,
+        : WaterSource(name, id, min_environmental_outflow, catchments, capacity, raw_water_main_capacity,
                       QUARRY, construction_rof, construction_time_range, construction_cost_of_capital, bond_term,
                       bond_interest_rate), max_diversion(max_diversion) {}
 

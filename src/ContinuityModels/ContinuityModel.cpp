@@ -9,14 +9,16 @@
 
 ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, const vector<Utility *> &utilities,
                                  const Graph &water_sources_graph,
-                                 const vector<vector<int>> &water_sources_to_utilities) : continuity_water_sources(
-        water_sources),
-                                                                                          continuity_utilities(
-                                                                                                  utilities),
-                                                                                          water_sources_graph(
-                                                                                                  water_sources_graph),
-                                                                                          water_sources_to_utilities(
-                                                                                                  water_sources_to_utilities) {
+                                 const vector<vector<int>> &water_sources_to_utilities, int realization_id) :
+        continuity_water_sources(water_sources),
+        continuity_utilities(
+                utilities),
+        water_sources_graph(
+                water_sources_graph),
+        water_sources_to_utilities(
+                water_sources_to_utilities),
+        realization_id(realization_id) {
+
     /// Connect water sources to utilities.
     for (int i = 0; i < utilities.size(); ++i) {
         for (int j = 0; j < water_sources_to_utilities[i].size(); ++j) {
@@ -34,8 +36,6 @@ ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, con
 
     /// Get topological order so that mass balance is ran from up to downstream.
     reservoir_continuity_order = water_sources_graph.getTopological_order();
-
-    water_sources_draws = vector<double>(water_sources.size(), 0.);
 
     /// the variables below are to make the storage-ROF table calculation faster.
     for (int ws = 0; ws < water_sources.size(); ++ws) {
@@ -55,13 +55,20 @@ ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, con
             downstream_sources.push_back(ds[0]);
 
     sources_topological_order = water_sources_graph.getTopological_order();
+
+    /// Set realization id on utilities and water sources, so that they use the right streamflow and demand data.
+    for (Utility *u : continuity_utilities)
+        u->setRelization(realization_id);
+    for (WaterSource *ws : continuity_water_sources)
+        ws->setRealization(realization_id);
+
 }
 
 ContinuityModel::~ContinuityModel() {
 
 }
 
-ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) {}
+ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) : realization_id(continuity_model.realization_id) {}
 
 /**
  * Calculates continuity for one week time step for streamflows of id_rof years before current week.

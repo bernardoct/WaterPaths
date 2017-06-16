@@ -14,7 +14,6 @@ private:
     Matrix3D<double> *storage_to_rof_table;
 
 protected:
-    const int realization_id;
     Matrix3D<double> storage_to_rof_realization;
     int beginning_res_level;
     vector<WaterSource *> realization_water_sources;

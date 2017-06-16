@@ -11,8 +11,13 @@ using namespace std;
 
 
 class Catchment {
+private:
+    vector<vector<double>> *streamflows_all;
+    double *streamflows_realization;
+    int series_length;
+
 public:
-    Catchment(double *streamflows, int series_length);
+    Catchment(vector<vector<double>> *streamflows_all, int series_length);
 
     Catchment(Catchment &catchment);
 
@@ -22,9 +27,7 @@ public:
 
     double getStreamflow(int week);
 
-private:
-    double *streamflows;
-    int series_length;
+    void setRealization(unsigned long r);
 };
 
 

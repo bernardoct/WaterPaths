@@ -20,8 +20,9 @@
  * @param number_of_weeks Number of time steps in each year (52 weeks, 365 days, etc.)
  * @return Double pointer array containing years in rows and time steps in columns.
  */
-double **Utils::parse2DCsvFile(char const *file_name, int number_of_records, int number_of_weeks) {
+vector<vector<double>> Utils::parse2DCsvFile(char const *file_name, int number_of_records, int number_of_weeks) {
 
+    /*
     double **data = 0;
     data = new double *[number_of_records];
 
@@ -40,6 +41,28 @@ double **Utils::parse2DCsvFile(char const *file_name, int number_of_records, int
             std::stringstream convertor(val);
             convertor >> data[row][col];
         }
+    }
+     */
+    vector<vector<double> > data;
+    ifstream infile(file_name);
+
+    while (infile) {
+        string s;
+        if (!getline(infile, s)) break;
+
+        istringstream ss(s);
+        vector<double> record;
+
+        while (ss) {
+            string sl;
+            if (!getline(ss, sl, ',')) break;
+            record.push_back(stof(sl));
+        }
+
+        data.push_back(record);
+    }
+    if (!infile.eof()) {
+        cerr << "Could not read file " << file_name << "\n";
     }
 
     return data;

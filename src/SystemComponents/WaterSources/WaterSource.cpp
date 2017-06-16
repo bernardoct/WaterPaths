@@ -10,7 +10,7 @@ using namespace std;
 
 /**
  * Constructor for when water source is built and operational.
- * @param source_name
+ * @param name
  * @param id
  * @param min_environmental_outflow
  * @param catchments
@@ -18,10 +18,10 @@ using namespace std;
  * @param raw_water_main_capacity
  * @param source_type
  */
-WaterSource::WaterSource(const string &source_name, const int id, const double min_environmental_outflow,
+WaterSource::WaterSource(const char *name, const int id, const double min_environmental_outflow,
                          const vector<Catchment *> &catchments, const double capacity,
                          const double raw_water_main_capacity, const int source_type)
-        : name(source_name), capacity(capacity), min_environmental_outflow(min_environmental_outflow),
+        : name(name), capacity(capacity), min_environmental_outflow(min_environmental_outflow),
           total_outflow(min_environmental_outflow), catchments(catchments), online(ONLINE), available_volume(capacity),
           id(id), raw_water_main_capacity(raw_water_main_capacity), source_type(source_type),
           construction_rof(NON_INITIALIZED), construction_time(NON_INITIALIZED),
@@ -41,12 +41,12 @@ WaterSource::WaterSource(const string &source_name, const int id, const double m
  * @param construction_time_range
  * @param construction_cost_of_capital
  */
-WaterSource::WaterSource(const string &source_name, const int id, const double min_environmental_outflow,
+WaterSource::WaterSource(const char *name, const int id, const double min_environmental_outflow,
                          const vector<Catchment *> &catchments, const double capacity,
                          const double raw_water_main_capacity, const int source_type, const double construction_rof,
                          const vector<double> construction_time_range, double construction_cost_of_capital,
                          double bond_term, double bond_interest_rate)
-        : name(source_name), capacity(capacity), min_environmental_outflow(min_environmental_outflow),
+        : name(name), capacity(capacity), min_environmental_outflow(min_environmental_outflow),
           total_outflow(min_environmental_outflow), catchments(catchments), online(OFFLINE), available_volume(capacity),
           id(id), raw_water_main_capacity(raw_water_main_capacity), source_type(source_type),
           construction_rof(construction_rof),
@@ -170,7 +170,7 @@ void WaterSource::bypass(int week, double upstream_source_inflow) {
  * service payments, issued on a given week in the future.
  * @param week
  * @param discount_rate
- * @return
+ * @return Net present cost
  */
 double WaterSource::calculateNetPresentConstructionCost(int week, double discount_rate,
                                                         double *level_debt_service_payment) const {
@@ -232,4 +232,18 @@ double WaterSource::getCatchment_upstream_catchment_inflow() const {
 
 void WaterSource::addCapacity(double capacity) {
     WaterSource::capacity += capacity;
+}
+
+void WaterSource::setRealization(int r) {
+    for (Catchment *c : catchments)
+        c->setRealization(r);
+
+    /// Update total catchment inflow, demand, and available water volume for week 0;
+    this->upstream_catchment_inflow = 0;
+    for (Catchment *c : catchments) {
+        this->upstream_catchment_inflow = c->getStreamflow(0);
+    }
+
+    demand = 0;
+    available_volume = this->upstream_catchment_inflow - min_environmental_outflow;
 }

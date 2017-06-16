@@ -25,6 +25,7 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_source
     std::sort(utilities.begin(), utilities.end());
 #endif
 
+    //FIXME: UPDATE THIS LOGIC ONCE A TABLE FOR MINIMUM ENVIRONMENTAL INFLOWS IS IMPLEMENTED.
     /// Pass sum of minimum environmental inflows of upstream sources to intakes.
     double upstream_min_env_flow;
     for (WaterSource *ws : water_sources) {
@@ -34,6 +35,17 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_source
                 upstream_min_env_flow += water_sources[i]->min_environmental_outflow;
             dynamic_cast<Intake *>(ws)->setUpstream_min_env_flow(upstream_min_env_flow);
         }
+    }
+
+    /// Check if sources listed in construction order array are of a utility are listed as belonging to that utility
+    for (int u = 0; u < utilities.size(); ++u) {
+        for (int ws : utilities[u]->getInfrastructure_construction_order())
+            if (std::find(water_sources_to_utilities[u].begin(), water_sources_to_utilities[u].end(), ws)
+                == water_sources_to_utilities[u].end()) {
+                cout << "Water source #" << ws << " is listed in the construction order for utility " << u << " but "
+                        "is not present in utility's list of water sources" << endl;
+                throw std::invalid_argument("Utility's construction order and owned sources mismatch.");
+            }
     }
 
     /// Creates the data collector for the simulation.

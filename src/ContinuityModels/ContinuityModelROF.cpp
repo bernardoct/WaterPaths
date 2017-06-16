@@ -14,8 +14,8 @@ ContinuityModelROF::ContinuityModelROF(const vector<WaterSource *> &water_source
                                        const int realization_id) : ContinuityModel(water_sources,
                                                                                    utilities,
                                                                                    water_sources_graph,
-                                                                                   water_sources_to_utilities),
-                                                                   realization_id(realization_id) {
+                                                                                   water_sources_to_utilities,
+                                                                                   realization_id) {
 
     /// update utilities' total stored volume
     for (Utility *u : this->continuity_utilities) {
@@ -34,8 +34,8 @@ ContinuityModelROF::ContinuityModelROF(ContinuityModelROF &continuity_model_rof)
         : ContinuityModel(continuity_model_rof.continuity_water_sources,
                           continuity_model_rof.continuity_utilities,
                           continuity_model_rof.water_sources_graph,
-                          continuity_model_rof.water_sources_to_utilities),
-          realization_id(continuity_model_rof.realization_id) {
+                          continuity_model_rof.water_sources_to_utilities,
+                          continuity_model_rof.realization_id) {
 }
 
 ContinuityModelROF::~ContinuityModelROF() {

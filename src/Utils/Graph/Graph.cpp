@@ -16,7 +16,7 @@ using namespace std;
 
 /**
  * Constructor.
- * @param V Number of water sources.
+ * @param V Number of water sources (vertices.
  */
 Graph::Graph(int V) : V(V) {
     adj = new list<int>[V];
@@ -166,6 +166,10 @@ const vector<int> Graph::getTopological_order() const {
 const vector<vector<double>> Graph::getContinuityMatrix() const {
     vector<vector<double>> continuity_matrix(continuity_matrix_transpose[0].size(),
                                              vector<double>(continuity_matrix_transpose.size(), 0));
+
+    if (n_edges + 1 < V)
+        __throw_invalid_argument("Are you sure your inputted graphs have all your edges or that you type the "
+                                         "right number of sources (instead of more than you should)?");
 
     unsigned long n_pipes = continuity_matrix_transpose.size();
 

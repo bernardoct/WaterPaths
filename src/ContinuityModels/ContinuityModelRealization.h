@@ -11,7 +11,6 @@
 
 class ContinuityModelRealization : public ContinuityModel {
 private:
-
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
 
 public:
@@ -23,8 +22,6 @@ public:
                                const int realization_index);
 
     ContinuityModelRealization(ContinuityModelRealization &continuity_model_realization);
-
-    const int realization_id;
 
     vector<WaterSource *> getWater_sources();
 

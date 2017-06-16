@@ -12,25 +12,25 @@
  * Main constructor for the Utility class.
  * @param name Utility name (e.g. Raleigh_water)
  * @param id Numeric id assigned to that utility.
- * @param demand_file_name Text file containing utility's demand series.
+ * @param demands_all_realizations Text file containing utility's demand series.
  * @param number_of_week_demands Length of weeks in demand series.
  */
 
-Utility::Utility(char *name, int id, char const *demand_file_name, int number_of_week_demands,
+Utility::Utility(char *name, int id, vector<vector<double>> *demands_all_realizations, int number_of_week_demands,
                  const double percent_contingency_fund_contribution, const double water_price_per_volume) :
-        name(name), id(id), number_of_week_demands(number_of_week_demands),
+        name(name), id(id), demands_all_realizations(demands_all_realizations),
+        number_of_week_demands(number_of_week_demands),
         percent_contingency_fund_contribution(percent_contingency_fund_contribution),
         water_price_per_volume(water_price_per_volume), infrastructure_discount_rate(NON_INITIALIZED) {
 
-    /// Read demands.
-    demand_series = Utils::parse1DCsvFile(demand_file_name, number_of_week_demands);
 }
 
 
-Utility::Utility(char *name, int id, char const *demand_file_name, int number_of_week_demands,
+Utility::Utility(char *name, int id, vector<vector<double>> *demands_all_realizations, int number_of_week_demands,
                  const double percent_contingency_fund_contribution, const double water_price_per_volume,
                  const vector<int> infrastructure_build_order, double infrastructure_discount_rate) :
-        name(name), id(id), number_of_week_demands(number_of_week_demands),
+        name(name), id(id), demands_all_realizations(demands_all_realizations),
+        number_of_week_demands(number_of_week_demands),
         percent_contingency_fund_contribution(percent_contingency_fund_contribution),
         water_price_per_volume(water_price_per_volume), infrastructure_construction_order(infrastructure_build_order),
         infrastructure_discount_rate(infrastructure_discount_rate) {
@@ -42,7 +42,6 @@ Utility::Utility(char *name, int id, char const *demand_file_name, int number_of
     if (infrastructure_discount_rate <= 0)
         throw std::invalid_argument("Infrastructure discount rate must be greater than 0.");
 
-    demand_series = Utils::parse1DCsvFile(demand_file_name, number_of_week_demands);
     total_stored_volume = NONE;
     total_storage_capacity = NONE;
 }
@@ -59,7 +58,8 @@ Utility::Utility(Utility &utility) : id(utility.id), number_of_week_demands(util
                                      percent_contingency_fund_contribution(utility.percent_contingency_fund_contribution),
                                      water_price_per_volume(utility.water_price_per_volume),
                                      infrastructure_construction_order(utility.infrastructure_construction_order),
-                                     infrastructure_discount_rate(utility.infrastructure_discount_rate) {
+                                     infrastructure_discount_rate(utility.infrastructure_discount_rate),
+                                     demands_all_realizations(utility.demands_all_realizations) {
 
     /// Create copies of sources
     water_sources.clear();
@@ -79,17 +79,14 @@ Utility::Utility(Utility &utility) : id(utility.id), number_of_week_demands(util
             throw logic_error(error_message);
         }
     }
-
-    /// Copy demand series so that restrictions in one realization do not affect other realizations.
-    std::copy(utility.demand_series, utility.demand_series + utility.number_of_week_demands, demand_series);
 }
 
 /**
  * Destructor.
  */
 Utility::~Utility() {
-
-    delete[] demand_series;
+    if (demand_series)
+        delete[] demand_series;
 }
 
 /**
@@ -110,6 +107,8 @@ Utility &Utility::operator=(const Utility &utility) {
                                          (ws.first, new Intake(*dynamic_cast<Intake *>(ws.second))));
         }
     }
+
+    demands_all_realizations = utility.demands_all_realizations;
 
     return *this;
 }
@@ -152,8 +151,19 @@ void Utility::clearWaterSources() {
  * @param water_source
  */
 void Utility::addWaterSource(WaterSource *water_source) {
-    if (water_sources.count(water_source->id))
-        throw std::logic_error("Attempt to add water source with duplicate ID was added to utility.");
+    if (water_sources.count(water_source->id)) {
+        cout << "Water source ID: " << water_source->id << endl << "Utility ID: " << id << endl;
+        __throw_invalid_argument("Attempt to add water source with duplicate ID to utility.");
+    }
+
+    /// Catch if user entered a water source as to be built but didn't enter bond parameters.
+    for (int ws : infrastructure_construction_order)
+        if (water_source->id == ws)
+            if (water_source->construction_cost_of_capital == NON_INITIALIZED) {
+                cout << "Utility " << id << " set to build water source " << ws << ", which has no bond "
+                        "parameters set." << endl;
+                __throw_invalid_argument("Water source with bond parameters but set as to be built.");
+            }
 
     water_sources.insert(pair<int, WaterSource *>(water_source->id, water_source));
 
@@ -423,4 +433,19 @@ double Utility::getInsurance_payout() const {
 
 double Utility::getInsurance_purchase() const {
     return insurance_purchase;
+}
+
+const vector<int> &Utility::getInfrastructure_construction_order() const {
+    return infrastructure_construction_order;
+}
+
+/**
+ * Get time series corresponding to realization index and eliminate reference to comprehensive demand
+ * data set.
+ * @param r
+ */
+void Utility::setRelization(unsigned long r) {
+    demand_series = new double[demands_all_realizations->at(r).size()];
+    std::copy(demands_all_realizations->at(r).begin(), demands_all_realizations->at(r).end(), demand_series);
+    demands_all_realizations = NULL;
 }

@@ -1,4 +1,5 @@
-              Reliability   Restriction Freq.  Infrastructure NPC Peak Financial Cost    Worse Case Costs
-   U1                   1                   0                   0                0.03                   0
-   U2                   1                   1                2555              0.7838               4.636
-   U3                   1              0.9474                   0              0.1845              0.4445
+                   Reliability   Restriction Freq.  Infrastructure NPC Peak Financial Cost    Worse Case Costs
+      Cary                   1                   0                   0                0.03                   0
+    Durham                   1                   0                   0                0.07                   0
+     OWASA                   1                   0                   0                0.05                   0
+   Raleigh                   1                   0                   0                0.05                   0

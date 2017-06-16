@@ -142,8 +142,10 @@ void DataCollector::printReservoirOutput(string fileName) {
 
         /// Print realization number.
         outStream << "Realization " << r << endl;
+        outStream << endl
+                  << setw(COLUMN_WIDTH) << " ";
         for (int i = 0; i < reservoirs_t.size(); ++i) {
-            outStream << reservoirs_t[r].name << " ";
+            outStream << setw(6 * COLUMN_WIDTH) << reservoirs_t[i].name;
         }
 
         /// Print realization header.
@@ -193,12 +195,13 @@ void DataCollector::printUtilityOutput(string fileName) {
         /// Print realization number.
         outStream << endl;
         outStream << "Realization " << r << endl;
+        outStream << endl << setw(COLUMN_WIDTH) << " ";
         for (int i = 0; i < utilities_t.size(); ++i) {
-            outStream << utilities_t[i].name << " ";
+            outStream << setw(8 * COLUMN_WIDTH) << utilities_t[i].name;
         }
 
         /// Print realization header.
-        outStream << endl << setw(COLUMN_WIDTH) << " ";
+        outStream << endl << setw(COLUMN_WIDTH) << "";
         for (int i = 0; i < utilities_t.size(); ++i) {
             outStream << setw(2 * COLUMN_WIDTH) << "Stored"
                       << setw(COLUMN_WIDTH) << " "
@@ -316,7 +319,7 @@ void DataCollector::printObjectives(string fileName) {
     std::ofstream outStream;
     outStream.open(output_directory + fileName);
 
-    outStream << setw(COLUMN_WIDTH / 2) << " " << setw((COLUMN_WIDTH * 2)) << "Reliability"
+    outStream << setw(COLUMN_WIDTH) << "      " << setw((COLUMN_WIDTH * 2)) << "Reliability"
               << setw(COLUMN_WIDTH * 2) << "Restriction Freq."
               //              << setw(COLUMN_WIDTH * 2) << "Jordan Lake Alloc."
               << setw(COLUMN_WIDTH * 2) << "Infrastructure NPC"
@@ -324,7 +327,7 @@ void DataCollector::printObjectives(string fileName) {
               << setw(COLUMN_WIDTH * 2) << "Worse Case Costs" << endl;
 
     for (Utility_t &ut : utilities_t) {
-        outStream << setw(COLUMN_WIDTH / 2) << ut.name;
+        outStream << setw(COLUMN_WIDTH) << ut.name;
         for (double o :ut.objectives) outStream << setw(COLUMN_WIDTH * 2) << setprecision(COLUMN_PRECISION) << o;
         outStream << endl;
     }
@@ -377,7 +380,8 @@ double DataCollector::calculateReliabilityObjective(Utility_t utility) {
     /// Creates a table with years that failed in each realization.
     for (int r = 0; r < n_realizations; ++r) {
         for (int y = 0; y < n_years; ++y) {
-            for (int w = (int) round(y * WEEKS_IN_YEAR); w < (int) round((y + 1) * WEEKS_IN_YEAR); ++w) {
+            for (int w = (int) round(y * WEEKS_IN_YEAR); w < min((int) n_weeks,
+                                                                 (int) round((y + 1) * WEEKS_IN_YEAR)); ++w) {
                 if (utility.combined_storage[r][w] / utility.capacity < STORAGE_CAPACITY_RATIO_FAIL) {
                     realizations_year_reliabilities[r][y] = FAILURE;
                 }
@@ -415,7 +419,8 @@ double DataCollector::calculateRestrictionFrequencyObjective(RestrictionPolicy_t
         /// Counts how many years across all realizations had restrictions.
         for (int r = 0; r < n_realizations; ++r) {
             for (int y = 0; y < n_years; ++y) {
-                for (int w = (int) round(y * WEEKS_IN_YEAR); w < (int) round((y + 1) * WEEKS_IN_YEAR); ++w) {
+                for (int w = (int) round(y * WEEKS_IN_YEAR); w < min((int) n_weeks,
+                                                                     (int) round((y + 1) * WEEKS_IN_YEAR)); ++w) {
                     if (restriction_t.restriction_multiplier[r][w] != 1.0) {
                         restriction_frequency++;
                         break;

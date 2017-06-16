@@ -7,8 +7,8 @@
 #include "../Utils/Constants.h"
 
 
-Catchment::Catchment(double *streamflows, int series_length) : streamflows(streamflows),
-                                                               series_length(series_length) {
+Catchment::Catchment(vector<vector<double>> *streamflows_all, int series_length) : streamflows_all(streamflows_all),
+                                                                                   series_length(series_length) {
 
     if (series_length < Constants::WEEKS_IN_YEAR * Constants::NUMBER_REALIZATIONS_ROF)
         throw std::length_error("Series shorter than required for ROF calculations. The streamflow series"
@@ -21,7 +21,8 @@ Catchment::Catchment(double *streamflows, int series_length) : streamflows(strea
  * @param catchment
  */
 Catchment::Catchment(Catchment &catchment) : series_length(catchment.series_length),
-                                             streamflows(catchment.streamflows) {
+                                             streamflows_all(catchment.streamflows_all),
+                                             streamflows_realization(catchment.streamflows_realization) {
 }
 
 /**
@@ -31,8 +32,9 @@ Catchment::Catchment(Catchment &catchment) : series_length(catchment.series_leng
  */
 Catchment &Catchment::operator=(const Catchment &catchment) {
 
-    streamflows = catchment.streamflows;
+    streamflows_all = catchment.streamflows_all;
     series_length = catchment.series_length;
+    streamflows_realization = catchment.streamflows_realization;
 
     return *this;
 }
@@ -41,8 +43,8 @@ Catchment &Catchment::operator=(const Catchment &catchment) {
  * Destructor.
  */
 Catchment::~Catchment() {
-    if (streamflows)
-        delete[] streamflows;
+    if (streamflows_realization)
+        delete[] streamflows_realization;
 }
 
 /**
@@ -52,6 +54,18 @@ Catchment::~Catchment() {
  * @return
  */
 double Catchment::getStreamflow(int week) {
-    return streamflows[week + (int) std::round(Constants::WEEKS_IN_YEAR * Constants::NUMBER_REALIZATIONS_ROF)];
+    return streamflows_realization[week +
+                                   (int) std::round(Constants::WEEKS_IN_YEAR * Constants::NUMBER_REALIZATIONS_ROF)];
+}
+
+/**
+ * Get time series corresponding to realization index and eliminate reference to comprehensive streamflow
+ * data set.
+ * @param r
+ */
+void Catchment::setRealization(unsigned long r) {
+    streamflows_realization = new double[streamflows_all->at(r).size()];
+    std::copy(streamflows_all->at(r).begin(), streamflows_all->at(r).end(), streamflows_realization);
+    streamflows_all = NULL;
 }
 

@@ -28,7 +28,7 @@ protected:
 public:
     const int id;
     const double min_environmental_outflow;
-    const string name;
+    const char *name;
     const int source_type;
     const double raw_water_main_capacity;
     const double construction_rof;
@@ -37,11 +37,11 @@ public:
     const double bond_term;
     const double bond_interest_rate;
 
-    WaterSource(const string &source_name, const int id, const double min_environmental_outflow,
+    WaterSource(const char *name, const int id, const double min_environmental_outflow,
                 const vector<Catchment *> &catchments, const double capacity,
                 const double raw_water_main_capacity, const int source_type);
 
-    WaterSource(const string &source_name, const int id, const double min_environmental_outflow,
+    WaterSource(const char *source_name, const int id, const double min_environmental_outflow,
                 const vector<Catchment *> &catchments, const double capacity,
                 const double raw_water_main_capacity, const int source_type, const double construction_rof,
                 const vector<double> construction_time_range, double construction_cost_of_capital,
@@ -89,6 +89,8 @@ public:
     calculateNetPresentConstructionCost(int week, double discount_rate, double *level_debt_service_payment) const;
 
     static bool compare(WaterSource *lhs, WaterSource *rhs);
+
+    void setRealization(int r);
 };
 
 

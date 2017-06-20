@@ -12,7 +12,7 @@
 //#include "../src/Utils/Matrix3D.h"
 
 TEST_CASE("Net present cost calculations", "[NPC]") {
-    Reservoir r("Res", 0, 1, vector<Catchment *>(), 1, 1, 1, vector<double>(2, 1), 5000, 20, 0.05);
+    Reservoir r("Res", 0, 1, vector<Catchment *>(), 1, 1, 1, vector<double>(2, 1), 5000, 20, 0.05, nullptr);
 
     double level_debt_service_payment = 0;
     REQUIRE(r.calculateNetPresentConstructionCost(0, 0.05, &level_debt_service_payment) == Approx(5000));
@@ -33,8 +33,8 @@ TEST_CASE("Split of demand among water sources of a utility proportionally to th
 
     vector<Catchment *> catchments1(1, &c1);
     double min_env_flow_intake = 2.0;
-    Reservoir r1("R1", 0, NON_INITIALIZED, catchments1, 200.0, NON_INITIALIZED);
-    Reservoir r2("R2", 1, NON_INITIALIZED, catchments1, 400.0, NON_INITIALIZED);
+    Reservoir r1("R1", 0, NON_INITIALIZED, catchments1, 200.0, NON_INITIALIZED, nullptr);
+    Reservoir r2("R2", 1, NON_INITIALIZED, catchments1, 400.0, NON_INITIALIZED, nullptr);
 
     SECTION("Split demand among reservoirs only") {
         Utility u1((char *) "U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, NON_INITIALIZED,
@@ -856,7 +856,7 @@ TEST_CASE("Get ROF from storage-rof-table", "[rof from table]") {
     /// Read streamflows
     int streamflow_n_weeks = 52 * 70;
     double **streamflows_test = Utils::parse2DCsvFile("../TestFiles/"
-                                                              "inflowsLong.csv", 2, streamflow_n_weeks);
+                                                                  "inflowsLong.csv");
 
     /// Create catchments and corresponding vectors
     Catchment c1(streamflows_test[0], streamflow_n_weeks);
@@ -872,11 +872,11 @@ TEST_CASE("Get ROF from storage-rof-table", "[rof from table]") {
 
     /// Create reservoirs and corresponding vector
     vector<double> construction_time_interval = {1.0, 4.0};
-    Reservoir r1("R1", 0, 3.0, catchments1, 2., 20);
-    Reservoir r2("R2", 1, 3.0, catchments2, 1., 20, 0.02, construction_time_interval, 5000, 20, 0.05);
-    Reservoir r3("R3", 2, 2.0, catchments3, 1., 20);
-    Reservoir r4("R4", 3, 3.0, catchments2, 1., 20);
-    Reservoir r5("R5", 4, 2.0, catchments3, 1., 20);
+    Reservoir r1("R1", 0, 3.0, catchments1, 2., 20, nullptr);
+    Reservoir r2("R2", 1, 3.0, catchments2, 1., 20, 0.02, construction_time_interval, 5000, 20, 0.05, nullptr);
+    Reservoir r3("R3", 2, 2.0, catchments3, 1., 20, nullptr);
+    Reservoir r4("R4", 3, 3.0, catchments2, 1., 20, nullptr);
+    Reservoir r5("R5", 4, 2.0, catchments3, 1., 20, nullptr);
 
     vector<WaterSource *> water_sources;
     water_sources.push_back(&r1);

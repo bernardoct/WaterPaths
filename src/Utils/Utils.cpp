@@ -20,7 +20,7 @@
  * @param number_of_weeks Number of time steps in each year (52 weeks, 365 days, etc.)
  * @return Double pointer array containing years in rows and time steps in columns.
  */
-vector<vector<double>> Utils::parse2DCsvFile(char const *file_name, int number_of_records, int number_of_weeks) {
+vector<vector<double>> Utils::parse2DCsvFile(char const *file_name) {
 
     /*
     double **data = 0;

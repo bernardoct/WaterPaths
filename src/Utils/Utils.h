@@ -15,7 +15,7 @@
 class Utils {
 public:
 
-    static vector<vector<double>> parse2DCsvFile(char const *file_name, int number_of_years, int number_of_weeks);
+    static vector<vector<double>> parse2DCsvFile(char const *file_name);
 
     static double *parse1DCsvFile(char const *file_name, int number_of_weeks);
 

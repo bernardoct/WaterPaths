@@ -817,9 +817,9 @@ void simulation3U5RInfraTest() {
     /// Read streamflows
     int streamflow_n_weeks = 52 * 70;
     vector<vector<double>> streamflows_test = Utils::parse2DCsvFile("../TestFiles/"
-                                                              "inflowsLong.csv", 2, streamflow_n_weeks);
+                                                                            "inflowsLong.csv");
     vector<vector<double>> demands_test = Utils::parse2DCsvFile("../TestFiles/"
-                                                                        "demandsLong.csv", 2, streamflow_n_weeks);
+                                                                            "demandsLong.csv");
 
 
     /// Create catchments and corresponding vectors
@@ -839,10 +839,10 @@ void simulation3U5RInfraTest() {
     vector<double> construction_time_interval_rex6 = {1.0, 4.0};
 
     Quarry q1("Q1", 0, 3.0, catchments1, 100.0, 20, 10);
-    Reservoir r2("R2", 1, 3.0, catchments2, 275.0, 20, 0.02, construction_time_interval_r2, 5000, 20, 0.05);
-    Reservoir r3("R3", 2, 2.0, catchments3, 400.0, 20);
-    Reservoir r4("R4", 3, 3.0, catchments2, 500.0, 20);
-    Reservoir r5("R5", 4, 2.0, catchments3, 850.0, 20);
+    Reservoir r2("R2", 1, 3.0, catchments2, 275.0, 20, 0.02, construction_time_interval_r2, 5000, 20, 0.05, nullptr);
+    Reservoir r3("R3", 2, 2.0, catchments3, 400.0, 20, nullptr);
+    Reservoir r4("R4", 3, 3.0, catchments2, 500.0, 20, nullptr);
+    Reservoir r5("R5", 4, 2.0, catchments3, 850.0, 20, nullptr);
     ReservoirExpansion rex6("R6wx", 5, 3, 200.0, 0.03, construction_time_interval_rex6, 3000, 20, 0.05);
     WaterReuse wr1("WR5", 6, 0.5);
 
@@ -963,43 +963,39 @@ void triangleTest() {
     /// Read streamflows
     int streamflow_n_weeks = 52 * (70 + 50);
     vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile("../TestFiles/"
-                                                                              "durhamInflowsLong.csv", 10,
-                                                                      streamflow_n_weeks);
+                                                                                  "durhamInflowsLong.csv");
     vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile("../TestFiles/"
-                                                                            "flatInflowsLong.csv", 10,
-                                                                    streamflow_n_weeks);
+                                                                                "flatInflowsLong.csv");
     vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile("../TestFiles/"
-                                                                             "swiftInflowsLong.csv", 10,
-                                                                     streamflow_n_weeks);
+                                                                                 "swiftInflowsLong.csv");
     vector<vector<double>> streamflows_llr = Utils::parse2DCsvFile("../TestFiles/"
-                                                                           "littleriverraleighInflowsLong.csv", 10,
-                                                                   streamflow_n_weeks);
+                                                                               "littleriverraleighInflowsLong.csv");
     vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile("../TestFiles/"
-                                                                                "crabtreeInflowsLong.csv", 10,
-                                                                        streamflow_n_weeks);
+                                                                                    "crabtreeInflowsLong.csv");
     vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile("../TestFiles/"
-                                                                             "philsInflowsLong.csv", 10,
-                                                                     streamflow_n_weeks);
+                                                                                 "philsInflowsLong.csv");
     vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile("../TestFiles/"
-                                                                            "caneInflowsLong.csv", 10,
-                                                                    streamflow_n_weeks);
+                                                                                "caneInflowsLong.csv");
     vector<vector<double>> streamflows_morgan = Utils::parse2DCsvFile("../TestFiles/"
-                                                                              "morganInflowsLong.csv", 10,
-                                                                      streamflow_n_weeks);
+                                                                                  "morganInflowsLong.csv");
     vector<vector<double>> streamflows_haw = Utils::parse2DCsvFile("../TestFiles/"
-                                                                           "hawInflowsLong.csv", 10,
-                                                                   streamflow_n_weeks);
+                                                                               "hawInflowsLong.csv");
     vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile("../TestFiles/"
-                                                                               "claytonInflowsLong.csv", 10,
-                                                                       streamflow_n_weeks);
+                                                                                   "claytonInflowsLong.csv");
     vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile("../TestFiles/"
-                                                                                  "lillingtonInflowsLong.csv", 10,
-                                                                          streamflow_n_weeks);
+                                                                                      "lillingtonInflowsLong.csv");
 
-    vector<vector<double>> demand_cary = Utils::parse2DCsvFile("../TestFiles/demandsLongCary.csv", NONE, NONE);
-    vector<vector<double>> demand_durham = Utils::parse2DCsvFile("../TestFiles/demandsLongDurham.csv", NONE, NONE);
-    vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile("../TestFiles/demandsLongRaleigh.csv", NONE, NONE);
-    vector<vector<double>> demand_owasa = Utils::parse2DCsvFile("../TestFiles/demandsLongOWASA.csv", NONE, NONE);
+    vector<vector<double>> demand_cary = Utils::parse2DCsvFile("../TestFiles/demandsLongCary.csv");
+    vector<vector<double>> demand_durham = Utils::parse2DCsvFile("../TestFiles/demandsLongDurham.csv");
+    vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile("../TestFiles/demandsLongRaleigh.csv");
+    vector<vector<double>> demand_owasa = Utils::parse2DCsvFile("../TestFiles/demandsLongOWASA.csv");
+
+    vector<vector<double>> evap_durham = Utils::parse2DCsvFile("../TestFiles/evapLongDurham.csv");
+    vector<vector<double>> evap_jordan_lake = Utils::parse2DCsvFile("../TestFiles/evapLongCary.csv");
+    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile("../TestFiles/evapLongFalls.csv");
+    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile("../TestFiles/evapLongOWASA.csv");
+    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile("../TestFiles/evapLongRaleighOther.csv");
+    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile("../TestFiles/evapLongWB.csv");
 
     /// Create catchments and corresponding vectors
     //  Durham (Upper Neuse River Basin)
@@ -1064,14 +1060,15 @@ void triangleTest() {
     vector<double> bond_rate = {0.04, 0.04, 0.04, 0.04};
 
     // Existing Sources
-    Reservoir durham_reservoirs("Lake Michie & Little River Res. (Durham)", 0, 9.05, catchment_durham, 6349.0, 99999);
-    Reservoir falls_lake("Falls Lake", 1, 38.78, catchment_flat, 14700.0, 99999);
-    Reservoir wheeler_benson_lakes("Wheeler-Benson Lakes", 2, 2.0, catchment_swift, 2789.66, 99999);
-    Reservoir stone_quarry("Stone Quarry", 3, 0, catchment_phils, 200.0, 99999);
-    Reservoir ccr("Cane Creek Reservoir", 4, 0.1422, catchment_cane, 2909.0, 99999);
-    Reservoir university_lake("University Lake", 5, 0, catchment_morgan, 449.0, 99999);
-    Reservoir jordan_lake("Jordan Lake", 6, 25.8527, catchment_haw, JL_supply_capacity * JL_allocation_fractions[0],
-                          40);
+    Reservoir durham_reservoirs("Lake Michie & Little River Res. (Durham)", 0, 9.05, catchment_durham, 6349.0, 99999,
+                                &evap_durham);
+    Reservoir falls_lake("Falls Lake", 1, 38.78, catchment_flat, 14700.0, 99999, &evap_falls_lake);
+    Reservoir wheeler_benson_lakes("Wheeler-Benson Lakes", 2, 2.0, catchment_swift, 2789.66, 99999, &evap_wheeler_benson);
+    Reservoir stone_quarry("Stone Quarry", 3, 0, catchment_phils, 200.0, 99999, &evap_owasa);
+    Reservoir ccr("Cane Creek Reservoir", 4, 0.1422, catchment_cane, 2909.0, 99999, &evap_owasa);
+    Reservoir university_lake("University Lake", 5, 0, catchment_morgan, 449.0, 99999, &evap_owasa);
+    Reservoir jordan_lake("Jordan Lake", 6, 25.8527, catchment_haw, JL_supply_capacity * JL_allocation_fractions[0], 40,
+                          &evap_jordan_lake);
     // other than Cary WTP for Jordan Lake, assume no WTP constraints - each city can meet its daily demands
     // with available treatment infrastructure
 
@@ -1083,13 +1080,13 @@ void triangleTest() {
     // expansion, the maximum capacity through expansion is 7.7BG, NOT 2.5BG + 7.7BG.
     Reservoir little_river_reservoir("Little River Reservoir (Raleigh)", 7, 9.05, catchment_little_river_raleigh,
                                      3700.0, 99999, city_infrastructure_ROF_triggers[3], construction_time_interval,
-                                     263.0, bond_length[3], bond_rate[3]);
-    Reservoir richland_creek_quarry("Richland Creek Quarry", 8, 0, gage_clayton, 4000.0, 99999,
+                                     263.0, bond_length[3], bond_rate[3], &evap_little_river);
+    Quarry richland_creek_quarry("Richland Creek Quarry", 8, 0, gage_clayton, 4000.0, 99999, 9999, //FIXME: MAX PUMPING CAPACITY?
                                     city_infrastructure_ROF_triggers[3], construction_time_interval, 400.0,
                                     bond_length[3], bond_rate[3]);
     // diversions to Richland Creek Quarry based on ability to meet downstream flow target at Clayton, NC
-    Reservoir teer_quarry("Teer Quarry", 9, 0, catchment_flat, 1315.0, 99999, city_infrastructure_ROF_triggers[1],
-                          construction_time_interval, 22.6, bond_length[1], bond_rate[1]);
+    Quarry teer_quarry("Teer Quarry", 9, 0, catchment_flat, 1315.0, 99999, 99999, city_infrastructure_ROF_triggers[1],
+                       construction_time_interval, 22.6, bond_length[1], bond_rate[1]); //FIXME: MAX PUMPING CAPACITY?
     // diversions to Teer Quarry for Durham based on inflows to downstream Falls Lake from the Flat River
     // FYI: spillage from Eno River also helps determine Teer quarry diversion, but Eno spillage isn't factored into
     // downstream water balance?
@@ -1115,37 +1112,38 @@ void triangleTest() {
     //Reservoir rNeuseRiverIntake("rNeuseRiverIntake", 10, 0, catchment_flat, 16.0, 99999, city_infrastructure_ROF_triggers[3], construction_time_interval, 5000, 20, 0.05);
     Intake neuse_river_intake("Neuse River Intake", 10, 0, catchment_flat, 99999, city_infrastructure_ROF_triggers[3],
                               construction_time_interval, 225.5, bond_length[3], bond_rate[3]);
-    Reservoir low_reclaimed("Low Reclaimed Water System", 18, 0, catchment_durham, 2.2, 99999,
-                            city_infrastructure_ROF_triggers[1], construction_time_interval, 27.5, bond_length[1],
-                            bond_rate[1]);
-    Reservoir high_reclaimed("High Reclaimed Water System", 19, 0, catchment_durham, 11.3, 99999,
-                             city_infrastructure_ROF_triggers[1], construction_time_interval, 104.4, bond_length[1],
-                             bond_rate[1]);
+    WaterReuse low_reclaimed("Low Reclaimed Water System", 18, 2.2, city_infrastructure_ROF_triggers[1],
+                             construction_time_interval, 27.5, bond_length[1], bond_rate[1]);
+    WaterReuse high_reclaimed("High Reclaimed Water System", 19, 11.3, city_infrastructure_ROF_triggers[1],
+                             construction_time_interval, 104.4, bond_length[1], bond_rate[1]);
+
+    //FIXME: ONCE ONE UTILITY DECIDES TO BUILD THE WJLWTP, ALL OTHERS PAY FOR IT TOO, RIGHT? IF SO, WHAT'S THE PROPORTION?
+    //FIXME: FIX EVAPORATION FILES, IF NEEDED.
     Reservoir low_wjlwtp_durham("Low WJLWTP (Durham)", 20, 0, catchment_haw,
                                 JL_supply_capacity * JL_allocation_fractions[1], 33.0 * JL_allocation_fractions[1],
                                 city_infrastructure_ROF_triggers[1], construction_time_interval,
-                                243.3 * JL_allocation_fractions[1], bond_length[1], bond_rate[1]);
+                                243.3 * JL_allocation_fractions[1], bond_length[1], bond_rate[1], &evap_jordan_lake);
     Reservoir high_wjlwtp_durham("High WJLWTP (Durham)", 21, 0, catchment_haw,
                                  JL_supply_capacity * JL_allocation_fractions[1], 54.0 * JL_allocation_fractions[1],
                                  city_infrastructure_ROF_triggers[1], construction_time_interval,
-                                 73.5 * JL_allocation_fractions[1], bond_length[1], bond_rate[1]);
+                                 73.5 * JL_allocation_fractions[1], bond_length[1], bond_rate[1], &evap_jordan_lake);
     Reservoir low_wjlwtp_owasa("Low WJLWTP (OWASA)", 22, 0, catchment_haw,
                                JL_supply_capacity * JL_allocation_fractions[2], 33.0 * JL_allocation_fractions[2],
                                city_infrastructure_ROF_triggers[2], construction_time_interval,
-                               243.3 * JL_allocation_fractions[2], bond_length[2], bond_rate[2]);
+                               243.3 * JL_allocation_fractions[2], bond_length[2], bond_rate[2], &evap_jordan_lake);
     Reservoir high_wjlwtp_owasa("High WJLWTP (OWASA)", 23, 0, catchment_haw,
                                 JL_supply_capacity * JL_allocation_fractions[2], 54.0 * JL_allocation_fractions[2],
                                 city_infrastructure_ROF_triggers[2], construction_time_interval,
-                                73.5 * JL_allocation_fractions[2], bond_length[2], bond_rate[2]);
+                                73.5 * JL_allocation_fractions[2], bond_length[2], bond_rate[2], &evap_jordan_lake);
     Reservoir low_wjlwtp_raleigh("Low WJLWTP (Raleigh)", 24, 0, catchment_haw,
                                  JL_supply_capacity * JL_allocation_fractions[3], 33.0 * JL_allocation_fractions[3],
                                  city_infrastructure_ROF_triggers[3], construction_time_interval,
-                                 243.3 * JL_allocation_fractions[3], bond_length[3], bond_rate[3]);
+                                 243.3 * JL_allocation_fractions[3], bond_length[3], bond_rate[3], &evap_jordan_lake);
     Reservoir high_wjlwtp_raleigh("High WJLWTP (Raleigh)", 25, 0, catchment_haw,
                                   JL_supply_capacity * JL_allocation_fractions[4], 54.0 * JL_allocation_fractions[3],
                                   city_infrastructure_ROF_triggers[3], construction_time_interval,
-                                  73.5 * JL_allocation_fractions[3], bond_length[3], bond_rate[3]);
-    Reservoir dummy_endpoint("Dummy Node", 11, 0, gage_lillington, 0, 0);
+                                  73.5 * JL_allocation_fractions[3], bond_length[3], bond_rate[3], &evap_jordan_lake);
+    Reservoir dummy_endpoint("Dummy Node", 11, 0, gage_lillington, 0, 0, &evap_jordan_lake);
 
     vector<WaterSource *> water_sources;
     water_sources.push_back(&durham_reservoirs);

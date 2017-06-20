@@ -234,7 +234,7 @@ void WaterSource::addCapacity(double capacity) {
     WaterSource::capacity += capacity;
 }
 
-void WaterSource::setRealization(int r) {
+void WaterSource::setRealization(unsigned long r) {
     for (Catchment *c : catchments)
         c->setRealization(r);
 

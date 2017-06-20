@@ -90,7 +90,7 @@ public:
 
     static bool compare(WaterSource *lhs, WaterSource *rhs);
 
-    void setRealization(int r);
+    virtual void setRealization(unsigned long r);
 };
 
 

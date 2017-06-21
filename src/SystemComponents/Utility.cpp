@@ -186,7 +186,7 @@ void Utility::splitDemands(int week, double *water_sources_draws) {
 
     /// Allocates demand to intakes.
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
-        if (ws.second->source_type == INTAKE || ws.second->source_type == WATER_REUSE) {
+        if (ws.second->isOnline() && (ws.second->source_type == INTAKE || ws.second->source_type == WATER_REUSE)) {
             int i = ws.second->id;
             double intake_demand = min(restricted_demand, ws.second->getAvailable_volume());
             water_sources_draws[i] = intake_demand;
@@ -196,7 +196,7 @@ void Utility::splitDemands(int week, double *water_sources_draws) {
 
     /// Allocates remaining demand to reservoirs.
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
-        if (ws.second->source_type == RESERVOIR) {
+        if (ws.second->isOnline() && ws.second->source_type == RESERVOIR) {
             int i = ws.second->id;
             double demand = restricted_demand * max(1.0e-6, ws.second->getAvailable_volume()) / total_stored_volume;
             water_sources_draws[i] = demand;

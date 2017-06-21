@@ -1171,20 +1171,20 @@ void triangleTest() {
      * Potential projects and expansions
      * of existing sources in parentheses
      *
-     *      3(12,13)   4(11)   5(14)            0(15,16)    (9)   (18,19)
+     *      3(12,13)   4(26)   5(14)            0(15,16)    (9)   (18,19)
      *         \         /      /                  |        /      /
      *          \       /      /                   |       /      /
      *           \     /      /                    |      /      /
      *           |    /      /                     |     /      /
      *           |   /      /                      \    /   ----
      *           |   |     /                        \  /   /
-     *           |   |    /                          1(17)              2   (7)
+     *           |   |    /                          1(10)              2   (7)
      *           |   |   /                             |                |    |
      *           |   |  /                              |                |    |
      *           6(20-25)                             (8)               |    |
      *              |                                   \               |    |
      *              |                                    \              |    |
-     *        Lillington Gage                            (10)           |    |
+     *        Lillington Gage                            (17)           |    |
      *              |                                      |            |    |
      *              |                                      |           /    /
      *              |                                      |          /    /
@@ -1202,7 +1202,7 @@ void triangleTest() {
      *                              \     -----
      *                               \   /
      *                                \ /
-     *                                26
+     *                                11
      */
 
     //FIXME: CHANGE IDS OF SOURCES SO THAT GRAPH NODES ARE THE FIRST WHATEVER MANY IDS.

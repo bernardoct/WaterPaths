@@ -962,28 +962,17 @@ void triangleTest() {
 
     /// Read streamflows
     int streamflow_n_weeks = 52 * (70 + 50);
-    vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile("../TestFiles/"
-                                                                                  "durhamInflowsLong.csv");
-    vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile("../TestFiles/"
-                                                                                "flatInflowsLong.csv");
-    vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile("../TestFiles/"
-                                                                                 "swiftInflowsLong.csv");
-    vector<vector<double>> streamflows_llr = Utils::parse2DCsvFile("../TestFiles/"
-                                                                               "littleriverraleighInflowsLong.csv");
-    vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile("../TestFiles/"
-                                                                                    "crabtreeInflowsLong.csv");
-    vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile("../TestFiles/"
-                                                                                 "philsInflowsLong.csv");
-    vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile("../TestFiles/"
-                                                                                "caneInflowsLong.csv");
-    vector<vector<double>> streamflows_morgan = Utils::parse2DCsvFile("../TestFiles/"
-                                                                                  "morganInflowsLong.csv");
-    vector<vector<double>> streamflows_haw = Utils::parse2DCsvFile("../TestFiles/"
-                                                                               "hawInflowsLong.csv");
-    vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile("../TestFiles/"
-                                                                                   "claytonInflowsLong.csv");
-    vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile("../TestFiles/"
-                                                                                      "lillingtonInflowsLong.csv");
+    vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile("../TestFiles/durhamInflowsLong.csv");
+    vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile("../TestFiles/flatInflowsLong.csv");
+    vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile("../TestFiles/swiftInflowsLong.csv");
+    vector<vector<double>> streamflows_llr = Utils::parse2DCsvFile("../TestFiles/littleriverraleighInflowsLong.csv");
+    vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile("../TestFiles/crabtreeInflowsLong.csv");
+    vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile("../TestFiles/philsInflowsLong.csv");
+    vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile("../TestFiles/caneInflowsLong.csv");
+    vector<vector<double>> streamflows_morgan = Utils::parse2DCsvFile("../TestFiles/morganInflowsLong.csv");
+    vector<vector<double>> streamflows_haw = Utils::parse2DCsvFile("../TestFiles/hawInflowsLong.csv");
+    vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile("../TestFiles/claytonInflowsLong.csv");
+    vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile("../TestFiles/lillingtonInflowsLong.csv");
 
     vector<vector<double>> demand_cary = Utils::parse2DCsvFile("../TestFiles/demandsLongCary.csv");
     vector<vector<double>> demand_durham = Utils::parse2DCsvFile("../TestFiles/demandsLongDurham.csv");

@@ -45,8 +45,7 @@ Reservoir::Reservoir(const char *name, const int id, const double min_environmen
                      double bond_interest_rate, vector<vector<double>> *evaporation_time_series_all_realizations) :
         WaterSource(name, id, min_environmental_outflow, catchments, capacity, max_treatment_capacity, RESERVOIR,
         construction_rof, construction_time_range, construction_cost, bond_term, bond_interest_rate),
-        evaporation_time_series_all_realizations(evaporation_time_series_all_realizations) {
-}
+        evaporation_time_series_all_realizations(evaporation_time_series_all_realizations) {}
 
 /**
  * Copy constructor.

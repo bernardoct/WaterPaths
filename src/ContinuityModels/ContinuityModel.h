@@ -24,7 +24,7 @@ protected:
     Graph water_sources_graph;
     vector<vector<int> > water_sources_to_utilities;
     vector<vector<int> > utilities_to_water_sources;
-    vector<int> reservoir_continuity_order;
+    vector<int> sources_continuity_order;
     vector<int> downstream_sources;
     vector<int> sources_topological_order;
     vector<double> water_sources_capacities;

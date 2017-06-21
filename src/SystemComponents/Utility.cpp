@@ -138,7 +138,7 @@ void Utility::updateTotalStoredVolume() {
     total_stored_volume = 0.0;
 
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
-        total_stored_volume += max(1.0e-6, ws.second->getAvailable_volume());
+        total_stored_volume += (ws.second->isOnline() ? max(1.0e-6, ws.second->getAvailable_volume()) : 0);
     }
 }
 

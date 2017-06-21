@@ -35,7 +35,7 @@ ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, con
     }
 
     /// Get topological order so that mass balance is ran from up to downstream.
-    reservoir_continuity_order = water_sources_graph.getTopological_order();
+    sources_continuity_order = water_sources_graph.getTopological_order();
 
     /// the variables below are to make the storage-ROF table calculation faster.
     for (int ws = 0; ws < water_sources.size(); ++ws) {
@@ -95,7 +95,7 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
      * gotten from source catchments for each rof year realization. If this is not an rof calculation but an actual
      * simulation instead, rof_realization will be equal to -1 (see header file) so that there is no week shift.
      */
-    for (int &i : reservoir_continuity_order) {
+    for (int &i : sources_continuity_order) {
         for (int &ws : water_sources_graph.getUpstream_sources(i))
             upstream_spillage[i] += continuity_water_sources[ws]->getTotal_outflow();
 

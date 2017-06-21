@@ -97,7 +97,8 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
      */
     for (int &i : sources_continuity_order) {
         for (int &ws : water_sources_graph.getUpstream_sources(i))
-            upstream_spillage[i] += continuity_water_sources[ws]->getTotal_outflow();
+            upstream_spillage[i] +=
+                    (continuity_water_sources[ws]->isOnline() ? continuity_water_sources[ws]->getTotal_outflow() : 0);
 
         continuity_water_sources[i]->continuityWaterSource(
                 week - (int) std::round((rof_realization + 1) * WEEKS_IN_YEAR),

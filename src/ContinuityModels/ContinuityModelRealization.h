@@ -19,7 +19,7 @@ public:
                                const vector<vector<int>> &water_sources_to_utilities,
                                const vector<Utility *> &utilities,
                                const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
-                               const int realization_index);
+                               const unsigned int realization_index);
 
     ContinuityModelRealization(ContinuityModelRealization &continuity_model_realization);
 

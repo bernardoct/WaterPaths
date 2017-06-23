@@ -17,14 +17,17 @@ DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<Wa
                              int number_of_realizations, Graph water_sources_graph) :
         number_of_realizations(number_of_realizations), water_sources_graph(water_sources_graph) {
 
+    /// Create data utilities.
     for (Utility *u : utilities) {
-        utilities_t.push_back(Utility_t(u->id, u->getTotal_storage_capacity(), u->name));
+        utilities_t.push_back(Utility_t(u->id, u->name));
     }
 
+    /// Create data water sources.
     for (WaterSource *ws : water_sources) {
-        reservoirs_t.push_back(WaterSource_t(ws->id, ws->getCapacity(), ws->name));
+        water_sources_t.push_back(WaterSource_t(ws->id, ws->getCapacity(), ws->name));
     }
 
+    /// Create data drought mitigation policies
     for (DroughtMitigationPolicy *dmp : drought_mitigation_policies) {
         if (dmp->type == RESTRICTIONS)
             restriction_policies_t.push_back(RestrictionPolicy_t(dmp->id));
@@ -33,6 +36,7 @@ DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<Wa
                     dmp->id, dynamic_cast<Transfers *>(dmp)->getUtilities_ids()));
     }
 
+    /// Create vectors to store weekly information.
     for (int r = 0; r < number_of_realizations; ++r) {
         for (Utility_t &ut : utilities_t) {
             ut.restricted_demand.push_back(vector<double>());
@@ -47,9 +51,10 @@ DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<Wa
             ut.insurance_payout.push_back(vector<double>());
             ut.rof.push_back(vector<double>());
             ut.drought_mitigation_cost.push_back(vector<double>());
+            ut.capacity.push_back(vector<double>());
         }
 
-        for (WaterSource_t &wst : reservoirs_t) {
+        for (WaterSource_t &wst : water_sources_t) {
             wst.available_volume.push_back(vector<double>());
             wst.demands.push_back(vector<double>());
             wst.outflows.push_back(vector<double>());
@@ -94,16 +99,17 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
         utilities_t[i].drought_mitigation_cost[r].push_back(u->getDrought_mitigation_cost());
         utilities_t[i].insurance_contract_cost[r].push_back(u->getInsurance_purchase());
         utilities_t[i].insurance_payout[r].push_back(u->getInsurance_payout());
+        utilities_t[i].capacity[r].push_back(u->getTotal_storage_capacity());
     }
 
     /// Get reservoirs data.
     for (int i = 0; i < continuity_model_realization->getWater_sources().size(); ++i) {
         ws = continuity_model_realization->getWater_sources()[i];
-        reservoirs_t[i].available_volume[r].push_back(ws->getAvailable_volume());
-        reservoirs_t[i].demands[r].push_back(ws->getDemand());
-        reservoirs_t[i].total_upstream_sources_inflows[r].push_back(ws->getUpstream_source_inflow());
-        reservoirs_t[i].outflows[r].push_back(ws->getTotal_outflow());
-        reservoirs_t[i].total_catchments_inflow[r].push_back(ws->getCatchment_upstream_catchment_inflow());
+        water_sources_t[i].available_volume[r].push_back(ws->getAvailable_volume());
+        water_sources_t[i].demands[r].push_back(ws->getDemand());
+        water_sources_t[i].total_upstream_sources_inflows[r].push_back(ws->getUpstream_source_inflow());
+        water_sources_t[i].outflows[r].push_back(ws->getTotal_outflow());
+        water_sources_t[i].total_catchments_inflow[r].push_back(ws->getCatchment_upstream_catchment_inflow());
     }
 
     /// Get drought mitigation policy data.
@@ -136,7 +142,7 @@ void DataCollector::printReservoirOutput(string fileName) {
 
     std::ofstream outStream;
     outStream.open(output_directory + fileName);
-    int n_weeks = (int) reservoirs_t[0].total_upstream_sources_inflows[0].size();
+    int n_weeks = (int) water_sources_t[0].total_upstream_sources_inflows[0].size();
 
     for (int r = 0; r < number_of_realizations; ++r) {
 
@@ -144,15 +150,15 @@ void DataCollector::printReservoirOutput(string fileName) {
         outStream << "Realization " << r << endl;
         outStream << endl
                   << setw(COLUMN_WIDTH) << " ";
-        for (int i = 0; i < reservoirs_t.size(); ++i) {
-            outStream << setw(6 * COLUMN_WIDTH) << reservoirs_t[i].name;
+        for (int i = 0; i < water_sources_t.size(); ++i) {
+            outStream << setw(6 * COLUMN_WIDTH) << water_sources_t[i].name;
         }
 
         /// Print realization header.
         outStream << endl
                   << setw(COLUMN_WIDTH) << "Week";
 
-        for (int i = 0; i < reservoirs_t.size(); ++i) {
+        for (int i = 0; i < water_sources_t.size(); ++i) {
             outStream
                     << setw(2 * COLUMN_WIDTH) << "Av_vol."
                     << setw(COLUMN_WIDTH) << "Demands"
@@ -165,16 +171,16 @@ void DataCollector::printReservoirOutput(string fileName) {
         /// Print numbers.
         for (int w = 0; w < n_weeks; ++w) {
             outStream << setw(COLUMN_WIDTH) << w;
-            for (int u = 0; u < reservoirs_t.size(); ++u) {
+            for (int u = 0; u < water_sources_t.size(); ++u) {
                 outStream
                         << setw(2 * COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                        << reservoirs_t[u].available_volume[r][w]
-                        << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION) << reservoirs_t[u].demands[r][w]
+                        << water_sources_t[u].available_volume[r][w]
+                        << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION) << water_sources_t[u].demands[r][w]
                         << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                        << reservoirs_t[u].total_upstream_sources_inflows[r][w]
+                        << water_sources_t[u].total_upstream_sources_inflows[r][w]
                         << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                        << reservoirs_t[u].total_catchments_inflow[r][w]
-                        << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION) << reservoirs_t[u].outflows[r][w];
+                        << water_sources_t[u].total_catchments_inflow[r][w]
+                        << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION) << water_sources_t[u].outflows[r][w];
             }
             outStream << endl;
         }
@@ -382,7 +388,7 @@ double DataCollector::calculateReliabilityObjective(Utility_t utility) {
         for (int y = 0; y < n_years; ++y) {
             for (int w = (int) round(y * WEEKS_IN_YEAR); w < min((int) n_weeks,
                                                                  (int) round((y + 1) * WEEKS_IN_YEAR)); ++w) {
-                if (utility.combined_storage[r][w] / utility.capacity < STORAGE_CAPACITY_RATIO_FAIL) {
+                if (utility.combined_storage[r][w] / utility.capacity[r][w] < STORAGE_CAPACITY_RATIO_FAIL) {
                     realizations_year_reliabilities[r][y] = FAILURE;
                 }
             }

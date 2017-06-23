@@ -10,7 +10,7 @@ ContinuityModelRealization::ContinuityModelRealization(const vector<WaterSource 
                                                        const vector<vector<int>> &water_sources_to_utilities,
                                                        const vector<Utility *> &utilities,
                                                        const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
-                                                       const int realization_id) :
+                                                       const unsigned int realization_id) :
         ContinuityModel(water_sources, utilities, water_sources_graph,
                         water_sources_to_utilities, realization_id),
         drought_mitigation_policies(drought_mitigation_policies) {

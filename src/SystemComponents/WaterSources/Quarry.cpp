@@ -50,17 +50,18 @@ void Quarry::applyContinuity(int week, double upstream_source_inflow, double dem
         catchment_inflow += c->getStreamflow((week));
     }
 
-    double total_flow_in = upstream_source_inflow + catchment_inflow;
-    double total_flow_out = demand_outflow + min_environmental_outflow;
+    double total_inflow = upstream_source_inflow + catchment_inflow;
+    total_outflow = demand_outflow + min_environmental_outflow;
 
-    double diverted_flow = min(max_diversion, total_flow_in - total_flow_out);
+    diverted_flow = min(max_diversion, total_inflow - min_environmental_outflow);
 
-    double stored_volume_new = available_volume + diverted_flow;
-    double outflow_new = total_flow_in - demand_outflow - diverted_flow;
+    double stored_volume_new = available_volume + diverted_flow - demand_outflow;
+    double outflow_new = total_inflow - diverted_flow;
 
     if (online) {
         if (stored_volume_new > capacity) {
             outflow_new += stored_volume_new - capacity;
+            diverted_flow -= stored_volume_new - capacity;
             stored_volume_new = capacity;
         }
     } else {

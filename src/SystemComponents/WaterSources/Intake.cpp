@@ -103,3 +103,10 @@ void Intake::applyContinuity(int week, double upstream_source_inflow, double dem
 void Intake::setUpstream_min_env_flow(double upstream_min_env_flow) {
     this->upstream_min_env_inflow = upstream_min_env_flow;
 }
+
+void Intake::setRealization(unsigned long r) {
+    WaterSource::setRealization(r);
+
+    demand = 0;
+    available_volume = this->upstream_catchment_inflow - min_environmental_outflow;
+}

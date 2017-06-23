@@ -71,8 +71,6 @@ public:
 
     void updateTotalStoredVolume();
 
-    const map<int, WaterSource *> &getWaterSources() const;
-
     void addWaterSource(WaterSource *water_source);
 
     double getStorageToCapacityRatio() const;
@@ -86,8 +84,6 @@ public:
     void setDemand_offset(double demand_offset, double offset_rate_per_volume);
 
     double getTotal_treatment_capacity() const;
-
-    double getTotal_available_volume() const;
 
     void updateContingencyFund(double unrestricted_demand, double demand_multiplier, double demand_offset);
 

@@ -1,5 +1,5 @@
                    Reliability   Restriction Freq.  Infrastructure NPC Peak Financial Cost    Worse Case Costs
-      Cary                   1                   0                   0                0.03                   0
-    Durham                   1               0.337               15.66                0.07              0.1092
-     OWASA                   1             0.02174                   0                0.05                   0
-   Raleigh                   1             0.01087                   0                0.05                   0
+      Cary                 0.9            0.006522                   0                0.03                   0
+    Durham                 0.9                   1               50.97                0.07              0.3527
+     OWASA                   1             0.03043                   0                0.05               0.128
+   Raleigh                 0.9              0.1087               593.2                0.05              0.2063

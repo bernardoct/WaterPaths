@@ -243,7 +243,4 @@ void WaterSource::setRealization(unsigned long r) {
     for (Catchment *c : catchments) {
         this->upstream_catchment_inflow = c->getStreamflow(0);
     }
-
-    demand = 0;
-    available_volume = this->upstream_catchment_inflow - min_environmental_outflow;
 }

@@ -11,7 +11,7 @@ using namespace std;
 
 
 class Catchment {
-private:
+protected:
     vector<vector<double>> *streamflows_all;
     double *streamflows_realization;
     int series_length;

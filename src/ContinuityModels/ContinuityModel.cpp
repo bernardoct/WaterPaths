@@ -9,14 +9,11 @@
 
 ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, const vector<Utility *> &utilities,
                                  const Graph &water_sources_graph,
-                                 const vector<vector<int>> &water_sources_to_utilities, int realization_id) :
+                                 const vector<vector<int>> &water_sources_to_utilities, unsigned int realization_id) :
         continuity_water_sources(water_sources),
-        continuity_utilities(
-                utilities),
-        water_sources_graph(
-                water_sources_graph),
-        water_sources_to_utilities(
-                water_sources_to_utilities),
+        continuity_utilities(utilities),
+        water_sources_graph(water_sources_graph),
+        water_sources_to_utilities(water_sources_to_utilities),
         realization_id(realization_id) {
 
     /// Connect water sources to utilities.
@@ -64,9 +61,7 @@ ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, con
 
 }
 
-ContinuityModel::~ContinuityModel() {
-
-}
+ContinuityModel::~ContinuityModel() {}
 
 ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) : realization_id(continuity_model.realization_id) {}
 
@@ -109,7 +104,6 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
     for (Utility *u : continuity_utilities) {
         u->updateTotalStoredVolume();
     }
-//    water_sources_draws = vector<double<();
 }
 
 const vector<Utility *> &ContinuityModel::getUtilities() const {

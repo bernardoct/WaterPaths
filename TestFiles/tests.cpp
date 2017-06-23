@@ -12,7 +12,8 @@
 //#include "../src/Utils/Matrix3D.h"
 
 TEST_CASE("Net present cost calculations", "[NPC]") {
-    Reservoir r("Res", 0, 1, vector<Catchment *>(), 1, 1, 1, vector<double>(2, 1), 5000, 20, 0.05, nullptr);
+    Reservoir r("Res", 0, 1, vector<Catchment *>(), 1, 1, nullptr,
+                nullptr, 1, vector<double>(2, 1), 5000, 20, 0.05);
 
     double level_debt_service_payment = 0;
     REQUIRE(r.calculateNetPresentConstructionCost(0, 0.05, &level_debt_service_payment) == Approx(5000));
@@ -20,24 +21,26 @@ TEST_CASE("Net present cost calculations", "[NPC]") {
     REQUIRE(level_debt_service_payment == Approx(401.21));
     REQUIRE(r.calculateNetPresentConstructionCost(521, 0.04, &level_debt_service_payment) == Approx(3685.751));
 }
-
+/*
 TEST_CASE("Split of demand among water sources of a utility proportionally to their stored volume", "[Split Demand]") {
 
     /// Read streamflows
     int streamflow_n_weeks = (int) std::round(Constants::WEEKS_IN_YEAR * Constants::NUMBER_REALIZATIONS_ROF);
-    double *streamflows_test = new double[streamflow_n_weeks + 1];
-    streamflows_test[streamflow_n_weeks] = 5;
+    vector<vector<double>> streamflows_test = std::vector<vector<double>>(2, vector<double>(
+            (unsigned long) streamflow_n_weeks, 5));
 
     /// Create catchments and corresponding vectors
-    Catchment c1(streamflows_test, streamflow_n_weeks);
+    Catchment c1(&streamflows_test, (int) streamflows_test[0].size());
 
     vector<Catchment *> catchments1(1, &c1);
     double min_env_flow_intake = 2.0;
-    Reservoir r1("R1", 0, NON_INITIALIZED, catchments1, 200.0, NON_INITIALIZED, nullptr);
-    Reservoir r2("R2", 1, NON_INITIALIZED, catchments1, 400.0, NON_INITIALIZED, nullptr);
+    Reservoir r1("R1", 0, NON_INITIALIZED, catchments1, 200.0, NON_INITIALIZED, nullptr, nullptr);
+    Reservoir r2("R2", 1, NON_INITIALIZED, catchments1, 400.0, NON_INITIALIZED, nullptr, nullptr);
+
+    vector<vector<double>> demands = Utils::parse2DCsvFile("../TestFiles/demandsLong.csv");
 
     SECTION("Split demand among reservoirs only") {
-        Utility u1((char *) "U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, NON_INITIALIZED,
+        Utility u1((char *) "U1", 0, &demands, streamflow_n_weeks, NON_INITIALIZED,
                    NON_INITIALIZED);
         u1.addWaterSource(&r1);
         u1.addWaterSource(&r2);
@@ -48,18 +51,18 @@ TEST_CASE("Split of demand among water sources of a utility proportionally to th
     }
 
     SECTION("Split demand among intakes and reservoirs") {
-        Utility u1((char *) "U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, NON_INITIALIZED,
+        Utility u2((char *) "U1", 0, &demands, streamflow_n_weeks, NON_INITIALIZED,
                    NON_INITIALIZED);
         Intake i1("I1", 2, min_env_flow_intake, catchments1, 5);
-        u1.addWaterSource(&r1);
-        u1.addWaterSource(&r2);
-        u1.addWaterSource(&i1);
+        u2.addWaterSource(&r1);
+        u2.addWaterSource(&r2);
+        u2.addWaterSource(&i1);
         double result[2];
-        u1.splitDemands(0, result);
+        u2.splitDemands(0, result);
 
         REQUIRE(result[0] == Approx((9.0617079441 - (5.0 - min_env_flow_intake)) * 1 / 3));
     }
-}
+}*/
 
 TEST_CASE("Test reliability objective calculation", "[Reliability Objective]") {
     Utility_t ut(0, 1, "U_test");
@@ -855,12 +858,12 @@ TEST_CASE("Get ROF from storage-rof-table", "[rof from table]") {
 
     /// Read streamflows
     int streamflow_n_weeks = 52 * 70;
-    double **streamflows_test = Utils::parse2DCsvFile("../TestFiles/"
-                                                                  "inflowsLong.csv");
+    vector<vector<double>> streamflows_test = Utils::parse2DCsvFile("../TestFiles/inflowsLong.csv");
+    vector<vector<double>> demands_test = Utils::parse2DCsvFile("../TestFiles/demandsLong.csv");
 
     /// Create catchments and corresponding vectors
-    Catchment c1(streamflows_test[0], streamflow_n_weeks);
-    Catchment c2(streamflows_test[1], streamflow_n_weeks);
+    Catchment c1(&streamflows_test, streamflow_n_weeks);
+    Catchment c2(&streamflows_test, streamflow_n_weeks);
 
     vector<Catchment *> catchments1;
     vector<Catchment *> catchments2;
@@ -872,11 +875,12 @@ TEST_CASE("Get ROF from storage-rof-table", "[rof from table]") {
 
     /// Create reservoirs and corresponding vector
     vector<double> construction_time_interval = {1.0, 4.0};
-    Reservoir r1("R1", 0, 3.0, catchments1, 2., 20, nullptr);
-    Reservoir r2("R2", 1, 3.0, catchments2, 1., 20, 0.02, construction_time_interval, 5000, 20, 0.05, nullptr);
-    Reservoir r3("R3", 2, 2.0, catchments3, 1., 20, nullptr);
-    Reservoir r4("R4", 3, 3.0, catchments2, 1., 20, nullptr);
-    Reservoir r5("R5", 4, 2.0, catchments3, 1., 20, nullptr);
+    Reservoir r1("R1", 0, 3.0, catchments1, 2., 20, nullptr, nullptr);
+    Reservoir r2("R2", 1, 3.0, catchments2, 1., 20, nullptr, nullptr,
+                 0.02, construction_time_interval, 5000, 20, 0.05);
+    Reservoir r3("R3", 2, 2.0, catchments3, 1., 20, nullptr, nullptr);
+    Reservoir r4("R4", 3, 3.0, catchments2, 1., 20, nullptr, nullptr);
+    Reservoir r5("R5", 4, 2.0, catchments3, 1., 20, nullptr, nullptr);
 
     vector<WaterSource *> water_sources;
     water_sources.push_back(&r1);
@@ -904,9 +908,9 @@ TEST_CASE("Get ROF from storage-rof-table", "[rof from table]") {
     water_sources_graph.addEdge(4, 3);
 
     /// Create catchments and corresponding vector
-    Utility u1((char *) "U1", 0, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.03, 1);
-    Utility u2((char *) "U2", 1, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.07, 1, vector<int>(1, 1), 0.05);
-    Utility u3((char *) "U3", 2, "../TestFiles/demandsLong.csv", streamflow_n_weeks, 0.05, 1);
+    Utility u1((char *) "U1", 0, &demands_test, streamflow_n_weeks, 0.03, 1);
+    Utility u2((char *) "U2", 1, &demands_test, streamflow_n_weeks, 0.07, 1, vector<int>(1, 1), 0.05);
+    Utility u3((char *) "U3", 2, &demands_test, streamflow_n_weeks, 0.05, 1);
 
     vector<Utility *> utilities;
     utilities.push_back(&u1);
@@ -1064,3 +1068,14 @@ TEST_CASE("Get ROF from storage-rof-table", "[rof from table]") {
 //    REQUIRE(result[2][3] == 0.7);
 //    REQUIRE(result[4][3] == Approx(0.2));
 //}
+
+TEST_CASE("DataSeries interpolation", "[DataSeries interpolation]") {
+    vector<double> x = {0, 3, 7, 8, 9};
+    vector<double> y = {2.5, 5.4, 8.2, 5.6, 4.8};
+
+    DataSeries ds(x, y);
+
+    REQUIRE(ds.getDependent(4) == 6.1);
+    REQUIRE(ds.getDependent(9) == 4.8);
+    REQUIRE(ds.getDependent(0) == 2.5);
+}

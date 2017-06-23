@@ -31,6 +31,8 @@ public:
 
     void setUpstream_min_env_flow(double upstream_min_env_flow);
 
+    void setRealization(unsigned long r) override;
+
 };
 
 

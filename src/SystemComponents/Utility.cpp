@@ -138,7 +138,7 @@ void Utility::updateTotalStoredVolume() {
     total_stored_volume = 0.0;
 
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
-        total_stored_volume += (ws.second->isOnline() ? max(1.0e-6, ws.second->getAvailable_volume()) : 0);
+        total_stored_volume += (ws.second->isOnline() ? max(1.0e-6, ws.second->getAvailable_volume()) : 1.0e-6);
     }
 }
 
@@ -183,6 +183,7 @@ void Utility::addWaterSource(WaterSource *water_source) {
 void Utility::splitDemands(int week, double *water_sources_draws) {
     unrestricted_demand = demand_series[week];
     restricted_demand = unrestricted_demand * demand_multiplier - demand_offset;
+    double reservoirs_demand = restricted_demand;
 
     /// Allocates demand to intakes.
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
@@ -190,7 +191,7 @@ void Utility::splitDemands(int week, double *water_sources_draws) {
             int i = ws.second->id;
             double intake_demand = min(restricted_demand, ws.second->getAvailable_volume());
             water_sources_draws[i] = intake_demand;
-            restricted_demand -= intake_demand;
+            reservoirs_demand -= intake_demand;
         }
     }
 
@@ -198,8 +199,9 @@ void Utility::splitDemands(int week, double *water_sources_draws) {
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
         if (ws.second->isOnline() && ws.second->source_type == RESERVOIR) {
             int i = ws.second->id;
-            double demand = restricted_demand * max(1.0e-6, ws.second->getAvailable_volume()) / total_stored_volume;
-            water_sources_draws[i] = demand;
+            double source_demand =
+                    reservoirs_demand * max(1.0e-6, ws.second->getAvailable_volume()) / total_stored_volume;
+            water_sources_draws[i] = source_demand;
         }
     }
 
@@ -339,10 +341,6 @@ void Utility::beginConstruction(int week) {
     construction_start_date = week;
 }
 
-const map<int, WaterSource *> &Utility::getWaterSources() const {
-    return water_sources;
-}
-
 double Utility::getStorageToCapacityRatio() const {
     return total_stored_volume / total_storage_capacity;
 }
@@ -361,15 +359,6 @@ void Utility::setRisk_of_failure(double risk_of_failure) {
 
 double Utility::getTotal_treatment_capacity() const {
     return total_treatment_capacity;
-}
-
-double Utility::getTotal_available_volume() const {
-    double total_available_volume = 0;
-    for (auto & ws : water_sources) {
-        total_available_volume += ws.second->getAvailable_volume();
-    }
-
-    return total_available_volume;
 }
 
 void Utility::setDemand_multiplier(double demand_multiplier) {

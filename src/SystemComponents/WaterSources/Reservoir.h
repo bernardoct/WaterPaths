@@ -8,27 +8,44 @@
 #include <string>
 #include "../Catchment.h"
 #include "WaterSource.h"
+#include "../../Utils/DataSeries.h"
+#include "../EvaporationSeries.h"
 
 using namespace std;
 
 
 class Reservoir : public WaterSource {
 private:
-    double **storage_vs_area;
-    double *evaporation_time_series;
-    vector<vector<double>> *evaporation_time_series_all_realizations;
+
+    EvaporationSeries *evaporation_series;
+    DataSeries *storage_area_curve;
+    const bool fixed_area;
+    double area = NON_INITIALIZED;
 
 public:
 
     Reservoir(const char *name, const int id, const double min_environmental_outflow,
               const vector<Catchment *> &catchments, const double capacity,
-              const double max_treatment_capacity, vector<vector<double>> *evaporation_time_series_all_realizations);
+              const double max_treatment_capacity,
+              EvaporationSeries *evaporation_series,
+              DataSeries *storage_area_curve);
 
     Reservoir(const char *name, const int id, const double min_environmental_outflow,
-                  const vector<Catchment *> &catchments, const double capacity,
-                  const double max_treatment_capacity, const double construction_rof,
-                  const vector<double> &construction_time_range, double construction_cost, double bond_term,
-                  double bond_interest_rate, vector<vector<double>> *evaporation_series_input_file);
+              const vector<Catchment *> &catchments, const double capacity,
+              const double max_treatment_capacity, EvaporationSeries *evaporation_series,
+              DataSeries *storage_area_curve, const double construction_rof,
+              const vector<double> &construction_time_range, double construction_cost, double bond_term,
+              double bond_interest_rate);
+
+    Reservoir(const char *name, const int id, const double min_environmental_outflow,
+              const vector<Catchment *> &catchments, const double capacity, const double max_treatment_capacity,
+              EvaporationSeries *evaporation_series, double storage_area);
+
+    Reservoir(const char *name, const int id, const double min_environmental_outflow,
+              const vector<Catchment *> &catchments, const double capacity, const double max_treatment_capacity,
+              EvaporationSeries *evaporation_series, double storage_area,
+              const double construction_rof, const vector<double> &construction_time_range, double construction_cost,
+              double bond_term, double bond_interest_rate);
 
     Reservoir(const Reservoir &reservoir);
 

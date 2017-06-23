@@ -31,11 +31,11 @@ protected:
     vector<double> utilities_capacities;
 
 public:
-    const int realization_id;
+    const unsigned int realization_id;
 
     ContinuityModel(const vector<WaterSource *> &water_sources, const vector<Utility *> &utilities,
                     const Graph &water_sources_graph, const vector<vector<int>> &water_sources_to_utilities,
-                    int realization_id);
+                    unsigned int realization_id);
 
     void continuityStep(int week, int rof_realization = -1);
 

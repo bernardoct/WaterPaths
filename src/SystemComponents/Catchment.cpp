@@ -66,6 +66,6 @@ double Catchment::getStreamflow(int week) {
 void Catchment::setRealization(unsigned long r) {
     streamflows_realization = new double[streamflows_all->at(r).size()];
     std::copy(streamflows_all->at(r).begin(), streamflows_all->at(r).end(), streamflows_realization);
-    streamflows_all = NULL;
+//    streamflows_all = NULL; //FIXME: FIND A WAY TO DELETE THE POINTER WITHIN THE CATCHMENT OBJECT WITHOUT DELETING IT FOR OTHER CATCHMENTS THAT POINT TO THE SAME DATA.
 }
 

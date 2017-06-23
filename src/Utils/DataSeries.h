@@ -11,15 +11,19 @@ using namespace std;
 
 class DataSeries {
 private:
-    vector<double> series_x;
-    vector<double> series_y;
+
+    vector<double> *series_x;
+    vector<double> *series_y;
 
 public:
-    const int length;
+    const unsigned long length;
 
-    DataSeries(const vector<double> &series_x, const vector<double> &series_y);
+    DataSeries(vector<double> *series_x, vector<double> *series_y);
 
     double getDependent(double x);
+
+    const vector<double> &getSeries_x() const;
+
 };
 
 

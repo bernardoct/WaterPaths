@@ -15,7 +15,7 @@
  */
 
 struct Utility_t {
-    Utility_t(int id, double capacity, const char *name) : id(id), capacity(capacity), name(name) {};
+    Utility_t(int id, const char *name) : id(id), name(name) {};
 
     vector<vector<double>> rof;
     vector<vector<double>> combined_storage;
@@ -28,8 +28,8 @@ struct Utility_t {
     vector<vector<double>> insurance_contract_cost;
     vector<vector<double>> insurance_payout;
     vector<vector<double>> drought_mitigation_cost;
+    vector<vector<double>> capacity;
     vector<double> objectives;
-    double capacity;
     vector<double> net_present_infrastructure_cost;
     int id;
     const char *name;
@@ -72,7 +72,7 @@ class DataCollector {
 
 private:
     vector<Utility_t> utilities_t;
-    vector<WaterSource_t> reservoirs_t;
+    vector<WaterSource_t> water_sources_t;
     vector<RestrictionPolicy_t> restriction_policies_t;
     vector<TransfersPolicy_t> transfers_policies_t;
     string output_directory = "../TestFiles/";

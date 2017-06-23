@@ -11,6 +11,7 @@
 class Quarry : public WaterSource {
 private:
     double max_diversion;
+    double diverted_flow;
 
 public:
 

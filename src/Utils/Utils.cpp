@@ -22,29 +22,13 @@
  */
 vector<vector<double>> Utils::parse2DCsvFile(char const *file_name) {
 
-    /*
-    double **data = 0;
-    data = new double *[number_of_records];
-
-    std::ifstream file(file_name);
-
-    for (int row = 0; row < number_of_records; row++) {
-        data[row] = new double[number_of_weeks];
-        std::string line;
-        std::getline(file, line);
-        std::stringstream iss(line);
-
-        for (int col = 0; col < number_of_weeks; col++) {
-            std::string val;
-            std::getline(iss, val, ',');
-
-            std::stringstream convertor(val);
-            convertor >> data[row][col];
-        }
-    }
-     */
     vector<vector<double> > data;
     ifstream infile(file_name);
+
+    if (!infile.good()) {
+        cout << file_name << endl;
+        __throw_invalid_argument("Inexistent file.");
+    }
 
     while (infile) {
         string s;

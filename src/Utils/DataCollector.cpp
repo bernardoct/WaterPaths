@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iomanip>
 #include <algorithm>
+#include <numeric>
 #include "DataCollector.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
 #include "Utils.h"
@@ -466,7 +467,7 @@ double DataCollector::calculateRestrictionFrequencyObjective(RestrictionPolicy_t
  */
 double DataCollector::calculateNetPresentCostInfrastructureObjective(Utility_t utility_t) {
     /// Sum net present costs across all realizations.
-    double infrastructure_npc = std::accumulate(utility_t.net_present_infrastructure_cost.begin(),
+    double infrastructure_npc = accumulate(utility_t.net_present_infrastructure_cost.begin(),
                                                 utility_t.net_present_infrastructure_cost.end(), 0.0);
 
     return infrastructure_npc / utilities_t.size();

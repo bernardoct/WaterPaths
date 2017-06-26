@@ -12,6 +12,8 @@
 using namespace std;
 
 class WwtpDischargeRule : public ControlRules {
+private:
+    double *source_id_to_vector_index;
 
 public:
     const vector<vector<double>> *year_series_fraction_discharge;

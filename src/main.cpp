@@ -878,17 +878,20 @@ void simulation3U5RInfraTest() {
     g.addEdge(2, 3);
     g.addEdge(4, 3);
 
+
+
     vector<int> wwtp_return_u1 = {3};
     vector<int> wwtp_return_u2 = {3, 2};
     vector<int> wwtp_return_u3 = {};
     vector<vector<double>> *empty_return_series = new vector<vector<double>>();
+
+    WwtpDischargeRule wwtp_u1(&demand_to_wastewater_fraction_owasa_raleigh, &wwtp_return_u1);
+    WwtpDischargeRule wwtp_u2(&demand_to_wastewater_fraction_durham, &wwtp_return_u2);
+    WwtpDischargeRule wwtp_u3(empty_return_series, &wwtp_return_u3);
     /// Create catchments and corresponding vector
-    Utility u1((char *) "U1", 0, &demands_test, streamflow_n_weeks, 0.03, 1,
-               WwtpDischargeRule(&demand_to_wastewater_fraction_owasa_raleigh, &wwtp_return_u1));
-    Utility u2((char *) "U2", 1, &demands_test, streamflow_n_weeks, 0.07, 1, vector<int>(1, 1), 0.04,
-               WwtpDischargeRule(&demand_to_wastewater_fraction_durham, &wwtp_return_u2));
-    Utility u3((char *) "U3", 2, &demands_test, streamflow_n_weeks, 0.05, 1, vector<int>(1, 5), 0.04,
-               WwtpDischargeRule(empty_return_series, &wwtp_return_u3));
+    Utility u1((char *) "U1", 0, &demands_test, streamflow_n_weeks, 0.03, 1, wwtp_u1);
+    Utility u2((char *) "U2", 1, &demands_test, streamflow_n_weeks, 0.07, 1, vector<int>(1, 1), 0.04, wwtp_u2);
+    Utility u3((char *) "U3", 2, &demands_test, streamflow_n_weeks, 0.05, 1, vector<int>(1, 5), 0.04, wwtp_u3);
 
     vector<Utility *> utilities;
     utilities.push_back(&u1);
@@ -999,9 +1002,9 @@ void triangleTest() {
     vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile("../TestFiles/evapLongWB.csv");
 
     vector<vector<double>> demand_to_wastewater_fraction_owasa_raleigh =
-            Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_owasa_raleigh");
+            Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
     vector<vector<double>> demand_to_wastewater_fraction_durham =
-            Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_durham");
+            Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_durham.csv");
 
     EvaporationSeries evaporation_durham(&evap_durham, streamflow_n_weeks);
     EvaporationSeries evaporation_jordan_lake(&evap_jordan_lake, streamflow_n_weeks);

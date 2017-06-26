@@ -77,6 +77,7 @@ private:
     vector<TransfersPolicy_t> transfers_policies_t;
     string output_directory = "../TestFiles/";
 //    string output_directory = "..\\TestFiles\\";
+    vector<vector<vector<int>>> pathways;
 
 
 public:
@@ -111,6 +112,8 @@ public:
     double calculatePeakFinancialCostsObjective(Utility_t utility_t);
 
     double calculateWorseCaseCostsObjective(Utility_t utility_t);
+
+    void printPathways(string file_name);
 };
 
 

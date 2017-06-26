@@ -73,14 +73,19 @@ ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) : realizatio
 void ContinuityModel::continuityStep(int week, int rof_realization) {
     double demands[continuity_water_sources.size()] = {};
     double upstream_spillage[continuity_water_sources.size()] = {};
+    double wastewater_discharges[continuity_water_sources.size()];
+    std::fill(wastewater_discharges, wastewater_discharges + continuity_water_sources.size(), 0);
 
     /**
+     * Get wastewater discharges based on previous week's demand.
+     *
      * Split weekly demands among each reservoir for each utility. For each water source:
      * (1) sums the demands of each drawing utility to come up with the total unrestricted_demand for
      * that week for that water source, and (2) sums the flow contributions of upstream
      * reservoirs.
      */
     for (Utility *u : continuity_utilities) {
+        u->getWastewater_releases(week, wastewater_discharges);
         u->splitDemands(week, demands);
     }
 

@@ -9,6 +9,7 @@
 #include <map>
 #include "WaterSources/Reservoir.h"
 #include "../Utils/Constants.h"
+#include "../Controls/WwtpDischargeRule.h"
 //#include "../Utils/Matrix3D.h"
 
 
@@ -30,13 +31,14 @@ private:
     double unrestricted_demand = 0;
     double infrastructure_net_present_cost = 0;
     double current_debt_payment = 0;
-    bool underConstruction = false;
-    int construction_start_date;
+    bool under_construction = false;
+    int construction_end_date = 0;
     map<int, WaterSource *> water_sources;
     vector<int> infrastructure_construction_order;
     vector<vector<double>> debt_payment_streams;
-    vector<vector<int>> infrastructure_built;
+    vector<int> infrastructure_built;
     vector<vector<double>> *demands_all_realizations;
+    WwtpDischargeRule wwtp_discharge_rule;
 
     void setWaterSourceOnline(int source_id);
 
@@ -49,11 +51,13 @@ public:
     const double infrastructure_discount_rate;
 
     Utility(char *name, int id, vector<vector<double>> *demands_all_realizations, int number_of_week_demands,
-            const double percent_contingency_fund_contribution, const double water_price_per_volume);
+            const double percent_contingency_fund_contribution, const double water_price_per_volume,
+            WwtpDischargeRule wwtp_discharge_rule);
 
     Utility(char *name, int id, vector<vector<double>> *demands_all_realizations, int number_of_week_demands,
             const double percent_contingency_fund_contribution, const double water_price_per_volume,
-            const vector<int> infrastructure_build_order, double infrastructure_discount_rate);
+            const vector<int> infrastructure_build_order, double infrastructure_discount_rate,
+            WwtpDischargeRule wwtp_discharge_rule);
 
     Utility(Utility &utility);
 
@@ -70,6 +74,8 @@ public:
     double getRisk_of_failure() const;
 
     void updateTotalStoredVolume();
+
+    void getWastewater_releases(int week, double *discharges);
 
     void addWaterSource(WaterSource *water_source);
 
@@ -93,7 +99,7 @@ public:
 
     double getRestrictedDemand() const;
 
-    void beginConstruction(int week);
+    void beginConstruction(int week, int infra_id);
 
     void infrastructureConstructionHandler(double long_term_rof, int week);
 
@@ -126,6 +132,8 @@ public:
     const vector<int> &getInfrastructure_construction_order() const;
 
     void setRelization(unsigned long r);
+
+    const vector<int> getInfrastructure_built() const;
 };
 
 

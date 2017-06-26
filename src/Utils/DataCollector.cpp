@@ -68,6 +68,8 @@ DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<Wa
 
         for (TransfersPolicy_t &tp : transfers_policies_t)
             tp.demand_offsets.push_back(vector<vector<double>>());
+
+        pathways.push_back(vector<vector<int>>());
     }
 }
 
@@ -83,6 +85,7 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
     Transfers *tp;
     DroughtMitigationPolicy *dmp;
     int r = continuity_model_realization->realization_id;
+    vector<int> infra_build;
 
     /// Get utilities data.
     for (int i = 0; i < continuity_model_realization->getUtilities().size(); ++i) {
@@ -100,6 +103,8 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
         utilities_t[i].insurance_contract_cost[r].push_back(u->getInsurance_purchase());
         utilities_t[i].insurance_payout[r].push_back(u->getInsurance_payout());
         utilities_t[i].capacity[r].push_back(u->getTotal_storage_capacity());
+        infra_build = u->getInfrastructure_built();
+        if (!infra_build.empty()) pathways[r].push_back(infra_build);
     }
 
     /// Get reservoirs data.
@@ -138,10 +143,24 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
     }
 }
 
-void DataCollector::printReservoirOutput(string fileName) {
+void DataCollector::printPathways(string file_name) {
+    std::ofstream outStream;
+    outStream.open(output_directory + file_name);
+
+    outStream << "Realization\tutility\tweek\tinfra." << endl;
+
+    for (int r = 0; r < number_of_realizations; ++r)
+        for (vector<int> &infra : pathways[r]) {
+            outStream << r << "\t" << infra[0] << "\t" << infra[1] << "\t" << infra[2] << endl;
+        }
+
+    outStream.close();
+}
+
+void DataCollector::printReservoirOutput(string file_name) {
 
     std::ofstream outStream;
-    outStream.open(output_directory + fileName);
+    outStream.open(output_directory + file_name);
     int n_weeks = (int) water_sources_t[0].total_upstream_sources_inflows[0].size();
 
     for (int r = 0; r < number_of_realizations; ++r) {
@@ -190,10 +209,10 @@ void DataCollector::printReservoirOutput(string fileName) {
     outStream.close();
 }
 
-void DataCollector::printUtilityOutput(string fileName) {
+void DataCollector::printUtilityOutput(string file_name) {
 
     std::ofstream outStream;
-    outStream.open(output_directory + fileName);
+    outStream.open(output_directory + file_name);
     int n_weeks = (int) utilities_t[0].rof[0].size();
 
     for (int r = 0; r < number_of_realizations; ++r) {
@@ -262,10 +281,10 @@ void DataCollector::printUtilityOutput(string fileName) {
     outStream.close();
 }
 
-void DataCollector::printPoliciesOutput(string fileName) {
+void DataCollector::printPoliciesOutput(string file_name) {
 
     std::ofstream outStream;
-    outStream.open(output_directory + fileName);
+    outStream.open(output_directory + file_name);
 
     /// Checks if there were drought mitigation policies in place.
     if (!restriction_policies_t.empty()) {
@@ -320,10 +339,10 @@ void DataCollector::printPoliciesOutput(string fileName) {
     outStream.close();
 }
 
-void DataCollector::printObjectives(string fileName) {
+void DataCollector::printObjectives(string file_name) {
 
     std::ofstream outStream;
-    outStream.open(output_directory + fileName);
+    outStream.open(output_directory + file_name);
 
     outStream << setw(COLUMN_WIDTH) << "      " << setw((COLUMN_WIDTH * 2)) << "Reliability"
               << setw(COLUMN_WIDTH * 2) << "Restriction Freq."

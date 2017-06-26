@@ -150,7 +150,7 @@ void Reservoir::applyContinuity(int week, double upstream_source_inflow, double 
 
     /// Calculates water lost through evaporation.
     double evaporation = (fixed_area ? area * evaporation_series->getEvaporation(week) :
-                          storage_area_curve->getDependent(available_volume) *
+                          storage_area_curve->get_dependent_variable(available_volume) *
                           evaporation_series->getEvaporation(week));
 
     /// Calculate new stored volume and outflow based on continuity.

@@ -821,6 +821,10 @@ void simulation3U5RInfraTest() {
     vector<vector<double>> demands_test = Utils::parse2DCsvFile("../TestFiles/"
                                                                             "demandsLong.csv");
 
+    vector<vector<double>> demand_to_wastewater_fraction_owasa_raleigh =
+            Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_owasa_raleigh");
+    vector<vector<double>> demand_to_wastewater_fraction_durham =
+            Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_durham");
 
     /// Create catchments and corresponding vectors
     Catchment c1(&streamflows_test, streamflow_n_weeks);
@@ -874,10 +878,17 @@ void simulation3U5RInfraTest() {
     g.addEdge(2, 3);
     g.addEdge(4, 3);
 
+    vector<int> wwtp_return_u1 = {3};
+    vector<int> wwtp_return_u2 = {3, 2};
+    vector<int> wwtp_return_u3 = {};
+    vector<vector<double>> *empty_return_series = new vector<vector<double>>();
     /// Create catchments and corresponding vector
-    Utility u1((char *) "U1", 0, &demands_test, streamflow_n_weeks, 0.03, 1);
-    Utility u2((char *) "U2", 1, &demands_test, streamflow_n_weeks, 0.07, 1, vector<int>(1, 1), 0.04);
-    Utility u3((char *) "U3", 2, &demands_test, streamflow_n_weeks, 0.05, 1, vector<int>(1, 5), 0.04);
+    Utility u1((char *) "U1", 0, &demands_test, streamflow_n_weeks, 0.03, 1,
+               WwtpDischargeRule(&demand_to_wastewater_fraction_owasa_raleigh, &wwtp_return_u1));
+    Utility u2((char *) "U2", 1, &demands_test, streamflow_n_weeks, 0.07, 1, vector<int>(1, 1), 0.04,
+               WwtpDischargeRule(&demand_to_wastewater_fraction_durham, &wwtp_return_u2));
+    Utility u3((char *) "U3", 2, &demands_test, streamflow_n_weeks, 0.05, 1, vector<int>(1, 5), 0.04,
+               WwtpDischargeRule(empty_return_series, &wwtp_return_u3));
 
     vector<Utility *> utilities;
     utilities.push_back(&u1);
@@ -987,6 +998,11 @@ void triangleTest() {
     vector<vector<double>> evap_little_river = Utils::parse2DCsvFile("../TestFiles/evapLongRaleighOther.csv");
     vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile("../TestFiles/evapLongWB.csv");
 
+    vector<vector<double>> demand_to_wastewater_fraction_owasa_raleigh =
+            Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_owasa_raleigh");
+    vector<vector<double>> demand_to_wastewater_fraction_durham =
+            Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_durham");
+
     EvaporationSeries evaporation_durham(&evap_durham, streamflow_n_weeks);
     EvaporationSeries evaporation_jordan_lake(&evap_jordan_lake, streamflow_n_weeks);
     EvaporationSeries evaporation_falls_lake(&evap_falls_lake, streamflow_n_weeks);
@@ -1048,6 +1064,16 @@ void triangleTest() {
     gage_clayton.push_back(&neuse_river_at_clayton);
     gage_lillington.push_back(&cape_fear_river_at_lillington);
 
+    vector<int> cary_ws_return_id = {};
+    vector<vector<double>> *cary_discharge_fraction_series = new vector<vector<double>>();
+    WwtpDischargeRule wwtp_discharge_cary(cary_discharge_fraction_series, &cary_ws_return_id);
+    vector<int> owasa_ws_return_id = {6};
+    WwtpDischargeRule wwtp_discharge_owasa(&demand_to_wastewater_fraction_owasa_raleigh, &owasa_ws_return_id);
+    vector<int> raleigh_ws_return_id = {8};
+    WwtpDischargeRule wwtp_discharge_raleigh(&demand_to_wastewater_fraction_owasa_raleigh, &raleigh_ws_return_id);
+    vector<int> durham_ws_return_id = {1, 6}; //FIXME: CHECK IF THIS IS RIGHT.
+    WwtpDischargeRule wwtp_discharge_durham(&demand_to_wastewater_fraction_durham, &durham_ws_return_id);
+
     /// Storage vs. area reservoir curves.
     vector<double> falls_lake_storage = {-25734, 3266, 14700};
     vector<double> falls_lake_area = {0, 0.32 * 29000, 0.28 * 40434};
@@ -1073,7 +1099,7 @@ void triangleTest() {
     vector<double> bond_rate = {0.04, 0.04, 0.04, 0.04};
 
     // Existing Sources
-    Reservoir durham_reservoirs("Lake Michie & Little River Res. (Durham)", 0, 9.05 * 7, catchment_durham, 6349.0,
+    Reservoir durham_reservoirs("Lake Michie & Little River Res. (Durham)", 0, 9.05, catchment_durham, 6349.0,
                                 99999,
                                 &evaporation_durham, 1069);
     Reservoir falls_lake("Falls Lake", 1, 38.78 * 7, catchment_flat, 14700.0, 99999, &evaporation_falls_lake,
@@ -1095,17 +1121,17 @@ void triangleTest() {
     // the capacity for both is relative to current conditions - if Lake Michie is expanded small it will gain 2.5BG,
     // and a high expansion will provide 7.7BG more water than current. if small expansion happens, followed by a large
     // expansion, the maximum capacity through expansion is 7.7BG, NOT 2.5BG + 7.7BG.
-    Reservoir little_river_reservoir("Little River Reservoir (Raleigh)", 7, 9.05 * 7, catchment_little_river_raleigh,
+    Reservoir little_river_reservoir("Little River Reservoir (Raleigh)", 7, 9.05, catchment_little_river_raleigh,
                                      3700.0, 99999, &evaporation_little_river,
                                      &little_river_storage_area,
                                      city_infrastructure_ROF_triggers[3], construction_time_interval, 263.0,
                                      bond_length[3], bond_rate[3]);
     Quarry richland_creek_quarry("Richland Creek Quarry", 8, 38.78 * 7, gage_clayton, 4000.0, 99999,
-                                 9999, //FIXME: MAX PUMPING CAPACITY?
+                                 50 * 7, //FIXME: MAX PUMPING CAPACITY?
                                     city_infrastructure_ROF_triggers[3], construction_time_interval, 400.0,
-                                    bond_length[3], bond_rate[3]);
+                                 bond_length[3], bond_rate[3]);
     // diversions to Richland Creek Quarry based on ability to meet downstream flow target at Clayton, NC
-    Quarry teer_quarry("Teer Quarry", 9, 9.05 * 7, vector<Catchment *>(), 1315.0, 99999, 99999,
+    Quarry teer_quarry("Teer Quarry", 9, 9.05, vector<Catchment *>(), 1315.0, 99999, 15 * 7,
                        city_infrastructure_ROF_triggers[1],
                        construction_time_interval, 22.6, bond_length[1], bond_rate[1]); //FIXME: MAX PUMPING CAPACITY?
     // diversions to Teer Quarry for Durham based on inflows to downstream Falls Lake from the Flat River
@@ -1131,7 +1157,7 @@ void triangleTest() {
                                          bond_length[1], bond_rate[1]);
 
     //Reservoir rNeuseRiverIntake("rNeuseRiverIntake", 10, 0, catchment_flat, 16.0, 99999, city_infrastructure_ROF_triggers[3], construction_time_interval, 5000, 20, 0.05);
-    Intake neuse_river_intake("Neuse River Intake", 10, 38.78 * 7, catchment_flat, 99999,
+    Intake neuse_river_intake("Neuse River Intake", 10, 38.78 * 7, catchment_flat, 16 * 7,
                               city_infrastructure_ROF_triggers[3],
                               construction_time_interval, 225.5, bond_length[3], bond_rate[3]);
     WaterReuse low_reclaimed("Low Reclaimed Water System", 18, 2.2, city_infrastructure_ROF_triggers[1],
@@ -1212,20 +1238,20 @@ void triangleTest() {
      * Potential projects and expansions
      * of existing sources in parentheses
      *
-     *      3(12,13)   4(26)   5(14)            0(15,16)    (9)   (18,19)
-     *         \         /      /                  |        /      /
-     *          \       /      /                   |       /      /
-     *           \     /      /                    |      /      /
-     *           |    /      /                     |     /      /
-     *           |   /      /                      \    /   ----
-     *           |   |     /                        \  /   /
-     *           |   |    /                          1(10)              2   (7)
+     *      3(12,13)   4(26)   5(14)            0(15,16)        (18,19)
+     *         \         /      /                  |              /
+     *          \       /      /                   |             /
+     *           \     /      /                    |            /
+     *           |    /      /                    (9)          /
+     *           |   /      /                      \       ----
+     *           |   |     /                        \     /
+     *           |   |    /                          1(17)              2   (7)
      *           |   |   /                             |                |    |
      *           |   |  /                              |                |    |
      *           6(20-25)                             (8)               |    |
      *              |                                   \               |    |
      *              |                                    \              |    |
-     *        Lillington Gage                            (17)           |    |
+     *        Lillington Gage                            (10)           |    |
      *              |                                      |            |    |
      *              |                                      |           /    /
      *              |                                      |          /    /
@@ -1261,45 +1287,21 @@ void triangleTest() {
     g.addEdge(5, 6);
     g.addEdge(6, 11);
 
-//    g.addEdge(0, 15);
-//    g.addEdge(15, 16);
-//    g.addEdge(16, 1);
-//    g.addEdge(9, 1);
-//    g.addEdge(18, 19);
-//    g.addEdge(19, 1);
-//    g.addEdge(1, 10);
-//    g.addEdge(10, 8);
-//    g.addEdge(8, 17);
-
-//    g.addEdge(3, 12);
-//    g.addEdge(12, 13);
-//    g.addEdge(4, 11);
-//    g.addEdge(5, 14);
-//    g.addEdge(13, 6);
-//    g.addEdge(11, 6);
-//    g.addEdge(14, 6);
-//    g.addEdge(6, 20);
-//    g.addEdge(20, 21);
-//    g.addEdge(21, 22);
-//    g.addEdge(22, 23);
-//    g.addEdge(23, 24);
-//    g.addEdge(24, 25);
-
-//    g.addEdge(2, 26);
-//    g.addEdge(7, 26);
-//    g.addEdge(17, 26);
-//    g.addEdge(25, 26);
-
     /// Create catchments and corresponding vector
     vector<int> infra_order_durham = {9, 15, 16, 18, 19, 20, 21};
     vector<int> infra_order_owasa = {26, 12, 13, 14, 20, 21};
     vector<int> infra_order_raleigh = {7, 8, 17, 10, 20, 21};
     int demand_n_weeks = (int) round(46 * WEEKS_IN_YEAR);
 
-    Utility cary((char *) "Cary", 0, &demand_cary, demand_n_weeks, 0.03, 1);
-    Utility durham((char *) "Durham", 1, &demand_durham, demand_n_weeks, 0.07, 1, infra_order_durham, 0.05);
-    Utility owasa((char *) "OWASA", 2, &demand_owasa, demand_n_weeks, 0.05, 1, infra_order_owasa, 0.05);
-    Utility raleigh((char *) "Raleigh", 3, &demand_raleigh, demand_n_weeks, 0.05, 1, infra_order_raleigh, 0.05);
+
+    Utility cary((char *) "Cary", 0, &demand_cary, demand_n_weeks, 0.03, 1,
+                 wwtp_discharge_cary);
+    Utility durham((char *) "Durham", 1, &demand_durham, demand_n_weeks, 0.07, 1, infra_order_durham, 0.05,
+                   wwtp_discharge_durham);
+    Utility owasa((char *) "OWASA", 2, &demand_owasa, demand_n_weeks, 0.05, 1, infra_order_owasa, 0.05,
+                  wwtp_discharge_owasa);
+    Utility raleigh((char *) "Raleigh", 3, &demand_raleigh, demand_n_weeks, 0.05, 1, infra_order_raleigh, 0.05,
+                    wwtp_discharge_raleigh);
 
     vector<Utility *> utilities;
     utilities.push_back(&cary);
@@ -1370,16 +1372,16 @@ void triangleTest() {
 
     Transfers t(0, 0, 245, buyers_ids, buyers_transfers_capacities, buyers_transfers_trigger, ug,
                 vector<double>(), vector<int>());
-//    drought_mitigation_policies.push_back(&t);
+    drought_mitigation_policies.push_back(&t);
 
     /// Data collector pointer
     DataCollector *data_collector = nullptr;
 
     /// Creates simulation object
     Simulation s(water_sources, g, reservoir_utility_connectivity_matrix, utilities, drought_mitigation_policies,
-                 2385, 10, data_collector); //2400
+                 2385, 10, data_collector); //2385
     cout << "Beginning Triangle simulation" << endl;
-    s.runFullSimulation(10);
+    s.runFullSimulation(4);
     cout << "Ending Triangle simulation" << endl;
 }
 

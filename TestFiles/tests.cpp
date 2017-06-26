@@ -908,9 +908,12 @@ TEST_CASE("Get ROF from storage-rof-table", "[rof from table]") {
     water_sources_graph.addEdge(4, 3);
 
     /// Create catchments and corresponding vector
-    Utility u1((char *) "U1", 0, &demands_test, streamflow_n_weeks, 0.03, 1);
-    Utility u2((char *) "U2", 1, &demands_test, streamflow_n_weeks, 0.07, 1, vector<int>(1, 1), 0.05);
-    Utility u3((char *) "U3", 2, &demands_test, streamflow_n_weeks, 0.05, 1);
+    Utility u1((char *) "U1", 0, &demands_test, streamflow_n_weeks, 0.03, 1,
+               WwtpDischargeRule(std::vector<vector<double, allocator<double>>>(), std::vector<int>()));
+    Utility u2((char *) "U2", 1, &demands_test, streamflow_n_weeks, 0.07, 1, vector<int>(1, 1), 0.05,
+               WwtpDischargeRule(std::vector<vector<double, allocator<double>>>(), std::vector<int>()));
+    Utility u3((char *) "U3", 2, &demands_test, streamflow_n_weeks, 0.05, 1,
+               WwtpDischargeRule(std::vector<vector<double, allocator<double>>>(), std::vector<int>()));
 
     vector<Utility *> utilities;
     utilities.push_back(&u1);
@@ -1075,7 +1078,7 @@ TEST_CASE("DataSeries interpolation", "[DataSeries interpolation]") {
 
     DataSeries ds(x, y);
 
-    REQUIRE(ds.getDependent(4) == 6.1);
-    REQUIRE(ds.getDependent(9) == 4.8);
-    REQUIRE(ds.getDependent(0) == 2.5);
+    REQUIRE(ds.get_dependent_variable(4) == 6.1);
+    REQUIRE(ds.get_dependent_variable(9) == 4.8);
+    REQUIRE(ds.get_dependent_variable(0) == 2.5);
 }

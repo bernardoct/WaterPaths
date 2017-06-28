@@ -60,18 +60,19 @@ Intake::~Intake() {
     catchments.clear();
 }
 
+//FIXME: WHEN IMPLEMENTING RESERVOIR RULES, ADD A "BANK" OF WATER OVER AND UNDERUSE TO BE ADDED/SUBTRACTED FROM THE AVAILABLE VOLUME FOR THE NEXT REALIZATION.
 /**
- * Calculates the water volume that will be available for the next time step, as well as calculates continuity for the
+ * Calculates the water volume that will be available in the next time step continuity for the
  * current one. The update of the total outflow for the current time step is performed with simple mass
  * balance: outflow equals the sum of the inflows. The water volume that will be for sure available for the next time
  * step is the catchment inflows of next week plus the upstream sources' minimum environmental inflow minus the intake's
- * own environmental inflow. The actually available volume may be greater is the reservoirs above are overflowing, but
+ * own environmental inflow. The actually available volume may be greater if the reservoirs above are overflowing, but
  * since the spillover for the next time step hasn't been calculated yet, this value cannot be used. This doesn't matter
  * anyways because if the reservoir is overflowing -- there is no need to say that intake will have a greater water
  * availability to save water from the upstream reservoirs if they themselves are overflowing.
  *
  * It may also look that the code assumes the intake operators know what the inflow will be in the following week. This
- * is not a problem because this information is actually used in the following week, when they are measuring the inflow
+ * is not a problem because this information is actually used only in the following week, when they are measuring the inflow
  * of the stream where the intake is located.
  *
  * @param week

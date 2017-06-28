@@ -822,9 +822,9 @@ void simulation3U5RInfraTest() {
                                                                             "demandsLong.csv");
 
     vector<vector<double>> demand_to_wastewater_fraction_owasa_raleigh =
-            Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_owasa_raleigh");
+            Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
     vector<vector<double>> demand_to_wastewater_fraction_durham =
-            Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_durham");
+            Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_durham.csv");
 
     /// Create catchments and corresponding vectors
     Catchment c1(&streamflows_test, streamflow_n_weeks);
@@ -1097,14 +1097,13 @@ void triangleTest() {
     //Cary  Dur  OWA   Ral
     vector<double> JL_allocation_fractions = {0.3, 0.1, 0.05, 0.0};
     double JL_supply_capacity = 14924.0;
-    vector<double> city_infrastructure_ROF_triggers = {0.02, 0.02, 0.02, 0.02};
+    vector<double> city_infrastructure_rof_triggers = {0.02, 0.02, 0.02, 0.02};
     vector<double> bond_length = {25, 25, 25, 25};
     vector<double> bond_rate = {0.04, 0.04, 0.04, 0.04};
 
     // Existing Sources
     Reservoir durham_reservoirs("Lake Michie & Little River Res. (Durham)", 0, 9.05, catchment_durham, 6349.0,
-                                99999,
-                                &evaporation_durham, 1069);
+                                99999, &evaporation_durham, 1069);
     Reservoir falls_lake("Falls Lake", 1, 38.78 * 7, catchment_flat, 14700.0, 99999, &evaporation_falls_lake,
                          &falls_lake_storage_area);
     Reservoir wheeler_benson_lakes("Wheeler-Benson Lakes", 2, 2.0 * 7, catchment_swift, 2789.66, 99999,
@@ -1125,80 +1124,79 @@ void triangleTest() {
     // and a high expansion will provide 7.7BG more water than current. if small expansion happens, followed by a large
     // expansion, the maximum capacity through expansion is 7.7BG, NOT 2.5BG + 7.7BG.
     Reservoir little_river_reservoir("Little River Reservoir (Raleigh)", 7, 9.05, catchment_little_river_raleigh,
-                                     3700.0, 99999, &evaporation_little_river,
-                                     &little_river_storage_area,
-                                     city_infrastructure_ROF_triggers[3], construction_time_interval, 263.0,
+                                     3700.0, 99999, &evaporation_little_river, &little_river_storage_area,
+                                     city_infrastructure_rof_triggers[3], construction_time_interval, 263.0,
                                      bond_length[3], bond_rate[3]);
     Quarry richland_creek_quarry("Richland Creek Quarry", 8, 38.78 * 7, gage_clayton, 4000.0, 99999,
                                  50 * 7, //FIXME: MAX PUMPING CAPACITY?
-                                    city_infrastructure_ROF_triggers[3], construction_time_interval, 400.0,
+                                 city_infrastructure_rof_triggers[3], construction_time_interval, 400.0,
                                  bond_length[3], bond_rate[3]);
     // diversions to Richland Creek Quarry based on ability to meet downstream flow target at Clayton, NC
     Quarry teer_quarry("Teer Quarry", 9, 9.05, vector<Catchment *>(), 1315.0, 99999, 15 * 7,
-                       city_infrastructure_ROF_triggers[1],
+                       city_infrastructure_rof_triggers[1],
                        construction_time_interval, 22.6, bond_length[1], bond_rate[1]); //FIXME: MAX PUMPING CAPACITY?
     // diversions to Teer Quarry for Durham based on inflows to downstream Falls Lake from the Flat River
     // FYI: spillage from Eno River also helps determine Teer quarry diversion, but Eno spillage isn't factored into
     // downstream water balance?
-    ReservoirExpansion fl_reallocation("Falls Lake Reallocation", 17, 1, 4100.0, city_infrastructure_ROF_triggers[3],
+    ReservoirExpansion fl_reallocation("Falls Lake Reallocation", 17, 1, 4100.0, city_infrastructure_rof_triggers[3],
                                        construction_time_interval, 68.2, bond_length[3], bond_rate[3]);
     ReservoirExpansion ccr_expansion("Cane Creek Reservoir Expansion", 26, 4, 3000.0,
-                                     city_infrastructure_ROF_triggers[2], construction_time_interval, 127.0,
+                                     city_infrastructure_rof_triggers[2], construction_time_interval, 127.0,
                                      bond_length[2], bond_rate[2]);
     ReservoirExpansion low_sq_expansion("Low Stone Quarry Expansion", 12, 3, 1500.0,
-                                        city_infrastructure_ROF_triggers[2], construction_time_interval, 1.4,
+                                        city_infrastructure_rof_triggers[2], construction_time_interval, 1.4,
                                         bond_length[2], bond_rate[2]);
     ReservoirExpansion high_sq_expansion("High Stone Quarry Expansion", 13, 3, 2200.0,
-                                         city_infrastructure_ROF_triggers[2], construction_time_interval, 64.6,
+                                         city_infrastructure_rof_triggers[2], construction_time_interval, 64.6,
                                          bond_length[2], bond_rate[2]);
-    ReservoirExpansion ul_expansion("University Lake Expansion", 14, 5, 2550.0, city_infrastructure_ROF_triggers[2],
+    ReservoirExpansion ul_expansion("University Lake Expansion", 14, 5, 2550.0, city_infrastructure_rof_triggers[2],
                                     construction_time_interval, 107.0, bond_length[2], bond_rate[2]);
-    ReservoirExpansion low_lm_expansion("Low Lake Michie Expansion", 15, 0, 2500.0, city_infrastructure_ROF_triggers[1],
+    ReservoirExpansion low_lm_expansion("Low Lake Michie Expansion", 15, 0, 2500.0, city_infrastructure_rof_triggers[1],
                                         construction_time_interval, 158.3, bond_length[1], bond_rate[1]);
     ReservoirExpansion high_lm_expansion("High Lake Michie Expansion", 16, 0, 7700.0,
-                                         city_infrastructure_ROF_triggers[1], construction_time_interval, 203.3,
+                                         city_infrastructure_rof_triggers[1], construction_time_interval, 203.3,
                                          bond_length[1], bond_rate[1]);
 
-    //Reservoir rNeuseRiverIntake("rNeuseRiverIntake", 10, 0, catchment_flat, 16.0, 99999, city_infrastructure_ROF_triggers[3], construction_time_interval, 5000, 20, 0.05);
+    //Reservoir rNeuseRiverIntake("rNeuseRiverIntake", 10, 0, catchment_flat, 16.0, 99999, city_infrastructure_rof_triggers[3], construction_time_interval, 5000, 20, 0.05);
     Intake neuse_river_intake("Neuse River Intake", 10, 38.78 * 7, catchment_flat, 16 * 7,
-                              city_infrastructure_ROF_triggers[3],
+                              city_infrastructure_rof_triggers[3],
                               construction_time_interval, 225.5, bond_length[3], bond_rate[3]);
-    WaterReuse low_reclaimed("Low Reclaimed Water System", 18, 2.2, city_infrastructure_ROF_triggers[1],
+    WaterReuse low_reclaimed("Low Reclaimed Water System", 18, 2.2, city_infrastructure_rof_triggers[1],
                              construction_time_interval, 27.5, bond_length[1], bond_rate[1]);
-    WaterReuse high_reclaimed("High Reclaimed Water System", 19, 11.3, city_infrastructure_ROF_triggers[1],
-                             construction_time_interval, 104.4, bond_length[1], bond_rate[1]);
+    WaterReuse high_reclaimed("High Reclaimed Water System", 19, 11.3, city_infrastructure_rof_triggers[1],
+                              construction_time_interval, 104.4, bond_length[1], bond_rate[1]);
 
     //FIXME: ONCE ONE UTILITY DECIDES TO BUILD THE WJLWTP, ALL OTHERS PAY FOR IT TOO, RIGHT? IF SO, WHAT'S THE PROPORTION?
     //FIXME: FIX AREAS.
     Reservoir low_wjlwtp_durham("Low WJLWTP (Durham)", 20, 0, catchment_haw,
                                 JL_supply_capacity * JL_allocation_fractions[1], 33.0 * JL_allocation_fractions[1],
                                 &evaporation_jordan_lake, 13940,
-                                city_infrastructure_ROF_triggers[1], construction_time_interval,
+                                city_infrastructure_rof_triggers[1], construction_time_interval,
                                 243.3 * JL_allocation_fractions[1], bond_length[1], bond_rate[1]);
     Reservoir high_wjlwtp_durham("High WJLWTP (Durham)", 21, 0, catchment_haw,
                                  JL_supply_capacity * JL_allocation_fractions[1], 54.0 * JL_allocation_fractions[1],
                                  &evaporation_jordan_lake, 13940,
-                                 city_infrastructure_ROF_triggers[1], construction_time_interval,
+                                 city_infrastructure_rof_triggers[1], construction_time_interval,
                                  73.5 * JL_allocation_fractions[1], bond_length[1], bond_rate[1]);
     Reservoir low_wjlwtp_owasa("Low WJLWTP (OWASA)", 22, 0, catchment_haw,
                                JL_supply_capacity * JL_allocation_fractions[2], 33.0 * JL_allocation_fractions[2],
                                &evaporation_jordan_lake, 13940,
-                               city_infrastructure_ROF_triggers[2], construction_time_interval,
+                               city_infrastructure_rof_triggers[2], construction_time_interval,
                                243.3 * JL_allocation_fractions[2], bond_length[2], bond_rate[2]);
     Reservoir high_wjlwtp_owasa("High WJLWTP (OWASA)", 23, 0, catchment_haw,
                                 JL_supply_capacity * JL_allocation_fractions[2], 54.0 * JL_allocation_fractions[2],
                                 &evaporation_jordan_lake, 13940,
-                                city_infrastructure_ROF_triggers[2], construction_time_interval,
+                                city_infrastructure_rof_triggers[2], construction_time_interval,
                                 73.5 * JL_allocation_fractions[2], bond_length[2], bond_rate[2]);
     Reservoir low_wjlwtp_raleigh("Low WJLWTP (Raleigh)", 24, 0, catchment_haw,
                                  JL_supply_capacity * JL_allocation_fractions[3], 33.0 * JL_allocation_fractions[3],
                                  &evaporation_jordan_lake, 13940,
-                                 city_infrastructure_ROF_triggers[3], construction_time_interval,
+                                 city_infrastructure_rof_triggers[3], construction_time_interval,
                                  243.3 * JL_allocation_fractions[3], bond_length[3], bond_rate[3]);
     Reservoir high_wjlwtp_raleigh("High WJLWTP (Raleigh)", 25, 0, catchment_haw,
                                   JL_supply_capacity * JL_allocation_fractions[4], 54.0 * JL_allocation_fractions[3],
                                   &evaporation_jordan_lake, 13940,
-                                  city_infrastructure_ROF_triggers[3], construction_time_interval,
+                                  city_infrastructure_rof_triggers[3], construction_time_interval,
                                   73.5 * JL_allocation_fractions[3], bond_length[3], bond_rate[3]);
 
     Reservoir dummy_endpoint("Dummy Node", 11, 0, vector<Catchment *>(), 0, 0, &evaporation_durham, 1);

@@ -102,7 +102,7 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
 
         continuity_water_sources[i]->continuityWaterSource(
                 week - (int) std::round((rof_realization + 1) * WEEKS_IN_YEAR),
-                upstream_spillage[i], demands[i]);
+                upstream_spillage[i] + wastewater_discharges[i], demands[i]);
     }
 
     /// updates combined storage for utilities.

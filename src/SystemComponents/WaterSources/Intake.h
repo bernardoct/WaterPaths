@@ -11,6 +11,8 @@
 using namespace Constants;
 
 class Intake : public WaterSource {
+    double water_bank = 0;
+
 public:
 
     Intake(const char *name, const int id, const double min_environmental_outflow,

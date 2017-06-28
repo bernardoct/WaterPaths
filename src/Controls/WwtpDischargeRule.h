@@ -6,7 +6,7 @@
 #define TRIANGLEMODEL_WWTPDISCHARGERULES_H
 
 
-#include "ControlRules.h"
+#include "Base/ControlRules.h"
 #include <vector>
 
 using namespace std;

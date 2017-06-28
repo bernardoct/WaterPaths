@@ -7,7 +7,7 @@
 
 #include <string>
 #include "../Catchment.h"
-#include "WaterSource.h"
+#include "Base/WaterSource.h"
 #include "../../Controls/DataSeries.h"
 #include "../EvaporationSeries.h"
 

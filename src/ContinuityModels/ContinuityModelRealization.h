@@ -6,8 +6,8 @@
 #define TRIANGLEMODEL_CONTINUITYMODELREALIZATION_H
 
 
-#include "ContinuityModel.h"
-#include "../DroughtMitigationInstruments/DroughtMitigationPolicy.h"
+#include "Base/ContinuityModel.h"
+#include "../DroughtMitigationInstruments/Base/DroughtMitigationPolicy.h"
 
 class ContinuityModelRealization : public ContinuityModel {
 private:

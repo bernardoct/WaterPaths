@@ -6,7 +6,7 @@
 #define TRIANGLEMODEL_INSURANCESTORAGETOROF_H
 
 
-#include "DroughtMitigationPolicy.h"
+#include "Base/DroughtMitigationPolicy.h"
 #include "../ContinuityModels/ContinuityModelROF.h"
 
 class InsuranceStorageToROF : public DroughtMitigationPolicy, public ContinuityModelROF {

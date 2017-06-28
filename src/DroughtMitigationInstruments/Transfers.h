@@ -5,7 +5,7 @@
 #ifndef TRIANGLEMODEL_TRANSFERS_H
 #define TRIANGLEMODEL_TRANSFERS_H
 
-#include "DroughtMitigationPolicy.h"
+#include "Base/DroughtMitigationPolicy.h"
 #include "../Utils/QPSolver/QuadProg++.hh"
 #include "../Utils/Graph/Graph.h"
 

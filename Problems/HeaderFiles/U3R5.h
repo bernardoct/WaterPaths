@@ -8,7 +8,7 @@
 
 #include "../../src/SystemComponents/Catchment.h"
 #include "../../src/SystemComponents/Utility.h"
-#include "../../src/DroughtMitigationInstruments/DroughtMitigationPolicy.h"
+#include "../../src/DroughtMitigationInstruments/Base/DroughtMitigationPolicy.h"
 #include "../../src/Utils/DataCollector.h"
 #include "../../src/Simulation/Simulation.h"
 #include "Problem.h"

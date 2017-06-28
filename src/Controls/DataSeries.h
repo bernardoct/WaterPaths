@@ -6,7 +6,7 @@
 #define TRIANGLEMODEL_DATASERIES_H
 
 #include <vector>
-#include "ControlRules.h"
+#include "Base/ControlRules.h"
 
 using namespace std;
 

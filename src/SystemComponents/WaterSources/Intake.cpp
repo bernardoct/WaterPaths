@@ -71,6 +71,10 @@ Intake::~Intake() {
  * anyways because if the reservoir is overflowing -- there is no need to say that intake will have a greater water
  * availability to save water from the upstream reservoirs if they themselves are overflowing.
  *
+ * The available volume depends on the inflows in the coming week which depend on the available volume of reservoirs
+ * in the coming week which depends on the available volume of the intake. This circulatirity issue is minimized here
+ * by allowing for under or overdraws but "charging" them in the following week.
+ *
  * It may also look that the code assumes the intake operators know what the inflow will be in the following week. This
  * is not a problem because this information is actually used only in the following week, when they are measuring the inflow
  * of the stream where the intake is located.
@@ -87,14 +91,22 @@ void Intake::applyContinuity(int week, double upstream_source_inflow, double dem
         upstream_catchment_inflow += c->getStreamflow(week);
 
     /// Mass balance for current time step.
-    total_outflow = upstream_source_inflow + upstream_catchment_inflow - demand;
+    double total_outflow_approx = upstream_source_inflow + upstream_catchment_inflow - demand;
+
+    /// Amount of water that could have been drawn but was let pass or that was over drawn.
+    double over_under_use = total_outflow_approx - min_environmental_outflow;
+
+    /// Take the over/underdrawn amount to be used in the next time step.
+    total_outflow = min_environmental_outflow;
 
     /// Water availability for next ime step.
     double next_upstream_catchment_inflow = 0;
     for (Catchment *c : catchments)
         next_upstream_catchment_inflow += c->getStreamflow(week + 1);
 
-    available_volume = upstream_min_env_inflow + next_upstream_catchment_inflow - min_environmental_outflow;
+    /// Estimated available volume for the coming week, corrected for over or underdraws in the current week.
+    available_volume = min(raw_water_main_capacity + over_under_use, upstream_min_env_inflow + next_upstream_catchment_inflow -
+            min_environmental_outflow + over_under_use);
 
     /// Records for the sake of output.
     this->demand = demand;

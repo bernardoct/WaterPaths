@@ -6,7 +6,7 @@
 #define TRIANGLEMODEL_CONTINUITYMODELROF_H
 
 
-#include "ContinuityModel.h"
+#include "Base/ContinuityModel.h"
 #include "../Utils/Matrices.h"
 
 class ContinuityModelROF : public ContinuityModel {

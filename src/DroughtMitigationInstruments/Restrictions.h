@@ -7,7 +7,7 @@
 
 
 #include "../SystemComponents/Utility.h"
-#include "DroughtMitigationPolicy.h"
+#include "Base/DroughtMitigationPolicy.h"
 
 class Restrictions : public DroughtMitigationPolicy {
 

@@ -6,10 +6,10 @@
 #define TRIANGLEMODEL_AUX_H
 
 
-#include "../SystemComponents/WaterSources/WaterSource.h"
+#include "../SystemComponents/WaterSources/Base/WaterSource.h"
 #include "../SystemComponents/WaterSources/Intake.h"
 #include "../SystemComponents/Utility.h"
-#include "../DroughtMitigationInstruments/DroughtMitigationPolicy.h"
+#include "../DroughtMitigationInstruments/Base/DroughtMitigationPolicy.h"
 #include "../DroughtMitigationInstruments/Restrictions.h"
 
 class Utils {

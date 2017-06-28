@@ -7,10 +7,10 @@
 
 #include "../Utils/Constants.h"
 #include "../Utils/DataCollector.h"
-#include "../SystemComponents/WaterSources/WaterSource.h"
+#include "../SystemComponents/WaterSources/Base/WaterSource.h"
 #include "../SystemComponents/Utility.h"
 #include "../DroughtMitigationInstruments/Restrictions.h"
-#include "../ContinuityModels/ContinuityModel.h"
+#include "../ContinuityModels/Base/ContinuityModel.h"
 #include "../ContinuityModels/ContinuityModelRealization.h"
 #include "../ContinuityModels/ContinuityModelROF.h"
 #include <vector>

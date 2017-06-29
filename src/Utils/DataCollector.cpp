@@ -115,7 +115,7 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
         water_sources_t[i].demands[r].push_back(ws->getDemand());
         water_sources_t[i].total_upstream_sources_inflows[r].push_back(ws->getUpstream_source_inflow());
         water_sources_t[i].outflows[r].push_back(ws->getTotal_outflow());
-        water_sources_t[i].total_catchments_inflow[r].push_back(ws->getCatchment_upstream_catchment_inflow());
+        water_sources_t[i].total_catchments_inflow[r].push_back(ws->getUpstreamCatchmentInflow());
     }
 
     /// Get drought mitigation policy data.

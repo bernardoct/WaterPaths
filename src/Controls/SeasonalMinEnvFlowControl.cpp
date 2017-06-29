@@ -11,10 +11,10 @@ SeasonalMinEnvFlowControl::SeasonalMinEnvFlowControl(const vector<int> *week_thr
 
 
 double SeasonalMinEnvFlowControl::getRelease(int week) {
-    double releases = 0;
+    double release = 0;
     for (int i = 0; i < week_thresholds->size(); ++i) {
         /// Done with ternary operator for improved performance.
-        releases = (week <= (*week_thresholds)[i] ? min_env_flows[i] : releases);
+        release = (week <= (*week_thresholds)[i] ? min_env_flows[i] : release);
     }
-    return 0;
+    return release;
 }

@@ -81,7 +81,7 @@ public:
 
     double getDemand() const;
 
-    double getCatchment_upstream_catchment_inflow() const;
+    double getUpstreamCatchmentInflow() const;
 
     void bypass(int week, double upstream_source_inflow);
 

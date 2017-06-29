@@ -9,10 +9,11 @@
 #include "Base/MinEnvironFlowControl.h"
 
 class StorageMinEnvFlowControl : public MinEnvironFlowControl {
-    vector<double> storages;
-    vector<double> releases;
+    vector<double> *storages;
+    vector<double> *releases;
 
 
+    double getRelease(int week);
 };
 
 

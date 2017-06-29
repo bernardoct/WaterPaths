@@ -12,11 +12,12 @@ using namespace std;
 
 class SeasonalMinEnvFlowControl : public MinEnvironFlowControl {
 private:
-    const vector<int> week_thresholds;
-    const vector<double> min_env_flows;
+    const vector<int> *week_thresholds;
+    const vector<double> *min_env_flows;
 
 public:
-    SeasonalMinEnvFlowControl(const vector<int> &week_thresholds, const vector<double> &min_env_flows);
+    SeasonalMinEnvFlowControl(const vector<int> *week_thresholds,
+                              const vector<double> *min_env_flows);
 
     double getRelease(int week) override;
 };

@@ -8,7 +8,7 @@
 #include <string>
 #include "../Catchment.h"
 #include "Base/WaterSource.h"
-#include "../../Controls/DataSeries.h"
+#include "../../Utils/DataSeries.h"
 #include "../EvaporationSeries.h"
 
 using namespace std;

@@ -9,10 +9,13 @@
 #include "Base/MinEnvironFlowControl.h"
 
 class StorageMinEnvFlowControl : public MinEnvironFlowControl {
-    vector<double> *storages;
-    vector<double> *releases;
+public:
+    StorageMinEnvFlowControl(const vector<int> &water_sources_ids, vector<double> *storages,
+                                 vector<double> *releases);
+    const vector<double> *storages;
+    const vector<double> *releases;
 
-
+private:
     double getRelease(int week);
 };
 

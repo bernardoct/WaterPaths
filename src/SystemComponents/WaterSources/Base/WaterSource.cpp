@@ -226,7 +226,7 @@ double WaterSource::getUpstream_source_inflow() const {
     return upstream_source_inflow;
 }
 
-double WaterSource::getCatchment_upstream_catchment_inflow() const {
+double WaterSource::getUpstreamCatchmentInflow() const {
     return upstream_catchment_inflow;
 }
 

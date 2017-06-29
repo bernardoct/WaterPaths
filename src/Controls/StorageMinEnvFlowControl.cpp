@@ -4,12 +4,21 @@
 
 #include "StorageMinEnvFlowControl.h"
 
+StorageMinEnvFlowControl::StorageMinEnvFlowControl(const vector<int> &water_sources_ids, vector<double> *storages,
+                                                   vector<double> *releases)
+        : MinEnvironFlowControl(water_sources_ids, vector<int>(), vector<int>()), storages(storages),
+          releases(releases) {
+    if (water_sources_ids.size() != 1) __throw_invalid_argument("Storage based control rules needs exactly one "
+                                                                        "reservoir/quarry");
+}
 
 double StorageMinEnvFlowControl::getRelease(int week) {
-    double releases = 0;
-    for (int i = 0; i < week_thresholds->size(); ++i) {
+    double source_storage = water_sources[0]->getAvailable_volume();
+
+    double release = 0;
+    for (int i = 0; i < storages->size(); ++i) {
         /// Done with ternary operator for improved performance.
-        releases = (week <= (*week_thresholds)[i] ? min_env_flows[i] : releases);
+        release = (source_storage <= (*storages)[i] ? (*releases)[i] : release);
     }
-    return 0;
+    return release;
 }

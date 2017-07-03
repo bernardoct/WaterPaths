@@ -8,13 +8,17 @@
 #include <algorithm>
 
 
-Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_sources_graph,
-                       const vector<vector<int>> &water_sources_to_utilities, vector<Utility *> &utilities,
-                       const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
-                       const int total_simulation_time,
-                       const int number_of_realizations, DataCollector *data_collector) :
+Simulation::Simulation(
+        vector<WaterSource *> &water_sources, Graph &water_sources_graph,
+        const vector<vector<int>> &water_sources_to_utilities,
+        vector<Utility *> &utilities,
+        const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
+        vector<MinEnvironFlowControl *> &min_env_flow_controls,
+        const int total_simulation_time, const int number_of_realizations,
+        DataCollector *data_collector) :
         total_simulation_time(total_simulation_time),
-        number_of_realizations(number_of_realizations), data_collector(data_collector) {
+        number_of_realizations(number_of_realizations),
+        data_collector(data_collector) {
 
     /// Sort water sources and utilities by their IDs.
     //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
@@ -25,52 +29,55 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_source
     std::sort(utilities.begin(), utilities.end());
 #endif
 
-    //FIXME: UPDATE THIS LOGIC ONCE A TABLE FOR MINIMUM ENVIRONMENTAL INFLOWS IS IMPLEMENTED.
-    /// Pass sum of minimum environmental inflows of upstream sources to intakes.
-    double upstream_min_env_flow;
-    for (WaterSource *ws : water_sources) {
-        upstream_min_env_flow = 0;
-        if (ws->source_type == INTAKE) {
-            for (int &i : water_sources_graph.getUpstream_sources(ws->id))
-                upstream_min_env_flow += water_sources[i]->min_environmental_outflow;
-            dynamic_cast<Intake *>(ws)->setUpstream_min_env_flow(upstream_min_env_flow);
-        }
-    }
-
     /// Check if sources listed in construction order array are of a utility are listed as belonging to that utility
     for (int u = 0; u < utilities.size(); ++u) {
         for (int ws : utilities[u]->getInfrastructure_construction_order())
-            if (std::find(water_sources_to_utilities[u].begin(), water_sources_to_utilities[u].end(), ws)
+            if (std::find(water_sources_to_utilities[u].begin(),
+                          water_sources_to_utilities[u].end(),
+                          ws)
                 == water_sources_to_utilities[u].end()) {
-                cout << "Water source #" << ws << " is listed in the construction order for utility " << u << " but "
-                        "is not present in utility's list of water sources" << endl;
-                throw std::invalid_argument("Utility's construction order and owned sources mismatch.");
+                cout << "Water source #" << ws << " is listed in the "
+                        "construction order for utility " << u << " but is not "
+                             "present in utility's list of water sources"
+                     << endl;
+                throw std::invalid_argument("Utility's construction order and "
+                                                    "owned sources mismatch.");
             }
     }
 
     /// Creates the data collector for the simulation.
-    data_collector = new DataCollector(utilities, water_sources, drought_mitigation_policies,
-                                       number_of_realizations, water_sources_graph);
+    data_collector = new DataCollector(
+            utilities,
+            water_sources,
+            drought_mitigation_policies,
+            number_of_realizations,
+            water_sources_graph);
     this->data_collector = data_collector;
 
     /// Create the realization and ROF models.
-    for (int r = 0; r < number_of_realizations; ++r) {
+    for (unsigned int r = 0; r < number_of_realizations; ++r) {
         /// Create realization models by copying the water sources and utilities.
-        vector<WaterSource *> water_sources_realization = Utils::copyWaterSourceVector(water_sources);
+        vector<WaterSource *> water_sources_realization =
+                Utils::copyWaterSourceVector(water_sources);
         vector<DroughtMitigationPolicy *> drought_mitigation_policies_realization =
-                Utils::copyDroughtMitigationPolicyVector(drought_mitigation_policies);
-        vector<Utility *> utilities_realization = Utils::copyUtilityVector(utilities);
+                Utils::copyDroughtMitigationPolicyVector(
+                        drought_mitigation_policies);
+        vector<Utility *> utilities_realization =
+                Utils::copyUtilityVector(utilities);
 
         /// Store realization models in vector
-        realization_models.push_back(new ContinuityModelRealization(water_sources_realization,
-                                                                    water_sources_graph,
-                                                                    water_sources_to_utilities,
-                                                                    utilities_realization,
-                                                                    drought_mitigation_policies_realization,
-                                                                    r));
+        realization_models.push_back(
+                new ContinuityModelRealization(water_sources_realization,
+                                               water_sources_graph,
+                                               water_sources_to_utilities,
+                                               utilities_realization,
+                                               drought_mitigation_policies_realization,
+                                               min_env_flow_controls,
+                                               r));
 
         /// Create rof models by copying the water utilities and sources.
-        vector<WaterSource *> water_sources_rof = Utils::copyWaterSourceVector(water_sources);
+        vector<WaterSource *> water_sources_rof =
+                Utils::copyWaterSourceVector(water_sources);
         vector<Utility *> utilities_rof = Utils::copyUtilityVector(utilities);
 
         /// Store realization models in vector
@@ -78,14 +85,17 @@ Simulation::Simulation(vector<WaterSource *> &water_sources, Graph &water_source
                                                     water_sources_graph,
                                                     water_sources_to_utilities,
                                                     utilities_rof,
+                                                    min_env_flow_controls,
                                                     r));
 
         /// Initialize rof models.
         rof_models[r]->setRealization_water_sources(water_sources_realization);
 
         /// Link storage-rof tables of policies and rof models.
-        for (DroughtMitigationPolicy *dmp : realization_models[r]->getDrought_mitigation_policies())
-            dmp->setStorage_to_rof_table_(rof_models[r]->getStorage_to_rof_table());
+        for (DroughtMitigationPolicy *dmp :
+                realization_models[r]->getDrought_mitigation_policies())
+            dmp->setStorage_to_rof_table_(
+                    rof_models[r]->getStorage_to_rof_table());
     }
 }
 
@@ -117,7 +127,8 @@ void Simulation::runFullSimulation(int num_threads) {
     for (int r = 0; r < number_of_realizations; ++r) {
         std::cout << "Realization " << r << std::endl;
         for (int w = 0; w < total_simulation_time; ++w) {
-            // DO NOT change the order of the steps. This would destroy dependencies.
+            // DO NOT change the order of the steps. This would mess up
+            // important dependencies.
             if (Utils::isFirstWeekOfTheYear(w))
                 realization_models[r]->setLongTermROFs(rof_models[r]->calculateROF(w, LONG_TERM_ROF), w);
             realization_models[r]->setShortTermROFs(rof_models[r]->calculateROF(w, SHORT_TERM_ROF));
@@ -128,7 +139,7 @@ void Simulation::runFullSimulation(int num_threads) {
     }
     time(&timer_f);
     seconds = difftime(timer_f, timer_i);
-    std::cout << seconds << "s" << std::endl;
+    std::cout << "Calculations: " << seconds << "s" << std::endl;
 
     /// Calculate objective values.
     data_collector->calculateObjectives();
@@ -139,4 +150,9 @@ void Simulation::runFullSimulation(int num_threads) {
     data_collector->printPoliciesOutput("Policies.out");
     data_collector->printObjectives("Objectives.out");
     data_collector->printPathways("Pathways.out");
+
+    time(&timer_f);
+    seconds = difftime(timer_f,
+                       timer_i);
+    std::cout << "Total: " << seconds << "s" << std::endl;
 }

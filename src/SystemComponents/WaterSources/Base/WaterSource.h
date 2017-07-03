@@ -24,10 +24,10 @@ protected:
     double capacity;
     bool online;
     vector<Catchment *> catchments;
+    double min_environmental_outflow;
 
 public:
     const int id;
-    const double min_environmental_outflow;
     const char *name;
     const int source_type;
     const double raw_water_main_capacity;
@@ -37,15 +37,19 @@ public:
     const double bond_term;
     const double bond_interest_rate;
 
-    WaterSource(const char *name, const int id, const double min_environmental_outflow,
-                const vector<Catchment *> &catchments, const double capacity,
-                const double raw_water_main_capacity, const int source_type);
+    WaterSource(
+            const char *name, const int id,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double raw_water_main_capacity, const int source_type);
 
-    WaterSource(const char *source_name, const int id, const double min_environmental_outflow,
-                const vector<Catchment *> &catchments, const double capacity,
-                const double raw_water_main_capacity, const int source_type, const double construction_rof,
-                const vector<double> construction_time_range, double construction_cost_of_capital,
-                double bond_term, double bond_interest_rate);
+    WaterSource(
+            const char *source_name, const int id,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double raw_water_main_capacity, const int source_type,
+            const double construction_rof,
+            const vector<double> construction_time_range,
+            double construction_cost_of_capital, double bond_term,
+            double bond_interest_rate);
 
     WaterSource(const WaterSource &water_source);
 
@@ -57,11 +61,19 @@ public:
 
     bool operator>(const WaterSource *other);
 
-    void continuityWaterSource(int week, double upstream_source_inflow, double demand_outflow);
+    void continuityWaterSource(
+            int week, double upstream_source_inflow,
+            double demand_outflow);
 
-    virtual void applyContinuity(int week, double upstream_source_inflow, double demand_outflow) = 0;
+    virtual void applyContinuity(
+            int week, double upstream_source_inflow,
+            double demand_outflow) = 0;
 
     virtual void setOnline();
+
+    double getMin_environmental_outflow() const;
+
+    void setMin_environmental_outflow(double min_environmental_outflow);
 
     double getAvailable_volume() const;
 
@@ -85,8 +97,9 @@ public:
 
     void bypass(int week, double upstream_source_inflow);
 
-    double
-    calculateNetPresentConstructionCost(int week, double discount_rate, double *level_debt_service_payment) const;
+    double calculateNetPresentConstructionCost(
+            int week, double
+    discount_rate, double *level_debt_service_payment) const;
 
     static bool compare(WaterSource *lhs, WaterSource *rhs);
 

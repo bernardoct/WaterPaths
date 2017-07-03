@@ -12,8 +12,19 @@
 //#include "../src/Utils/Matrix3D.h"
 
 TEST_CASE("Net present cost calculations", "[NPC]") {
-    Reservoir r("Res", 0, 1, vector<Catchment *>(), 1, 1, nullptr,
-                nullptr, 1, vector<double>(2, 1), 5000, 20, 0.05);
+    Reservoir r("Res",
+                0,
+                vector<Catchment *>(),
+                1,
+                1,
+                nullptr,
+                nullptr,
+                1,
+                vector<double>(2,
+                               1),
+                5000,
+                20,
+                0.05);
 
     double level_debt_service_payment = 0;
     REQUIRE(r.calculateNetPresentConstructionCost(0, 0.05, &level_debt_service_payment) == Approx(5000));
@@ -875,12 +886,46 @@ TEST_CASE("Get ROF from storage-rof-table", "[rof from table]") {
 
     /// Create reservoirs and corresponding vector
     vector<double> construction_time_interval = {1.0, 4.0};
-    Reservoir r1("R1", 0, 3.0, catchments1, 2., 20, nullptr, nullptr);
-    Reservoir r2("R2", 1, 3.0, catchments2, 1., 20, nullptr, nullptr,
-                 0.02, construction_time_interval, 5000, 20, 0.05);
-    Reservoir r3("R3", 2, 2.0, catchments3, 1., 20, nullptr, nullptr);
-    Reservoir r4("R4", 3, 3.0, catchments2, 1., 20, nullptr, nullptr);
-    Reservoir r5("R5", 4, 2.0, catchments3, 1., 20, nullptr, nullptr);
+    Reservoir r1("R1",
+                 0,
+                 catchments1,
+                 2.,
+                 20,
+                 nullptr,
+                 nullptr);
+    Reservoir r2("R2",
+                 1,
+                 catchments2,
+                 1.,
+                 20,
+                 nullptr,
+                 nullptr,
+                 0.02,
+                 construction_time_interval,
+                 5000,
+                 20,
+                 0.05);
+    Reservoir r3("R3",
+                 2,
+                 catchments3,
+                 1.,
+                 20,
+                 nullptr,
+                 nullptr);
+    Reservoir r4("R4",
+                 3,
+                 catchments2,
+                 1.,
+                 20,
+                 nullptr,
+                 nullptr);
+    Reservoir r5("R5",
+                 4,
+                 catchments3,
+                 1.,
+                 20,
+                 nullptr,
+                 nullptr);
 
     vector<WaterSource *> water_sources;
     water_sources.push_back(&r1);

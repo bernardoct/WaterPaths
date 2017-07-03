@@ -5,11 +5,18 @@
 #include "../../Utils/Constants.h"
 #include "Intake.h"
 
-Intake::Intake(const char *name, const int id, const double min_environmental_outflow,
-               const vector<Catchment *> &catchments, const double max_treatment_capacity)
-        : WaterSource(name, id, min_environmental_outflow, catchments, NONE, max_treatment_capacity, INTAKE) {
+Intake::Intake(
+        const char *name, const int id,
+        const vector<Catchment *> &catchments,
+        const double max_treatment_capacity)
+        : WaterSource(name,
+                      id,
+                      catchments,
+                      NONE,
+                      max_treatment_capacity,
+                      INTAKE) {
 
-//    /// Update total catchment inflow, demand, and available water volume for week 0;
+    /// Update total catchment inflow, demand, and available water volume for week 0;
 //    upstream_catchment_inflow = 0;
 //    for (Catchment *c : catchments) {
 //        upstream_catchment_inflow += c->getStreamflow(0);
@@ -19,12 +26,23 @@ Intake::Intake(const char *name, const int id, const double min_environmental_ou
 //    available_volume = upstream_catchment_inflow - min_environmental_outflow;
 }
 
-Intake::Intake(const char *name, const int id, const double min_environmental_outflow,
-               const vector<Catchment *> &catchments, const double raw_water_main_capacity,
-               const double construction_rof, const vector<double> construction_time_range,
-               double construction_npv_cost_of_capital, double bond_term, double bond_interest_rate) :
-        WaterSource(name, id, min_environmental_outflow, catchments, NONE, raw_water_main_capacity, INTAKE,
-                    construction_rof, construction_time_range, construction_npv_cost_of_capital, bond_term,
+Intake::Intake(
+        const char *name, const int id,
+        const vector<Catchment *> &catchments,
+        const double raw_water_main_capacity, const double construction_rof,
+        const vector<double> construction_time_range,
+        double construction_npv_cost_of_capital, double bond_term,
+        double bond_interest_rate) :
+        WaterSource(name,
+                    id,
+                    catchments,
+                    NONE,
+                    raw_water_main_capacity,
+                    INTAKE,
+                    construction_rof,
+                    construction_time_range,
+                    construction_npv_cost_of_capital,
+                    bond_term,
                     bond_interest_rate) {
 
 //    /// Update total catchment inflow, demand, and available water volume for week 0;
@@ -83,7 +101,9 @@ Intake::~Intake() {
  * @param upstream_source_inflow upstream sources current outflow.
  * @param demand current demand
  */
-void Intake::applyContinuity(int week, double upstream_source_inflow, double demand) {
+void Intake::applyContinuity(
+        int week, double upstream_source_inflow,
+        double demand) {
 
     /// Get all upstream catchment inflow.
     upstream_catchment_inflow = 0;
@@ -91,7 +111,8 @@ void Intake::applyContinuity(int week, double upstream_source_inflow, double dem
         upstream_catchment_inflow += c->getStreamflow(week);
 
     /// Mass balance for current time step.
-    double total_outflow_approx = upstream_source_inflow + upstream_catchment_inflow - demand;
+    double total_outflow_approx = upstream_source_inflow +
+                                  upstream_catchment_inflow - demand;
 
     /// Amount of water that could have been drawn but was let pass or that was over drawn.
     double over_under_use = total_outflow_approx - min_environmental_outflow;
@@ -105,7 +126,9 @@ void Intake::applyContinuity(int week, double upstream_source_inflow, double dem
         next_upstream_catchment_inflow += c->getStreamflow(week + 1);
 
     /// Estimated available volume for the coming week, corrected for over or underdraws in the current week.
-    available_volume = min(raw_water_main_capacity + over_under_use, upstream_min_env_inflow + next_upstream_catchment_inflow -
+    available_volume = min(raw_water_main_capacity + over_under_use,
+                           upstream_min_env_inflow +
+                           next_upstream_catchment_inflow -
             min_environmental_outflow + over_under_use);
 
     /// Records for the sake of output.
@@ -121,5 +144,6 @@ void Intake::setRealization(unsigned long r) {
     WaterSource::setRealization(r);
 
     demand = 0;
-    available_volume = this->upstream_catchment_inflow - min_environmental_outflow;
+    available_volume = this->upstream_catchment_inflow -
+                       min_environmental_outflow;
 }

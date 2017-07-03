@@ -7,11 +7,16 @@
 #include "ContinuityModel.h"
 
 
-ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, const vector<Utility *> &utilities,
-                                 const Graph &water_sources_graph,
-                                 const vector<vector<int>> &water_sources_to_utilities, unsigned int realization_id) :
+ContinuityModel::ContinuityModel(
+        const vector<WaterSource *> &water_sources,
+        const vector<Utility *> &utilities,
+        vector<MinEnvironFlowControl *> &min_env_flow_controls,
+        const Graph &water_sources_graph,
+        const vector<vector<int>> &water_sources_to_utilities,
+        unsigned int realization_id) :
         continuity_water_sources(water_sources),
         continuity_utilities(utilities),
+        min_env_flow_controls(min_env_flow_controls),
         water_sources_graph(water_sources_graph),
         water_sources_to_utilities(water_sources_to_utilities),
         realization_id(realization_id) {
@@ -53,11 +58,18 @@ ContinuityModel::ContinuityModel(const vector<WaterSource *> &water_sources, con
 
     sources_topological_order = water_sources_graph.getTopological_order();
 
-    /// Set realization id on utilities and water sources, so that they use the right streamflow and demand data.
+    /// Set realization id on utilities and water sources, so that they use the
+    /// right streamflow and demand data.
     for (Utility *u : continuity_utilities)
         u->setRelization(realization_id);
     for (WaterSource *ws : continuity_water_sources)
         ws->setRealization(realization_id);
+
+    /// Add reference to water sources and utilities so that controls can
+    /// access their info.
+    for (MinEnvironFlowControl *mef : this->min_env_flow_controls)
+        mef->addComponents(water_sources,
+                           utilities);
 
 }
 
@@ -87,6 +99,15 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
     for (Utility *u : continuity_utilities) {
         u->getWastewater_releases(week, wastewater_discharges);
         u->splitDemands(week, demands);
+    }
+
+    /**
+     * Set minimum environmental flows for water sources based on their
+     * individual controls.
+     */
+    for (MinEnvironFlowControl *c : min_env_flow_controls) {
+        continuity_water_sources[c->water_source_id]->
+                setMin_environmental_outflow(c->getRelease(week));
     }
 
     /**

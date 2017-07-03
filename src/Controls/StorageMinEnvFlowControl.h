@@ -10,8 +10,9 @@
 
 class StorageMinEnvFlowControl : public MinEnvironFlowControl {
 public:
-    StorageMinEnvFlowControl(const vector<int> &water_sources_ids, vector<double> *storages,
-                                 vector<double> *releases);
+    StorageMinEnvFlowControl(
+            int water_source_id, const vector<int> &aux_water_sources_ids,
+            vector<double> *storages, vector<double> *releases);
     const vector<double> *storages;
     const vector<double> *releases;
 

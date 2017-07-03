@@ -18,9 +18,10 @@ using namespace std;
  * @param raw_water_main_capacity
  * @param source_type
  */
-WaterSource::WaterSource(const char *name, const int id, const double min_environmental_outflow,
-                         const vector<Catchment *> &catchments, const double capacity,
-                         const double raw_water_main_capacity, const int source_type)
+WaterSource::WaterSource(
+        const char *name, const int id,
+        const vector<Catchment *> &catchments, const double capacity,
+        const double raw_water_main_capacity, const int source_type)
         : name(name), capacity(capacity), min_environmental_outflow(min_environmental_outflow),
           total_outflow(min_environmental_outflow), catchments(catchments), online(ONLINE), available_volume(capacity),
           id(id), raw_water_main_capacity(raw_water_main_capacity), source_type(source_type),
@@ -41,11 +42,14 @@ WaterSource::WaterSource(const char *name, const int id, const double min_enviro
  * @param construction_time_range
  * @param construction_cost_of_capital
  */
-WaterSource::WaterSource(const char *name, const int id, const double min_environmental_outflow,
-                         const vector<Catchment *> &catchments, const double capacity,
-                         const double raw_water_main_capacity, const int source_type, const double construction_rof,
-                         const vector<double> construction_time_range, double construction_cost_of_capital,
-                         double bond_term, double bond_interest_rate)
+WaterSource::WaterSource(
+        const char *name, const int id,
+        const vector<Catchment *> &catchments, const double capacity,
+        const double raw_water_main_capacity, const int source_type,
+        const double construction_rof,
+        const vector<double> construction_time_range,
+        double construction_cost_of_capital, double bond_term,
+        double bond_interest_rate)
         : name(name), capacity(capacity), min_environmental_outflow(min_environmental_outflow),
           total_outflow(min_environmental_outflow), catchments(catchments), online(OFFLINE), available_volume(capacity),
           id(id), raw_water_main_capacity(raw_water_main_capacity), source_type(source_type),
@@ -138,7 +142,9 @@ bool WaterSource::compare(WaterSource *lhs, WaterSource *rhs) {
  * catchment between both water sources.
  * @param demand_outflow demand from utility.
  */
-void WaterSource::continuityWaterSource(int week, double upstream_source_inflow, double demand_outflow) {
+void WaterSource::continuityWaterSource(
+        int week, double upstream_source_inflow,
+        double demand_outflow) {
     if (online)
         applyContinuity(week, upstream_source_inflow, demand_outflow);
     else
@@ -172,8 +178,9 @@ void WaterSource::bypass(int week, double upstream_source_inflow) {
  * @param discount_rate
  * @return Net present cost
  */
-double WaterSource::calculateNetPresentConstructionCost(int week, double discount_rate,
-                                                        double *level_debt_service_payment) const {
+double WaterSource::calculateNetPresentConstructionCost(
+        int week, double
+discount_rate, double *level_debt_service_payment) const {
     double rate = bond_interest_rate / BOND_INTEREST_PAYMENTS_PER_YEAR;
     double principal = construction_cost_of_capital;
     double n_payments = bond_term * BOND_INTEREST_PAYMENTS_PER_YEAR;
@@ -184,10 +191,13 @@ double WaterSource::calculateNetPresentConstructionCost(int week, double discoun
 
     /// Net present cost of stream of level debt service payments for the whole bond term, at the time of issuance.
     double net_present_cost_at_issuance =
-            *level_debt_service_payment * (1 - pow(1 + discount_rate, -n_payments)) / discount_rate;
+            *level_debt_service_payment * (1 -
+                                           pow(1 + discount_rate,
+                                               -n_payments)) / discount_rate;
 
     /// Return NPC discounted from the time of issuance to the present.
-    return net_present_cost_at_issuance / pow(1 + discount_rate, week / WEEKS_IN_YEAR);
+    return net_present_cost_at_issuance / pow(1 + discount_rate,
+                                              week / WEEKS_IN_YEAR);
 }
 
 double WaterSource::getAvailable_volume() const {
@@ -243,4 +253,13 @@ void WaterSource::setRealization(unsigned long r) {
     for (Catchment *c : catchments) {
         this->upstream_catchment_inflow = c->getStreamflow(0);
     }
+}
+
+void WaterSource::setMin_environmental_outflow(
+        double min_environmental_outflow) {
+    WaterSource::min_environmental_outflow = min_environmental_outflow;
+}
+
+double WaterSource::getMin_environmental_outflow() const {
+    return min_environmental_outflow;
 }

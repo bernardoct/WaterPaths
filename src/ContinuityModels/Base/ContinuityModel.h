@@ -9,6 +9,7 @@
 #include "../../Utils/Constants.h"
 #include "../../SystemComponents/Utility.h"
 #include "../../Utils/Graph/Graph.h"
+#include "../../Controls/Base/MinEnvironFlowControl.h"
 #include <vector>
 
 using namespace Constants;
@@ -17,10 +18,10 @@ using namespace std;
 class ContinuityModel {
 
 protected:
-    ContinuityModel(ContinuityModel &continuity_model);
 
     vector<WaterSource *> continuity_water_sources;
     vector<Utility *> continuity_utilities;
+    vector<MinEnvironFlowControl *> min_env_flow_controls;
     Graph water_sources_graph;
     vector<vector<int> > water_sources_to_utilities;
     vector<vector<int> > utilities_to_water_sources;
@@ -33,9 +34,15 @@ protected:
 public:
     const unsigned int realization_id;
 
-    ContinuityModel(const vector<WaterSource *> &water_sources, const vector<Utility *> &utilities,
-                    const Graph &water_sources_graph, const vector<vector<int>> &water_sources_to_utilities,
-                    unsigned int realization_id);
+    ContinuityModel(
+            const vector<WaterSource *> &water_sources,
+            const vector<Utility *> &utilities,
+            vector<MinEnvironFlowControl *> &min_env_flow_controls,
+            const Graph &water_sources_graph,
+            const vector<vector<int>> &water_sources_to_utilities,
+            unsigned int realization_id);
+
+    ContinuityModel(ContinuityModel &continuity_model);
 
     void continuityStep(int week, int rof_realization = -1);
 

@@ -18,12 +18,18 @@ using namespace std;
  * @param max_treatment_capacity
  * @param source_type
  */
-Reservoir::Reservoir(const char *name, const int id, const double min_environmental_outflow,
-                     const vector<Catchment *> &catchments, const double capacity,
-                     const double max_treatment_capacity,
-                     EvaporationSeries *evaporation_series,
-                     DataSeries *storage_area_curve) :
-        WaterSource(name, id, min_environmental_outflow, catchments, capacity, max_treatment_capacity, RESERVOIR),
+Reservoir::Reservoir(
+        const char *name, const int id,
+        const vector<Catchment *> &catchments, const double capacity,
+        const double max_treatment_capacity,
+        EvaporationSeries *evaporation_series,
+        DataSeries *storage_area_curve) :
+        WaterSource(name,
+                    id,
+                    catchments,
+                    capacity,
+                    max_treatment_capacity,
+                    RESERVOIR),
         evaporation_series(evaporation_series),
         storage_area_curve(storage_area_curve), fixed_area(false) {
 
@@ -41,12 +47,17 @@ Reservoir::Reservoir(const char *name, const int id, const double min_environmen
  * @param max_treatment_capacity
  * @param source_type
  */
-Reservoir::Reservoir(const char *name, const int id, const double min_environmental_outflow,
-                     const vector<Catchment *> &catchments, const double capacity,
-                     const double max_treatment_capacity,
-                     EvaporationSeries *evaporation_series,
-                     double storage_area) :
-        WaterSource(name, id, min_environmental_outflow, catchments, capacity, max_treatment_capacity, RESERVOIR),
+Reservoir::Reservoir(
+        const char *name, const int id,
+        const vector<Catchment *> &catchments, const double capacity,
+        const double max_treatment_capacity,
+        EvaporationSeries *evaporation_series, double storage_area) :
+        WaterSource(name,
+                    id,
+                    catchments,
+                    capacity,
+                    max_treatment_capacity,
+                    RESERVOIR),
         evaporation_series(evaporation_series),
         storage_area_curve(nullptr), fixed_area(true), area(storage_area) {}
 
@@ -63,15 +74,26 @@ Reservoir::Reservoir(const char *name, const int id, const double min_environmen
  * @param construction_time_range
  * @param construction_price
  */
-Reservoir::Reservoir(const char *name, const int id, const double min_environmental_outflow,
-                     const vector<Catchment *> &catchments, const double capacity,
-                     const double max_treatment_capacity,
-                     EvaporationSeries *evaporation_series,
-                     DataSeries *storage_area_curve, const double construction_rof,
-                     const vector<double> &construction_time_range, double construction_cost, double bond_term,
-                     double bond_interest_rate) :
-        WaterSource(name, id, min_environmental_outflow, catchments, capacity, max_treatment_capacity, RESERVOIR,
-        construction_rof, construction_time_range, construction_cost, bond_term, bond_interest_rate),
+Reservoir::Reservoir(
+        const char *name, const int id,
+        const vector<Catchment *> &catchments, const double capacity,
+        const double max_treatment_capacity,
+        EvaporationSeries *evaporation_series,
+        DataSeries *storage_area_curve, const double construction_rof,
+        const vector<double> &construction_time_range,
+        double construction_cost, double bond_term,
+        double bond_interest_rate) :
+        WaterSource(name,
+                    id,
+                    catchments,
+                    capacity,
+                    max_treatment_capacity,
+                    RESERVOIR,
+                    construction_rof,
+                    construction_time_range,
+                    construction_cost,
+                    bond_term,
+                    bond_interest_rate),
         evaporation_series(evaporation_series),
         storage_area_curve(storage_area_curve), fixed_area(false) {
 
@@ -92,15 +114,26 @@ Reservoir::Reservoir(const char *name, const int id, const double min_environmen
  * @param construction_time_range
  * @param construction_price
  */
-Reservoir::Reservoir(const char *name, const int id, const double min_environmental_outflow,
-                     const vector<Catchment *> &catchments, const double capacity,
-                     const double max_treatment_capacity,
-                     EvaporationSeries *evaporation_series,
-                     double storage_area, const double construction_rof,
-                     const vector<double> &construction_time_range, double construction_cost, double bond_term,
-                     double bond_interest_rate) :
-        WaterSource(name, id, min_environmental_outflow, catchments, capacity, max_treatment_capacity, RESERVOIR,
-                    construction_rof, construction_time_range, construction_cost, bond_term, bond_interest_rate),
+Reservoir::Reservoir(
+        const char *name, const int id,
+        const vector<Catchment *> &catchments, const double capacity,
+        const double max_treatment_capacity,
+        EvaporationSeries *evaporation_series, double storage_area,
+        const double construction_rof,
+        const vector<double> &construction_time_range,
+        double construction_cost, double bond_term,
+        double bond_interest_rate) :
+        WaterSource(name,
+                    id,
+                    catchments,
+                    capacity,
+                    max_treatment_capacity,
+                    RESERVOIR,
+                    construction_rof,
+                    construction_time_range,
+                    construction_cost,
+                    bond_term,
+                    bond_interest_rate),
         evaporation_series(evaporation_series),
         storage_area_curve(nullptr), fixed_area(true), area(storage_area) {}
 

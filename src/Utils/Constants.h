@@ -35,6 +35,7 @@ namespace Constants {
     const int RESERVOIR_EXPANSION = 2;
     const int QUARRY = 3;
     const int WATER_REUSE = 4;
+    const int GAGE = 5;
 
     const int TRANSFERS = 0;
     const int RESTRICTIONS = 1;

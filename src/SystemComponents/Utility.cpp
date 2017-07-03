@@ -105,11 +105,15 @@ Utility &Utility::operator=(const Utility &utility) {
     water_sources.clear();
     for (auto &ws : utility.water_sources) {
         if (ws.second->source_type == RESERVOIR) {
-            water_sources.insert(pair<int, WaterSource *>
-                                         (ws.first, new Reservoir(*dynamic_cast<Reservoir *>(ws.second))));
+            water_sources.insert(pair<int, WaterSource *>(ws.first,
+                                                          new
+                                                                  Reservoir(*dynamic_cast<Reservoir *>(ws
+                                                                  .second))));
         } else {
-            water_sources.insert(pair<int, WaterSource *>
-                                         (ws.first, new Intake(*dynamic_cast<Intake *>(ws.second))));
+            water_sources.insert(pair<int, WaterSource *>(ws.first,
+                                                          new
+                                                                  Intake(*dynamic_cast<Intake *>(ws
+                                                                  .second))));
         }
     }
 
@@ -143,7 +147,10 @@ void Utility::updateTotalStoredVolume() {
     total_stored_volume = 0.0;
 
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
-        total_stored_volume += (ws.second->isOnline() ? max(1.0e-6, ws.second->getAvailable_volume()) : 1.0e-6);
+        total_stored_volume +=
+                (ws.second->isOnline() ?
+                 max(1.0e-6,
+                     ws.second->getAvailable_volume()) : 1.0e-6);
     }
 }
 
@@ -167,7 +174,8 @@ void Utility::addWaterSource(WaterSource *water_source) {
             if (water_source->construction_cost_of_capital == NON_INITIALIZED) {
                 cout << "Utility " << id << " set to build water source " << ws << ", which has no bond "
                         "parameters set." << endl;
-                __throw_invalid_argument("Water source with bond parameters but set as to be built.");
+                __throw_invalid_argument("Water source with no bond parameters "
+                                                 "but set as to be built.");
             }
 
     water_sources.insert(pair<int, WaterSource *>(water_source->id, water_source));
@@ -192,9 +200,11 @@ void Utility::splitDemands(int week, double *water_sources_draws) {
 
     /// Allocates demand to intakes.
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
-        if (ws.second->isOnline() && (ws.second->source_type == INTAKE || ws.second->source_type == WATER_REUSE)) {
+        if (ws.second->isOnline() && (ws.second->source_type == INTAKE ||
+                                      ws.second->source_type == WATER_REUSE)) {
             int i = ws.second->id;
-            double intake_demand = min(restricted_demand, ws.second->getAvailable_volume());
+            double intake_demand = min(restricted_demand,
+                                       ws.second->getAvailable_volume());
             water_sources_draws[i] = intake_demand;
             reservoirs_demand -= intake_demand;
         }
@@ -205,7 +215,9 @@ void Utility::splitDemands(int week, double *water_sources_draws) {
         if (ws.second->isOnline() && ws.second->source_type == RESERVOIR) {
             int i = ws.second->id;
             double source_demand =
-                    reservoirs_demand * max(1.0e-6, ws.second->getAvailable_volume()) / total_stored_volume;
+                    reservoirs_demand * max(1.0e-6,
+                                            ws.second->getAvailable_volume()) /
+                    total_stored_volume;
             water_sources_draws[i] = source_demand;
         }
     }
@@ -233,15 +245,25 @@ void Utility::resetDataColletionVariables() {
  * @param demand_offset
  * @return contingency fund contribution or draw.
  */
-void Utility::updateContingencyFund(double unrestricted_demand, double demand_multiplier, double demand_offset) {
-    double fund_contribution = percent_contingency_fund_contribution * unrestricted_demand * water_price_per_volume;
-    double revenue_losses = unrestricted_demand * (1 - demand_multiplier) * water_price_per_volume;
-    double transfer_costs = demand_offset * (offset_rate_per_volume - water_price_per_volume);
+void Utility::updateContingencyFund(
+        double unrestricted_demand,
+        double demand_multiplier,
+        double demand_offset) {
+    double fund_contribution = percent_contingency_fund_contribution *
+                               unrestricted_demand * water_price_per_volume;
+    double revenue_losses = unrestricted_demand * (1 - demand_multiplier) *
+                            water_price_per_volume;
+    double transfer_costs = demand_offset *
+                            (offset_rate_per_volume - water_price_per_volume);
 
     /// contingency fund cannot get negative.
-    contingency_fund = max(contingency_fund + fund_contribution - revenue_losses - transfer_costs, 0.0);
+    contingency_fund = max(contingency_fund + fund_contribution -
+                           revenue_losses - transfer_costs,
+                           0.0);
 
-    drought_mitigation_cost = max(revenue_losses + transfer_costs - insurance_payout, 0.0);
+    drought_mitigation_cost = max(revenue_losses + transfer_costs -
+                                  insurance_payout,
+                                  0.0);
 }
 
 void Utility::setWaterSourceOnline(int source_id) {
@@ -251,12 +273,16 @@ void Utility::setWaterSourceOnline(int source_id) {
     if (water_sources.at(source_id)->source_type != RESERVOIR_EXPANSION)
         water_sources.at(source_id)->setOnline();
     else {
-        ReservoirExpansion reservoir_expansion = *dynamic_cast<ReservoirExpansion *>(water_sources.at(source_id));
-        water_sources.at(reservoir_expansion.parent_reservoir_ID)->addCapacity(reservoir_expansion.getCapacity());
+        ReservoirExpansion reservoir_expansion =
+                *dynamic_cast<ReservoirExpansion *>(water_sources
+                        .at(source_id));
+        water_sources.at(reservoir_expansion.parent_reservoir_ID)->
+                addCapacity(reservoir_expansion.getCapacity());
     }
     /// Updates total storage and treatment capacities.
     total_storage_capacity += water_sources.at(source_id)->getCapacity();
-    total_treatment_capacity += water_sources.at(source_id)->raw_water_main_capacity;
+    total_treatment_capacity +=
+            water_sources.at(source_id)->raw_water_main_capacity;
 }
 
 /**
@@ -271,20 +297,25 @@ void Utility::infrastructureConstructionHandler(double long_term_rof, int week) 
     /// already under construction, starts building it.
     if (!infrastructure_construction_order.empty()) { // if there is anything to be built
 
-        /// Checks if ROF threshold for next infrastructure in line has been reached and if
-        /// there is already infrastructure being built.
+        /// Checks if ROF threshold for next infrastructure in line has been
+        /// reached and if there is already infrastructure being built.
         if (long_term_rof > water_sources.at(
-                infrastructure_construction_order[0])->construction_rof && !under_construction) {
+                infrastructure_construction_order[0])->construction_rof &&
+            !under_construction) {
 
             /// Add water source construction cost to the books.
             double level_debt_service_payments;
-            infrastructure_net_present_cost += water_sources[infrastructure_construction_order[0]]->
-                    calculateNetPresentConstructionCost(week, infrastructure_discount_rate,
-                                                        &level_debt_service_payments);
+            infrastructure_net_present_cost +=
+                    water_sources[infrastructure_construction_order[0]]->
+                            calculateNetPresentConstructionCost(
+                            week,
+                            infrastructure_discount_rate,
+                            &level_debt_service_payments);
 
             /// Create stream of level debt service payments for water source.
             debt_payment_streams.push_back(vector<double>(
-                    (unsigned long) water_sources.at(infrastructure_construction_order[0])->bond_term,
+                    (unsigned long) (water_sources.at(
+                            infrastructure_construction_order[0])->bond_term),
                     level_debt_service_payments));
 
             /// Begin construction.
@@ -296,16 +327,19 @@ void Utility::infrastructureConstructionHandler(double long_term_rof, int week) 
             setWaterSourceOnline(infrastructure_construction_order[0]);
 
             /// Record ID of and when infrastructure option construction was completed.
-            infrastructure_built = {id, week, infrastructure_construction_order[0]};
+            infrastructure_built = {id, week,
+                                    infrastructure_construction_order[0]};
 
             /// Erase infrastructure option from vector of infrastructure to be built.
-            infrastructure_construction_order.erase(infrastructure_construction_order.begin());
+            infrastructure_construction_order.erase(
+                    infrastructure_construction_order.begin());
             under_construction = false;
         }
     }
 
     /// Calculate current annual debt payment to be made on that week (it first week of year), if any.
-    current_debt_payment = updateCurrent_debt_payment(week, debt_payment_streams);
+    current_debt_payment = updateCurrent_debt_payment(week,
+                                                      debt_payment_streams);
 }
 
 /**
@@ -314,12 +348,13 @@ void Utility::infrastructureConstructionHandler(double long_term_rof, int week) 
  * @param debt_payment_streams
  * @return
  */
-double Utility::updateCurrent_debt_payment(int week, vector<vector<double>> debt_payment_streams) {
+double Utility::updateCurrent_debt_payment(
+        int week, vector<vector<double>> debt_payment_streams) {
 
     double current_debt_payment = 0;
 
     /// Checks if it's the first week of the year, when outstanding debt payments should be made.
-    if (Utils::isFirstWeekOfTheYear(week + 1)) {
+    if (Utils::isFirstWeekOfTheYear(week)) {
         /// Checks if there's outstanding debt.
         if (!debt_payment_streams.empty()) {
             /// Iterate over all outstanding debt.

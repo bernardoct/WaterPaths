@@ -24,28 +24,38 @@ private:
 
 public:
 
-    Reservoir(const char *name, const int id, const double min_environmental_outflow,
-              const vector<Catchment *> &catchments, const double capacity,
-              const double max_treatment_capacity,
-              EvaporationSeries *evaporation_series,
-              DataSeries *storage_area_curve);
+    Reservoir(
+            const char *name, const int id,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
+            EvaporationSeries *evaporation_series,
+            DataSeries *storage_area_curve);
 
-    Reservoir(const char *name, const int id, const double min_environmental_outflow,
-              const vector<Catchment *> &catchments, const double capacity,
-              const double max_treatment_capacity, EvaporationSeries *evaporation_series,
-              DataSeries *storage_area_curve, const double construction_rof,
-              const vector<double> &construction_time_range, double construction_cost, double bond_term,
-              double bond_interest_rate);
+    Reservoir(
+            const char *name, const int id,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
+            EvaporationSeries *evaporation_series,
+            DataSeries *storage_area_curve, const double construction_rof,
+            const vector<double> &construction_time_range,
+            double construction_cost, double bond_term,
+            double bond_interest_rate);
 
-    Reservoir(const char *name, const int id, const double min_environmental_outflow,
-              const vector<Catchment *> &catchments, const double capacity, const double max_treatment_capacity,
-              EvaporationSeries *evaporation_series, double storage_area);
+    Reservoir(
+            const char *name, const int id,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
+            EvaporationSeries *evaporation_series, double storage_area);
 
-    Reservoir(const char *name, const int id, const double min_environmental_outflow,
-              const vector<Catchment *> &catchments, const double capacity, const double max_treatment_capacity,
-              EvaporationSeries *evaporation_series, double storage_area,
-              const double construction_rof, const vector<double> &construction_time_range, double construction_cost,
-              double bond_term, double bond_interest_rate);
+    Reservoir(
+            const char *name, const int id,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
+            EvaporationSeries *evaporation_series, double storage_area,
+            const double construction_rof,
+            const vector<double> &construction_time_range,
+            double construction_cost, double bond_term,
+            double bond_interest_rate);
 
     Reservoir(const Reservoir &reservoir);
 

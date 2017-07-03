@@ -64,12 +64,13 @@ ContinuityModel::ContinuityModel(
         u->setRelization(realization_id);
     for (WaterSource *ws : continuity_water_sources)
         ws->setRealization(realization_id);
+    for (MinEnvironFlowControl *mef : this->min_env_flow_controls)
+        mef->setRealiation(realization_id);
 
     /// Add reference to water sources and utilities so that controls can
     /// access their info.
     for (MinEnvironFlowControl *mef : this->min_env_flow_controls)
-        mef->addComponents(water_sources,
-                           utilities);
+        mef->addComponents(water_sources, utilities);
 
 }
 

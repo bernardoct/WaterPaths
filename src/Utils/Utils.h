@@ -11,6 +11,7 @@
 #include "../SystemComponents/Utility.h"
 #include "../DroughtMitigationInstruments/Base/DroughtMitigationPolicy.h"
 #include "../DroughtMitigationInstruments/Restrictions.h"
+#include "../Controls/Base/MinEnvironFlowControl.h"
 
 class Utils {
 public:
@@ -35,6 +36,7 @@ public:
     static vector<vector<double>> calculateDistances(vector<vector<double>> data_points);
 
     static int weekOfTheYear(int week);
+
 };
 
 

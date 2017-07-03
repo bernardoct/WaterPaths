@@ -8,9 +8,8 @@
 SeasonalMinEnvFlowControl::SeasonalMinEnvFlowControl(
         int water_source_id, const vector<int> *week_thresholds,
         const vector<double> *min_env_flows) :
-        MinEnvironFlowControl(water_source_id,
-                              vector<int>(),
-                              vector<int>()),
+        MinEnvironFlowControl(water_source_id, vector<int>(), vector<int>(),
+                              SEASONAL),
         week_thresholds(week_thresholds),
         min_env_flows(min_env_flows) {
     if (week_thresholds->size() != min_env_flows->size() + 1)

@@ -8,6 +8,12 @@
 #include "../SystemComponents/WaterSources/Quarry.h"
 #include "../DroughtMitigationInstruments/InsuranceStorageToROF.h"
 #include "../SystemComponents/WaterSources/WaterReuse.h"
+#include "../Controls/FixedMinEnvFlowControl.h"
+#include "../Controls/InflowMinEnvFlowControl.h"
+#include "../Controls/SeasonalMinEnvFlowControl.h"
+#include "../Controls/StorageMinEnvFlowControl.h"
+#include "../Controls/Custom/JordanLakeMinEnvFlowControl.h"
+#include "../Controls/Custom/FallsLakeMinEnvFlowControl.h"
 #include <fstream>
 #include <algorithm>
 
@@ -65,27 +71,35 @@ double *Utils::parse1DCsvFile(char const *file_name, int number_of_weeks) {
     return data;
 }
 
-vector<WaterSource *> Utils::copyWaterSourceVector(vector<WaterSource *> water_sources_original) {
+vector<WaterSource *> Utils::copyWaterSourceVector(
+        vector<WaterSource *> water_sources_original) {
     vector<WaterSource *> water_sources_new;
 
     for (WaterSource *ws : water_sources_original) {
         if (ws->source_type == RESERVOIR) {
-            water_sources_new.push_back(new Reservoir(*dynamic_cast<Reservoir *>(ws)));
+            water_sources_new.push_back(new Reservoir(
+                    *dynamic_cast<Reservoir *>(ws)));
         } else if (ws->source_type == INTAKE) {
-            water_sources_new.push_back(new Intake(*dynamic_cast<Intake *>(ws)));
+            water_sources_new.push_back(new Intake(
+                    *dynamic_cast<Intake *>(ws)));
         } else if (ws->source_type == RESERVOIR_EXPANSION) {
-            water_sources_new.push_back(new ReservoirExpansion(*dynamic_cast<ReservoirExpansion *>(ws)));
+            water_sources_new.push_back(
+                    new ReservoirExpansion(
+                            *dynamic_cast<ReservoirExpansion *>(ws)));
         } else if (ws->source_type == QUARRY) {
-            water_sources_new.push_back(new Quarry(*dynamic_cast<Quarry *>(ws)));
+            water_sources_new.push_back(new Quarry(
+                    *dynamic_cast<Quarry *>(ws)));
         } else if (ws->source_type == WATER_REUSE) {
-            water_sources_new.push_back(new WaterReuse(*dynamic_cast<WaterReuse *>(ws)));
+            water_sources_new.push_back(new WaterReuse(
+                    *dynamic_cast<WaterReuse *>(ws)));
         }
     }
 
     return water_sources_new;
 }
 
-vector<Utility *> Utils::copyUtilityVector(vector<Utility *> utility_original, bool clear_water_sources) {
+vector<Utility *> Utils::copyUtilityVector(vector<Utility *> utility_original,
+                                           bool clear_water_sources) {
     vector<Utility *> utility_new;
 
     for (Utility *u : utility_original) {
@@ -101,19 +115,23 @@ vector<Utility *> Utils::copyUtilityVector(vector<Utility *> utility_original, b
 }
 
 vector<DroughtMitigationPolicy *>
-Utils::copyDroughtMitigationPolicyVector(vector<DroughtMitigationPolicy *> drought_mitigation_policy_original) {
+Utils::copyDroughtMitigationPolicyVector(
+        vector<DroughtMitigationPolicy *> drought_mitigation_policy_original) {
     vector<DroughtMitigationPolicy *> drought_mitigation_policy_new;
 
     for (DroughtMitigationPolicy *dmp : drought_mitigation_policy_original) {
         if (dmp->type == RESTRICTIONS)
-            drought_mitigation_policy_new.push_back(new Restrictions(*dynamic_cast<Restrictions *>(dmp)));
+            drought_mitigation_policy_new.push_back(
+                    new Restrictions(*dynamic_cast<Restrictions *>(dmp)));
         else if (dmp->type == TRANSFERS)
-            drought_mitigation_policy_new.push_back(new Transfers(*dynamic_cast<Transfers *>(dmp)));
+            drought_mitigation_policy_new.push_back(
+                    new Transfers(*dynamic_cast<Transfers *>(dmp)));
 //        else if (dmp->type == INSURANCE_PSEUDO_ROF)
 //            drought_mitigation_policy_new.push_back(new InsurancePseudoROF(*dynamic_cast<InsurancePseudoROF *>(dmp)));
         else if (dmp->type == INSURANCE_STORAGE_ROF)
             drought_mitigation_policy_new.push_back(
-                    new InsuranceStorageToROF(*dynamic_cast<InsuranceStorageToROF *>(dmp)));
+                    new InsuranceStorageToROF(
+                            *dynamic_cast<InsuranceStorageToROF *>(dmp)));
     }
 
     return drought_mitigation_policy_new;

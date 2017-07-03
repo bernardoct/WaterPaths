@@ -41,6 +41,13 @@ namespace Constants {
     const int RESTRICTIONS = 1;
     const int INSURANCE_PSEUDO_ROF = 2;
     const int INSURANCE_STORAGE_ROF = 3;
+
+    const int FIXED_FLOW = 0;
+    const int INFLOW = 1;
+    const int SEASONAL = 2;
+    const int STORAGE = 3;
+    const int JORDAN = 4;
+    const int FALLS = 5;
     
     const int COLUMN_WIDTH = 10;
     const int COLUMN_PRECISION = 4;

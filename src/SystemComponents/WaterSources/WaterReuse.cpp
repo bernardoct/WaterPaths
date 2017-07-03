@@ -5,12 +5,13 @@
 
 #include "WaterReuse.h"
 
-WaterReuse::WaterReuse(const char *name, const int id, const double capacity) : WaterSource(name, id,
-                                                                                            NONE,
-                                                                                            vector<Catchment *>(),
-                                                                                            capacity,
-                                                                                            capacity,
-                                                                                            WATER_REUSE) {
+WaterReuse::WaterReuse(const char *name, const int id, const double capacity)
+        : WaterSource(name,
+                      id,
+                      vector<Catchment *>(),
+                      capacity,
+                      capacity,
+                      WATER_REUSE) {
     available_volume = capacity;
 }
 
@@ -18,14 +19,17 @@ WaterReuse::WaterReuse(const char *name, const int id, const double capacity) : 
 WaterReuse::WaterReuse(const char *name, const int id, const double capacity, const double construction_rof,
                        const vector<double> &construction_time_range, double construction_cost_of_capital,
                        double bond_term,
-                       double bond_interest_rate) : WaterSource(name, id,
-                                                                NONE,
+                       double bond_interest_rate) : WaterSource(name,
+                                                                id,
                                                                 vector<Catchment *>(),
-                                                                capacity, capacity,
-                                                                WATER_REUSE, construction_rof,
+                                                                capacity,
+                                                                capacity,
+                                                                WATER_REUSE,
+                                                                construction_rof,
                                                                 construction_time_range,
                                                                 construction_cost_of_capital,
-                                                                bond_term, bond_interest_rate) {
+                                                                bond_term,
+                                                                bond_interest_rate) {
     available_volume = capacity;
 }
 

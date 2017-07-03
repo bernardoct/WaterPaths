@@ -4,7 +4,6 @@
 
 #include "Utils.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
-#include "../DroughtMitigationInstruments/InsurancePseudoROF.h"
 #include "../SystemComponents/WaterSources/ReservoirExpansion.h"
 #include "../SystemComponents/WaterSources/Quarry.h"
 #include "../DroughtMitigationInstruments/InsuranceStorageToROF.h"
@@ -24,11 +23,6 @@ vector<vector<double>> Utils::parse2DCsvFile(char const *file_name) {
 
     vector<vector<double> > data;
     ifstream infile(file_name);
-
-    if (!infile.good()) {
-        cout << file_name << endl;
-        __throw_invalid_argument("Inexistent file.");
-    }
 
     while (infile) {
         string s;
@@ -115,8 +109,8 @@ Utils::copyDroughtMitigationPolicyVector(vector<DroughtMitigationPolicy *> droug
             drought_mitigation_policy_new.push_back(new Restrictions(*dynamic_cast<Restrictions *>(dmp)));
         else if (dmp->type == TRANSFERS)
             drought_mitigation_policy_new.push_back(new Transfers(*dynamic_cast<Transfers *>(dmp)));
-        else if (dmp->type == INSURANCE_PSEUDO_ROF)
-            drought_mitigation_policy_new.push_back(new InsurancePseudoROF(*dynamic_cast<InsurancePseudoROF *>(dmp)));
+//        else if (dmp->type == INSURANCE_PSEUDO_ROF)
+//            drought_mitigation_policy_new.push_back(new InsurancePseudoROF(*dynamic_cast<InsurancePseudoROF *>(dmp)));
         else if (dmp->type == INSURANCE_STORAGE_ROF)
             drought_mitigation_policy_new.push_back(
                     new InsuranceStorageToROF(*dynamic_cast<InsuranceStorageToROF *>(dmp)));

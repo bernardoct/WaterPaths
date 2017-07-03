@@ -16,8 +16,9 @@ private:
     const vector<double> *min_env_flows;
 
 public:
-    SeasonalMinEnvFlowControl(const vector<int> *week_thresholds,
-                              const vector<double> *min_env_flows);
+    SeasonalMinEnvFlowControl(
+            int water_source_id, const vector<int> *week_thresholds,
+            const vector<double> *min_env_flows);
 
     double getRelease(int week) override;
 };

@@ -7,7 +7,6 @@
 #include <fstream>
 #include <iomanip>
 #include <algorithm>
-#include <numeric>
 #include "DataCollector.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
 #include "Utils.h"
@@ -502,17 +501,22 @@ double DataCollector::calculatePeakFinancialCostsObjective(Utility_t utility_t) 
         y = 0;
         for (int w = 0; w < n_weeks; ++w) {
             /// accumulate year's info by summing weekly amounts.
-            realizations_year_debt_payment += utility_t.debt_service_payments[r][w];
-            realizations_year_cont_fund_contribution += utility_t.contingency_fund_contribution[r][w];
-            realizations_year_gross_revenue += utility_t.gross_revenues[r][w];
-            realizations_year_insurance_contract_cost += utility_t.insurance_contract_cost[r][w];
+            realizations_year_debt_payment +=
+                    utility_t.debt_service_payments[r][w];
+            realizations_year_cont_fund_contribution +=
+                    utility_t.contingency_fund_contribution[r][w];
+            realizations_year_gross_revenue +=
+                    utility_t.gross_revenues[r][w];
+            realizations_year_insurance_contract_cost +=
+                    utility_t.insurance_contract_cost[r][w];
 
             /// if last week of the year, close the books and calculate financial cost for the year.
             if (Utils::isFirstWeekOfTheYear(w + 1)) {
-                year_financial_costs[y] += (realizations_year_debt_payment +
-                                            realizations_year_cont_fund_contribution +
-                                            realizations_year_insurance_contract_cost) /
-                                           realizations_year_gross_revenue;
+                year_financial_costs[y] +=
+                        (realizations_year_debt_payment +
+                         realizations_year_cont_fund_contribution +
+                         realizations_year_insurance_contract_cost) /
+                        realizations_year_gross_revenue;
                 /// update year count.
                 y++;
 

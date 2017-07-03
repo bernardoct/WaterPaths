@@ -3,18 +3,37 @@
 //
 
 #include "SeasonalMinEnvFlowControl.h"
+#include "../Utils/Utils.h"
 
-SeasonalMinEnvFlowControl::SeasonalMinEnvFlowControl(const vector<int> *week_thresholds,
-                                                     const vector<double> *min_env_flows) : MinEnvironFlowControl(
-        vector<int>(), vector<int>(), vector<int>()), week_thresholds(week_thresholds), min_env_flows(
-        min_env_flows) {}
+SeasonalMinEnvFlowControl::SeasonalMinEnvFlowControl(
+        int water_source_id, const vector<int> *week_thresholds,
+        const vector<double> *min_env_flows) :
+        MinEnvironFlowControl(water_source_id,
+                              vector<int>(),
+                              vector<int>()),
+        week_thresholds(week_thresholds),
+        min_env_flows(min_env_flows) {
+    if (week_thresholds->size() != min_env_flows->size() + 1)
+        __throw_invalid_argument("Number of week threshold needs to be one "
+                                         "more than number of flow rates for "
+                                         "seasonal minimum environmental "
+                                         "outflow requirements.");
+    if (week_thresholds->back() != (int) WEEKS_IN_YEAR + 1 &&
+        week_thresholds->at(0) != 0)
+        __throw_invalid_argument("Seasonal minimum environmental flow "
+                                         "requirements must have first week "
+                                         "interval as 0 and last as 53 (for "
+                                         "years with 53 weeks.");
+}
 
 
 double SeasonalMinEnvFlowControl::getRelease(int week) {
-    double release = 0;
-    for (int i = 0; i < week_thresholds->size(); ++i) {
+    double release = (*min_env_flows)[0];
+    for (int i = 0; i < min_env_flows->size(); ++i) {
         /// Done with ternary operator for improved performance.
-        release = (week <= (*week_thresholds)[i] ? min_env_flows[i] : release);
+        release = (Utils::weekOfTheYear(week) >= (*week_thresholds)[i] ?
+                   (*min_env_flows)[i] : release);
     }
+
     return release;
 }

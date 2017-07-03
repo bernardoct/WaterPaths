@@ -6,16 +6,23 @@
 #include "InsuranceStorageToROF.h"
 #include "../Utils/Utils.h"
 
-InsuranceStorageToROF::InsuranceStorageToROF(const int id, const vector<WaterSource *> &water_sources,
-                                             const Graph &water_sources_graph,
-                                             const vector<vector<int>> &water_sources_to_utilities,
-                                             const vector<Utility *> &utilities, double *rof_triggers,
-                                             const double insurance_premium, const double *fixed_payouts)
+InsuranceStorageToROF::InsuranceStorageToROF(
+        const int id,
+        const vector<WaterSource *> &water_sources,
+        const Graph &water_sources_graph,
+        const vector<vector<int>> &water_sources_to_utilities,
+        const vector<Utility *> &utilities,
+        vector<MinEnvironFlowControl *>
+        min_env_flow_controls,
+        double *rof_triggers,
+        const double insurance_premium,
+        const double *fixed_payouts)
         : DroughtMitigationPolicy(id, INSURANCE_STORAGE_ROF),
           ContinuityModelROF(Utils::copyWaterSourceVector(water_sources),
                              water_sources_graph,
                              water_sources_to_utilities,
                              Utils::copyUtilityVector(utilities, true),
+                             min_env_flow_controls,
                              realization_id),
           insurance_premium(insurance_premium),
           fixed_payouts(fixed_payouts),
@@ -28,12 +35,17 @@ InsuranceStorageToROF::InsuranceStorageToROF(const int id, const vector<WaterSou
     }
 }
 
-InsuranceStorageToROF::InsuranceStorageToROF(const InsuranceStorageToROF &insurance) :
+InsuranceStorageToROF::InsuranceStorageToROF(
+        InsuranceStorageToROF &insurance) :
         DroughtMitigationPolicy(insurance.id, insurance.type),
-        ContinuityModelROF(Utils::copyWaterSourceVector(insurance.continuity_water_sources),
+        ContinuityModelROF(Utils::copyWaterSourceVector(
+                insurance.continuity_water_sources),
                            insurance.water_sources_graph,
                            insurance.water_sources_to_utilities,
-                           Utils::copyUtilityVector(insurance.continuity_utilities, true),
+                           Utils::copyUtilityVector(insurance
+                                                            .continuity_utilities,
+                                                    true),
+                           insurance.min_env_flow_controls,
                            insurance.realization_id),
         insurance_premium(insurance.insurance_premium),
         fixed_payouts(insurance.fixed_payouts),
@@ -56,14 +68,17 @@ void InsuranceStorageToROF::applyPolicy(int week) {
     if (week > WEEKS_IN_YEAR) {
         /// Make payouts, if needed.
         for (int u = 0; u < continuity_utilities.size(); ++u) {
-            if (realization_utilities[u]->getRisk_of_failure() > rof_triggers[u]) {
+            if (realization_utilities[u]->getRisk_of_failure() >
+                rof_triggers[u]) {
                 realization_utilities[u]->addInsurancePayout(fixed_payouts[u]);
             }
         }
     }
 }
 
-void InsuranceStorageToROF::addSystemComponents(vector<Utility *> utilities, vector<WaterSource *> water_sources) {
+void InsuranceStorageToROF::addSystemComponents(
+        vector<Utility *> utilities,
+        vector<WaterSource *> water_sources) {
     realization_utilities = vector<Utility *>(utilities.size());
     for (int i : utilities_ids)
         realization_utilities[i] = utilities[i];
@@ -102,7 +117,8 @@ void InsuranceStorageToROF::priceInsurance(int week) {
 
             /// Get utilities' approximate rof from storage-rof-table.
             double utilities_rofs[n_utilities];
-            getUtilitiesApproxROFs(UtilitiesStorageCapacityRatio(), storage_to_rof_table_,
+            getUtilitiesApproxROFs(UtilitiesStorageCapacityRatio(),
+                                   storage_to_rof_table_,
                                    Utils::weekOfTheYear(w), utilities_rofs);
 
             /// Increase the price of the insurance if payout is triggered.
@@ -126,9 +142,10 @@ void InsuranceStorageToROF::priceInsurance(int week) {
  * @param week week of the year.
  * @return
  */
-void InsuranceStorageToROF::getUtilitiesApproxROFs(double *u_storage_capacity_ratio,
-                                                   const Matrix3D<double> *storage_to_rof_table,
-                                                   int week, double *utilities_approx_rof) {
+void InsuranceStorageToROF::getUtilitiesApproxROFs(
+        double *u_storage_capacity_ratio,
+        const Matrix3D<double> *storage_to_rof_table,
+        int week, double *utilities_approx_rof) {
     int n_utilities = storage_to_rof_table->get_i();
 
 //    cout << week << endl;
@@ -139,7 +156,8 @@ void InsuranceStorageToROF::getUtilitiesApproxROFs(double *u_storage_capacity_ra
 
     for (int u = 0; u < n_utilities; ++u) {
         /// get storage index in the table corresponding to the utility's combined storage.
-        int s = (int) floor(u_storage_capacity_ratio[u] * NO_OF_INSURANCE_STORAGE_TIERS);
+        int s = (int) floor(u_storage_capacity_ratio[u] *
+                            NO_OF_INSURANCE_STORAGE_TIERS);
         s = min(s, NO_OF_INSURANCE_STORAGE_TIERS - 1);
 
         /// get estimated rof value from the table.
@@ -147,7 +165,12 @@ void InsuranceStorageToROF::getUtilitiesApproxROFs(double *u_storage_capacity_ra
             utilities_approx_rof[u] = (*storage_to_rof_table)(u, s, week);
         else
             utilities_approx_rof[u] =
-                    ((*storage_to_rof_table)(u, s, week) + (*storage_to_rof_table)(u, s + 1, week)) / 2;
+                    ((*storage_to_rof_table)(u,
+                                             s,
+                                             week) +
+                     (*storage_to_rof_table)(u,
+                                             s + 1,
+                                             week)) / 2;
     }
 }
 
@@ -160,7 +183,8 @@ double *InsuranceStorageToROF::UtilitiesStorageCapacityRatio() {
     int n_utilities = (int) continuity_utilities.size();
     double *u_storage_capacity_ratio = new double[n_utilities];
     for (int u = 0; u < n_utilities; ++u)
-        u_storage_capacity_ratio[u] = continuity_utilities[u]->getStorageToCapacityRatio();
+        u_storage_capacity_ratio[u] =
+                continuity_utilities[u]->getStorageToCapacityRatio();
 
     return u_storage_capacity_ratio;
 }

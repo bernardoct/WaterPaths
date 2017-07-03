@@ -12,6 +12,7 @@
 class ContinuityModelROF : public ContinuityModel {
 private:
     Matrix3D<double> *storage_to_rof_table;
+    bool *storage_wout_downstream;
 
 protected:
     Matrix3D<double> storage_to_rof_realization;
@@ -19,9 +20,13 @@ protected:
     vector<WaterSource *> realization_water_sources;
 
 public:
-    ContinuityModelROF(const vector<WaterSource *> &water_sources, const Graph &water_sources_graph,
-                       const vector<vector<int>> &water_sources_to_utilities, const vector<Utility *> &utilities,
-                       const int realization_id);
+    ContinuityModelROF(
+            const vector<WaterSource *> &water_sources,
+            const Graph &water_sources_graph,
+            const vector<vector<int>> &water_sources_to_utilities,
+            const vector<Utility *> &utilities,
+            vector<MinEnvironFlowControl *> &min_env_flow_controls,
+            const unsigned int realization_id);
 
     ContinuityModelROF(ContinuityModelROF &continuity_model_rof);
 

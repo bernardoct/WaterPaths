@@ -10,8 +10,9 @@
 
 class InflowMinEnvFlowControl : public MinEnvironFlowControl {
 public:
-    InflowMinEnvFlowControl(const vector<int> &water_sources_ids,
-                                const vector<double> *inflows, const vector<double> *releases);
+    InflowMinEnvFlowControl(
+            int water_source_id, const vector<int> &aux_water_sources_ids,
+            const vector<double> *inflows, const vector<double> *releases);
 
     const vector<double> *inflows;
     const vector<double> *releases;

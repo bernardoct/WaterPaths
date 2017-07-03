@@ -5,15 +5,21 @@
 #include <iostream>
 #include "ContinuityModelRealization.h"
 
-ContinuityModelRealization::ContinuityModelRealization(const vector<WaterSource *> &water_sources,
-                                                       const Graph &water_sources_graph,
-                                                       const vector<vector<int>> &water_sources_to_utilities,
-                                                       const vector<Utility *> &utilities,
-                                                       const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
-                                                       const unsigned int realization_id) :
-        ContinuityModel(water_sources, utilities, water_sources_graph,
-                        water_sources_to_utilities, realization_id),
-        drought_mitigation_policies(drought_mitigation_policies) {
+ContinuityModelRealization::ContinuityModelRealization(
+        const vector<WaterSource *> &water_sources,
+        const Graph &water_sources_graph,
+        const vector<vector<int>> &water_sources_to_utilities,
+        const vector<Utility *> &utilities,
+        const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
+        vector<MinEnvironFlowControl *> &min_env_flow_control,
+        const unsigned int realization_id)
+        : ContinuityModel(water_sources,
+                          utilities,
+                          min_env_flow_control,
+                          water_sources_graph,
+                          water_sources_to_utilities,
+                          realization_id),
+          drought_mitigation_policies(drought_mitigation_policies) {
 
     /// Pass corresponding utilities to drought mitigation instruments.
     for (DroughtMitigationPolicy *dmp : this->drought_mitigation_policies) {
@@ -24,8 +30,10 @@ ContinuityModelRealization::ContinuityModelRealization(const vector<WaterSource 
 ContinuityModelRealization::ContinuityModelRealization(ContinuityModelRealization &continuity_model_realization)
         : ContinuityModel(continuity_model_realization.continuity_water_sources,
                           continuity_model_realization.continuity_utilities,
+                          continuity_model_realization.min_env_flow_controls,
                           continuity_model_realization.water_sources_graph,
-                          continuity_model_realization.water_sources_to_utilities,
+                          continuity_model_realization
+                                  .water_sources_to_utilities,
                           continuity_model_realization.realization_id) {
 }
 

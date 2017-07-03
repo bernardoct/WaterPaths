@@ -27,6 +27,7 @@ InsurancePseudoROF::InsurancePseudoROF(const int id, const std::vector<double> &
                              water_sources_graph,
                              water_sources_to_utilities,
                              Utils::copyUtilityVector(utilities),
+                             <#initializer#>,
                              NON_INITIALIZED), rof_triggers(rof_triggers),
           insurance_premium(insurance_premium), fixed_payouts(fixed_payouts) {
 
@@ -54,9 +55,15 @@ InsurancePseudoROF::InsurancePseudoROF(const int id, const std::vector<double> &
 
 InsurancePseudoROF::InsurancePseudoROF(const InsurancePseudoROF &insurance) :
         DroughtMitigationPolicy(insurance.id, INSURANCE_PSEUDO_ROF),
-        ContinuityModelROF(Utils::copyWaterSourceVector(insurance.continuity_water_sources),
-                           insurance.water_sources_graph, insurance.water_sources_to_utilities,
-                           Utils::copyUtilityVector(insurance.continuity_utilities, true), NON_INITIALIZED),
+        ContinuityModelROF(Utils::copyWaterSourceVector(
+                insurance.continuity_water_sources),
+                           insurance.water_sources_graph,
+                           insurance.water_sources_to_utilities,
+                           Utils::copyUtilityVector(insurance
+                                                            .continuity_utilities,
+                                                    true),
+                           <#initializer#>,
+                           NON_INITIALIZED),
         insurance_premium(insurance.insurance_premium), rof_triggers(insurance.rof_triggers),
         fixed_payouts(insurance.fixed_payouts), ids_of_utilities_with_policies(
         insurance.ids_of_utilities_with_policies), downstream_sources(insurance.downstream_sources),

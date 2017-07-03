@@ -9,7 +9,8 @@
 #include "Base/DroughtMitigationPolicy.h"
 #include "../ContinuityModels/ContinuityModelROF.h"
 
-class InsuranceStorageToROF : public DroughtMitigationPolicy, public ContinuityModelROF {
+class InsuranceStorageToROF : public DroughtMitigationPolicy,
+                              public ContinuityModelROF {
 private:
 
     double *insurance_price;
@@ -19,13 +20,18 @@ private:
 
 public:
 
-    InsuranceStorageToROF(const int id, const vector<WaterSource *> &water_sources,
-                          const Graph &water_sources_graph,
-                          const vector<vector<int>> &water_sources_to_utilities,
-                          const vector<Utility *> &utilities, double *rof_triggers,
-                          const double insurance_premium, const double *fixed_payouts);
+    InsuranceStorageToROF(
+            const int id,
+            const vector<WaterSource *> &water_sources,
+            const Graph &water_sources_graph,
+            const vector<vector<int>> &water_sources_to_utilities,
+            const vector<Utility *> &utilities,
+            vector<MinEnvironFlowControl *>
+            min_env_flow_controls, double *rof_triggers,
+            const double insurance_premium,
+            const double *fixed_payouts);
 
-    InsuranceStorageToROF(const InsuranceStorageToROF &insurance);
+    InsuranceStorageToROF(InsuranceStorageToROF &insurance);
 
     virtual ~InsuranceStorageToROF();
 

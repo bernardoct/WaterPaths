@@ -19,14 +19,16 @@ public:
     const vector<int> water_sources_ids;
     const vector<int> catchments_ids;
     const vector<int> utilities_ids;
+    const int water_source_id;
 
-    MinEnvironFlowControl(const vector<int> &water_sources_ids, const vector<int> &catchments_ids,
-                          const vector<int> &utilities_ids);
+    MinEnvironFlowControl(
+            int water_source_id, const vector<int> &aux_water_sources_id,
+            const vector<int> &aux_utilities_ids);
 
     virtual double getRelease(int week) = 0;
 
-    void addComponents(vector<WaterSource *> water_sources, vector<Utility *> utilities, vector<Catchment *>
-                        catchments);
+    void addComponents(
+            vector<WaterSource *> water_sources, vector<Utility *> utilities);
 };
 
 

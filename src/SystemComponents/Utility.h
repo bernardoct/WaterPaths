@@ -31,6 +31,7 @@ private:
     double unrestricted_demand = 0;
     double infrastructure_net_present_cost = 0;
     double current_debt_payment = 0;
+    double waste_water_discharge = 0;
     bool under_construction = false;
     int construction_end_date = 0;
     map<int, WaterSource *> water_sources;
@@ -75,7 +76,7 @@ public:
 
     void updateTotalStoredVolume();
 
-    void getWastewater_releases(int week, double *discharges);
+    void calculateWastewater_releases(int week, double *discharges);
 
     void addWaterSource(WaterSource *water_source);
 
@@ -91,7 +92,9 @@ public:
 
     double getTotal_treatment_capacity() const;
 
-    void updateContingencyFund(double unrestricted_demand, double demand_multiplier, double demand_offset);
+    void updateContingencyFund(
+            double unrestricted_demand,
+            double demand_multiplier, double demand_offset);
 
     double getContingency_fund() const;
 
@@ -111,7 +114,8 @@ public:
 
     double getCurrent_debt_payment() const;
 
-    double updateCurrent_debt_payment(int week, vector<vector<double>> debt_payment_streams);
+    double updateCurrent_debt_payment(
+            int week, vector<vector<double>> debt_payment_streams);
 
     double getCurrent_contingency_fund_contribution() const;
 

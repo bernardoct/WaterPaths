@@ -32,7 +32,7 @@ public:
     void addComponents(
             vector<WaterSource *> water_sources, vector<Utility *> utilities);
 
-    virtual void setRealiation(unsigned int r);
+    virtual void setRealization(unsigned int r);
 };
 
 

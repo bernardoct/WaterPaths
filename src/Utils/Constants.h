@@ -35,19 +35,18 @@ namespace Constants {
     const int RESERVOIR_EXPANSION = 2;
     const int QUARRY = 3;
     const int WATER_REUSE = 4;
-    const int GAGE = 5;
 
     const int TRANSFERS = 0;
     const int RESTRICTIONS = 1;
     const int INSURANCE_PSEUDO_ROF = 2;
     const int INSURANCE_STORAGE_ROF = 3;
 
-    const int FIXED_FLOW = 0;
-    const int INFLOW = 1;
-    const int SEASONAL = 2;
-    const int STORAGE = 3;
-    const int JORDAN = 4;
-    const int FALLS = 5;
+    const int FIXED_FLOW_CONTROLS = 0;
+    const int INFLOW_CONTROLS = 1;
+    const int SEASONAL_CONTROLS = 2;
+    const int STORAGE_CONTROLS = 3;
+    const int JORDAN_CONTROLS = 4;
+    const int FALLS_CONTROLS = 5;
     
     const int COLUMN_WIDTH = 10;
     const int COLUMN_PRECISION = 4;

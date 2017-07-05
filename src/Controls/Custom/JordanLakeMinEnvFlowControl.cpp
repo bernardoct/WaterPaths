@@ -24,7 +24,8 @@ JordanLakeMinEnvFlowControl::JordanLakeMinEnvFlowControl(
             double min_rel_llt08, double min_rel_llt08_up,
             double quality_capacity, double supply_capacity)
         : MinEnvironFlowControl(jordan_lake_id, vector<int>(1, jordan_lake_id),
-                                vector<int>(), JORDAN),
+                                vector<int>(),
+                                JORDAN_CONTROLS),
           lillington_gage_catchment(lillington_gage_catchment), rel02(rel02),
           rel04(rel04), rel06_up(rel06_up), min_rel_llt06(min_rel_llt06),
           min_rel_llt08(min_rel_llt08), min_rel_llt08_up(min_rel_llt08_up),
@@ -68,6 +69,6 @@ double JordanLakeMinEnvFlowControl::getRelease(int week) {
         return min(rel06_up, min_rel_llt08_up - lillington_flow_rate);
 }
 
-void JordanLakeMinEnvFlowControl::setRealiation(unsigned int r) {
+void JordanLakeMinEnvFlowControl::setRealization(unsigned int r) {
     lillington_gage_catchment->setRealization(r);
 }

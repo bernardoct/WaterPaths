@@ -9,12 +9,23 @@
 #include "../Base/MinEnvironFlowControl.h"
 
 class FallsLakeMinEnvFlowControl : public MinEnvironFlowControl {
+private:
+    const int *week_interval;
+    const double *base_min_env_flows;
+    const double *base_min_gage_flows;
+    const int neuse_river_intake_id;
+    Catchment crabtree;
+
+
 public:
-    FallsLakeMinEnvFlowControl(int water_source_id,
-                               const vector<int> &aux_water_sources_id,
-                               const vector<int> &aux_utilities_ids, int type);
+    FallsLakeMinEnvFlowControl(
+            int water_source_id, int neuse_river_intake_id,
+            const int *week_interval, const double *base_min_env_flows,
+            const double *base_gage_flows, Catchment crabtree);
 
     double getRelease(int week) override;
+
+    void setRealization(unsigned int r) override;
 
 };
 

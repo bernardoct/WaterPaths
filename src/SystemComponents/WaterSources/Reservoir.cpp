@@ -167,13 +167,15 @@ Reservoir::~Reservoir() {
 }
 
 /**
- * Reservoir mass balance. Gets releases from upstream reservoirs, demands from connected utilities, and
- * combines them with its catchments inflows.
+ * Reservoir mass balance. Gets releases from upstream reservoirs, demands from
+ * connected utilities, and combines them with its catchments inflows.
  * @param week
  * @param upstream_source_inflow
  * @param demand_outflow
  */
-void Reservoir::applyContinuity(int week, double upstream_source_inflow, double demand_outflow) {
+void Reservoir::applyContinuity(
+        int week, double upstream_source_inflow,
+        double demand_outflow) {
 
     /// Calculate total runoff inflow reaching reservoir from its watershed.
     double catchment_inflow = 0;
@@ -182,18 +184,22 @@ void Reservoir::applyContinuity(int week, double upstream_source_inflow, double 
     }
 
     /// Calculates water lost through evaporation.
-    double evaporation = (fixed_area ? area * evaporation_series->getEvaporation(week) :
+    double evaporation = (fixed_area ? area *
+                                       evaporation_series->getEvaporation(week)
+                                     :
                           storage_area_curve->get_dependent_variable(available_volume) *
                           evaporation_series->getEvaporation(week));
 
     /// Calculate new stored volume and outflow based on continuity.
     double stored_volume_new = available_volume
                                + upstream_source_inflow + catchment_inflow
-                               - demand_outflow - min_environmental_outflow - evaporation;
+                               - demand_outflow - min_environmental_outflow
+                               - evaporation;
     double outflow_new = min_environmental_outflow;
 
 
-    /// Check if spillage is needed and, if so, correct stored volume and calculate spillage.
+    /// Check if spillage is needed and, if so, correct stored volume and
+    /// calculate spillage.
     if (online) {
         if (stored_volume_new > capacity) {
             outflow_new += stored_volume_new - capacity;
@@ -222,12 +228,16 @@ void Reservoir::setOnline() {
 void Reservoir::setRealization(unsigned long r) {
     WaterSource::setRealization(r);
 
-    /// Set evaporation time series and cut off access to series set by setting its pointer to the set to NULL.
+    /// Set evaporation time series and cut off access to series set by setting
+    /// its pointer to the set to NULL.
     if (evaporation_series)
         evaporation_series->setRealization(r);
     else {
         cout << "WARNING: No evaporation time series for Reservoir " << name;
-        vector<vector<double>> *evaporation = new std::vector<vector<double>>(1, vector<double>(10000, 0));
+        vector<vector<double>> *evaporation =
+                new std::vector<vector<double>>(1,
+                                                vector<double>(10000,
+                                                               0));
         evaporation_series = new EvaporationSeries(evaporation, 10000);
     }
 }

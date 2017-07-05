@@ -35,8 +35,8 @@ Quarry::Quarry(
                       bond_term,
                       bond_interest_rate), max_diversion(max_diversion) {}
 
-Quarry::Quarry(const Quarry &quarry, const double max_diversion) : WaterSource(quarry),
-                                                                   max_diversion(max_diversion) {}
+Quarry::Quarry(const Quarry &quarry, const double max_diversion) :
+        WaterSource(quarry), max_diversion(max_diversion) {}
 
 /**
  * Copy assignment operator
@@ -54,13 +54,16 @@ Quarry::~Quarry() {
 }
 
 /**
- * Reservoir mass balance. Gets releases from upstream reservoirs, demands from connected utilities, and
+ * Reservoir mass balance. Gets releases from upstream reservoirs, demands from
+ * connected utilities, and
  * combines them with its catchments inflows.
  * @param week
  * @param upstream_source_inflow
  * @param demand_outflow
  */
-void Quarry::applyContinuity(int week, double upstream_source_inflow, double demand_outflow) {
+void Quarry::applyContinuity(
+        int week, double upstream_source_inflow,
+        double demand_outflow) {
 
     double catchment_inflow = 0;
     for (Catchment *c : catchments) {
@@ -70,9 +73,12 @@ void Quarry::applyContinuity(int week, double upstream_source_inflow, double dem
     double total_inflow = upstream_source_inflow + catchment_inflow;
     total_outflow = demand_outflow + min_environmental_outflow;
 
-    diverted_flow = min(max_diversion, total_inflow - min_environmental_outflow);
+    diverted_flow = min(max_diversion,
+                        total_inflow -
+                        min_environmental_outflow);
 
-    double stored_volume_new = available_volume + diverted_flow - demand_outflow;
+    double stored_volume_new = available_volume + diverted_flow -
+                               demand_outflow;
     double outflow_new = total_inflow - diverted_flow;
 
     if (online) {

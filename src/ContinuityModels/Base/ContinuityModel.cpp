@@ -39,10 +39,12 @@ ContinuityModel::ContinuityModel(
     /// Get topological order so that mass balance is ran from up to downstream.
     sources_continuity_order = water_sources_graph.getTopological_order();
 
-    /// the variables below are to make the storage-ROF table calculation faster.
+    /// The variables below are to make the storage-ROF table calculation
+    /// faster.
     for (int ws = 0; ws < water_sources.size(); ++ws) {
         if (water_sources[ws]->isOnline())
-            water_sources_capacities.push_back(water_sources[ws]->getCapacity());
+            water_sources_capacities.push_back(
+                    water_sources[ws]->getCapacity());
         else
             water_sources_capacities.push_back((double &&) NONE);
     }
@@ -65,7 +67,7 @@ ContinuityModel::ContinuityModel(
     for (WaterSource *ws : continuity_water_sources)
         ws->setRealization(realization_id);
     for (MinEnvironFlowControl *mef : this->min_env_flow_controls)
-        mef->setRealiation(realization_id);
+        mef->setRealization(realization_id);
 
     /// Add reference to water sources and utilities so that controls can
     /// access their info.
@@ -76,10 +78,12 @@ ContinuityModel::ContinuityModel(
 
 ContinuityModel::~ContinuityModel() {}
 
-ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) : realization_id(continuity_model.realization_id) {}
+ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) :
+        realization_id(continuity_model.realization_id) {}
 
 /**
- * Calculates continuity for one week time step for streamflows of id_rof years before current week.
+ * Calculates continuity for one week time step for streamflows of id_rof years
+ * before current week.
  * @param week current week.
  * @param rof_realization rof realization id (between 0 and 49 inclusive).
  */
@@ -87,18 +91,22 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
     double demands[continuity_water_sources.size()] = {};
     double upstream_spillage[continuity_water_sources.size()] = {};
     double wastewater_discharges[continuity_water_sources.size()];
-    std::fill(wastewater_discharges, wastewater_discharges + continuity_water_sources.size(), 0);
+    std::fill(wastewater_discharges,
+              wastewater_discharges +
+              continuity_water_sources.size(),
+              0);
 
     /**
      * Get wastewater discharges based on previous week's demand.
      *
-     * Split weekly demands among each reservoir for each utility. For each water source:
-     * (1) sums the demands of each drawing utility to come up with the total unrestricted_demand for
-     * that week for that water source, and (2) sums the flow contributions of upstream
-     * reservoirs.
+     * Split weekly demands among each reservoir for each utility. For each
+     * water source: (1) sums the demands of each drawing utility to come up
+     * with the total unrestricted_demand for that week for that water
+     * source, and (2) sums the flow contributions of upstream reservoirs.
      */
     for (Utility *u : continuity_utilities) {
-        u->getWastewater_releases(week, wastewater_discharges);
+        u->calculateWastewater_releases(week,
+                                        wastewater_discharges);
         u->splitDemands(week, demands);
     }
 
@@ -112,15 +120,17 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
     }
 
     /**
-     * For all water sources, performs mass balance to update the available volume. The week here is
-     * shifted back according to the rof year realization (0 to 49, inclusive) so that the right flows are
-     * gotten from source catchments for each rof year realization. If this is not an rof calculation but an actual
-     * simulation instead, rof_realization will be equal to -1 (see header file) so that there is no week shift.
+     * For all water sources, performs mass balance to update the available
+     * volume. The week here is shifted back according to the rof year
+     * realization (0 to 49, inclusive) so that the right flows are gotten
+     * from source catchments for each rof year realization. If this is not an
+     * rof calculation but an actual simulation instead, rof_realization will
+     * be equal to -1 (see header file) so that there is no week shift.
      */
     for (int &i : sources_continuity_order) {
         for (int &ws : water_sources_graph.getUpstream_sources(i))
             upstream_spillage[i] +=
-                    (continuity_water_sources[ws]->isOnline() ? continuity_water_sources[ws]->getTotal_outflow() : 0);
+                    continuity_water_sources[ws]->getTotal_outflow();
 
         continuity_water_sources[i]->continuityWaterSource(
                 week - (int) std::round((rof_realization + 1) * WEEKS_IN_YEAR),

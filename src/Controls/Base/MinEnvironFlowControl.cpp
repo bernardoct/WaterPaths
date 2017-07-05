@@ -35,6 +35,6 @@ void MinEnvironFlowControl::addComponents(
     }
 }
 
-void MinEnvironFlowControl::setRealiation(unsigned int r) {
+void MinEnvironFlowControl::setRealization(unsigned int r) {
 
 }

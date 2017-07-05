@@ -17,6 +17,7 @@
 #include "Controls/InflowMinEnvFlowControl.h"
 #include "Controls/FixedMinEnvFlowControl.h"
 #include "Controls/Custom/JordanLakeMinEnvFlowControl.h"
+#include "Controls/Custom/FallsLakeMinEnvFlowControl.h"
 
 
 int regionOneUtilitiesTwoReservoirsContinuityTest();
@@ -1040,6 +1041,42 @@ void triangleTest() {
 
     cout << "BEGINNING TRIANGLE TEST" << endl << endl;
 
+//    /// Read streamflows
+//    int streamflow_n_weeks = 52 * (70 + 50);
+//    cout << "Reading streamflows." << endl;
+//    vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile("../TestFiles/inflows/durham_inflows.csv");
+//    vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile("../TestFiles/inflows/falls_lake_inflows.csv");
+//    vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile("../TestFiles/inflows/lake_wb_inflows.csv");
+//    vector<vector<double>> streamflows_llr = Utils::parse2DCsvFile("../TestFiles/inflows/little_river_raleigh_inflows.csv");
+//    vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile("../TestFiles/inflows/crabtree_inflows.csv");
+//    vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile("../TestFiles/inflows/stone_quarry_inflows.csv");
+//    vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile("../TestFiles/inflows/cane_creek_inflows.csv");
+//    vector<vector<double>> streamflows_morgan = Utils::parse2DCsvFile("../TestFiles/inflows/university_lake_creek_inflows.csv");
+//    vector<vector<double>> streamflows_haw = Utils::parse2DCsvFile("../TestFiles/inflows/jordan_lake_inflows.csv");
+//    vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile("../TestFiles/inflows/clayton_inflows.csv");
+//    vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile("../TestFiles/inflows/lillington_inflows.csv");
+//
+//    cout << "Reading demands." << endl;
+//    vector<vector<double>> demand_cary = Utils::parse2DCsvFile("../TestFiles/demands/cary_demand.csv");
+//    vector<vector<double>> demand_durham = Utils::parse2DCsvFile("../TestFiles/demands/durham_demand.csv");
+//    vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile("../TestFiles/demands/raleigh_demand.csv");
+//    vector<vector<double>> demand_owasa = Utils::parse2DCsvFile("../TestFiles/demands/owasa_demand.csv");
+//
+//    cout << "Reading evaporations." << endl;
+//    vector<vector<double>> evap_durham = Utils::parse2DCsvFile("../TestFiles/evaporation/durham_evap.csv");
+//    vector<vector<double>> evap_jordan_lake = Utils::parse2DCsvFile("../TestFiles/evaporation/jordan_lake_evap.csv");
+//    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile("../TestFiles/evaporation/falls_lake_evap.csv");
+//    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile("../TestFiles/evaporation/owasa_evap.csv");
+//    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile("../TestFiles/evaporation/little_river_raleigh_evap.csv");
+//    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile("../TestFiles/evaporation/wb_evap.csv");
+//
+//    vector<vector<double>> demand_to_wastewater_fraction_owasa_raleigh =
+//            Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
+//    vector<vector<double>> demand_to_wastewater_fraction_durham =
+//            Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_durham.csv");
+//
+//    cout << "Building model." << endl;
+
     /// Read streamflows
     int streamflow_n_weeks = 52 * (70 + 50);
     vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile("../TestFiles/durhamInflowsLong.csv");
@@ -1142,25 +1179,6 @@ void triangleTest() {
     gage_clayton.push_back(&neuse_river_at_clayton);
     gage_lillington.push_back(&cape_fear_river_at_lillington);
 
-    vector<int> cary_ws_return_id = {};
-    vector<vector<double>> *cary_discharge_fraction_series =
-            new vector<vector<double>>();
-    WwtpDischargeRule wwtp_discharge_cary(
-            cary_discharge_fraction_series,
-            &cary_ws_return_id);
-    vector<int> owasa_ws_return_id = {6};
-    WwtpDischargeRule wwtp_discharge_owasa(
-            &demand_to_wastewater_fraction_owasa_raleigh,
-            &owasa_ws_return_id);
-    vector<int> raleigh_ws_return_id = {8};
-    WwtpDischargeRule wwtp_discharge_raleigh(
-            &demand_to_wastewater_fraction_owasa_raleigh,
-            &raleigh_ws_return_id);
-    vector<int> durham_ws_return_id = {1, 6}; //FIXME: CHECK IF THIS IS RIGHT.
-    WwtpDischargeRule wwtp_discharge_durham(
-            &demand_to_wastewater_fraction_durham,
-            &durham_ws_return_id);
-
     /// Storage vs. area reservoir curves.
     vector<double> falls_lake_storage = {0, 23266, 34700};
     vector<double> falls_lake_area = {0.32 * 5734, 0.32 * 29000, 0.28 * 40434};
@@ -1186,12 +1204,23 @@ void triangleTest() {
                                   1.797 * 7};
     vector<double> ccr_releases = {0.1422 * 7, 0.5 * 7, 1 * 7, 1.5 * 7,
                                    1.797 * 7};
+    int falls_controls_weeks[2] = {13, 43};
+    double falls_base_releases[2] = {64.64 * 7, 38.78 * 7};
+    double falls_min_gage[2] = {180 * 7, 130 * 7};
+
     SeasonalMinEnvFlowControl durham_min_env_control(0, &dlr_weeks,
                                                      &dlr_releases);
 //    FixedMinEnvFlowControl falls_min_env_control(1, 38.78 * 7);
+    FallsLakeMinEnvFlowControl falls_min_env_control(1,
+                                                     10,
+                                                     falls_controls_weeks,
+                                                     falls_base_releases,
+                                                     falls_min_gage,
+                                                     crabtree_creek);
 
-    StorageMinEnvFlowControl wheeler_benson_min_env_control(2, vector<int>(1,
-                                                                           2),
+    StorageMinEnvFlowControl wheeler_benson_min_env_control(2,
+                                                            vector<int>(1,
+                                                                        2),
                                                             &wb_storage,
                                                             &wb_releases);
     FixedMinEnvFlowControl sq_min_env_control(3, 0);
@@ -1443,8 +1472,9 @@ void triangleTest() {
 
     //FIXME: CHANGE IDS OF SOURCES SO THAT GRAPH NODES ARE THE FIRST WHATEVER MANY IDS.
     Graph g(12);
+    g.addEdge(0,
+              9);
     g.addEdge(9, 1);
-    g.addEdge(0, 9);
     g.addEdge(1, 8);
     g.addEdge(8, 10);
     g.addEdge(10, 11);
@@ -1464,6 +1494,25 @@ void triangleTest() {
     vector<int> infra_order_owasa = {12, 13, 14};
     vector<int> infra_order_raleigh = {7, 8, 17, 10};
     int demand_n_weeks = (int) round(46 * WEEKS_IN_YEAR);
+
+    vector<int> cary_ws_return_id = {};
+    vector<vector<double>> *cary_discharge_fraction_series =
+            new vector<vector<double>>();
+    WwtpDischargeRule wwtp_discharge_cary(
+            cary_discharge_fraction_series,
+            &cary_ws_return_id);
+    vector<int> owasa_ws_return_id = {6};
+    WwtpDischargeRule wwtp_discharge_owasa(
+            &demand_to_wastewater_fraction_owasa_raleigh,
+            &owasa_ws_return_id);
+    vector<int> raleigh_ws_return_id = {8};
+    WwtpDischargeRule wwtp_discharge_raleigh(
+            &demand_to_wastewater_fraction_owasa_raleigh,
+            &raleigh_ws_return_id);
+    vector<int> durham_ws_return_id = {1, 6}; //FIXME: CHECK IF THIS IS RIGHT.
+    WwtpDischargeRule wwtp_discharge_durham(
+            &demand_to_wastewater_fraction_durham,
+            &durham_ws_return_id);
 
 
     Utility cary((char *) "Cary", 0, &demand_cary, demand_n_weeks, 0.03, 1,

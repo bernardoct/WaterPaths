@@ -381,9 +381,14 @@ void Utility::beginConstruction(int week, int infra_id) {
     construction_end_date = week + (int) water_sources[infra_id]->construction_time;
 }
 
-void Utility::getWastewater_releases(int week, double *discharges) {
-    for (int id : *wwtp_discharge_rule.discharge_to_source_ids)
-        discharges[id] = restricted_demand * wwtp_discharge_rule.get_dependent_variable(id, week);
+void Utility::calculateWastewater_releases(int week, double *discharges) {
+
+    for (int id : *wwtp_discharge_rule.discharge_to_source_ids) {
+        waste_water_discharge = restricted_demand * wwtp_discharge_rule
+                .get_dependent_variable(id,
+                                        Utils::weekOfTheYear(week));
+        discharges[id] = waste_water_discharge;
+    }
 }
 
 double Utility::getStorageToCapacityRatio() const {

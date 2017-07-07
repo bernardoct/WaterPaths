@@ -4,6 +4,7 @@
 
 #include <numeric>
 #include "Transfers.h"
+#include "../Utils/Utils.h"
 
 
 /**
@@ -205,23 +206,33 @@ void Transfers::applyPolicy(int week) {
             }
 
             /// Calculate allocations and flow rates through inter-utility connections.
-            flow_rates_and_allocations = solve_QP(transfer_requests, available_transfer_volume,
-                                                  min_transfer_volume, week);
-            conveyed_volumes = vector<double>(flow_rates_and_allocations.begin(),
-                                              flow_rates_and_allocations.begin() + n_pipes);
+            flow_rates_and_allocations = solve_QP(
+                    transfer_requests,
+                    available_transfer_volume,
+                    min_transfer_volume,
+                    week);
+            conveyed_volumes = vector<double>(
+                    flow_rates_and_allocations.begin(),
+                    flow_rates_and_allocations.begin() + n_pipes);
 
             allocations.clear();
             for (int id : utilities_ids)
-                allocations.push_back((double &&) flow_rates_and_allocations.at((unsigned long) (n_pipes + id)));
+                allocations.push_back((double &&) flow_rates_and_allocations.at(
+                        (unsigned long) (n_pipes + id)));
 
             /// Mitigate demands.
             double sum_allocations = 0;
+            int price_week = Utils::weekOfTheYear(week);
             for (int i = 0; i < n_allocations; ++i) {
-                realization_utilities[i]->setDemand_offset(allocations[i], source_utility->water_price_per_volume);
+                realization_utilities[i]->setDemand_offset(
+                        allocations[i],
+                        source_utility->waterPrice(price_week));
                 sum_allocations += allocations[i];
             }
             /// draw water from source utility.
-            source_utility->setDemand_offset(-sum_allocations, source_utility->water_price_per_volume);
+            source_utility->setDemand_offset(-sum_allocations,
+                                             source_utility
+                                                     ->waterPrice(price_week));
         }
     }
 }
@@ -234,8 +245,10 @@ void Transfers::applyPolicy(int week) {
  * @param min_transfer_volume minimum transfer to be made to each utility.
  * @return
  */
-vector<double> Transfers::solve_QP(vector<double> allocation_requests, double available_transfer_volume,
-                                   double min_transfer_volume, int week) {
+vector<double> Transfers::solve_QP(
+        vector<double> allocation_requests,
+        double available_transfer_volume,
+        double min_transfer_volume, int week) {
 
     vector<double> flow_rates_and_allocations;
     unsigned int n_allocations = (unsigned int) allocation_requests.size();
@@ -259,8 +272,9 @@ vector<double> Transfers::solve_QP(vector<double> allocation_requests, double av
         } else {
             lb[n_pipes + buyers_ids[i]] = min_transfer_volume;
 //            ub[n_pipes + buyers_ids[i]] = available_transfer_volume;
-            ub[n_pipes + buyers_ids[i]] = realization_utilities[i]->getUnrestrictedDemand(week)
-                                          * realization_utilities[i]->getDemand_multiplier();
+            ub[n_pipes + buyers_ids[i]] =
+                    realization_utilities[i]->getUnrestrictedDemand(week) *
+                    realization_utilities[i]->getDemand_multiplier();
         }
     }
 

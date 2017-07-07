@@ -955,8 +955,18 @@ TEST_CASE("Get ROF from storage-rof-table", "[rof from table]") {
     /// Create catchments and corresponding vector
     Utility u1((char *) "U1", 0, &demands_test, streamflow_n_weeks, 0.03, 1,
                WwtpDischargeRule(std::vector<vector<double, allocator<double>>>(), std::vector<int>()));
-    Utility u2((char *) "U2", 1, &demands_test, streamflow_n_weeks, 0.07, 1, vector<int>(1, 1), 0.05,
-               WwtpDischargeRule(std::vector<vector<double, allocator<double>>>(), std::vector<int>()));
+    Utility u2((char *) "U2",
+               1,
+               &demands_test,
+               streamflow_n_weeks,
+               0.07,
+               1,
+               vector<double>(),
+               WwtpDischargeRule(std::vector<vector<double, allocator<double>>>(),
+                                 std::vector<int>()),
+               vector<int>(1,
+                           1),
+               0.05);
     Utility u3((char *) "U3", 2, &demands_test, streamflow_n_weeks, 0.05, 1,
                WwtpDischargeRule(std::vector<vector<double, allocator<double>>>(), std::vector<int>()));
 

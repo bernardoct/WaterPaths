@@ -7,7 +7,6 @@
 #include <fstream>
 #include <iomanip>
 #include <algorithm>
-#include <numeric>
 #include "DataCollector.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
 #include "Utils.h"
@@ -97,7 +96,7 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
         utilities_t[i].restricted_demand[r].push_back(u->getRestrictedDemand());
         utilities_t[i].contingency_fund_size[r].push_back(u->getContingency_fund());
         utilities_t[i].net_present_infrastructure_cost[r] = u->getInfrastructure_net_present_cost();
-        utilities_t[i].gross_revenues[r].push_back(u->getRestrictedDemand() * u->water_price_per_volume);
+        utilities_t[i].gross_revenues[r].push_back(u->getGrossRevenue());
         utilities_t[i].debt_service_payments[r].push_back(u->getCurrent_debt_payment());
         utilities_t[i].contingency_fund_contribution[r].push_back(u->getCurrent_contingency_fund_contribution());
         utilities_t[i].drought_mitigation_cost[r].push_back(u->getDrought_mitigation_cost());
@@ -158,6 +157,7 @@ void DataCollector::printPathways(string file_name) {
     outStream.close();
 }
 
+/*
 void DataCollector::printReservoirOutput(string file_name) {
 
     std::ofstream outStream;
@@ -209,14 +209,46 @@ void DataCollector::printReservoirOutput(string file_name) {
 
     outStream.close();
 }
+*/
+void DataCollector::printReservoirOutput(string file_name) {
 
+    std::ofstream outStream;
+    int n_weeks = (int) water_sources_t[0].total_upstream_sources_inflows[0].size();
+
+    for (int r = 0; r < number_of_realizations; ++r) {
+        outStream.open(output_directory + file_name + std::to_string(r));
+        /// Print numbers.
+        for (int w = 0; w < n_weeks; ++w) {
+            for (int u = 0; u < water_sources_t.size(); ++u) {
+                outStream
+                        << setprecision(COLUMN_PRECISION)
+                        << water_sources_t[u].available_volume[r][w]
+                        << "," << setprecision(COLUMN_PRECISION)
+                        << water_sources_t[u].demands[r][w]
+                        << "," << setprecision(COLUMN_PRECISION)
+                        << water_sources_t[u].total_upstream_sources_inflows[r][w]
+                        << "," << setprecision(COLUMN_PRECISION)
+                        << water_sources_t[u].total_catchments_inflow[r][w]
+                        << "," << setprecision(COLUMN_PRECISION)
+                        << water_sources_t[u].outflows[r][w];
+                if (u < water_sources_t.size() - 1)
+                    outStream << ",";
+            }
+            outStream << endl;
+        }
+        outStream.close();
+    }
+
+}
+
+/*
 void DataCollector::printUtilityOutput(string file_name) {
 
     std::ofstream outStream;
-    outStream.open(output_directory + file_name);
     int n_weeks = (int) utilities_t[0].rof[0].size();
 
     for (int r = 0; r < number_of_realizations; ++r) {
+        outStream.open(output_directory + file_name + std::to_string(r));
 
         /// Print realization number.
         outStream << endl;
@@ -277,11 +309,55 @@ void DataCollector::printUtilityOutput(string file_name) {
                       << utilities_t[u].net_present_infrastructure_cost[r] << endl;
         }
         outStream << endl;
+        outStream.close();
     }
 
-    outStream.close();
+}
+ */
+void DataCollector::printUtilityOutput(string file_name) {
+
+    std::ofstream outStream;
+    int n_weeks = (int) utilities_t[0].rof[0].size();
+
+    for (int r = 0; r < number_of_realizations; ++r) {
+        outStream.open(output_directory + file_name + std::to_string(r));
+
+        /// Print numbers for realization r.
+        for (int w = 0; w < n_weeks; ++w) {
+            for (int u = 0; u < utilities_t.size(); ++u) {
+                outStream << utilities_t[u].combined_storage[r][w]
+                          << "," << setprecision(COLUMN_PRECISION)
+                          << utilities_t[u].rof[r][w]
+                          << "," << setprecision(COLUMN_PRECISION)
+                          << utilities_t[u].restricted_demand[r][w]
+                          << "," << setprecision(COLUMN_PRECISION)
+                          << utilities_t[u].unrestricted_demand[r][w]
+                          << "," << setprecision(COLUMN_PRECISION)
+                          << utilities_t[u].contingency_fund_size[r][w]
+                          << "," << setprecision(COLUMN_PRECISION)
+                          << utilities_t[u].insurance_payout[r][w]
+                          << "," << setprecision(COLUMN_PRECISION)
+                          << utilities_t[u].insurance_contract_cost[r][w];
+                if (u < utilities_t.size() - 1)
+                    outStream << ",";
+            }
+            outStream << endl;
+        }
+
+        /// NPC cost of infrastructure for realization r
+        for (int u = 0; u < utilities_t.size(); ++u) {
+            outStream << "#" << utilities_t[u].name
+                      << " NPC of infrastructure: "
+                      << utilities_t[u].net_present_infrastructure_cost[r]
+                      << endl;
+        }
+        outStream << endl;
+        outStream.close();
+    }
+
 }
 
+/*
 void DataCollector::printPoliciesOutput(string file_name) {
 
     std::ofstream outStream;
@@ -338,6 +414,45 @@ void DataCollector::printPoliciesOutput(string file_name) {
         outStream << "No restriction policies in place.";
     }
     outStream.close();
+}
+*/
+void DataCollector::printPoliciesOutput(string file_name) {
+
+    std::ofstream outStream;
+
+    /// Checks if there were drought mitigation policies in place.
+    if (!restriction_policies_t.empty()) {
+        int n_weeks = (int) restriction_policies_t[0].restriction_multiplier[0]
+                .size();
+
+        sort(restriction_policies_t.begin(),
+             restriction_policies_t.end());
+
+        for (int r = 0; r < number_of_realizations; ++r) {
+            outStream.open(output_directory + file_name + std::to_string(r));
+            if (restriction_policies_t.size() > 0) {
+                /// Print numbers.
+                for (unsigned long w = 0; w < n_weeks; ++w) {
+//                    outStream << setw(COLUMN_WIDTH) << w;
+                    for (int i = 0; i < restriction_policies_t.size(); ++i) {
+                        outStream << "," << setprecision(COLUMN_PRECISION)
+                                  << restriction_policies_t[i]
+                                          .restriction_multiplier[r].at(w);
+                    }
+                    for (int i = 0; i < transfers_policies_t.size(); ++i) {
+                        for (double &a : transfers_policies_t[i]
+                                .demand_offsets[r].at(w))
+                            outStream << "," << setprecision(COLUMN_PRECISION)
+                                      << a;
+                    }
+                    outStream << endl;
+                }
+            }
+            outStream.close();
+        }
+    } else {
+        outStream << "No restriction policies in place.";
+    }
 }
 
 void DataCollector::printObjectives(string file_name) {
@@ -474,8 +589,9 @@ double DataCollector::calculateNetPresentCostInfrastructureObjective(Utility_t u
 }
 
 /**
- * Calculate peak financial costs objective, as the average of the highest cost year for each realization, with cost
- * being defined as (DSP + AC + CC ) / TR, where,
+ * Calculate peak financial costs objective, as the average of the highest cost
+ * year for each realization, with cost * being defined as (DSP + AC + CC ) /
+ * TR, where,
  * DSP = debt service payment
  * AC = annual contribution to the contingency fund
  * CC = cost of insurance contract
@@ -511,7 +627,8 @@ double DataCollector::calculatePeakFinancialCostsObjective(Utility_t utility_t) 
             realizations_year_insurance_contract_cost +=
                     utility_t.insurance_contract_cost[r][w];
 
-            /// if last week of the year, close the books and calculate financial cost for the year.
+            /// if last week of the year, close the books and calculate
+            /// financial cost for the year.
             if (Utils::isFirstWeekOfTheYear(w + 1)) {
                 year_financial_costs[y] +=
                         (realizations_year_debt_payment +
@@ -529,11 +646,15 @@ double DataCollector::calculatePeakFinancialCostsObjective(Utility_t utility_t) 
             }
         }
         /// store highest year cost as the cost financial cost of the realization.
-        realization_financial_costs[r] = *max_element(year_financial_costs.begin(), year_financial_costs.end());
+        realization_financial_costs[r] =
+                *max_element(year_financial_costs.begin(),
+                             year_financial_costs.end());
     }
 
     /// returns average of realizations' costs.
-    return accumulate(realization_financial_costs.begin(), realization_financial_costs.end(), 0.0) / n_realizations;
+    return accumulate(realization_financial_costs.begin(),
+                      realization_financial_costs.end(),
+                      0.0) / n_realizations;
 }
 
 double DataCollector::calculateWorseCaseCostsObjective(Utility_t utility_t) {
@@ -569,11 +690,14 @@ double DataCollector::calculateWorseCaseCostsObjective(Utility_t utility_t) {
             }
         }
         /// store highest year cost as the drought mitigation cost of the realization.
-        worse_year_financial_costs[r] = *max_element(year_financial_costs.begin(), year_financial_costs.end());
+        worse_year_financial_costs[r] = *max_element(
+                year_financial_costs.begin(),
+                year_financial_costs.end());
     }
 
     /// sort costs to get the worse 1 percentile.
     sort(worse_year_financial_costs.begin(), worse_year_financial_costs.end());
 
-    return worse_year_financial_costs.at((unsigned long) floor(WORSE_CASE_COST_PERCENTILE * n_realizations));
+    return worse_year_financial_costs.at(
+            (unsigned long) floor(WORSE_CASE_COST_PERCENTILE * n_realizations));
 }

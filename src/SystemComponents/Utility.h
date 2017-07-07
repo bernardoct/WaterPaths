@@ -15,7 +15,14 @@
 
 class Utility {
 private:
-    double *demand_series = new double[0];
+
+    const int NUMBER_OF_MONTHS = 12;
+    const double WEEKS_IN_MONTH = WEEKS_IN_YEAR / (double) NUMBER_OF_MONTHS;
+    double fund_contribution;
+    double *demand_series = NULL;
+    double *weekly_average_volumetric_price;
+    vector<int> priority_draw_water_source;
+    vector<int> non_priority_draw_water_source;
     double risk_of_failure;
     double total_storage_capacity = 0;
     double total_stored_volume = 0;
@@ -32,6 +39,7 @@ private:
     double infrastructure_net_present_cost = 0;
     double current_debt_payment = 0;
     double waste_water_discharge = 0;
+    double gross_revenue = 0;
     bool under_construction = false;
     int construction_end_date = 0;
     map<int, WaterSource *> water_sources;
@@ -45,20 +53,30 @@ private:
 
 public:
     const int id;
-    const double water_price_per_volume;
     const int number_of_week_demands;
     const char *name;
     const double percent_contingency_fund_contribution;
     const double infrastructure_discount_rate;
 
-    Utility(char *name, int id, vector<vector<double>> *demands_all_realizations, int number_of_week_demands,
-            const double percent_contingency_fund_contribution, const double water_price_per_volume,
+    Utility(
+            char *name, int id,
+            vector<vector<double>> *demands_all_realizations,
+            int number_of_week_demands,
+            const double percent_contingency_fund_contribution,
+            const vector<vector<double>> *typesMonthlyDemandFraction,
+            const vector<vector<double>> *typesMonthlyWaterPrice,
             WwtpDischargeRule wwtp_discharge_rule);
 
-    Utility(char *name, int id, vector<vector<double>> *demands_all_realizations, int number_of_week_demands,
-            const double percent_contingency_fund_contribution, const double water_price_per_volume,
-            const vector<int> infrastructure_build_order, double infrastructure_discount_rate,
-            WwtpDischargeRule wwtp_discharge_rule);
+    Utility(
+            char *name, int id,
+            vector<vector<double>> *demands_all_realizations,
+            int number_of_week_demands,
+            const double percent_contingency_fund_contribution,
+            const vector<vector<double>> *typesMonthlyDemandFraction,
+            const vector<vector<double>> *typesMonthlyWaterPrice,
+            WwtpDischargeRule wwtp_discharge_rule,
+            vector<int> infrastructure_construction_order,
+            double infrastructure_discount_rate);
 
     Utility(Utility &utility);
 
@@ -93,8 +111,8 @@ public:
     double getTotal_treatment_capacity() const;
 
     void updateContingencyFund(
-            double unrestricted_demand,
-            double demand_multiplier, double demand_offset);
+            double unrestricted_demand, double demand_multiplier,
+            double demand_offset, int week);
 
     double getContingency_fund() const;
 
@@ -114,8 +132,7 @@ public:
 
     double getCurrent_debt_payment() const;
 
-    double updateCurrent_debt_payment(
-            int week, vector<vector<double>> debt_payment_streams);
+    double updateCurrent_debt_payment(int week);
 
     double getCurrent_contingency_fund_contribution() const;
 
@@ -138,6 +155,14 @@ public:
     void setRelization(unsigned long r);
 
     const vector<int> getInfrastructure_built() const;
+
+    void calculateWeeklyAverageWaterPrices(
+            const vector<vector<double>> *typesMonthlyDemandFraction,
+            const vector<vector<double>> *typesMonthlyWaterPrice);
+
+    const double waterPrice(int week);
+
+    double getGrossRevenue() const;
 };
 
 

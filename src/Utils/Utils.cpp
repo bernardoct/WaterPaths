@@ -8,12 +8,6 @@
 #include "../SystemComponents/WaterSources/Quarry.h"
 #include "../DroughtMitigationInstruments/InsuranceStorageToROF.h"
 #include "../SystemComponents/WaterSources/WaterReuse.h"
-#include "../Controls/FixedMinEnvFlowControl.h"
-#include "../Controls/InflowMinEnvFlowControl.h"
-#include "../Controls/SeasonalMinEnvFlowControl.h"
-#include "../Controls/StorageMinEnvFlowControl.h"
-#include "../Controls/Custom/JordanLakeMinEnvFlowControl.h"
-#include "../Controls/Custom/FallsLakeMinEnvFlowControl.h"
 #include <fstream>
 #include <algorithm>
 
@@ -29,21 +23,34 @@ vector<vector<double>> Utils::parse2DCsvFile(char const *file_name) {
 
     vector<vector<double> > data;
     ifstream infile(file_name);
+    int l = 0;
 
     while (infile) {
+        l++;
         string s;
         if (!getline(infile, s)) break;
+        if (s[0] != '#') {
+            istringstream ss(s);
+            vector<double> record;
 
-        istringstream ss(s);
-        vector<double> record;
+            while (ss) {
+                string sl;
+                if (!getline(ss,
+                             sl,
+                             ','))
+                    break;
+                try {
+                    record.push_back(stof(sl));
+                }
+                catch (const std::invalid_argument e) {
+                    cout << "NaN found in file " << file_name << " line " << l
+                         << endl;
+                    e.what();
+                }
+            }
 
-        while (ss) {
-            string sl;
-            if (!getline(ss, sl, ',')) break;
-            record.push_back(stof(sl));
+            data.push_back(record);
         }
-
-        data.push_back(record);
     }
     if (!infile.eof()) {
         cerr << "Could not read file " << file_name << "\n";
@@ -52,20 +59,32 @@ vector<vector<double>> Utils::parse2DCsvFile(char const *file_name) {
     return data;
 }
 
-double *Utils::parse1DCsvFile(char const *file_name, int number_of_weeks) {
+vector<double> Utils::parse1DCsvFile(char const *file_name) {
 
-    double *data = new double[number_of_weeks];
+    vector<double> data;
+    ifstream infile(file_name);
+    int l = 0;
 
-    std::ifstream file(file_name);
-
-    for (int row = 0; row < number_of_weeks; row++) {
-        std::string line;
-        std::getline(file, line);
-        if (!file.good())
+    while (infile) {
+        l++;
+        string s;
+        if (!getline(infile,
+                     s))
             break;
 
-//        std::stringstream convertor(line);
-        data[row] = atof(line.c_str());
+        istringstream ss(s);
+        double record;
+
+        try {
+            record = stof(ss.str());
+            data.push_back(record);
+        } catch (const std::invalid_argument e) {
+            cout << "NaN found in file " << file_name << " line " << l << endl;
+            e.what();
+        }
+    }
+    if (!infile.eof()) {
+        cerr << "Could not read file " << file_name << "\n";
     }
 
     return data;

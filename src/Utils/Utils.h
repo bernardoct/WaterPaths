@@ -18,7 +18,7 @@ public:
 
     static vector<vector<double>> parse2DCsvFile(char const *file_name);
 
-    static double *parse1DCsvFile(char const *file_name, int number_of_weeks);
+    static vector<double> parse1DCsvFile(char const *file_name);
 
     static vector<WaterSource *> copyWaterSourceVector(vector<WaterSource *> water_sources_original);
 

@@ -22,8 +22,9 @@ EvaporationSeries::EvaporationSeries(EvaporationSeries &evaporation_series)
  * @param catchment
  * @return
  */
-EvaporationSeries &
-EvaporationSeries::operator=(const EvaporationSeries &evaporation_series) {
+EvaporationSeries &EvaporationSeries::operator=(
+        const EvaporationSeries
+        &evaporation_series) {
 
     streamflows_all = evaporation_series.streamflows_all;
     series_length = evaporation_series.series_length;

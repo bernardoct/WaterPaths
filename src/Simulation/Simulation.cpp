@@ -26,10 +26,13 @@ Simulation::Simulation(
 #ifdef _WIN32
     sort(continuity_utilities.begin(), continuity_utilities.end(), std::greater<>());
 #else
-    std::sort(utilities.begin(), utilities.end());
+    std::sort(utilities.begin(),
+              utilities.end(),
+              Utility::compById);
 #endif
 
-    /// Check if sources listed in construction order array are of a utility are listed as belonging to that utility
+    /// Check if sources listed in construction order array are of a utility are
+    // listed as belonging to that utility
     for (int u = 0; u < utilities.size(); ++u) {
         for (int ws : utilities[u]->getInfrastructure_construction_order())
             if (std::find(water_sources_to_utilities[u].begin(),
@@ -37,8 +40,9 @@ Simulation::Simulation(
                           ws)
                 == water_sources_to_utilities[u].end()) {
                 cout << "Water source #" << ws << " is listed in the "
-                        "construction order for utility " << u << " but is not "
-                             "present in utility's list of water sources"
+                        "construction order for utility " << utilities[u]->id
+                     << " (" << utilities[u]->name << ")  but is  not  "
+                             "present in  utility's list of water sources."
                      << endl;
                 throw std::invalid_argument("Utility's construction order and "
                                                     "owned sources mismatch.");
@@ -66,14 +70,14 @@ Simulation::Simulation(
                 Utils::copyUtilityVector(utilities);
 
         /// Store realization models in vector
-        realization_models.push_back(
-                new ContinuityModelRealization(water_sources_realization,
-                                               water_sources_graph,
-                                               water_sources_to_utilities,
-                                               utilities_realization,
-                                               drought_mitigation_policies_realization,
-                                               min_env_flow_controls,
-                                               r));
+        realization_models.push_back(new ContinuityModelRealization(
+                water_sources_realization,
+                water_sources_graph,
+                water_sources_to_utilities,
+                utilities_realization,
+                drought_mitigation_policies_realization,
+                min_env_flow_controls,
+                r));
 
         /// Create rof models by copying the water utilities and sources.
         vector<WaterSource *> water_sources_rof =
@@ -123,9 +127,11 @@ void Simulation::runFullSimulation(int num_threads) {
 
     /// Run realizations.
     time(&timer_i);
+    int count = 0;
 #pragma omp parallel for num_threads(num_threads)
     for (int r = 0; r < number_of_realizations; ++r) {
-        std::cout << "Realization " << r << std::endl;
+        count++;
+        std::cout << "Realization " << count << std::endl;
         for (int w = 0; w < total_simulation_time; ++w) {
             // DO NOT change the order of the steps. This would mess up
             // important dependencies.

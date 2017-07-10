@@ -10,6 +10,8 @@
 #include "../SystemComponents/WaterSources/WaterReuse.h"
 #include <fstream>
 #include <algorithm>
+#include <climits>
+#include <unistd.h>
 
 /**
  * Reads CSV file into 2D array.
@@ -214,4 +216,14 @@ vector<vector<double>> Utils::calculateDistances(vector<vector<double>> data_poi
     }
 
     return distances;
+}
+
+
+std::string Utils::getexepath() {
+    char result[PATH_MAX];
+    ssize_t count = readlink("/proc/self/exe",
+                             result,
+                             PATH_MAX);
+    return std::string(result,
+                       (unsigned long) ((count > 0) ? count : 0));
 }

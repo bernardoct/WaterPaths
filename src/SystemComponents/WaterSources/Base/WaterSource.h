@@ -22,6 +22,7 @@ protected:
     double demand = 0;
     double upstream_min_env_inflow;
     double capacity;
+    double *available_allocated_volume;
     bool online;
     vector<Catchment *> catchments;
     double min_environmental_outflow;
@@ -70,6 +71,8 @@ public:
             double demand_outflow) = 0;
 
     virtual void setOnline();
+
+    double getAvailableAllocatedVolume(int utility_id);
 
     double getMin_environmental_outflow() const;
 

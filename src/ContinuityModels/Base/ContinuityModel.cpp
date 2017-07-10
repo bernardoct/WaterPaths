@@ -88,8 +88,8 @@ ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) :
  * @param rof_realization rof realization id (between 0 and 49 inclusive).
  */
 void ContinuityModel::continuityStep(int week, int rof_realization) {
-    double demands[continuity_water_sources.size()] = {};
-    double upstream_spillage[continuity_water_sources.size()] = {};
+    double demands[continuity_water_sources.size()];
+    double upstream_spillage[continuity_water_sources.size()];
     double wastewater_discharges[continuity_water_sources.size()];
     std::fill(wastewater_discharges,
               wastewater_discharges +
@@ -107,7 +107,8 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
     for (Utility *u : continuity_utilities) {
         u->calculateWastewater_releases(week,
                                         wastewater_discharges);
-        u->splitDemands(week, demands);
+        u->splitDemands(week,
+                        demands); //FIXME: MAKE IT POSSIBLE TO HAVE AN ARRAY OF DEMANDS BEING PASSED TO THE SPLITDEMANDS FUNCTION TO MAKE IT WORK WITH RESERVOIR WITH ALLOCATIONS.
     }
 
     /**

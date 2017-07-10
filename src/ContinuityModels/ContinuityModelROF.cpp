@@ -149,11 +149,11 @@ void ContinuityModelROF::updateStorageToROFTable(
         /// calculate delta storage for all reservoirs and array that will receive the shifted storage curves.
         double percent_percent_storage_level = (double) s *
                                                storage_percent_decrement;
-        double delta_storage[n_water_sources] = {};
+        double delta_storage[n_water_sources];
         std::copy(available_volumes,
                   available_volumes + n_water_sources,
                   delta_storage);
-        double available_volumes_shifted[n_water_sources] = {};
+        double available_volumes_shifted[n_water_sources];
         std::copy(available_volumes,
                   available_volumes + n_water_sources,
                   available_volumes_shifted);

@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iomanip>
 #include <algorithm>
+#include <sys/stat.h>
 #include "DataCollector.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
 #include "Utils.h"
@@ -16,6 +17,15 @@ DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<Wa
                              const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
                              int number_of_realizations, Graph water_sources_graph) :
         number_of_realizations(number_of_realizations), water_sources_graph(water_sources_graph) {
+
+    struct stat sb;
+    if (stat(output_directory.c_str(),
+             &sb) == 0 && S_ISDIR(sb.st_mode))
+        cout << "Output will be printed to folder " << output_directory << endl;
+    else {
+        cout << Utils::getexepath() << output_directory << endl;
+        __throw_invalid_argument("Output folder does not exist.");
+    }
 
     /// Create data utilities.
     for (Utility *u : utilities) {
@@ -238,7 +248,8 @@ void DataCollector::printReservoirOutput(string file_name) {
         }
         outStream.close();
     }
-
+    cout << "Water sources output printed. Files " << output_directory <<
+         file_name << "XX" << endl;
 }
 
 /*
@@ -321,6 +332,10 @@ void DataCollector::printUtilityOutput(string file_name) {
 
     for (int r = 0; r < number_of_realizations; ++r) {
         outStream.open(output_directory + file_name + std::to_string(r));
+        outStream << "#";
+        for (int i = 0; i < utilities_t.size(); ++i) {
+            outStream << utilities_t[i].name << " ";
+        }
 
         /// Print numbers for realization r.
         for (int w = 0; w < n_weeks; ++w) {
@@ -354,6 +369,8 @@ void DataCollector::printUtilityOutput(string file_name) {
         outStream << endl;
         outStream.close();
     }
+    cout << "Utilities output printed. Files " << output_directory <<
+         file_name << "XX" << endl;
 
 }
 
@@ -431,25 +448,59 @@ void DataCollector::printPoliciesOutput(string file_name) {
         for (int r = 0; r < number_of_realizations; ++r) {
             outStream.open(output_directory + file_name + std::to_string(r));
             if (restriction_policies_t.size() > 0) {
+                outStream << "#";
+                for (int i = 0; i < restriction_policies_t.size(); ++i) {
+                    outStream << setw(COLUMN_WIDTH - 1) << "Restr. "
+                              << restriction_policies_t[i].utility_id;
+                }
+                for (int i = 0; i < transfers_policies_t.size(); ++i) {
+                    for (int id = 0;
+                         id < transfers_policies_t[i].utilities_ids.size();
+                         ++id)
+                        outStream << setw(COLUMN_WIDTH - 1) << "Transf. "
+                                  << transfers_policies_t[i].transfer_policy_id;
+                }
+
+                /// Print realization header.
+                outStream << endl << "#";
+                for (int i = 0; i < restriction_policies_t.size(); ++i) {
+                    outStream << setw(COLUMN_WIDTH) << "Multip.";
+                }
+                for (int i = 0; i < transfers_policies_t.size(); ++i) {
+                    for (int buyer_id : transfers_policies_t[i].utilities_ids)
+                        outStream << setw(COLUMN_WIDTH - 1) << "Alloc. "
+                                  << buyer_id;
+                }
+                outStream << endl;
+
                 /// Print numbers.
                 for (unsigned long w = 0; w < n_weeks; ++w) {
 //                    outStream << setw(COLUMN_WIDTH) << w;
                     for (int i = 0; i < restriction_policies_t.size(); ++i) {
-                        outStream << "," << setprecision(COLUMN_PRECISION)
+                        outStream << setprecision(COLUMN_PRECISION)
                                   << restriction_policies_t[i]
-                                          .restriction_multiplier[r].at(w);
+                                          .restriction_multiplier[r].at(w)
+                                  << ",";
                     }
+                    unsigned long transfer_size = transfers_policies_t[0]
+                            .demand_offsets[r].at(w)
+                            .size();
                     for (int i = 0; i < transfers_policies_t.size(); ++i) {
-                        for (double &a : transfers_policies_t[i]
-                                .demand_offsets[r].at(w))
-                            outStream << "," << setprecision(COLUMN_PRECISION)
-                                      << a;
+                        for (int j = 0; j < transfer_size; ++j) {
+                            outStream << setprecision(COLUMN_PRECISION)
+                                      << transfers_policies_t[i]
+                                              .demand_offsets[r].at(w)[j];
+                            if (j < transfer_size - 1)
+                                outStream << ",";
+                        }
                     }
                     outStream << endl;
                 }
             }
             outStream.close();
         }
+        cout << "Policies output printed. Files " << output_directory <<
+             file_name << "XX" << endl;
     } else {
         outStream << "No restriction policies in place.";
     }
@@ -469,9 +520,12 @@ void DataCollector::printObjectives(string file_name) {
 
     for (Utility_t &ut : utilities_t) {
         outStream << setw(COLUMN_WIDTH) << ut.name;
-        for (double o :ut.objectives) outStream << setw(COLUMN_WIDTH * 2) << setprecision(COLUMN_PRECISION) << o;
+        for (double o :ut.objectives)
+            outStream << setw(COLUMN_WIDTH * 2) <<
+                      setprecision(COLUMN_PRECISION) << o;
         outStream << endl;
     }
+    outStream.close();
 }
 
 /**

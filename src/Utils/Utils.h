@@ -37,6 +37,7 @@ public:
 
     static int weekOfTheYear(int week);
 
+    static string getexepath();
 };
 
 

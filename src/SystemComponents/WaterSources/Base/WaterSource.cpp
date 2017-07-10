@@ -63,28 +63,21 @@ WaterSource::WaterSource(
  * Copy constructor.
  * @param water_source
  */
-WaterSource::WaterSource(const WaterSource &water_source) : capacity(water_source.capacity),
-                                                            name(water_source.name),
-                                                            min_environmental_outflow(
-                                                                    water_source.min_environmental_outflow),
-                                                            id(water_source.id),
-                                                            available_volume(water_source.available_volume),
-                                                            total_outflow(water_source.total_outflow),
-                                                            online(water_source.online),
-                                                            source_type(water_source.source_type),
-                                                            upstream_min_env_inflow(
-                                                                    water_source.upstream_min_env_inflow),
-                                                            upstream_catchment_inflow(
-                                                                    water_source.upstream_catchment_inflow),
-                                                            raw_water_main_capacity(
-                                                                    water_source.raw_water_main_capacity),
-                                                            construction_rof(water_source.construction_rof),
-                                                            construction_time(
-                                                                    water_source.construction_time),
-                                                            construction_cost_of_capital(
-                                                                    water_source.construction_cost_of_capital),
-                                                            bond_term(water_source.bond_term),
-                                                            bond_interest_rate(water_source.bond_interest_rate) {
+WaterSource::WaterSource(const WaterSource &water_source) :
+        capacity(water_source.capacity), name(water_source.name),
+        min_environmental_outflow(water_source.min_environmental_outflow),
+        id(water_source.id), available_volume(water_source.available_volume),
+        total_outflow(water_source.total_outflow), online(water_source.online),
+        source_type(water_source.source_type),
+        upstream_min_env_inflow(water_source.upstream_min_env_inflow),
+        upstream_catchment_inflow(water_source.upstream_catchment_inflow),
+        raw_water_main_capacity(water_source.raw_water_main_capacity),
+        construction_rof(water_source.construction_rof),
+        construction_time(water_source.construction_time),
+        construction_cost_of_capital(water_source.construction_cost_of_capital),
+        bond_term(water_source.bond_term),
+        bond_interest_rate(water_source.bond_interest_rate) {
+
     catchments.clear();
     for (Catchment *c : water_source.catchments) {
         catchments.push_back(new Catchment(*c));
@@ -138,8 +131,8 @@ bool WaterSource::compare(WaterSource *lhs, WaterSource *rhs) {
 /**
  * Applies continuity to the water source.
  * @param week
- * @param upstream_source_inflow Total inflow released from the upstream water source, excluding water for the
- * catchment between both water sources.
+ * @param upstream_source_inflow Total inflow released from the upstream
+ * water source, excluding water for the catchment between both water sources.
  * @param demand_outflow demand from utility.
  */
 void WaterSource::continuityWaterSource(
@@ -152,10 +145,11 @@ void WaterSource::continuityWaterSource(
 }
 
 /**
- * Does not apply continuity to the water source, by instead just treats it as non existing,
- * i.e. outflow = inflow + catchment_flow
+ * Does not apply continuity to the water source, by instead just treats it as
+ * non existing, i.e. outflow = inflow + catchment_flow
  * @param week
- * @param upstream_source_inflow Total inflow released from the upstream water source, excluding water for the
+ * @param upstream_source_inflow Total inflow released from the upstream water
+ * source, excluding water for the
  * catchment between both water sources.
  */
 void WaterSource::bypass(int week, double upstream_source_inflow) {
@@ -172,8 +166,9 @@ void WaterSource::bypass(int week, double upstream_source_inflow) {
 }
 
 /**
- * Calculates the net present cost of the infrastructure options (water source) as a bond structured with level debt
- * service payments, issued on a given week in the future.
+ * Calculates the net present cost of the infrastructure options (water source)
+ * as a bond structured with level debt service payments, issued on a given
+ * week in the future.
  * @param week
  * @param discount_rate
  * @return Net present cost
@@ -189,7 +184,8 @@ discount_rate, double *level_debt_service_payment) const {
     *level_debt_service_payment = principal * (rate * pow(1 + rate, n_payments)) /
                                   (pow(1 + rate, n_payments) - 1);
 
-    /// Net present cost of stream of level debt service payments for the whole bond term, at the time of issuance.
+    /// Net present cost of stream of level debt service payments for the whole
+    /// bond term, at the time of issuance.
     double net_present_cost_at_issuance =
             *level_debt_service_payment * (1 -
                                            pow(1 + discount_rate,
@@ -201,6 +197,10 @@ discount_rate, double *level_debt_service_payment) const {
 }
 
 double WaterSource::getAvailable_volume() const {
+    return available_volume;
+}
+
+double WaterSource::getAvailableAllocatedVolume(int utility_id) {
     return available_volume;
 }
 
@@ -248,7 +248,8 @@ void WaterSource::setRealization(unsigned long r) {
     for (Catchment *c : catchments)
         c->setRealization(r);
 
-    /// Update total catchment inflow, demand, and available water volume for week 0;
+    /// Update total catchment inflow, demand, and available water volume for
+    /// week 0;
     this->upstream_catchment_inflow = 0;
     for (Catchment *c : catchments) {
         this->upstream_catchment_inflow = c->getStreamflow(0);

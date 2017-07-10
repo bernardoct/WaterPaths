@@ -163,6 +163,8 @@ public:
     const double waterPrice(int week);
 
     double getGrossRevenue() const;
+
+    static bool compById(Utility *a, Utility *b);
 };
 
 

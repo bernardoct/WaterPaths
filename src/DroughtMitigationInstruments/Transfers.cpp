@@ -8,29 +8,36 @@
 
 
 /**
- * Allocates transfers by trying to minimize the mean square error between the optimal allocations
- * and allocation requests, and between the available amount of water from source and actual
- * conveyed capacity, which is limited by pipe conveyance capacities.
+ * Allocates transfers by trying to minimize the mean square error between the
+ * optimal allocations and allocation requests, and between the available
+ * amount of water from source and actual conveyed capacity, which is limited
+ * by pipe conveyance capacities.
  *
  * @param id transfer policy ID.
  * @param source_utility_id ID of source utility.
- * @param source_treatment_buffer treatment capacity to be left unused in source utility.
+ * @param source_treatment_buffer treatment capacity to be left unused in source
+ * utility.
  * @param buyers_ids
  * @param pipe_transfer_capacities
  * @param buyers_transfer_triggers
- * @param conveyance_costs amount charged by pipe owning utility to convey water to another utility.
+ * @param conveyance_costs amount charged by pipe owning utility to convey water
+ * to another utility.
  * @param pipe_owner id of utility owning each pipe.
  *
  * @todo add the possibility of two or more sources.
- * @todo add the possibility of having a pipe belong to a utility not in the transfer agreement. This can be
- * accomplished now by adding utility to transfer agreement and set its risk of failure to 1.1 or more.
+ * @todo add the possibility of having a pipe belong to a utility not in the
+ * transfer agreement. This can be accomplished now by adding utility to
+ * transfer agreement and set its risk of failure to 1.1 or more.
  * @todo calculation and charge of wheeling fees.
  */
-Transfers::Transfers(const int id, const int source_utility_id, const double source_treatment_buffer,
-                     const vector<int> &buyers_ids, const vector<double> &pipe_transfer_capacities,
-                     const vector<double> &buyers_transfer_triggers,
-                     const Graph utilities_graph, vector<double> conveyance_costs,
-                     vector<int> pipe_owner)
+Transfers::Transfers(
+        const int id, const int source_utility_id,
+        const double source_treatment_buffer,
+        const vector<int> &buyers_ids,
+        const vector<double> &pipe_transfer_capacities,
+        const vector<double> &buyers_transfer_triggers,
+        const Graph utilities_graph,
+        vector<double> conveyance_costs, vector<int> pipe_owner)
         : DroughtMitigationPolicy(id, TRANSFERS),
           source_utility_id(source_utility_id),
           source_treatment_buffer(source_treatment_buffer),
@@ -39,7 +46,8 @@ Transfers::Transfers(const int id, const int source_utility_id, const double sou
 
     for (int i : buyers_ids)
         if (i == source_utility_id)
-            throw std::invalid_argument( "Source utility cannot be a buyer utility as well." );
+            throw std::invalid_argument("Source utility cannot be a buyer "
+                                                "utility as well.");
 
     utilities_ids = buyers_ids;
     utilities_ids.push_back(source_utility_id);
@@ -47,12 +55,17 @@ Transfers::Transfers(const int id, const int source_utility_id, const double sou
     for (const double &d : pipe_transfer_capacities)
         average_pipe_capacity += d;
 
-    vector<vector<double>> continuity_matrix = utilities_graph.getContinuityMatrix();
-    continuity_matrix[source_utility_id][continuity_matrix.size() + source_utility_id] = 1;
+    vector<vector<double>> continuity_matrix =
+            utilities_graph.getContinuityMatrix();
+    continuity_matrix[source_utility_id][
+            continuity_matrix.size() + source_utility_id] = 1;
 
-    /// Map buyer's IDs to vertexes ID starting from 0 for the sake of determining payments.
+    /// Map buyer's IDs to vertexes ID starting from 0 for the sake of
+    /// determining payments.
     for (int i = 0; i < buyers_ids.size(); ++i) {
-        util_id_to_vertex_id->insert(pair<int, int>(buyers_ids.at((unsigned long) i), i));
+        util_id_to_vertex_id->insert(
+                pair<int, int>(buyers_ids.at((unsigned long) i),
+                               i));
     }
 
     /// Create QP matrices and vectors.
@@ -61,7 +74,8 @@ Transfers::Transfers(const int id, const int source_utility_id, const double sou
     /// CE.x = ce0
     /// CI.x >= ci0
     /// lb <= x <= ub
-    unsigned int n_flow_rates_Q_source = (unsigned int) pipe_transfer_capacities.size() + 1;
+    unsigned int n_flow_rates_Q_source =
+            (unsigned int) pipe_transfer_capacities.size() + 1;
     unsigned int n_allocations = (unsigned int) buyers_ids.size();
     unsigned int n_vars = n_flow_rates_Q_source + n_allocations;
 
@@ -73,8 +87,9 @@ Transfers::Transfers(const int id, const int source_utility_id, const double sou
     /// Create g0 vector of 0's to be filled when policy is applied.
     f.resize(0, n_vars);
 
-    /// size is number of variables x number of utilities (source + requesting utilities).
-    /// Continuity matrix: +1 for flow entering utility and -1 for leaving.
+    /// size is number of variables x number of utilities (source + requesting
+    /// utilities). Continuity matrix: +1 for flow entering utility and -1
+    /// for leaving.
     Aeq.resize(0, n_allocations + 1, n_vars);
     for (unsigned int i = 0; i < continuity_matrix.size(); ++i) {
         for (unsigned int j = 0; j < continuity_matrix.at(i).size(); ++j) {
@@ -82,7 +97,8 @@ Transfers::Transfers(const int id, const int source_utility_id, const double sou
         }
     }
 
-    /// Create ce0 vector of 0 so that mass balance is enforced on the nodes (utilities).
+    /// Create ce0 vector of 0 so that mass balance is enforced on the nodes
+    /// (utilities).
     beq.resize(0, n_allocations + 1);
 
     /// Create empty CI and ci0. They'll be re-dimensioned in the QP solver.
@@ -103,9 +119,11 @@ Transfers::Transfers(const int id, const int source_utility_id, const double sou
  * Copy constructor
  * @param transfers
  */
-Transfers::Transfers(const Transfers &transfers) : DroughtMitigationPolicy(transfers.id, TRANSFERS),
-                                                   source_utility_id(transfers.source_utility_id),
-                                                   source_treatment_buffer(transfers.source_treatment_buffer) {
+Transfers::Transfers(const Transfers &transfers) :
+        DroughtMitigationPolicy(transfers.id,
+                                TRANSFERS),
+        source_utility_id(transfers.source_utility_id),
+        source_treatment_buffer(transfers.source_treatment_buffer) {
 
     buyers_ids = transfers.buyers_ids;
     buyers_transfer_triggers = transfers.buyers_transfer_triggers;
@@ -143,10 +161,13 @@ Transfers::~Transfers() {
  * Adds source and buying utility.
  * @param system_utilities Utility to be added.
  */
-void Transfers::addSystemComponents(vector<Utility *> system_utilities, vector<WaterSource *> water_sources) {
+void Transfers::addSystemComponents(
+        vector<Utility *> system_utilities,
+        vector<WaterSource *> water_sources) {
 
     if (realization_utilities.size() > 0)
-        throw std::invalid_argument("Utilities were already assigned to transfer policy.");
+        throw std::invalid_argument("Utilities were already assigned to "
+                                            "transfer policy.");
 
     for (Utility *u : system_utilities)
         if (u->id == source_utility_id)
@@ -167,7 +188,8 @@ void Transfers::applyPolicy(int week) {
     int n_pipes = n_vars - n_utilities;
 
     /**
-     * Get summation of rofs of utilities needing transfers. This is for splitting the available flow rate and for
+     * Get summation of rofs of utilities needing transfers. This is for
+     * splitting the available flow rate and for
      * checking weather any transfers will be needed.
      */
     unsigned int vertex_id; // position of utility id in the buyers_transfer_triggers vector.
@@ -187,38 +209,49 @@ void Transfers::applyPolicy(int week) {
         vector<double> transfer_requests((unsigned long) n_allocations, 0);
 
         /// Total volume available for transfers in source utility.
-        double available_transfer_volume = (source_utility->getTotal_treatment_capacity() - source_treatment_buffer) *
-                                           PEAKING_FACTOR - source_utility->getUnrestrictedDemand();
+        double available_transfer_volume =
+                (source_utility->getTotal_treatment_capacity()
+                 - source_treatment_buffer) * PEAKING_FACTOR
+                - source_utility->getUnrestrictedDemand();
 
         if (available_transfer_volume > 0) {
 
             /// Minimum volume to be allocated to any utility.
-            double min_transfer_volume = available_transfer_volume / (utilities_requesting_transfers + 1);
+            double min_transfer_volume = available_transfer_volume
+                                         / (utilities_requesting_transfers + 1);
 
-            /// Split up total volume available among the utilities proportionally to their ROFs. Requests are scaled
-            /// with the summation of the pipe capacities so to scale them down in case there is much more water
-            /// available than the pipes can convey, so to avaid the utility with the highest request from getting all
-            /// the water. Other scaling factors can be used as well.
+            /// Split up total volume available among the utilities
+            /// proportionally to their ROFs. Requests are scaled with the
+            /// summation of the pipe capacities so to scale them down in case
+            /// there is much more water available than the pipes can convey,
+            /// so to avaid the utility with the highest request from getting
+            /// all the water. Other scaling factors can be used as well.
             //FIXME: FIGURE OUT WHAT SCALING FACTOR THAT BEST APPROXIMATES CURRENT NC TRIANGLE RULES IN HB'S MODEL.
             for (int i = 0; i < n_allocations; ++i) {
-                transfer_requests[i] = available_transfer_volume * requesting_utilities_rofs[i] / sum_rofs *
-                                       average_pipe_capacity / available_transfer_volume;
+                transfer_requests[i] =
+                        available_transfer_volume * requesting_utilities_rofs[i]
+                        / sum_rofs * average_pipe_capacity
+                        / available_transfer_volume;
             }
 
-            /// Calculate allocations and flow rates through inter-utility connections.
-            flow_rates_and_allocations = solve_QP(
-                    transfer_requests,
-                    available_transfer_volume,
-                    min_transfer_volume,
-                    week);
+            /// Calculate allocations and flow rates through inter-utility
+            /// connections.
+            flow_rates_and_allocations = solve_QP(transfer_requests,
+                                                  available_transfer_volume,
+                                                  min_transfer_volume,
+                                                  week);
             conveyed_volumes = vector<double>(
                     flow_rates_and_allocations.begin(),
                     flow_rates_and_allocations.begin() + n_pipes);
 
-            allocations.clear();
-            for (int id : utilities_ids)
-                allocations.push_back((double &&) flow_rates_and_allocations.at(
-                        (unsigned long) (n_pipes + id)));
+//            allocations.clear();
+//            for (int id : utilities_ids)
+//                allocations.push_back((double &&) flow_rates_and_allocations.at(
+//                        (unsigned long) (n_pipes + id)));
+            allocations = vector<double>(flow_rates_and_allocations.begin() +
+                                         n_pipes,
+                                         flow_rates_and_allocations.end());
+            allocations[source_utility_id] = -allocations[source_utility_id];
 
             /// Mitigate demands.
             double sum_allocations = 0;
@@ -238,10 +271,12 @@ void Transfers::applyPolicy(int week) {
 }
 
 /**
- * Solves Quadratic Programming problem to find optimal allocations given transfer requests and constraints in
- * conveyance capacities.
- * @param allocation_requests allocations requested by each utility (0 for utilities not requesting transfers).
- * @param available_transfer_volume Total volume available for transfer from source utility.
+ * Solves Quadratic Programming problem to find optimal allocations given
+ * transfer requests and constraints in conveyance capacities.
+ * @param allocation_requests allocations requested by each utility (0 for
+ * utilities not requesting transfers).
+ * @param available_transfer_volume Total volume available for transfer from
+ * source utility.
  * @param min_transfer_volume minimum transfer to be made to each utility.
  * @return
  */
@@ -278,14 +313,17 @@ vector<double> Transfers::solve_QP(
         }
     }
 
-    /// Set upper bound of the last utility (source) to total amount of water available. This allows for a
-    /// smaller transferred volume, in case pipes cannot convey full amount available, but sets the cap as
-    /// total amount available.
+    /// Set upper bound of the last utility (source) to total amount of water
+    /// available. This allows for a smaller transferred volume, in case
+    /// pipes cannot convey full amount available, but sets the cap as total
+    /// amount available.
     ub[n_pipes + source_utility_id] = available_transfer_volume;
 
-    /// Prevent minimum allocation from being more than capacity of pipes connected to utility. If it happens,
-    /// decrease it to half of the sum of adjacent pipes capacities so that it avoid issues with bottle-necks
-    /// through the network. The factor of 2 can be changed to any number smaller than 1.
+    /// Prevent minimum allocation from being more than capacity of pipes
+    /// connected to utility. If it happens, decrease it to half of the sum of
+    /// adjacent pipes capacities so that it avoid issues with bottle-necks
+    /// through the network. The factor of 2 can be changed to any number
+    /// smaller than 1.
     double max_flow;
     for (int i = 0; i < n_allocations + 1; ++i) { // skip source
         if (i != source_utility_id) {

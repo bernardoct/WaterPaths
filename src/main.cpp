@@ -1,8 +1,6 @@
 #include <iostream>
 #include <algorithm>
-#include <limits.h>
 #include <unistd.h>
-#include <csignal>
 #include "SystemComponents/WaterSources/Reservoir.h"
 #include "SystemComponents/Utility.h"
 #include "Utils/Utils.h"
@@ -1048,72 +1046,68 @@ void simulation3U5RInfraTest() {
     cout << "Ending U3R5 simulation" << endl;
 }
 */
-std::string getexepath() {
-    char result[PATH_MAX];
-    ssize_t count = readlink("/proc/self/exe",
-                             result,
-                             PATH_MAX);
-    return std::string(result,
-                       (unsigned long) ((count > 0) ? count : 0));
-}
+
+
 
 void triangleTest() {
     srand((unsigned int) time(NULL));
 
     cout << "BEGINNING TRIANGLE TEST" << endl << endl;
-    cout << getexepath() << endl;
+//    cout << getexepath() << endl;
 
     /// Read streamflows
     int streamflow_n_weeks = 52 * (70 + 50);
-//    vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile("../TestFiles/durhamInflowsLong.csv");
-//    vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile("../TestFiles/flatInflowsLong.csv");
-//    vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile("../TestFiles/swiftInflowsLong.csv");
-//    vector<vector<double>> streamflows_llr = Utils::parse2DCsvFile("../TestFiles/littleriverraleighInflowsLong.csv");
-//    vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile("../TestFiles/crabtreeInflowsLong.csv");
-//    vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile("../TestFiles/philsInflowsLong.csv");
-//    vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile("../TestFiles/caneInflowsLong.csv");
-//    vector<vector<double>> streamflows_morgan = Utils::parse2DCsvFile("../TestFiles/morganInflowsLong.csv");
-//    vector<vector<double>> streamflows_haw = Utils::parse2DCsvFile("../TestFiles/hawInflowsLong.csv");
-//    vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile("../TestFiles/claytonInflowsLong.csv");
-//    vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile("../TestFiles/lillingtonInflowsLong.csv");
-//
-//    vector<vector<double>> demand_cary = Utils::parse2DCsvFile("../TestFiles/demandsLongCary.csv");
-//    vector<vector<double>> demand_durham = Utils::parse2DCsvFile("../TestFiles/demandsLongDurham.csv");
-//    vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile("../TestFiles/demandsLongRaleigh.csv");
-//    vector<vector<double>> demand_owasa = Utils::parse2DCsvFile("../TestFiles/demandsLongOWASA.csv");
-//
-//    vector<vector<double>> evap_durham = Utils::parse2DCsvFile("../TestFiles/evapLongDurham.csv");
-//    vector<vector<double>> evap_jordan_lake = Utils::parse2DCsvFile("../TestFiles/evapLongCary.csv");
-//    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile("../TestFiles/evapLongFalls.csv");
-//    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile("../TestFiles/evapLongOWASA.csv");
-//    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile("../TestFiles/evapLongRaleighOther.csv");
-//    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile("../TestFiles/evapLongWB.csv");
-//
-//    vector<vector<double>> demand_to_wastewater_fraction_owasa_raleigh =
-//            Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
-//    vector<vector<double>> demand_to_wastewater_fraction_durham =
-//            Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_durham.csv");
-//
-//    vector<vector<double>> caryDemandClassesFractions = Utils::parse2DCsvFile
-//            ("../TestFiles/caryDemandClassesFractions.csv");
-//    vector<vector<double>> durhamDemandClassesFractions = Utils::parse2DCsvFile
-//            ("../TestFiles/durhamDemandClassesFractions.csv");
-//    vector<vector<double>> raleighDemandClassesFractions = Utils::parse2DCsvFile
-//            ("../TestFiles/raleighDemandClassesFractions.csv");
-//    vector<vector<double>> owasaDemandClassesFractions = Utils::parse2DCsvFile
-//            ("../TestFiles/owasaDemandClassesFractions.csv");
-//
-//    vector<vector<double>> caryUserClassesWaterPrices = Utils::parse2DCsvFile
-//            ("../TestFiles/caryUserClassesWaterPrices.csv");
-//    vector<vector<double>> durhamUserClassesWaterPrices = Utils::parse2DCsvFile
-//            ("../TestFiles/durhamUserClassesWaterPrices.csv");
-//    vector<vector<double>> raleighUserClassesWaterPrices = Utils::parse2DCsvFile
-//            ("../TestFiles/raleighUserClassesWaterPrices.csv");
-//    vector<vector<double>> owasaUserClassesWaterPrices = Utils::parse2DCsvFile
-//            ("../TestFiles/owasaUserClassesWaterPrices.csv");
-//
-//    vector<double> sewageFractions = Utils::parse1DCsvFile(
-//            "../TestFiles/sewageFractions.csv");
+    /*
+    vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile("../TestFiles/durhamInflowsLong.csv");
+    vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile("../TestFiles/flatInflowsLong.csv");
+    vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile("../TestFiles/swiftInflowsLong.csv");
+    vector<vector<double>> streamflows_llr = Utils::parse2DCsvFile("../TestFiles/littleriverraleighInflowsLong.csv");
+    vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile("../TestFiles/crabtreeInflowsLong.csv");
+    vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile("../TestFiles/philsInflowsLong.csv");
+    vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile("../TestFiles/caneInflowsLong.csv");
+    vector<vector<double>> streamflows_morgan = Utils::parse2DCsvFile("../TestFiles/morganInflowsLong.csv");
+    vector<vector<double>> streamflows_haw = Utils::parse2DCsvFile("../TestFiles/hawInflowsLong.csv");
+    vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile("../TestFiles/claytonInflowsLong.csv");
+    vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile("../TestFiles/lillingtonInflowsLong.csv");
+
+    vector<vector<double>> demand_cary = Utils::parse2DCsvFile("../TestFiles/demandsLongCary.csv");
+    vector<vector<double>> demand_durham = Utils::parse2DCsvFile("../TestFiles/demandsLongDurham.csv");
+    vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile("../TestFiles/demandsLongRaleigh.csv");
+    vector<vector<double>> demand_owasa = Utils::parse2DCsvFile("../TestFiles/demandsLongOWASA.csv");
+
+    vector<vector<double>> evap_durham = Utils::parse2DCsvFile("../TestFiles/evapLongDurham.csv");
+    vector<vector<double>> evap_jordan_lake = Utils::parse2DCsvFile("../TestFiles/evapLongCary.csv");
+    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile("../TestFiles/evapLongFalls.csv");
+    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile("../TestFiles/evapLongOWASA.csv");
+    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile("../TestFiles/evapLongRaleighOther.csv");
+    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile("../TestFiles/evapLongWB.csv");
+
+    vector<vector<double>> demand_to_wastewater_fraction_owasa_raleigh =
+            Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
+    vector<vector<double>> demand_to_wastewater_fraction_durham =
+            Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_durham.csv");
+
+    vector<vector<double>> caryDemandClassesFractions = Utils::parse2DCsvFile
+            ("../TestFiles/caryDemandClassesFractions.csv");
+    vector<vector<double>> durhamDemandClassesFractions = Utils::parse2DCsvFile
+            ("../TestFiles/durhamDemandClassesFractions.csv");
+    vector<vector<double>> raleighDemandClassesFractions = Utils::parse2DCsvFile
+            ("../TestFiles/raleighDemandClassesFractions.csv");
+    vector<vector<double>> owasaDemandClassesFractions = Utils::parse2DCsvFile
+            ("../TestFiles/owasaDemandClassesFractions.csv");
+
+    vector<vector<double>> caryUserClassesWaterPrices = Utils::parse2DCsvFile
+            ("../TestFiles/caryUserClassesWaterPrices.csv");
+    vector<vector<double>> durhamUserClassesWaterPrices = Utils::parse2DCsvFile
+            ("../TestFiles/durhamUserClassesWaterPrices.csv");
+    vector<vector<double>> raleighUserClassesWaterPrices = Utils::parse2DCsvFile
+            ("../TestFiles/raleighUserClassesWaterPrices.csv");
+    vector<vector<double>> owasaUserClassesWaterPrices = Utils::parse2DCsvFile
+            ("../TestFiles/owasaUserClassesWaterPrices.csv");
+
+    vector<double> sewageFractions = Utils::parse1DCsvFile(
+            "../TestFiles/sewageFractions.csv");
+    */
 
     vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/durhamInflowsLong.csv");
     vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/flatInflowsLong.csv");
@@ -1138,12 +1132,66 @@ void triangleTest() {
     vector<vector<double>> evap_owasa = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongOWASA.csv");
     vector<vector<double>> evap_little_river = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongRaleighOther.csv");
     vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongWB.csv");
-
+/*
     vector<vector<double>> demand_to_wastewater_fraction_owasa_raleigh =
             Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
     vector<vector<double>> demand_to_wastewater_fraction_durham =
             Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demand_to_wastewater_fraction_durham.csv");
 
+    vector<vector<double>> caryDemandClassesFractions = Utils::parse2DCsvFile
+            ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/caryDemandClassesFractions.csv");
+    vector<vector<double>> durhamDemandClassesFractions = Utils::parse2DCsvFile
+            ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/durhamDemandClassesFractions.csv");
+    vector<vector<double>> raleighDemandClassesFractions = Utils::parse2DCsvFile
+            ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/raleighDemandClassesFractions.csv");
+    vector<vector<double>> owasaDemandClassesFractions = Utils::parse2DCsvFile
+            ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/owasaDemandClassesFractions.csv");
+
+    vector<vector<double>> caryUserClassesWaterPrices = Utils::parse2DCsvFile
+            ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/caryUserClassesWaterPrices.csv");
+    vector<vector<double>> durhamUserClassesWaterPrices = Utils::parse2DCsvFile
+            ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/durhamUserClassesWaterPrices.csv");
+    vector<vector<double>> raleighUserClassesWaterPrices = Utils::parse2DCsvFile
+            ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/raleighUserClassesWaterPrices.csv");
+    vector<vector<double>> owasaUserClassesWaterPrices = Utils::parse2DCsvFile
+            ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/owasaUserClassesWaterPrices.csv");
+
+    vector<double> sewageFractions = Utils::parse1DCsvFile(
+            "/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/sewageFractions.csv");
+*/
+/*
+    vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/inflows/durham_inflows.csv");
+    vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/inflows/falls_lake_inflows.csv");
+    vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/inflows/lake_wb_inflows.csv");
+    vector<vector<double>> streamflows_llr = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/inflows/little_river_raleigh_inflows.csv");
+    vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/inflows/crabtree_inflows.csv");
+
+    vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/inflows/stone_quarry_inflows.csv");
+    vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/inflows/cane_creek_inflows.csv");
+    vector<vector<double>> streamflows_morgan = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/inflows/university_lake_inflows.csv");
+    vector<vector<double>> streamflows_haw = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/inflows/jordan_lake_inflows.csv");
+    vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/inflows/clayton_inflows.csv");
+
+    vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/inflows/lillington_inflows.csv");
+
+    vector<vector<double>> demand_cary = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demands/cary_demand.csv");
+    vector<vector<double>> demand_durham = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demands/durham_demand.csv");
+    vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demands/raleigh_demand.csv");
+    vector<vector<double>> demand_owasa = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demands/owasa_demand.csv");
+
+    vector<vector<double>> evap_durham = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/durham_evap.csv");
+    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/falls_lake_evap.csv");
+    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/owasa_evap.csv");
+    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/little_river_raleigh_evap.csv");
+    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/wb_evap.csv");
+    vector<vector<double>> evap_jordan_lake = evap_owasa;
+*/
+
+    vector<vector<double>> demand_to_wastewater_fraction_owasa_raleigh =
+            Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
+    vector<vector<double>> demand_to_wastewater_fraction_durham =
+            Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demand_to_wastewater_fraction_durham.csv");
+//
     vector<vector<double>> caryDemandClassesFractions = Utils::parse2DCsvFile
             ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/caryDemandClassesFractions.csv");
     vector<vector<double>> durhamDemandClassesFractions = Utils::parse2DCsvFile
@@ -1588,7 +1636,7 @@ void triangleTest() {
 //                    wwtp_discharge_raleigh,  0.05);
 
     Utility cary((char *) "Cary",
-                 0,
+                 2,
                  &demand_cary,
                  demand_n_weeks,
                  0.03,
@@ -1606,7 +1654,7 @@ void triangleTest() {
                    infra_order_durham,
                    0.05);
     Utility owasa((char *) "OWASA",
-                  2,
+                  0,
                   &demand_owasa,
                   demand_n_weeks,
                   0.05,
@@ -1639,10 +1687,10 @@ void triangleTest() {
 //            {0, 9, 15, 16, 18, 19, 20, 21},
 //            {3, 4, 5,  26, 12, 13, 14, 22, 23, 20, 21},
 //            {1, 2, 7,  8,  17, 10, 24, 25, 20, 21}
-            {6},
-            {0, 9, 15, 16, 18, 19},
-            {3, 4, 5,  12, 13, 14},
-            {1, 2, 7,  8,  17, 10}
+            {3, 4, 5,  12, 13, 14}, //OWASA
+            {0, 9, 15, 16, 18, 19}, //Durham
+            {6},                    //Cary
+            {1, 2, 7,  8,  17, 10}  //Raleigh
     };
 
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
@@ -1669,35 +1717,53 @@ void triangleTest() {
                                                          initial_restriction_triggers[3] + 0.35,
                                                          initial_restriction_triggers[3] + 0.6};
 
-    Restrictions restrictions_c(0, restriction_stage_multipliers_cary, restriction_stage_triggers_cary);
-    Restrictions restrictions_d(1, restriction_stage_multipliers_durham, restriction_stage_triggers_durham);
-    Restrictions restrictions_o(2, restriction_stage_multipliers_owasa, restriction_stage_triggers_owasa);
-    Restrictions restrictions_r(3, restriction_stage_multipliers_raleigh, restriction_stage_triggers_raleigh);
+    Restrictions restrictions_c(2,
+                                restriction_stage_multipliers_cary,
+                                restriction_stage_triggers_cary);
+    Restrictions restrictions_d(1,
+                                restriction_stage_multipliers_durham,
+                                restriction_stage_triggers_durham);
+    Restrictions restrictions_o(0,
+                                restriction_stage_multipliers_owasa,
+                                restriction_stage_triggers_owasa);
+    Restrictions restrictions_r(3,
+                                restriction_stage_multipliers_raleigh,
+                                restriction_stage_triggers_raleigh);
 
-    drought_mitigation_policies = {&restrictions_c, &restrictions_d, &restrictions_o, &restrictions_r};
+    drought_mitigation_policies = {&restrictions_c, &restrictions_d,
+                                   &restrictions_o, &restrictions_r};
 
     /// Transfer policy
     /*
-     *      0
+     *      2
      *     / \
      *  0 v   v 1
      *   /     \
-     *  3---><--1--><--2
+     *  3---><--1--><--0
      *      2       3
      */
 
-    vector<int> buyers_ids = {1, 2, 3};
+    vector<int> buyers_ids = {0, 1, 3};
     vector<double> buyers_transfers_capacities = {10.8 * 7, 10.0 * 7, 11.5 * 7,
                                                   7.0 * 7};
     vector<double> buyers_transfers_trigger = {0.02, 0.02, 0.02};
 
     Graph ug(4);
-    ug.addEdge(0, 1);
-    ug.addEdge(0, 3);
+    ug.addEdge(2,
+               1);
+    ug.addEdge(2,
+               3);
     ug.addEdge(1, 3);
-    ug.addEdge(1, 2);
+    ug.addEdge(1,
+               0);
 
-    Transfers t(0, 0, 245, buyers_ids, buyers_transfers_capacities, buyers_transfers_trigger, ug,
+    Transfers t(0,
+                2,
+                245,
+                buyers_ids,
+                buyers_transfers_capacities,
+                buyers_transfers_trigger,
+                ug,
                 vector<double>(), vector<int>());
     drought_mitigation_policies.push_back(&t);
 
@@ -1714,9 +1780,9 @@ void triangleTest() {
                  2385,
                  8,
                  data_collector); //2385
-    cout << "Beginning Triangle simulation" << endl;
+    cout << "Beginning simulation." << endl;
     s.runFullSimulation(4);
-    cout << "Ending Triangle simulation" << endl;
+    cout << "Ending simulation" << endl;
 }
 
 int main() {

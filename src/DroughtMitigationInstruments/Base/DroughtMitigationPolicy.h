@@ -34,7 +34,7 @@ public:
 
     bool operator>(const DroughtMitigationPolicy *other);
 
-    ~DroughtMitigationPolicy();
+    virtual ~DroughtMitigationPolicy();
 
     void setStorage_to_rof_table_(const Matrix3D<double> *storage_to_rof_table_);
 

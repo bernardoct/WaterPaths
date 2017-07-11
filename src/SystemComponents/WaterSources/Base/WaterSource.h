@@ -22,7 +22,7 @@ protected:
     double demand = 0;
     double upstream_min_env_inflow;
     double capacity;
-    double *available_allocated_volume;
+    double *available_allocated_volumes;
     bool online;
     vector<Catchment *> catchments;
     double min_environmental_outflow;
@@ -64,15 +64,15 @@ public:
 
     void continuityWaterSource(
             int week, double upstream_source_inflow,
-            double demand_outflow);
+            double *demand_outflow);
 
     virtual void applyContinuity(
             int week, double upstream_source_inflow,
-            double demand_outflow) = 0;
+            double *demand_outflow) = 0;
 
     virtual void setOnline();
 
-    double getAvailableAllocatedVolume(int utility_id);
+    virtual double getAvailableAllocatedVolume(int utility_id);
 
     double getMin_environmental_outflow() const;
 

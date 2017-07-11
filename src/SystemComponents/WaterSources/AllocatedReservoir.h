@@ -10,10 +10,7 @@
 
 class AllocatedReservoir : public Reservoir {
 private:
-    AllocatedReservoir(const AllocatedReservoir &reservoir);
-
-    const int *utilities_with_allocations;
-    const double *allocated_fractions;
+    double *allocated_capacities;
 
 public:
     AllocatedReservoir(
@@ -22,8 +19,8 @@ public:
             const double max_treatment_capacity,
             EvaporationSeries *evaporation_series,
             DataSeries *storage_area_curve,
-            const int *utilities_with_allocations,
-            const double *allocated_fractions);
+            const vector<int> *utilities_with_allocations,
+            const vector<double> *allocated_fractions);
 
     AllocatedReservoir(
             const char *name, const int id,
@@ -33,16 +30,17 @@ public:
             DataSeries *storage_area_curve, const double construction_rof,
             const vector<double> &construction_time_range,
             double construction_cost, double bond_term,
-            double bond_interest_rate, const int *utilities_with_allocations,
-            const double *allocated_fractions);
+            double bond_interest_rate,
+            const vector<int> *utilities_with_allocations,
+            const vector<double> *allocated_fractions);
 
     AllocatedReservoir(
             const char *name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
             const double max_treatment_capacity,
             EvaporationSeries *evaporation_series, double storage_area,
-            const int *utilities_with_allocations,
-            const double *allocated_fractions);
+            const vector<int> *utilities_with_allocations,
+            const vector<double> *allocated_fractions);
 
     AllocatedReservoir(
             const char *name, const int id,
@@ -52,17 +50,26 @@ public:
             const double construction_rof,
             const vector<double> &construction_time_range,
             double construction_cost, double bond_term,
-            double bond_interest_rate, const int *utilities_with_allocations,
-            const double *allocated_fractions);
+            double bond_interest_rate,
+            const vector<int> *utilities_with_allocations,
+            const vector<double> *allocated_fractions);
 
     AllocatedReservoir &operator=(
             const AllocatedReservoir
             &allocated_reservoir);
 
+    AllocatedReservoir(const AllocatedReservoir &reservoir);
+
+    const vector<int> *utilities_with_allocations;
+    const double *allocated_fractions;
+
     void applyContinuity(
             int week, double upstream_source_inflow,
-            double demand_outflow) override;
+            double *demand_outflow) override;
 
+    double getAvailableAllocatedVolume(int utility_id) override;
+
+    const double *getAvailableAllocatedVolumes() const;
 };
 
 

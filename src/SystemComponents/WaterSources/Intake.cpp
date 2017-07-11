@@ -6,8 +6,7 @@
 #include "Intake.h"
 
 Intake::Intake(
-        const char *name, const int id,
-        const vector<Catchment *> &catchments,
+        const char *name, const int id, const vector<Catchment *> &catchments,
         const double max_treatment_capacity)
         : WaterSource(name,
                       id,
@@ -27,8 +26,7 @@ Intake::Intake(
 }
 
 Intake::Intake(
-        const char *name, const int id,
-        const vector<Catchment *> &catchments,
+        const char *name, const int id, const vector<Catchment *> &catchments,
         const double raw_water_main_capacity, const double construction_rof,
         const vector<double> construction_time_range,
         double construction_npv_cost_of_capital, double bond_term,
@@ -103,7 +101,7 @@ Intake::~Intake() {
  */
 void Intake::applyContinuity(
         int week, double upstream_source_inflow,
-        double demand) {
+        double *demand) {
 
     /// Get all upstream catchment inflow.
     upstream_catchment_inflow = 0;
@@ -112,7 +110,7 @@ void Intake::applyContinuity(
 
     /// Mass balance for current time step.
     double total_outflow_approx = upstream_source_inflow +
-                                  upstream_catchment_inflow - demand;
+                                  upstream_catchment_inflow - demand[id];
 
     /// Amount of water that could have been drawn but was let pass or that was over drawn.
     double over_under_use = total_outflow_approx - min_environmental_outflow;
@@ -132,7 +130,7 @@ void Intake::applyContinuity(
             min_environmental_outflow + over_under_use);
 
     /// Records for the sake of output.
-    this->demand = demand;
+    this->demand = demand[id];
     this->upstream_source_inflow = upstream_source_inflow;
 }
 

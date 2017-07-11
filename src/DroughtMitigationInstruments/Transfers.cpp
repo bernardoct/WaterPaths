@@ -32,17 +32,18 @@
  */
 Transfers::Transfers(
         const int id, const int source_utility_id,
-        const double source_treatment_buffer,
+        int transfer_water_source_id, const double source_treatment_buffer,
         const vector<int> &buyers_ids,
         const vector<double> &pipe_transfer_capacities,
         const vector<double> &buyers_transfer_triggers,
-        const Graph utilities_graph,
-        vector<double> conveyance_costs, vector<int> pipe_owner)
+        const Graph utilities_graph, vector<double> conveyance_costs,
+        vector<int> pipe_owner)
         : DroughtMitigationPolicy(id, TRANSFERS),
           source_utility_id(source_utility_id),
           source_treatment_buffer(source_treatment_buffer),
           buyers_ids(buyers_ids),
-          buyers_transfer_triggers(buyers_transfer_triggers) {
+          buyers_transfer_triggers(buyers_transfer_triggers),
+          transfer_water_source_id(transfer_water_source_id) {
 
     for (int i : buyers_ids)
         if (i == source_utility_id)
@@ -76,7 +77,7 @@ Transfers::Transfers(
     /// lb <= x <= ub
     unsigned int n_flow_rates_Q_source =
             (unsigned int) pipe_transfer_capacities.size() + 1;
-    unsigned int n_allocations = (unsigned int) buyers_ids.size();
+    auto n_allocations = (unsigned int) buyers_ids.size();
     unsigned int n_vars = n_flow_rates_Q_source + n_allocations;
 
     H.resize(0, n_vars, n_vars);
@@ -165,16 +166,23 @@ void Transfers::addSystemComponents(
         vector<Utility *> system_utilities,
         vector<WaterSource *> water_sources) {
 
-    if (realization_utilities.size() > 0)
+    if (!realization_utilities.empty())
         throw std::invalid_argument("Utilities were already assigned to "
                                             "transfer policy.");
 
+    //FIXME: RIGHT NOW TRANSFERS CAN ONLY HAVE ONE SOURCE. THIS NEEDS TO BE EXPANDED.
     for (Utility *u : system_utilities)
         if (u->id == source_utility_id)
             source_utility = u; // source of transfers
         else {
             realization_utilities.push_back(u); //
         }
+
+    if (transfer_water_source != nullptr)
+        __throw_invalid_argument("Water sources already assigned to transfer "
+                                         "policy.");
+    else
+        transfer_water_source = water_sources[transfer_water_source_id];
 }
 
 void Transfers::applyPolicy(int week) {
@@ -286,7 +294,7 @@ vector<double> Transfers::solve_QP(
         double min_transfer_volume, int week) {
 
     vector<double> flow_rates_and_allocations;
-    unsigned int n_allocations = (unsigned int) allocation_requests.size();
+    auto n_allocations = (unsigned int) allocation_requests.size();
     unsigned int n_vars = f.size();
     unsigned int n_pipes = n_vars - n_allocations - 1;
     Vector<double> x;

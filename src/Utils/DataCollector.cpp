@@ -161,7 +161,8 @@ void DataCollector::printPathways(string file_name) {
 
     for (int r = 0; r < number_of_realizations; ++r)
         for (vector<int> &infra : pathways[r]) {
-            outStream << r << "\t" << infra[0] << "\t" << infra[1] << "\t" << infra[2] << endl;
+            outStream << r << "\t" << infra[0] << "\t" << infra[1] << "\t"
+                      << infra[2] << endl;
         }
 
     outStream.close();
@@ -223,7 +224,8 @@ void DataCollector::printReservoirOutput(string file_name) {
 void DataCollector::printReservoirOutput(string file_name) {
 
     std::ofstream outStream;
-    int n_weeks = (int) water_sources_t[0].total_upstream_sources_inflows[0].size();
+    int n_weeks =
+            (int) water_sources_t[0].total_upstream_sources_inflows[0].size();
 
     for (int r = 0; r < number_of_realizations; ++r) {
         outStream.open(output_directory + file_name + std::to_string(r));
@@ -439,8 +441,9 @@ void DataCollector::printPoliciesOutput(string file_name) {
 
     /// Checks if there were drought mitigation policies in place.
     if (!restriction_policies_t.empty()) {
-        int n_weeks = (int) restriction_policies_t[0].restriction_multiplier[0]
-                .size();
+        int n_weeks =
+                (int) restriction_policies_t[0].restriction_multiplier[0]
+                        .size();
 
         sort(restriction_policies_t.begin(),
              restriction_policies_t.end());

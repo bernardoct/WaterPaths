@@ -6,7 +6,6 @@
 #include <cmath>
 #include "ContinuityModel.h"
 
-
 ContinuityModel::ContinuityModel(
         const vector<WaterSource *> &water_sources,
         const vector<Utility *> &utilities,
@@ -88,13 +87,10 @@ ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) :
  * @param rof_realization rof realization id (between 0 and 49 inclusive).
  */
 void ContinuityModel::continuityStep(int week, int rof_realization) {
-    double demands[continuity_water_sources.size()];
-    double upstream_spillage[continuity_water_sources.size()];
-    double wastewater_discharges[continuity_water_sources.size()];
-    std::fill(wastewater_discharges,
-              wastewater_discharges +
-              continuity_water_sources.size(),
-              0);
+    auto *demands = new double[continuity_water_sources.size()]();
+    auto *upstream_spillage = new double[continuity_water_sources.size()]();
+    auto *wastewater_discharges =
+            new double[continuity_water_sources.size()]();
 
     /**
      * Get wastewater discharges based on previous week's demand.
@@ -135,13 +131,18 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
 
         continuity_water_sources[i]->continuityWaterSource(
                 week - (int) std::round((rof_realization + 1) * WEEKS_IN_YEAR),
-                upstream_spillage[i] + wastewater_discharges[i], demands[i]);
+                upstream_spillage[i] + wastewater_discharges[i],
+                demands);
     }
 
     /// updates combined storage for utilities.
     for (Utility *u : continuity_utilities) {
         u->updateTotalStoredVolume();
     }
+
+    delete[] demands;
+    delete[] upstream_spillage;
+    delete[](wastewater_discharges);
 }
 
 const vector<Utility *> &ContinuityModel::getUtilities() const {

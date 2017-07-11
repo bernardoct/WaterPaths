@@ -35,7 +35,9 @@ public:
 
     ~Intake();
 
-    virtual void applyContinuity(int week, double upstream_source_min_env_flow, double demand) override;
+    virtual void applyContinuity(
+            int week, double upstream_source_min_env_flow,
+            double *demand) override;
 
     void setUpstream_min_env_flow(double upstream_min_env_flow);
 

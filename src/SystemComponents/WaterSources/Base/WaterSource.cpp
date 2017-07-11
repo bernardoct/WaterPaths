@@ -137,7 +137,7 @@ bool WaterSource::compare(WaterSource *lhs, WaterSource *rhs) {
  */
 void WaterSource::continuityWaterSource(
         int week, double upstream_source_inflow,
-        double demand_outflow) {
+        double *demand_outflow) {
     if (online)
         applyContinuity(week, upstream_source_inflow, demand_outflow);
     else

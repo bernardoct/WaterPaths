@@ -63,7 +63,7 @@ Quarry::~Quarry() {
  */
 void Quarry::applyContinuity(
         int week, double upstream_source_inflow,
-        double demand_outflow) {
+        double *demand_outflow) {
 
     double catchment_inflow = 0;
     for (Catchment *c : catchments) {
@@ -71,14 +71,14 @@ void Quarry::applyContinuity(
     }
 
     double total_inflow = upstream_source_inflow + catchment_inflow;
-    total_outflow = demand_outflow + min_environmental_outflow;
+    total_outflow = demand_outflow[id] + min_environmental_outflow;
 
     diverted_flow = min(max_diversion,
                         total_inflow -
                         min_environmental_outflow);
 
     double stored_volume_new = available_volume + diverted_flow -
-                               demand_outflow;
+                               demand_outflow[id];
     double outflow_new = total_inflow - diverted_flow;
 
     if (online) {
@@ -92,7 +92,7 @@ void Quarry::applyContinuity(
         outflow_new = upstream_source_inflow + catchment_inflow;
     }
 
-    demand = demand_outflow;
+    demand = demand_outflow[id];
     available_volume = max(stored_volume_new, 0.0);
     total_outflow = outflow_new;
     this->upstream_source_inflow = upstream_source_inflow;

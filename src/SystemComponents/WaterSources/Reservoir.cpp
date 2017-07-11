@@ -175,7 +175,7 @@ Reservoir::~Reservoir() {
  */
 void Reservoir::applyContinuity(
         int week, double upstream_source_inflow,
-        double demand_outflow) {
+        double *demand_outflow) {
 
     /// Calculate total runoff inflow reaching reservoir from its watershed.
     double catchment_inflow = 0;
@@ -184,17 +184,16 @@ void Reservoir::applyContinuity(
     }
 
     /// Calculates water lost through evaporation.
-    double evaporation = (fixed_area ? area *
-                                       evaporation_series->getEvaporation(week)
-                                     :
+    evaporated_volume = (fixed_area ?
+                         area * evaporation_series->getEvaporation(week) :
                           storage_area_curve->get_dependent_variable(available_volume) *
                           evaporation_series->getEvaporation(week));
 
     /// Calculate new stored volume and outflow based on continuity.
     double stored_volume_new = available_volume
                                + upstream_source_inflow + catchment_inflow
-                               - demand_outflow - min_environmental_outflow
-                               - evaporation;
+                               - demand_outflow[id] - min_environmental_outflow
+                               - evaporated_volume;
     double outflow_new = min_environmental_outflow;
 
 
@@ -211,7 +210,7 @@ void Reservoir::applyContinuity(
     }
 
     /// Update data collection variables.
-    demand = demand_outflow;
+    demand = demand_outflow[id];
     available_volume = stored_volume_new;//max(stored_volume_new, 0.0);
     total_outflow = outflow_new;
     this->upstream_source_inflow = upstream_source_inflow;
@@ -233,7 +232,8 @@ void Reservoir::setRealization(unsigned long r) {
     if (evaporation_series)
         evaporation_series->setRealization(r);
     else {
-        cout << "WARNING: No evaporation time series for Reservoir " << name;
+        cout << "WARNING: No evaporated_volume time series for Reservoir "
+             << name;
         vector<vector<double>> *evaporation =
                 new std::vector<vector<double>>(1,
                                                 vector<double>(10000,

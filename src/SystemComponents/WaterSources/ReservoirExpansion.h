@@ -28,7 +28,7 @@ public:
 
     void applyContinuity(
             int week, double upstream_source_inflow,
-            double demand_outflow) override;
+            double *demand_outflow) override;
 
 };
 

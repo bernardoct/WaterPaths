@@ -33,7 +33,8 @@ WaterReuse::WaterReuse(const char *name, const int id, const double capacity, co
     available_volume = capacity;
 }
 
-void WaterReuse::applyContinuity(int week, double upstream_source_inflow, double demand_outflow) {}
+void WaterReuse::applyContinuity(
+        int week, double upstream_source_inflow, double *demand_outflow) {}
 
 
 WaterReuse &WaterReuse::operator=(const WaterReuse &water_reuse) {

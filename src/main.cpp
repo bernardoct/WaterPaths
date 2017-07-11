@@ -1179,11 +1179,11 @@ void triangleTest() {
     vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demands/raleigh_demand.csv");
     vector<vector<double>> demand_owasa = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demands/owasa_demand.csv");
 
-    vector<vector<double>> evap_durham = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/durham_evap.csv");
-    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/falls_lake_evap.csv");
-    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/owasa_evap.csv");
-    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/little_river_raleigh_evap.csv");
-    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/wb_evap.csv");
+    vector<vector<double>> evap_durham = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporated_volume/durham_evap.csv");
+    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporated_volume/falls_lake_evap.csv");
+    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporated_volume/owasa_evap.csv");
+    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporated_volume/little_river_raleigh_evap.csv");
+    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporated_volume/wb_evap.csv");
     vector<vector<double>> evap_jordan_lake = evap_owasa;
 */
 
@@ -1759,12 +1759,14 @@ void triangleTest() {
 
     Transfers t(0,
                 2,
+                0,
                 245,
                 buyers_ids,
                 buyers_transfers_capacities,
                 buyers_transfers_trigger,
                 ug,
-                vector<double>(), vector<int>());
+                vector<double>(),
+                vector<int>());
     drought_mitigation_policies.push_back(&t);
 
     /// Data collector pointer

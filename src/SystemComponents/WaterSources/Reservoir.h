@@ -15,11 +15,11 @@ using namespace std;
 
 
 class Reservoir : public WaterSource {
-private:
-
+protected:
     EvaporationSeries *evaporation_series;
     DataSeries *storage_area_curve;
     const bool fixed_area;
+    double evaporated_volume;
     double area = NON_INITIALIZED;
 
 public:
@@ -63,7 +63,9 @@ public:
 
     ~Reservoir();
 
-    virtual void applyContinuity(int week, double upstream_source_inflow, double demand_outflow) override;
+    virtual void applyContinuity(
+            int week, double upstream_source_inflow,
+            double *demand_outflow) override;
 
     void setOnline();
 

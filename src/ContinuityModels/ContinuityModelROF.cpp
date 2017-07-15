@@ -174,7 +174,9 @@ void ContinuityModelROF::updateStorageToROFTable(
             double utility_storage = 0;
             /// Calculate combined stored volume for each utility based on shifted storages.
             for (int ws : water_sources_to_utilities[u])
-                utility_storage += available_volumes_shifted[ws];
+                utility_storage += available_volumes_shifted[ws] *
+                                   continuity_water_sources[ws]
+                                           ->getAllocatedFraction(u);
             /// Register failure in the table for each utility meeting failure criteria.
             if (utility_storage / utilities_capacities[u] <
                 STORAGE_CAPACITY_RATIO_FAIL) {
@@ -267,16 +269,14 @@ void ContinuityModelROF::resetUtilitiesAndReservoirs(int rof_type) {
     if (rof_type == SHORT_TERM_ROF)
         for (int i = 0; i < continuity_water_sources.size();
              ++i) {   // Current available volume
-            continuity_water_sources[i]->setAvailable_volume(
-                    realization_water_sources[i]->getAvailable_volume());
+            continuity_water_sources[i]->setFull();
             continuity_water_sources[i]->setOutflow_previous_week(
                     realization_water_sources[i]->getTotal_outflow());
         }
     else
         for (int i = 0; i < continuity_water_sources.size();
              ++i) {   // Full capacity
-            continuity_water_sources[i]->setAvailable_volume(
-                    realization_water_sources[i]->getCapacity());
+            continuity_water_sources[i]->setFull();
             continuity_water_sources[i]->setOutflow_previous_week(
                     realization_water_sources[i]->getTotal_outflow());
         }

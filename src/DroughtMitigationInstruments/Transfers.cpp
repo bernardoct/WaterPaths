@@ -126,13 +126,13 @@ Transfers::Transfers(const Transfers &transfers) :
         source_utility_id(transfers.source_utility_id),
         source_treatment_buffer(transfers.source_treatment_buffer) {
 
-    buyers_ids = transfers.buyers_ids;
-    buyers_transfer_triggers = transfers.buyers_transfer_triggers;
-    flow_rates_and_allocations = transfers.flow_rates_and_allocations;
 //    if (transfers.source_utility)
 //        FIXME: VALGRIND COMPLAINS ABOUT THIS LINE ABOVE EVEN IF IT'S NOT SUPPOSED TO BE CALLED.
 //        source_utility = new Utility(*transfers.source_utility);
-
+    buyers_ids = transfers.buyers_ids;
+    buyers_transfer_triggers = transfers.buyers_transfer_triggers;
+    flow_rates_and_allocations = transfers.flow_rates_and_allocations;
+    transfer_water_source_id = transfers.transfer_water_source_id;
     H = transfers.H;
     Aeq = transfers.Aeq;
     A = transfers.A;
@@ -264,16 +264,30 @@ void Transfers::applyPolicy(int week) {
             /// Mitigate demands.
             double sum_allocations = 0;
             int price_week = Utils::weekOfTheYear(week);
-            for (int i = 0; i < n_allocations; ++i) {
-                realization_utilities[i]->setDemand_offset(
-                        allocations[i],
-                        source_utility->waterPrice(price_week));
-                sum_allocations += allocations[i];
+//            for (int i = 0; i < allocations.size(); ++i) {
+//                if (i != source_utility_id) {
+//                    int id = util_id_to_vertex_id->at(i);
+//                    realization_utilities[id]->setDemand_offset
+//                            (allocations[i], source_utility->waterPrice
+//                                    (price_week));
+//                    sum_allocations += allocations[i];
+//                }
+//
+//                /// Remove transferred water from source of transfer
+//                if (i != source_utility_id)
+//                    transfer_water_source->removeWater(i, allocations[i]);
+//            }
+
+            for (auto u : *util_id_to_vertex_id) {
+                int id = u.first;
+                realization_utilities[u.second]->setDemand_offset
+                        (allocations[id],
+                         source_utility->waterPrice
+                                 (price_week));
+                sum_allocations += allocations[id];
+                transfer_water_source->removeWater(id,
+                                                   allocations[id]);
             }
-            /// draw water from source utility.
-            source_utility->setDemand_offset(-sum_allocations,
-                                             source_utility
-                                                     ->waterPrice(price_week));
         }
     }
 }
@@ -290,8 +304,8 @@ void Transfers::applyPolicy(int week) {
  */
 vector<double> Transfers::solve_QP(
         vector<double> allocation_requests,
-        double available_transfer_volume,
-        double min_transfer_volume, int week) {
+        double available_transfer_volume, double min_transfer_volume,
+        int week) {
 
     vector<double> flow_rates_and_allocations;
     auto n_allocations = (unsigned int) allocation_requests.size();
@@ -313,11 +327,15 @@ vector<double> Transfers::solve_QP(
             lb[n_pipes + buyers_ids[i]] = NONE;
             ub[n_pipes + buyers_ids[i]] = NONE;
         } else {
-            lb[n_pipes + buyers_ids[i]] = min_transfer_volume;
+            double allocation_available = transfer_water_source
+                    ->getAvailableAllocatedVolume(buyers_ids[i]);
+            lb[n_pipes + buyers_ids[i]] = min(min_transfer_volume,
+                                              allocation_available);
 //            ub[n_pipes + buyers_ids[i]] = available_transfer_volume;
-            ub[n_pipes + buyers_ids[i]] =
+            ub[n_pipes + buyers_ids[i]] = min(
                     realization_utilities[i]->getUnrestrictedDemand(week) *
-                    realization_utilities[i]->getDemand_multiplier();
+                    realization_utilities[i]->getDemand_multiplier(),
+                    allocation_available);
         }
     }
 
@@ -350,16 +368,16 @@ vector<double> Transfers::solve_QP(
     /// Run quadratic programming solver.
     solve_quadprog_matlab_syntax(G, f, Aeq, beq, A, b, lb, ub, x);
 
-    /*
-    print_matrix("H", G);
-    print_vector("f", f);
-    print_matrix("Aeq", Aeq);
-    print_vector("beq", beq);
-    print_vector("lb", lb);
-    print_vector("ub", ub);
-    print_vector("x", x);
-    cout << "======================================================" << endl;
-    */
+
+//    print_matrix("H", G);
+//    print_vector("f", f);
+//    print_matrix("Aeq", Aeq);
+//    print_vector("beq", beq);
+//    print_vector("lb", lb);
+//    print_vector("ub", ub);
+//    print_vector("x", x);
+//    cout << "======================================================" << endl;
+
 
     /// Convert Vector x into a vector.
     for (int i = 0; i < x.size(); ++i) {
@@ -367,14 +385,6 @@ vector<double> Transfers::solve_QP(
     }
 
     return flow_rates_and_allocations;
-}
-
-vector<double> Transfers::getConveyed_volumes() {
-    return conveyed_volumes;
-}
-
-const vector<int> &Transfers::getBuyers_ids() const {
-    return buyers_ids;
 }
 
 const vector<double> &Transfers::getAllocations() const {

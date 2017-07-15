@@ -16,6 +16,7 @@
 #include "Controls/FixedMinEnvFlowControl.h"
 #include "Controls/Custom/JordanLakeMinEnvFlowControl.h"
 #include "Controls/Custom/FallsLakeMinEnvFlowControl.h"
+#include "SystemComponents/WaterSources/AllocatedReservoir.h"
 
 
 int regionOneUtilitiesTwoReservoirsContinuityTest();
@@ -1109,57 +1110,32 @@ void triangleTest() {
             "../TestFiles/sewageFractions.csv");
     */
 
-    vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/durhamInflowsLong.csv");
-    vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/flatInflowsLong.csv");
-    vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/swiftInflowsLong.csv");
-    vector<vector<double>> streamflows_llr = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/littleriverraleighInflowsLong.csv");
-    vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/crabtreeInflowsLong.csv");
-    vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/philsInflowsLong.csv");
-    vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/caneInflowsLong.csv");
-    vector<vector<double>> streamflows_morgan = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/morganInflowsLong.csv");
-    vector<vector<double>> streamflows_haw = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/hawInflowsLong.csv");
-    vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/claytonInflowsLong.csv");
-    vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/lillingtonInflowsLong.csv");
+//    vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/durhamInflowsLong.csv");
+//    vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/flatInflowsLong.csv");
+//    vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/swiftInflowsLong.csv");
+//    vector<vector<double>> streamflows_llr = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/littleriverraleighInflowsLong.csv");
+//    vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/crabtreeInflowsLong.csv");
+//    vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/philsInflowsLong.csv");
+//    vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/caneInflowsLong.csv");
+//    vector<vector<double>> streamflows_morgan = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/morganInflowsLong.csv");
+//    vector<vector<double>> streamflows_haw = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/hawInflowsLong.csv");
+//    vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/claytonInflowsLong.csv");
+//    vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/lillingtonInflowsLong.csv");
+//
+//    vector<vector<double>> demand_cary = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demandsLongCary.csv");
+//    vector<vector<double>> demand_durham = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demandsLongDurham.csv");
+//    vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demandsLongRaleigh.csv");
+//    vector<vector<double>> demand_owasa = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demandsLongOWASA.csv");
+//
+//    vector<vector<double>> evap_durham = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongDurham.csv");
+//    vector<vector<double>> evap_jordan_lake = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongCary.csv");
+//    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongFalls.csv");
+//    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongOWASA.csv");
+//    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongRaleighOther.csv");
+//    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongWB.csv");
 
-    vector<vector<double>> demand_cary = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demandsLongCary.csv");
-    vector<vector<double>> demand_durham = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demandsLongDurham.csv");
-    vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demandsLongRaleigh.csv");
-    vector<vector<double>> demand_owasa = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demandsLongOWASA.csv");
 
-    vector<vector<double>> evap_durham = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongDurham.csv");
-    vector<vector<double>> evap_jordan_lake = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongCary.csv");
-    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongFalls.csv");
-    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongOWASA.csv");
-    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongRaleighOther.csv");
-    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongWB.csv");
-/*
-    vector<vector<double>> demand_to_wastewater_fraction_owasa_raleigh =
-            Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
-    vector<vector<double>> demand_to_wastewater_fraction_durham =
-            Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demand_to_wastewater_fraction_durham.csv");
-
-    vector<vector<double>> caryDemandClassesFractions = Utils::parse2DCsvFile
-            ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/caryDemandClassesFractions.csv");
-    vector<vector<double>> durhamDemandClassesFractions = Utils::parse2DCsvFile
-            ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/durhamDemandClassesFractions.csv");
-    vector<vector<double>> raleighDemandClassesFractions = Utils::parse2DCsvFile
-            ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/raleighDemandClassesFractions.csv");
-    vector<vector<double>> owasaDemandClassesFractions = Utils::parse2DCsvFile
-            ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/owasaDemandClassesFractions.csv");
-
-    vector<vector<double>> caryUserClassesWaterPrices = Utils::parse2DCsvFile
-            ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/caryUserClassesWaterPrices.csv");
-    vector<vector<double>> durhamUserClassesWaterPrices = Utils::parse2DCsvFile
-            ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/durhamUserClassesWaterPrices.csv");
-    vector<vector<double>> raleighUserClassesWaterPrices = Utils::parse2DCsvFile
-            ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/raleighUserClassesWaterPrices.csv");
-    vector<vector<double>> owasaUserClassesWaterPrices = Utils::parse2DCsvFile
-            ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/owasaUserClassesWaterPrices.csv");
-
-    vector<double> sewageFractions = Utils::parse1DCsvFile(
-            "/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/sewageFractions.csv");
-*/
-/*
+    cout << "Reading inflows." << endl;
     vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/inflows/durham_inflows.csv");
     vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/inflows/falls_lake_inflows.csv");
     vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/inflows/lake_wb_inflows.csv");
@@ -1174,19 +1150,21 @@ void triangleTest() {
 
     vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/inflows/lillington_inflows.csv");
 
+    cout << "Reading demands." << endl;
     vector<vector<double>> demand_cary = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demands/cary_demand.csv");
     vector<vector<double>> demand_durham = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demands/durham_demand.csv");
     vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demands/raleigh_demand.csv");
     vector<vector<double>> demand_owasa = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demands/owasa_demand.csv");
 
-    vector<vector<double>> evap_durham = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporated_volume/durham_evap.csv");
-    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporated_volume/falls_lake_evap.csv");
-    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporated_volume/owasa_evap.csv");
-    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporated_volume/little_river_raleigh_evap.csv");
-    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporated_volume/wb_evap.csv");
+    cout << "Reading evaporations." << endl;
+    vector<vector<double>> evap_durham = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/durham_evap.csv");
+    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/falls_lake_evap.csv");
+    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/owasa_evap.csv");
+    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/little_river_raleigh_evap.csv");
+    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/wb_evap.csv");
     vector<vector<double>> evap_jordan_lake = evap_owasa;
-*/
 
+    cout << "Reading others." << endl;
     vector<vector<double>> demand_to_wastewater_fraction_owasa_raleigh =
             Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
     vector<vector<double>> demand_to_wastewater_fraction_durham =
@@ -1363,35 +1341,82 @@ void triangleTest() {
 
     /// Create reservoirs and corresponding vector
     vector<double> construction_time_interval = {3.0, 5.0};
-//    vector<double> construction_time_interval = {300.0, 300.001};
-    //Cary  Dur  OWA   Ral
-    vector<double> JL_allocation_fractions = {0.3, 0.1, 0.05, 0.0};
-    double JL_supply_capacity = 14924.0;
-    vector<double> city_infrastructure_rof_triggers = {0.02, 0.06, 0.02, 0.02};
+    vector<double> city_infrastructure_rof_triggers = {0.02, 0.02, 0.02, 0.02};
     vector<double> bond_length = {25, 25, 25, 25};
     vector<double> bond_rate = {0.05, 0.05, 0.05, 0.05};
 
+    /// Jordan Lake parameters
+    double jl_supply_capacity = 14924.0;
+    double jl_wq_capacity = 30825.0;
+    double jl_storage_capacity = jl_wq_capacity + jl_supply_capacity;
+    vector<int> jl_allocations_ids = {0, 1, 2, 3, WATER_QUALITY_ALLOCATION};
+    vector<double> jl_allocation_fractions = {
+            0.05 * jl_supply_capacity / jl_storage_capacity,
+            0.1 * jl_supply_capacity / jl_storage_capacity,
+            0.39 * jl_supply_capacity / jl_storage_capacity,
+            0.,
+            jl_wq_capacity / jl_storage_capacity};
+
+    /// Jordan Lake parameters
+    double fl_supply_capacity = 14700.0;
+    double fl_wq_capacity = 20000.0;
+    double fl_storage_capacity = fl_wq_capacity + fl_supply_capacity;
+    vector<int> fl_allocations_ids = {3, WATER_QUALITY_ALLOCATION};
+    vector<double> fl_allocation_fractions = {
+            fl_supply_capacity / fl_storage_capacity,
+            fl_wq_capacity / fl_storage_capacity};
+
     // Existing Sources
     Reservoir durham_reservoirs("Lake Michie & Little River Res. (Durham)",
-                                0, catchment_durham, 6349.0, 99999,
+                                0,
+                                catchment_durham,
+                                6349.0,
+                                99999,
                                 &evaporation_durham, 1069);
-    Reservoir falls_lake("Falls Lake", 1, catchment_flat, 34700.0, 99999,
-                         &evaporation_falls_lake, &falls_lake_storage_area);
+//    Reservoir falls_lake("Falls Lake", 1, catchment_flat,
+//                         34700.0, 99999,
+//                         &evaporation_falls_lake, &falls_lake_storage_area);
+    AllocatedReservoir falls_lake("Falls Lake",
+                                  1,
+                                  catchment_flat,
+                                  fl_storage_capacity,
+                                  99999,
+                                  &evaporation_falls_lake,
+                                  &falls_lake_storage_area,
+                                  &fl_allocations_ids,
+                                  &fl_allocation_fractions);
+    //FIXME: SET WB ONLINE AGAIN.
     Reservoir wheeler_benson_lakes("Wheeler-Benson Lakes", 2, catchment_swift,
-                                   2789.66, 99999, &evaporation_wheeler_benson,
-                                   &wheeler_benson_storage_area);
+                                   2789.66,
+                                   99999,
+                                   &evaporation_wheeler_benson,
+                                   &wheeler_benson_storage_area,
+                                   city_infrastructure_rof_triggers[3],
+                                   construction_time_interval,
+                                   263.0,
+                                   bond_length[3],
+                                   bond_rate[3]);
     Reservoir stone_quarry("Stone Quarry", 3, catchment_phils, 200.0, 99999,
                            &evaporation_owasa, 10);
     Reservoir ccr("Cane Creek Reservoir", 4, catchment_cane, 2909.0, 99999,
                   &evaporation_owasa, 500);
     Reservoir university_lake("University Lake", 5, catchment_morgan, 449.0,
                               99999, &evaporation_owasa, 212);
-    Reservoir jordan_lake("Jordan Lake", 6, catchment_haw,
-                          JL_supply_capacity * JL_allocation_fractions[0], 448,
-                          &evaporation_jordan_lake, 13940);
+//    Reservoir jordan_lake("Jordan Lake", 6, catchment_haw,
+//                          jl_supply_capacity, 448,
+//                          &evaporation_jordan_lake, 13940);
+    AllocatedReservoir jordan_lake("Jordan Lake",
+                                   6,
+                                   catchment_haw,
+                                   jl_storage_capacity,
+                                   448,
+                                   &evaporation_jordan_lake,
+                                   13940,
+                                   &jl_allocations_ids,
+                                   &jl_allocation_fractions);
 
-    // other than Cary WTP for Jordan Lake, assume no WTP constraints - each city can meet its daily demands
-    // with available treatment infrastructure
+    // other than Cary WTP for Jordan Lake, assume no WTP constraints - each
+    // city can meet its daily demands with available treatment infrastructure
 
     // Potential Sources
     // The capacities listed here for expansions are what additional capacity is gained relative to existing capacity,
@@ -1470,32 +1495,32 @@ void triangleTest() {
     //FIXME: ONCE ONE UTILITY DECIDES TO BUILD THE WJLWTP, ALL OTHERS PAY FOR IT TOO, RIGHT? IF SO, WHAT'S THE PROPORTION?
     //FIXME: FIX AREAS.
 //    Reservoir low_wjlwtp_durham("Low WJLWTP (Durham)", 20, 0, catchment_haw,
-//                                JL_supply_capacity * JL_allocation_fractions[1], 33.0 * JL_allocation_fractions[1],
+//                                jl_storage_capacity * JL_allocation_fractions[1], 33.0 * JL_allocation_fractions[1],
 //                                &evaporation_jordan_lake, 13940,
 //                                city_infrastructure_rof_triggers[1], construction_time_interval,
 //                                243.3 * JL_allocation_fractions[1], bond_length[1], bond_rate[1]);
 //    Reservoir high_wjlwtp_durham("High WJLWTP (Durham)", 21, 0, catchment_haw,
-//                                 JL_supply_capacity * JL_allocation_fractions[1], 54.0 * JL_allocation_fractions[1],
+//                                 jl_storage_capacity * JL_allocation_fractions[1], 54.0 * JL_allocation_fractions[1],
 //                                 &evaporation_jordan_lake, 13940,
 //                                 city_infrastructure_rof_triggers[1], construction_time_interval,
 //                                 73.5 * JL_allocation_fractions[1], bond_length[1], bond_rate[1]);
 //    Reservoir low_wjlwtp_owasa("Low WJLWTP (OWASA)", 22, 0, catchment_haw,
-//                               JL_supply_capacity * JL_allocation_fractions[2], 33.0 * JL_allocation_fractions[2],
+//                               jl_storage_capacity * JL_allocation_fractions[2], 33.0 * JL_allocation_fractions[2],
 //                               &evaporation_jordan_lake, 13940,
 //                               city_infrastructure_rof_triggers[2], construction_time_interval,
 //                               243.3 * JL_allocation_fractions[2], bond_length[2], bond_rate[2]);
 //    Reservoir high_wjlwtp_owasa("High WJLWTP (OWASA)", 23, 0, catchment_haw,
-//                                JL_supply_capacity * JL_allocation_fractions[2], 54.0 * JL_allocation_fractions[2],
+//                                jl_storage_capacity * JL_allocation_fractions[2], 54.0 * JL_allocation_fractions[2],
 //                                &evaporation_jordan_lake, 13940,
 //                                city_infrastructure_rof_triggers[2], construction_time_interval,
 //                                73.5 * JL_allocation_fractions[2], bond_length[2], bond_rate[2]);
 //    Reservoir low_wjlwtp_raleigh("Low WJLWTP (Raleigh)", 24, 0, catchment_haw,
-//                                 JL_supply_capacity * JL_allocation_fractions[3], 33.0 * JL_allocation_fractions[3],
+//                                 jl_storage_capacity * JL_allocation_fractions[3], 33.0 * JL_allocation_fractions[3],
 //                                 &evaporation_jordan_lake, 13940,
 //                                 city_infrastructure_rof_triggers[3], construction_time_interval,
 //                                 243.3 * JL_allocation_fractions[3], bond_length[3], bond_rate[3]);
 //    Reservoir high_wjlwtp_raleigh("High WJLWTP (Raleigh)", 25, 0, catchment_haw,
-//                                  JL_supply_capacity * JL_allocation_fractions[4], 54.0 * JL_allocation_fractions[3],
+//                                  jl_storage_capacity * JL_allocation_fractions[4], 54.0 * JL_allocation_fractions[3],
 //                                  &evaporation_jordan_lake, 13940,
 //                                  city_infrastructure_rof_triggers[3], construction_time_interval,
 //                                  73.5 * JL_allocation_fractions[3], bond_length[3], bond_rate[3]);
@@ -1541,13 +1566,13 @@ void triangleTest() {
      * Potential projects and expansions
      * of existing sources in parentheses
      *
-     *      3(12,13)   4(26)   5(14)            0(15,16)        (18,19)
-     *         \         /      /                  |              /
-     *          \       /      /                   |             /
-     *           \     /      /                    |            /
-     *           |    /      /                    (9)          /
-     *           |   /      /                      \       ----
-     *           |   |     /                        \     /
+     *      3(12,13)   4(26)   5(14)            0(15,16)    (18,19)
+     *         \         /      /                  |
+     *          \       /      /                   |
+     *           \     /      /                    |
+     *           |    /      /                    (9)
+     *           |   /      /                      \
+     *           |   |     /                        \
      *           |   |    /                          1(17)              2   (7)
      *           |   |   /                             |                |    |
      *           |   |  /                              |                |    |
@@ -1575,7 +1600,6 @@ void triangleTest() {
      *                                11
      */
 
-    //FIXME: CHANGE IDS OF SOURCES SO THAT GRAPH NODES ARE THE FIRST WHATEVER MANY IDS.
     Graph g(12);
     g.addEdge(0,
               9);
@@ -1614,26 +1638,10 @@ void triangleTest() {
     WwtpDischargeRule wwtp_discharge_raleigh(
             &demand_to_wastewater_fraction_owasa_raleigh,
             &raleigh_ws_return_id);
-    vector<int> durham_ws_return_id = {1, 6}; //FIXME: CHECK IF THIS IS RIGHT.
+    vector<int> durham_ws_return_id = {1, 6};
     WwtpDischargeRule wwtp_discharge_durham(
             &demand_to_wastewater_fraction_durham,
             &durham_ws_return_id);
-
-//    Utility cary((char *) "Cary", 0, &demand_cary, demand_n_weeks, 0.03,
-//                 &caryDemandClassesFractions, &caryUserClassesWaterPrices,
-//                 &sewageFractions, wwtp_discharge_cary);
-//    Utility durham((char *) "Durham", 1, &demand_durham, demand_n_weeks, 0.07,
-//                   &durhamDemandClassesFractions, &durhamUserClassesWaterPrices,
-//                   &sewageFractions, wwtp_discharge_durham,
-//                   0.05);
-//    Utility owasa((char *) "OWASA", 2, &demand_owasa, demand_n_weeks, 0.05,
-//                  &owasaDemandClassesFractions, &owasaUserClassesWaterPrices,
-//                  &sewageFractions, wwtp_discharge_owasa,
-//                  0.05);
-//    Utility raleigh((char *) "Raleigh", 3, &demand_raleigh, demand_n_weeks,
-//                    0.05, &raleighDemandClassesFractions,
-//                    &raleighUserClassesWaterPrices, &sewageFractions,
-//                    wwtp_discharge_raleigh,  0.05);
 
     Utility cary((char *) "Cary",
                  2,
@@ -1695,7 +1703,7 @@ void triangleTest() {
 
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
     /// Restriction policies
-    vector<double> initial_restriction_triggers = {0.04, 0.04, 0.04, 0.04};
+    vector<double> initial_restriction_triggers = {0.02, 0.02, 0.02, 0.02};
 
     vector<double> restriction_stage_multipliers_cary = {0.9, 0.8, 0.7, 0.6};
     vector<double> restriction_stage_triggers_cary = {initial_restriction_triggers[0],
@@ -1744,9 +1752,10 @@ void triangleTest() {
      */
 
     vector<int> buyers_ids = {0, 1, 3};
+    //FIXME: TRANSFER CAPACITIES MUST BE UPDATED FOLLOWING NEW IDS.
     vector<double> buyers_transfers_capacities = {10.8 * 7, 10.0 * 7, 11.5 * 7,
                                                   7.0 * 7};
-    vector<double> buyers_transfers_trigger = {0.02, 0.02, 0.02};
+    vector<double> buyers_transfers_trigger = {0.01, 0.01, 0.01};
 
     Graph ug(4);
     ug.addEdge(2,
@@ -1759,8 +1768,8 @@ void triangleTest() {
 
     Transfers t(0,
                 2,
-                0,
-                245,
+                6,
+                35,
                 buyers_ids,
                 buyers_transfers_capacities,
                 buyers_transfers_trigger,
@@ -1779,11 +1788,11 @@ void triangleTest() {
                  utilities,
                  drought_mitigation_policies,
                  min_env_flow_controls,
-                 2385,
-                 8,
+                 2316,
+                 1000,
                  data_collector); //2385
     cout << "Beginning simulation." << endl;
-    s.runFullSimulation(4);
+    s.runFullSimulation(8);
     cout << "Ending simulation" << endl;
 }
 

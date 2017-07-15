@@ -6,9 +6,8 @@
 
 EvaporationSeries::EvaporationSeries(
         vector<vector<double>> *evaporation_series, int series_length)
-        : Catchment(
-        evaporation_series,
-        series_length) {}
+        : Catchment(evaporation_series,
+                    series_length) {}
 
 /**
  * Copy constructor.
@@ -32,6 +31,8 @@ EvaporationSeries &EvaporationSeries::operator=(
 
     return *this;
 }
+
+EvaporationSeries::~EvaporationSeries() {}
 
 double EvaporationSeries::getEvaporation(int week) {
     return Catchment::getStreamflow(week);

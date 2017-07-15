@@ -93,11 +93,11 @@ public:
 
     void collectData(ContinuityModelRealization *continuity_model_realization);
 
-    void printUtilityOutput(string fileName);
+    void printUtilityOutputCompact(string fileName);
 
-    void printReservoirOutput(string fileName);
+    void printReservoirOutputCompact(string fileName);
 
-    void printPoliciesOutput(string fileName);
+    void printPoliciesOutputCompact(string fileName);
 
     void calculateObjectives();
 
@@ -114,6 +114,12 @@ public:
     double calculateWorseCaseCostsObjective(Utility_t utility_t);
 
     void printPathways(string file_name);
+
+    void printReservoirOutput(string file_name);
+
+    void printUtilityOutput(string file_name);
+
+    void printPoliciesOutput(string file_name);
 };
 
 

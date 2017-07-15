@@ -17,6 +17,8 @@ public:
 
     EvaporationSeries &operator=(const EvaporationSeries &evaporation_series);
 
+    ~EvaporationSeries() override;
+
     double getEvaporation(int week);
 };
 

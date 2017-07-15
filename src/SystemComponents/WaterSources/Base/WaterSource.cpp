@@ -137,7 +137,7 @@ bool WaterSource::compare(WaterSource *lhs, WaterSource *rhs) {
  */
 void WaterSource::continuityWaterSource(
         int week, double upstream_source_inflow,
-        double *demand_outflow) {
+        vector<double> *demand_outflow) {
     if (online)
         applyContinuity(week, upstream_source_inflow, demand_outflow);
     else
@@ -187,9 +187,8 @@ discount_rate, double *level_debt_service_payment) const {
     /// Net present cost of stream of level debt service payments for the whole
     /// bond term, at the time of issuance.
     double net_present_cost_at_issuance =
-            *level_debt_service_payment * (1 -
-                                           pow(1 + discount_rate,
-                                               -n_payments)) / discount_rate;
+            *level_debt_service_payment * (1 - pow(1 + discount_rate,
+                                                   -n_payments)) / discount_rate;
 
     /// Return NPC discounted from the time of issuance to the present.
     return net_present_cost_at_issuance / pow(1 + discount_rate,
@@ -200,16 +199,37 @@ double WaterSource::getAvailable_volume() const {
     return available_volume;
 }
 
+/**
+ * If creating a new water source that can be allocated to different utilities,
+ * this function must be overwritten to:
+ * return available_allocated_volumes[utility_id];
+ * @param utility_id
+ * @return
+ */
 double WaterSource::getAvailableAllocatedVolume(int utility_id) {
-    return available_volume;
+    return getAvailable_volume();
+}
+
+/**
+ * If creating a new water source that can be allocated to different utilities,
+ * this function must be overwritten to:
+ * available_allocated_volumes[allocation_id] -= volume;
+   available_volume -= volume;
+   demand += volume;
+ * @param utility_id
+ * @return
+ */
+void WaterSource::removeWater(int allocation_id, double volume) {
+    available_volume -= volume;
+    demand += volume;
 }
 
 bool WaterSource::isOnline() const {
     return online;
 }
 
-void WaterSource::setAvailable_volume(double available_volume) {
-    WaterSource::available_volume = available_volume;
+void WaterSource::setFull() {
+    WaterSource::available_volume = capacity;
 }
 
 void WaterSource::setOutflow_previous_week(double outflow_previous_week) {
@@ -225,6 +245,10 @@ double WaterSource::getTotal_outflow() const {
 }
 
 double WaterSource::getCapacity() {
+    return capacity;
+}
+
+double WaterSource::getAllocatedCapacity(int utility_id) {
     return capacity;
 }
 
@@ -263,4 +287,8 @@ void WaterSource::setMin_environmental_outflow(
 
 double WaterSource::getMin_environmental_outflow() const {
     return min_environmental_outflow;
+}
+
+double WaterSource::getAllocatedFraction(int utility_id) {
+    return 1.0;
 }

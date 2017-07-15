@@ -139,7 +139,8 @@ Utility::Utility(Utility &utility) :
 }
 
 Utility::~Utility() {
-    if (demand_series) delete[] demand_series;
+    delete[] demand_series;
+    delete[] weekly_average_volumetric_price;
 }
 
 Utility &Utility::operator=(const Utility &utility) {
@@ -199,19 +200,27 @@ void Utility::calculateWeeklyAverageWaterPrices(
     for (int w = 0; w < (int) (WEEKS_IN_YEAR + 1); ++w)
         weekly_average_volumetric_price[w] =
                 monthly_average_price[(int) (w / WEEKS_IN_MONTH)];
+
+    delete[] monthly_average_price;
 }
 
 void Utility::updateTotalStoredVolume() {
     total_stored_volume = 0.0;
 
     for (map<int, WaterSource *>::value_type &ws : water_sources) {
-        total_stored_volume += (ws.second->isOnline() ?
-                                max(1.0e-6,
-                                    ws.second
-                                            ->getAvailableAllocatedVolume(this->id))
-                                                      :
-                                1.0e-6);
+//        total_stored_volume +=
+//                (ws.second->isOnline() ?
+//                 max(1.0e-6, ws.second->getAvailableAllocatedVolume(this->id))
+//                                       : 1.0e-6);
+        if (ws.second->isOnline()) {
+            double volume = ws.second->getAvailableAllocatedVolume(this->id);
+            total_stored_volume += max(1.0e-6,
+                                       volume);
+        } else
+            total_stored_volume += 1.0e-6;
     }
+
+    int i = 5;
 }
 
 void Utility::clearWaterSources() {
@@ -226,8 +235,7 @@ void Utility::addWaterSource(WaterSource *water_source) {
     if (water_sources.count(water_source->id)) {
         cout << "Water source ID: " << water_source->id << endl <<
              "Utility ID: " << id << endl;
-        __throw_invalid_argument("Attempt to add water source with duplicate ID"
-                                         " to utility.");
+        __throw_invalid_argument("Attempt to add water source with duplicate ID"" to utility.");
     }
 
     /// Catch if user entered a water source as to be built but didn't enter
@@ -244,7 +252,7 @@ void Utility::addWaterSource(WaterSource *water_source) {
     water_sources.insert(pair<int, WaterSource *>(water_source->id, water_source));
 
     if (water_source->isOnline()) {
-        total_storage_capacity += water_source->getCapacity();
+        total_storage_capacity += water_source->getAllocatedCapacity(id);
         total_treatment_capacity += water_source->raw_water_main_capacity;
     }
     total_stored_volume = total_storage_capacity;
@@ -262,7 +270,7 @@ void Utility::addWaterSource(WaterSource *water_source) {
  * allocations in reservoirs.
  * @param week
  */
-void Utility::splitDemands(int week, double *water_sources_draws) {
+void Utility::splitDemands(int week, vector<vector<double>> *demands) {
     unrestricted_demand = demand_series[week];
     restricted_demand = unrestricted_demand * demand_multiplier - demand_offset;
     double reservoirs_demand = restricted_demand;
@@ -274,7 +282,7 @@ void Utility::splitDemands(int week, double *water_sources_draws) {
             double source_demand = min(restricted_demand,
                                        water_sources[id]
                                                ->getAvailableAllocatedVolume(this->id));
-            water_sources_draws[id] = source_demand;
+            (*demands)[id][this->id] = source_demand;
             reservoirs_demand -= source_demand;
         }
 
@@ -282,12 +290,11 @@ void Utility::splitDemands(int week, double *water_sources_draws) {
     /// volume to this utility.
     for (int id : non_priority_draw_water_source)
         if (water_sources[id]->isOnline()) {
-            double source_demand =
-                    reservoirs_demand * max(1.0e-6,
-                                            water_sources[id]
-                                                    ->getAvailableAllocatedVolume(this->id)) /
+            double source_demand = reservoirs_demand * max(1.0e-6,
+                                                           water_sources[id]
+                                                                   ->getAvailableAllocatedVolume(this->id)) /
                                    total_stored_volume;
-            water_sources_draws[id] = source_demand;
+            (*demands)[id][this->id] = source_demand;
             reservoirs_demand -= source_demand;
         }
 
@@ -361,10 +368,11 @@ void Utility::setWaterSourceOnline(int source_id) {
                 *dynamic_cast<ReservoirExpansion *>(water_sources
                         .at(source_id));
         water_sources.at(reservoir_expansion.parent_reservoir_ID)->
-                addCapacity(reservoir_expansion.getCapacity());
+                addCapacity(reservoir_expansion.getAllocatedCapacity(id));
     }
     /// Updates total storage and treatment capacities.
-    total_storage_capacity += water_sources.at(source_id)->getCapacity();
+    total_storage_capacity += water_sources.at(source_id)
+            ->getAllocatedCapacity(id);
     total_treatment_capacity +=
             water_sources.at(source_id)->raw_water_main_capacity;
 }

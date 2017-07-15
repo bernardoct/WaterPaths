@@ -2,6 +2,7 @@
 // Created by bernardoct on 5/3/17.
 //
 
+#include <numeric>
 #include "Quarry.h"
 
 Quarry::Quarry(
@@ -63,7 +64,11 @@ Quarry::~Quarry() {
  */
 void Quarry::applyContinuity(
         int week, double upstream_source_inflow,
-        double *demand_outflow) {
+        vector<double> *demand_outflow) {
+
+    double total_demand = std::accumulate(demand_outflow->begin(),
+                                          demand_outflow->end(),
+                                          0.);
 
     double catchment_inflow = 0;
     for (Catchment *c : catchments) {
@@ -71,14 +76,14 @@ void Quarry::applyContinuity(
     }
 
     double total_inflow = upstream_source_inflow + catchment_inflow;
-    total_outflow = demand_outflow[id] + min_environmental_outflow;
+    total_outflow = total_demand + min_environmental_outflow;
 
     diverted_flow = min(max_diversion,
                         total_inflow -
                         min_environmental_outflow);
 
     double stored_volume_new = available_volume + diverted_flow -
-                               demand_outflow[id];
+                               total_demand;
     double outflow_new = total_inflow - diverted_flow;
 
     if (online) {
@@ -92,7 +97,7 @@ void Quarry::applyContinuity(
         outflow_new = upstream_source_inflow + catchment_inflow;
     }
 
-    demand = demand_outflow[id];
+    demand = total_demand;
     available_volume = max(stored_volume_new, 0.0);
     total_outflow = outflow_new;
     this->upstream_source_inflow = upstream_source_inflow;

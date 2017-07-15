@@ -2,6 +2,7 @@
 // Created by bernardo on 2/10/17.
 //
 
+#include <numeric>
 #include "../../Utils/Constants.h"
 #include "Intake.h"
 
@@ -101,7 +102,11 @@ Intake::~Intake() {
  */
 void Intake::applyContinuity(
         int week, double upstream_source_inflow,
-        double *demand) {
+        vector<double> *demand) {
+
+    double total_demand = std::accumulate(demand->begin(),
+                                          demand->end(),
+                                          0.);
 
     /// Get all upstream catchment inflow.
     upstream_catchment_inflow = 0;
@@ -110,7 +115,7 @@ void Intake::applyContinuity(
 
     /// Mass balance for current time step.
     double total_outflow_approx = upstream_source_inflow +
-                                  upstream_catchment_inflow - demand[id];
+                                  upstream_catchment_inflow - total_demand;
 
     /// Amount of water that could have been drawn but was let pass or that was over drawn.
     double over_under_use = total_outflow_approx - min_environmental_outflow;
@@ -130,7 +135,7 @@ void Intake::applyContinuity(
             min_environmental_outflow + over_under_use);
 
     /// Records for the sake of output.
-    this->demand = demand[id];
+    this->demand = total_demand;
     this->upstream_source_inflow = upstream_source_inflow;
 }
 

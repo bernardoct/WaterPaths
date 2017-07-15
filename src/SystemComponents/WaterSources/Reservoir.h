@@ -9,7 +9,7 @@
 #include "../Catchment.h"
 #include "Base/WaterSource.h"
 #include "../../Utils/DataSeries.h"
-#include "../EvaporationSeries.h"
+#include "../../Utils/EvaporationSeries.h"
 
 using namespace std;
 
@@ -29,7 +29,7 @@ public:
             const vector<Catchment *> &catchments, const double capacity,
             const double max_treatment_capacity,
             EvaporationSeries *evaporation_series,
-            DataSeries *storage_area_curve);
+            DataSeries *storage_area_curve, int source_type = RESERVOIR);
 
     Reservoir(
             const char *name, const int id,
@@ -39,13 +39,14 @@ public:
             DataSeries *storage_area_curve, const double construction_rof,
             const vector<double> &construction_time_range,
             double construction_cost, double bond_term,
-            double bond_interest_rate);
+            double bond_interest_rate, int source_type = RESERVOIR);
 
     Reservoir(
             const char *name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
             const double max_treatment_capacity,
-            EvaporationSeries *evaporation_series, double storage_area);
+            EvaporationSeries *evaporation_series, double storage_area,
+            int source_type = RESERVOIR);
 
     Reservoir(
             const char *name, const int id,
@@ -55,19 +56,19 @@ public:
             const double construction_rof,
             const vector<double> &construction_time_range,
             double construction_cost, double bond_term,
-            double bond_interest_rate);
+            double bond_interest_rate, int source_type = RESERVOIR);
 
     Reservoir(const Reservoir &reservoir);
 
     Reservoir &operator=(const Reservoir &reservoir);
 
-    ~Reservoir();
+    ~Reservoir() override;
 
-    virtual void applyContinuity(
+    void applyContinuity(
             int week, double upstream_source_inflow,
-            double *demand_outflow) override;
+            vector<double> *demand_outflow) override;
 
-    void setOnline();
+    void setOnline() override;
 
     void setRealization(unsigned long r) override;
 };

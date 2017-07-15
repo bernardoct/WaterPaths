@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <numeric>
 #include "Reservoir.h"
 #include "../../Utils/Utils.h"
 
@@ -23,13 +24,13 @@ Reservoir::Reservoir(
         const vector<Catchment *> &catchments, const double capacity,
         const double max_treatment_capacity,
         EvaporationSeries *evaporation_series,
-        DataSeries *storage_area_curve) :
+        DataSeries *storage_area_curve, int source_type) :
         WaterSource(name,
                     id,
                     catchments,
                     capacity,
                     max_treatment_capacity,
-                    RESERVOIR),
+                    source_type),
         evaporation_series(evaporation_series),
         storage_area_curve(storage_area_curve), fixed_area(false) {
 
@@ -51,13 +52,14 @@ Reservoir::Reservoir(
         const char *name, const int id,
         const vector<Catchment *> &catchments, const double capacity,
         const double max_treatment_capacity,
-        EvaporationSeries *evaporation_series, double storage_area) :
+        EvaporationSeries *evaporation_series, double storage_area,
+        int source_type) :
         WaterSource(name,
                     id,
                     catchments,
                     capacity,
                     max_treatment_capacity,
-                    RESERVOIR),
+                    source_type),
         evaporation_series(evaporation_series),
         storage_area_curve(nullptr), fixed_area(true), area(storage_area) {}
 
@@ -82,13 +84,13 @@ Reservoir::Reservoir(
         DataSeries *storage_area_curve, const double construction_rof,
         const vector<double> &construction_time_range,
         double construction_cost, double bond_term,
-        double bond_interest_rate) :
+        double bond_interest_rate, int source_type) :
         WaterSource(name,
                     id,
                     catchments,
                     capacity,
                     max_treatment_capacity,
-                    RESERVOIR,
+                    source_type,
                     construction_rof,
                     construction_time_range,
                     construction_cost,
@@ -122,13 +124,13 @@ Reservoir::Reservoir(
         const double construction_rof,
         const vector<double> &construction_time_range,
         double construction_cost, double bond_term,
-        double bond_interest_rate) :
+        double bond_interest_rate, int source_type) :
         WaterSource(name,
                     id,
                     catchments,
                     capacity,
                     max_treatment_capacity,
-                    RESERVOIR,
+                    source_type,
                     construction_rof,
                     construction_time_range,
                     construction_cost,
@@ -175,7 +177,11 @@ Reservoir::~Reservoir() {
  */
 void Reservoir::applyContinuity(
         int week, double upstream_source_inflow,
-        double *demand_outflow) {
+        vector<double> *demand_outflow) {
+
+    double total_demand = std::accumulate(demand_outflow->begin(),
+                                          demand_outflow->end(),
+                                          0.);
 
     /// Calculate total runoff inflow reaching reservoir from its watershed.
     double catchment_inflow = 0;
@@ -184,15 +190,15 @@ void Reservoir::applyContinuity(
     }
 
     /// Calculates water lost through evaporation.
-    evaporated_volume = (fixed_area ?
-                         area * evaporation_series->getEvaporation(week) :
-                          storage_area_curve->get_dependent_variable(available_volume) *
-                          evaporation_series->getEvaporation(week));
+    evaporated_volume =
+            (fixed_area ? area * evaporation_series->getEvaporation(week) :
+             storage_area_curve->get_dependent_variable(available_volume) *
+             evaporation_series->getEvaporation(week));
 
     /// Calculate new stored volume and outflow based on continuity.
     double stored_volume_new = available_volume
                                + upstream_source_inflow + catchment_inflow
-                               - demand_outflow[id] - min_environmental_outflow
+                               - total_demand - min_environmental_outflow
                                - evaporated_volume;
     double outflow_new = min_environmental_outflow;
 
@@ -210,7 +216,7 @@ void Reservoir::applyContinuity(
     }
 
     /// Update data collection variables.
-    demand = demand_outflow[id];
+    demand = total_demand;
     available_volume = stored_volume_new;//max(stored_volume_new, 0.0);
     total_outflow = outflow_new;
     this->upstream_source_inflow = upstream_source_inflow;

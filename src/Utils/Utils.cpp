@@ -8,6 +8,7 @@
 #include "../SystemComponents/WaterSources/Quarry.h"
 #include "../DroughtMitigationInstruments/InsuranceStorageToROF.h"
 #include "../SystemComponents/WaterSources/WaterReuse.h"
+#include "../SystemComponents/WaterSources/AllocatedReservoir.h"
 #include <fstream>
 #include <algorithm>
 #include <climits>
@@ -97,23 +98,32 @@ vector<WaterSource *> Utils::copyWaterSourceVector(
     vector<WaterSource *> water_sources_new;
 
     for (WaterSource *ws : water_sources_original) {
-        if (ws->source_type == RESERVOIR) {
+        if (ws->source_type == RESERVOIR)
             water_sources_new.push_back(new Reservoir(
                     *dynamic_cast<Reservoir *>(ws)));
-        } else if (ws->source_type == INTAKE) {
+        else if (ws->source_type == INTAKE)
             water_sources_new.push_back(new Intake(
                     *dynamic_cast<Intake *>(ws)));
-        } else if (ws->source_type == RESERVOIR_EXPANSION) {
+        else if (ws->source_type == RESERVOIR_EXPANSION)
             water_sources_new.push_back(
                     new ReservoirExpansion(
                             *dynamic_cast<ReservoirExpansion *>(ws)));
-        } else if (ws->source_type == QUARRY) {
+        else if (ws->source_type == QUARRY)
             water_sources_new.push_back(new Quarry(
                     *dynamic_cast<Quarry *>(ws)));
-        } else if (ws->source_type == WATER_REUSE) {
+        else if (ws->source_type == WATER_REUSE)
             water_sources_new.push_back(new WaterReuse(
                     *dynamic_cast<WaterReuse *>(ws)));
-        }
+        else if (ws->source_type == ALLOCATED_RESERVOIR)
+            water_sources_new.push_back(
+                    new AllocatedReservoir(
+                            *dynamic_cast<AllocatedReservoir *>(ws)));
+        else
+            __throw_invalid_argument("One of the water sources does not have "
+                                             "an implementation in the "
+                                             "Utils::copyWaterSourceVector "
+                                             "function. Please add your "
+                                             "source to it.");
     }
 
     return water_sources_new;

@@ -128,6 +128,8 @@ void Simulation::runFullSimulation(int num_threads) {
     /// Run realizations.
     time(&timer_i);
     int count = 0;
+    std::cout << "Simulated time: " << total_simulation_time << endl;
+    std::cout << "Number of Realizations: " << number_of_realizations << endl;
 #pragma omp parallel for num_threads(num_threads)
     for (int r = 0; r < number_of_realizations; ++r) {
         count++;
@@ -151,9 +153,12 @@ void Simulation::runFullSimulation(int num_threads) {
     data_collector->calculateObjectives();
 
     /// Print output files.
-    data_collector->printUtilityOutput("Utilities.out");
-    data_collector->printReservoirOutput("WaterSources.out");
-    data_collector->printPoliciesOutput("Policies.out");
+    data_collector->printUtilityOutputCompact("Utilities.out");
+    data_collector->printReservoirOutputCompact("WaterSources.out");
+    data_collector->printPoliciesOutputCompact("Policies.out");
+    data_collector->printUtilityOutput("UtilitiesTabular.out");
+    data_collector->printReservoirOutput("WaterSourcesTabular.out");
+    data_collector->printPoliciesOutput("PoliciesTabular.out");
     data_collector->printObjectives("Objectives.out");
     data_collector->printPathways("Pathways.out");
 

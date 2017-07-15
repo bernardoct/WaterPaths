@@ -100,7 +100,7 @@ public:
 
     double getStorageToCapacityRatio() const;
 
-    void splitDemands(int week, double *water_sources_draws);
+    void splitDemands(int week, vector<vector<double>> *demands);
 
     double getTotal_storage_capacity() const;
 

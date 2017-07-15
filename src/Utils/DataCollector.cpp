@@ -34,7 +34,9 @@ DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<Wa
 
     /// Create data water sources.
     for (WaterSource *ws : water_sources) {
-        water_sources_t.push_back(WaterSource_t(ws->id, ws->getCapacity(), ws->name));
+        water_sources_t.push_back(WaterSource_t(ws->id,
+                                                ws->getCapacity(),
+                                                ws->name));
     }
 
     /// Create data drought mitigation policies
@@ -168,7 +170,7 @@ void DataCollector::printPathways(string file_name) {
     outStream.close();
 }
 
-/*
+
 void DataCollector::printReservoirOutput(string file_name) {
 
     std::ofstream outStream;
@@ -181,8 +183,8 @@ void DataCollector::printReservoirOutput(string file_name) {
         outStream << "Realization " << r << endl;
         outStream << endl
                   << setw(COLUMN_WIDTH) << " ";
-        for (int i = 0; i < water_sources_t.size(); ++i) {
-            outStream << setw(6 * COLUMN_WIDTH) << water_sources_t[i].name;
+        for (auto &ws : water_sources_t) {
+            outStream << setw(6 * COLUMN_WIDTH) << ws.name;
         }
 
         /// Print realization header.
@@ -202,16 +204,20 @@ void DataCollector::printReservoirOutput(string file_name) {
         /// Print numbers.
         for (int w = 0; w < n_weeks; ++w) {
             outStream << setw(COLUMN_WIDTH) << w;
-            for (int u = 0; u < water_sources_t.size(); ++u) {
+            for (auto &u : water_sources_t) {
                 outStream
                         << setw(2 * COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                        << water_sources_t[u].available_volume[r][w]
-                        << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION) << water_sources_t[u].demands[r][w]
+                        << u.available_volume[r][w]
                         << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                        << water_sources_t[u].total_upstream_sources_inflows[r][w]
+                        << u
+                                .demands[r][w]
                         << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                        << water_sources_t[u].total_catchments_inflow[r][w]
-                        << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION) << water_sources_t[u].outflows[r][w];
+                        << u.total_upstream_sources_inflows[r][w]
+                        << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+                        << u.total_catchments_inflow[r][w]
+                        << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+                        << u
+                                .outflows[r][w];
             }
             outStream << endl;
         }
@@ -220,8 +226,8 @@ void DataCollector::printReservoirOutput(string file_name) {
 
     outStream.close();
 }
-*/
-void DataCollector::printReservoirOutput(string file_name) {
+
+void DataCollector::printReservoirOutputCompact(string file_name) {
 
     std::ofstream outStream;
     int n_weeks =
@@ -254,21 +260,21 @@ void DataCollector::printReservoirOutput(string file_name) {
          file_name << "XX" << endl;
 }
 
-/*
+
 void DataCollector::printUtilityOutput(string file_name) {
 
     std::ofstream outStream;
     int n_weeks = (int) utilities_t[0].rof[0].size();
+    outStream.open(output_directory + file_name);
 
     for (int r = 0; r < number_of_realizations; ++r) {
-        outStream.open(output_directory + file_name + std::to_string(r));
 
         /// Print realization number.
         outStream << endl;
         outStream << "Realization " << r << endl;
         outStream << endl << setw(COLUMN_WIDTH) << " ";
-        for (int i = 0; i < utilities_t.size(); ++i) {
-            outStream << setw(8 * COLUMN_WIDTH) << utilities_t[i].name;
+        for (auto &u : utilities_t) {
+            outStream << setw(8 * COLUMN_WIDTH) << u.name;
         }
 
         /// Print realization header.
@@ -297,37 +303,37 @@ void DataCollector::printUtilityOutput(string file_name) {
         /// Print numbers for realization r.
         for (int w = 0; w < n_weeks; ++w) {
             outStream << setw(COLUMN_WIDTH) << w;
-            for (int u = 0; u < utilities_t.size(); ++u) {
+            for (auto &u : utilities_t) {
                 outStream << setw(2 * COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                          << utilities_t[u].combined_storage[r][w]
+                          << u.combined_storage[r][w]
                           << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                          << utilities_t[u].rof[r][w]
+                          << u.rof[r][w]
                           << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                          << utilities_t[u].restricted_demand[r][w]
+                          << u.restricted_demand[r][w]
                           << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                          << utilities_t[u].unrestricted_demand[r][w]
+                          << u.unrestricted_demand[r][w]
                           << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                          << utilities_t[u].contingency_fund_size[r][w]
+                          << u.contingency_fund_size[r][w]
                           << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                          << utilities_t[u].insurance_payout[r][w]
+                          << u.insurance_payout[r][w]
                           << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                          << utilities_t[u].insurance_contract_cost[r][w];
+                          << u.insurance_contract_cost[r][w];
             }
             outStream << endl;
         }
 
         /// NPC cost of infrastructure for realization r
-        for (int u = 0; u < utilities_t.size(); ++u) {
-            outStream << utilities_t[u].name << " NPC of infrastructure: "
-                      << utilities_t[u].net_present_infrastructure_cost[r] << endl;
+        for (auto &u : utilities_t) {
+            outStream << u.name << " NPC of infrastructure: "
+                      << u.net_present_infrastructure_cost[r] << endl;
         }
         outStream << endl;
-        outStream.close();
     }
+    outStream.close();
 
 }
- */
-void DataCollector::printUtilityOutput(string file_name) {
+
+void DataCollector::printUtilityOutputCompact(string file_name) {
 
     std::ofstream outStream;
     int n_weeks = (int) utilities_t[0].rof[0].size();
@@ -335,8 +341,8 @@ void DataCollector::printUtilityOutput(string file_name) {
     for (int r = 0; r < number_of_realizations; ++r) {
         outStream.open(output_directory + file_name + std::to_string(r));
         outStream << "#";
-        for (int i = 0; i < utilities_t.size(); ++i) {
-            outStream << utilities_t[i].name << " ";
+        for (auto &u : utilities_t) {
+            outStream << u.name << " ";
         }
 
         /// Print numbers for realization r.
@@ -376,7 +382,7 @@ void DataCollector::printUtilityOutput(string file_name) {
 
 }
 
-/*
+
 void DataCollector::printPoliciesOutput(string file_name) {
 
     std::ofstream outStream;
@@ -389,18 +395,20 @@ void DataCollector::printPoliciesOutput(string file_name) {
         sort(restriction_policies_t.begin(), restriction_policies_t.end());
 
         for (int r = 0; r < number_of_realizations; ++r) {
-            if (restriction_policies_t.size() > 0) {
+            if (!restriction_policies_t.empty()) {
 
                 /// Print realization number.
                 outStream << endl;
                 outStream << "Realization " << r << endl;
                 outStream << setw(COLUMN_WIDTH) << " ";
-                for (int i = 0; i < restriction_policies_t.size(); ++i) {
-                    outStream << setw(COLUMN_WIDTH - 1) << "Restr. " << restriction_policies_t[i].utility_id;
+                for (auto &rp : restriction_policies_t) {
+                    outStream << setw(COLUMN_WIDTH - 1) << "Restr. "
+                              << rp.utility_id;
                 }
-                for (int i = 0; i < transfers_policies_t.size(); ++i) {
-                    for (int id = 0; id < transfers_policies_t[i].utilities_ids.size(); ++id)
-                        outStream << setw(COLUMN_WIDTH - 1) << "Transf. " << transfers_policies_t[i].transfer_policy_id;
+                for (auto &rp : transfers_policies_t) {
+                    for (int id = 0; id < rp.utilities_ids.size(); ++id)
+                        outStream << setw(COLUMN_WIDTH - 1) << "Transf. "
+                                  << rp.transfer_policy_id;
                 }
 
                 /// Print realization header.
@@ -408,8 +416,8 @@ void DataCollector::printPoliciesOutput(string file_name) {
                 for (int i = 0; i < restriction_policies_t.size(); ++i) {
                     outStream << setw(COLUMN_WIDTH) << "Multip.";
                 }
-                for (int i = 0; i < transfers_policies_t.size(); ++i) {
-                    for (int buyer_id : transfers_policies_t[i].utilities_ids)
+                for (auto &tp : transfers_policies_t) {
+                    for (int buyer_id : tp.utilities_ids)
                         outStream << setw(COLUMN_WIDTH - 1) << "Alloc. " << buyer_id;
                 }
                 outStream << endl;
@@ -417,12 +425,12 @@ void DataCollector::printPoliciesOutput(string file_name) {
                 /// Print numbers.
                 for (unsigned long w = 0; w < n_weeks; ++w) {
                     outStream << setw(COLUMN_WIDTH) << w;
-                    for (int i = 0; i < restriction_policies_t.size(); ++i) {
+                    for (auto &rp : restriction_policies_t) {
                         outStream << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                                  << restriction_policies_t[i].restriction_multiplier[r].at(w);
+                                  << rp.restriction_multiplier[r].at(w);
                     }
-                    for (int i = 0; i < transfers_policies_t.size(); ++i) {
-                        for (double &a : transfers_policies_t[i].demand_offsets[r].at(w))
+                    for (auto &tp : transfers_policies_t) {
+                        for (double &a : tp.demand_offsets[r].at(w))
                             outStream << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION) << a;
                     }
                     outStream << endl;
@@ -434,8 +442,8 @@ void DataCollector::printPoliciesOutput(string file_name) {
     }
     outStream.close();
 }
-*/
-void DataCollector::printPoliciesOutput(string file_name) {
+
+void DataCollector::printPoliciesOutputCompact(string file_name) {
 
     std::ofstream outStream;
 
@@ -450,18 +458,18 @@ void DataCollector::printPoliciesOutput(string file_name) {
 
         for (int r = 0; r < number_of_realizations; ++r) {
             outStream.open(output_directory + file_name + std::to_string(r));
-            if (restriction_policies_t.size() > 0) {
+            if (!restriction_policies_t.empty()) {
                 outStream << "#";
-                for (int i = 0; i < restriction_policies_t.size(); ++i) {
+                for (auto &rp : restriction_policies_t) {
                     outStream << setw(COLUMN_WIDTH - 1) << "Restr. "
-                              << restriction_policies_t[i].utility_id;
+                              << rp.utility_id;
                 }
-                for (int i = 0; i < transfers_policies_t.size(); ++i) {
+                for (auto &tp : transfers_policies_t) {
                     for (int id = 0;
-                         id < transfers_policies_t[i].utilities_ids.size();
+                         id < tp.utilities_ids.size();
                          ++id)
                         outStream << setw(COLUMN_WIDTH - 1) << "Transf. "
-                                  << transfers_policies_t[i].transfer_policy_id;
+                                  << tp.transfer_policy_id;
                 }
 
                 /// Print realization header.
@@ -469,8 +477,8 @@ void DataCollector::printPoliciesOutput(string file_name) {
                 for (int i = 0; i < restriction_policies_t.size(); ++i) {
                     outStream << setw(COLUMN_WIDTH) << "Multip.";
                 }
-                for (int i = 0; i < transfers_policies_t.size(); ++i) {
-                    for (int buyer_id : transfers_policies_t[i].utilities_ids)
+                for (auto &tp : transfers_policies_t) {
+                    for (int buyer_id : tp.utilities_ids)
                         outStream << setw(COLUMN_WIDTH - 1) << "Alloc. "
                                   << buyer_id;
                 }
@@ -479,20 +487,18 @@ void DataCollector::printPoliciesOutput(string file_name) {
                 /// Print numbers.
                 for (unsigned long w = 0; w < n_weeks; ++w) {
 //                    outStream << setw(COLUMN_WIDTH) << w;
-                    for (int i = 0; i < restriction_policies_t.size(); ++i) {
+                    for (auto &rp : restriction_policies_t) {
                         outStream << setprecision(COLUMN_PRECISION)
-                                  << restriction_policies_t[i]
-                                          .restriction_multiplier[r].at(w)
+                                  << rp.restriction_multiplier[r].at(w)
                                   << ",";
                     }
                     unsigned long transfer_size = transfers_policies_t[0]
                             .demand_offsets[r].at(w)
                             .size();
-                    for (int i = 0; i < transfers_policies_t.size(); ++i) {
+                    for (auto &rp : transfers_policies_t) {
                         for (int j = 0; j < transfer_size; ++j) {
                             outStream << setprecision(COLUMN_PRECISION)
-                                      << transfers_policies_t[i]
-                                              .demand_offsets[r].at(w)[j];
+                                      << rp.demand_offsets[r].at(w)[j];
                             if (j < transfer_size - 1)
                                 outStream << ",";
                         }

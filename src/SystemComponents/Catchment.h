@@ -21,7 +21,7 @@ public:
 
     Catchment(Catchment &catchment);
 
-    ~Catchment();
+    virtual ~Catchment();
 
     Catchment &operator=(const Catchment &catchment);
 

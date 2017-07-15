@@ -40,6 +40,7 @@ ContinuityModel::ContinuityModel(
 
     /// The variables below are to make the storage-ROF table calculation
     /// faster.
+    //FIXME: DO I NEED THIS FOR LOOP BELOW?
     for (int ws = 0; ws < water_sources.size(); ++ws) {
         if (water_sources[ws]->isOnline())
             water_sources_capacities.push_back(
@@ -87,7 +88,11 @@ ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) :
  * @param rof_realization rof realization id (between 0 and 49 inclusive).
  */
 void ContinuityModel::continuityStep(int week, int rof_realization) {
-    auto *demands = new double[continuity_water_sources.size()]();
+//    auto *demands = new double[continuity_water_sources.size()]();
+    auto *demands = new std::vector<vector<double>>
+            (continuity_water_sources.size(),
+             vector<double>(continuity_utilities.size(),
+                            0));
     auto *upstream_spillage = new double[continuity_water_sources.size()]();
     auto *wastewater_discharges =
             new double[continuity_water_sources.size()]();
@@ -104,7 +109,8 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
         u->calculateWastewater_releases(week,
                                         wastewater_discharges);
         u->splitDemands(week,
-                        demands); //FIXME: MAKE IT POSSIBLE TO HAVE AN ARRAY OF DEMANDS BEING PASSED TO THE SPLITDEMANDS FUNCTION TO MAKE IT WORK WITH RESERVOIR WITH ALLOCATIONS.
+                        demands); //FIXME: MAKE IT POSSIBLE TO HAVE AN
+        // ARRAY OF DEMANDS BEING PASSED TO THE SPLITDEMANDS FUNCTION TO MAKE IT WORK WITH RESERVOIR WITH ALLOCATIONS.
     }
 
     /**
@@ -132,7 +138,7 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
         continuity_water_sources[i]->continuityWaterSource(
                 week - (int) std::round((rof_realization + 1) * WEEKS_IN_YEAR),
                 upstream_spillage[i] + wastewater_discharges[i],
-                demands);
+                &(*demands)[i]);
     }
 
     /// updates combined storage for utilities.
@@ -140,7 +146,7 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
         u->updateTotalStoredVolume();
     }
 
-    delete[] demands;
+    delete demands;
     delete[] upstream_spillage;
     delete[](wastewater_discharges);
 }

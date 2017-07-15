@@ -23,7 +23,7 @@ private:
     vector<double> buyers_transfer_triggers;
     vector<double> flow_rates_and_allocations;
     Utility *source_utility;
-    WaterSource *transfer_water_source;
+    WaterSource *transfer_water_source = nullptr;
     Matrix<double> H, Aeq, A;
     Vector<double> f, beq, b, allocations_aux, lb, ub;
 
@@ -42,8 +42,6 @@ public:
 
     const vector<double> &getAllocations() const;
 
-    const vector<int> &getBuyers_ids() const;
-
     ~Transfers();
 
     void applyPolicy(int week) override;
@@ -56,7 +54,6 @@ public:
     solve_QP(vector<double> allocation_requests, double available_transfer_volume, double min_transfer_volume,
                  int week);
 
-    vector<double> getConveyed_volumes();
 };
 
 

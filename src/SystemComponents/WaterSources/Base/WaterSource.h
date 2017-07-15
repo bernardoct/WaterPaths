@@ -22,10 +22,16 @@ protected:
     double demand = 0;
     double upstream_min_env_inflow;
     double capacity;
-    double *available_allocated_volumes;
+    double *available_allocated_volumes = new double();;
     bool online;
     vector<Catchment *> catchments;
     double min_environmental_outflow;
+
+    virtual void applyContinuity(
+            int week, double upstream_source_inflow,
+            vector<double> *demand_outflow) = 0;
+
+    void bypass(int week, double upstream_source_inflow);
 
 public:
     const int id;
@@ -56,7 +62,7 @@ public:
 
     virtual ~WaterSource();
 
-    virtual WaterSource &operator=(const WaterSource &water_source);
+    WaterSource &operator=(const WaterSource &water_source);
 
     bool operator<(const WaterSource *other);
 
@@ -64,11 +70,7 @@ public:
 
     void continuityWaterSource(
             int week, double upstream_source_inflow,
-            double *demand_outflow);
-
-    virtual void applyContinuity(
-            int week, double upstream_source_inflow,
-            double *demand_outflow) = 0;
+            vector<double> *demand_outflow);
 
     virtual void setOnline();
 
@@ -84,21 +86,19 @@ public:
 
     bool isOnline() const;
 
-    void setAvailable_volume(double available_volume);
+    virtual void setFull();
 
     void setOutflow_previous_week(double outflow_previous_week);
 
-    double getCapacity();
+    virtual double getCapacity();
 
-    void addCapacity(double capacity);
+    virtual void addCapacity(double capacity);
 
     double getUpstream_source_inflow() const;
 
     double getDemand() const;
 
     double getUpstreamCatchmentInflow() const;
-
-    void bypass(int week, double upstream_source_inflow);
 
     double calculateNetPresentConstructionCost(
             int week, double
@@ -107,6 +107,12 @@ public:
     static bool compare(WaterSource *lhs, WaterSource *rhs);
 
     virtual void setRealization(unsigned long r);
+
+    virtual void removeWater(int allocation_id, double volume);
+
+    virtual double getAllocatedCapacity(int utility_id);
+
+    virtual double getAllocatedFraction(int utility_id);
 };
 
 

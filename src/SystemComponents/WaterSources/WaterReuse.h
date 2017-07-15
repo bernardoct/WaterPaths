@@ -21,7 +21,7 @@ public:
 
     void applyContinuity(
             int week, double upstream_source_inflow,
-            double *demand_outflow) override;
+            vector<double> *demand_outflow) override;
 
     WaterReuse &operator=(const WaterReuse &water_reuse);
 

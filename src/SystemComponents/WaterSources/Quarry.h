@@ -36,7 +36,8 @@ public:
     ~Quarry();
 
     void applyContinuity(
-            int week, double upstream_source_inflow, double *demand_outflow);
+            int week, double upstream_source_inflow,
+            vector<double> *demand_outflow) override;
 
     void setOnline() override;
 };

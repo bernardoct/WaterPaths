@@ -35,6 +35,7 @@ namespace Constants {
     const int RESERVOIR_EXPANSION = 2;
     const int QUARRY = 3;
     const int WATER_REUSE = 4;
+    const int ALLOCATED_RESERVOIR = 5;
 
     const int TRANSFERS = 0;
     const int RESTRICTIONS = 1;
@@ -55,6 +56,8 @@ namespace Constants {
 
     const double INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD = 0.05;
     const int NO_OF_INSURANCE_STORAGE_TIERS = (int) std::round(1. / INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD);
+
+    const int WATER_QUALITY_ALLOCATION = -1;
 };
 
 

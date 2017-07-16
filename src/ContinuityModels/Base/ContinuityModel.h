@@ -30,6 +30,7 @@ protected:
     vector<int> sources_topological_order;
     vector<double> water_sources_capacities;
     vector<double> utilities_capacities;
+    vector<vector<double>> demands;
 
 public:
     const unsigned int realization_id;

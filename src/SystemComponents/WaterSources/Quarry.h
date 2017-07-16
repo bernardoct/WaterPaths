@@ -8,7 +8,7 @@
 
 #include "Reservoir.h"
 
-class Quarry : public WaterSource {
+class Quarry : public Reservoir {
 private:
     double max_diversion;
     double diverted_flow;
@@ -20,16 +20,36 @@ public:
     Quarry(
             const char *name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
-            const double max_treatment_capacity, double max_diversion_capacity);
+            const double max_treatment_capacity,
+            EvaporationSeries *evaporation_series,
+            DataSeries *storage_area_curve, double max_diversion);
 
     Quarry(
             const char *name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
-            const double raw_water_main_capacity, double max_diversion,
+            const double max_treatment_capacity,
+            EvaporationSeries *evaporation_series,
+            DataSeries *storage_area_curve, const double construction_rof,
+            const vector<double> &construction_time_range,
+            double construction_cost, double bond_term,
+            double bond_interest_rate, double max_diversion);
+
+    Quarry(
+            const char *name, const int id,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
+            EvaporationSeries *evaporation_series, double storage_area,
+            double max_diversion);
+
+    Quarry(
+            const char *name, const int id,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
+            EvaporationSeries *evaporation_series, double storage_area,
             const double construction_rof,
             const vector<double> &construction_time_range,
-            double construction_cost_of_capital, double bond_term,
-            double bond_interest_rate);
+            double construction_cost, double bond_term,
+            double bond_interest_rate, double max_diversion);
 
     Quarry &operator=(const Quarry &quarry);
 
@@ -37,7 +57,8 @@ public:
 
     void applyContinuity(
             int week, double upstream_source_inflow,
-            vector<double> *demand_outflow) override;
+            vector<double> *demand_outflow,
+            int n_utilities) override;
 
     void setOnline() override;
 };

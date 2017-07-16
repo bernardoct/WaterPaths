@@ -74,6 +74,10 @@ ContinuityModel::ContinuityModel(
     for (MinEnvironFlowControl *mef : this->min_env_flow_controls)
         mef->addComponents(water_sources, utilities);
 
+    demands = std::vector<vector<double>>(continuity_water_sources.size(),
+                                          vector<double>(continuity_utilities
+                                                                 .size(),
+                                                         0.));
 }
 
 ContinuityModel::~ContinuityModel() {}
@@ -88,14 +92,8 @@ ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) :
  * @param rof_realization rof realization id (between 0 and 49 inclusive).
  */
 void ContinuityModel::continuityStep(int week, int rof_realization) {
-//    auto *demands = new double[continuity_water_sources.size()]();
-    auto *demands = new std::vector<vector<double>>
-            (continuity_water_sources.size(),
-             vector<double>(continuity_utilities.size(),
-                            0));
-    auto *upstream_spillage = new double[continuity_water_sources.size()]();
-    auto *wastewater_discharges =
-            new double[continuity_water_sources.size()]();
+    double upstream_spillage[continuity_water_sources.size()];
+    double wastewater_discharges[continuity_water_sources.size()];
 
     /**
      * Get wastewater discharges based on previous week's demand.
@@ -109,7 +107,7 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
         u->calculateWastewater_releases(week,
                                         wastewater_discharges);
         u->splitDemands(week,
-                        demands); //FIXME: MAKE IT POSSIBLE TO HAVE AN
+                        &demands); //FIXME: MAKE IT POSSIBLE TO HAVE AN
         // ARRAY OF DEMANDS BEING PASSED TO THE SPLITDEMANDS FUNCTION TO MAKE IT WORK WITH RESERVOIR WITH ALLOCATIONS.
     }
 
@@ -138,17 +136,14 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
         continuity_water_sources[i]->continuityWaterSource(
                 week - (int) std::round((rof_realization + 1) * WEEKS_IN_YEAR),
                 upstream_spillage[i] + wastewater_discharges[i],
-                &(*demands)[i]);
+                &(demands[i]),
+                0);
     }
 
     /// updates combined storage for utilities.
     for (Utility *u : continuity_utilities) {
         u->updateTotalStoredVolume();
     }
-
-    delete demands;
-    delete[] upstream_spillage;
-    delete[](wastewater_discharges);
 }
 
 const vector<Utility *> &ContinuityModel::getUtilities() const {

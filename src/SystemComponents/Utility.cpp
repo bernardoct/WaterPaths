@@ -290,9 +290,10 @@ void Utility::splitDemands(int week, vector<vector<double>> *demands) {
     /// volume to this utility.
     for (int id : non_priority_draw_water_source)
         if (water_sources[id]->isOnline()) {
-            double source_demand = reservoirs_demand * max(1.0e-6,
-                                                           water_sources[id]
-                                                                   ->getAvailableAllocatedVolume(this->id)) /
+            double source_demand =
+                    reservoirs_demand * max(1.0e-6,
+                                            water_sources[id]
+                                                    ->getAvailableAllocatedVolume(this->id)) /
                                    total_stored_volume;
             (*demands)[id][this->id] = source_demand;
             reservoirs_demand -= source_demand;

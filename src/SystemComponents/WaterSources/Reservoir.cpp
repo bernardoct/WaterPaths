@@ -185,9 +185,8 @@ void Reservoir::applyContinuity(
 
     /// Calculate total runoff inflow reaching reservoir from its watershed.
     double catchment_inflow = 0;
-    for (Catchment *c : catchments) {
+    for (Catchment *c : catchments)
         catchment_inflow += c->getStreamflow(week);
-    }
 
     /// Calculates water lost through evaporation.
     evaporated_volume =
@@ -205,18 +204,13 @@ void Reservoir::applyContinuity(
 
     /// Check if spillage is needed and, if so, correct stored volume and
     /// calculate spillage.
-    if (online) {
-        if (stored_volume_new > capacity) {
-            outflow_new += stored_volume_new - capacity;
-            stored_volume_new = capacity;
-        }
-    } else {
-        stored_volume_new = available_volume;
-        outflow_new = upstream_source_inflow + catchment_inflow;
+    if (stored_volume_new > capacity) {
+        outflow_new += stored_volume_new - capacity;
+        stored_volume_new = capacity;
     }
 
     /// Update data collection variables.
-    demand = total_demand;
+    total_demand = total_demand;
     available_volume = stored_volume_new;//max(stored_volume_new, 0.0);
     total_outflow = outflow_new;
     this->upstream_source_inflow = upstream_source_inflow;

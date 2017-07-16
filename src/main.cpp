@@ -1188,8 +1188,8 @@ void triangleTest() {
     vector<vector<double>> owasaUserClassesWaterPrices = Utils::parse2DCsvFile
             ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/owasaUserClassesWaterPrices.csv");
 
-    vector<double> sewageFractions = Utils::parse1DCsvFile(
-            "/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/sewageFractions.csv");
+//    vector<double> sewageFractions = Utils::parse1DCsvFile(
+//            "/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/sewageFractions.csv");
 
     EvaporationSeries evaporation_durham(&evap_durham, streamflow_n_weeks);
     EvaporationSeries evaporation_jordan_lake(

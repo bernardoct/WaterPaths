@@ -33,7 +33,7 @@ TEST_CASE("Net present cost calculations", "[NPC]") {
     REQUIRE(r.calculateNetPresentConstructionCost(521, 0.04, &level_debt_service_payment) == Approx(3685.751));
 }
 /*
-TEST_CASE("Split of demand among water sources of a utility proportionally to their stored volume", "[Split Demand]") {
+TEST_CASE("Split of total_demand among water sources of a utility proportionally to their stored volume", "[Split Demand]") {
 
     /// Read streamflows
     int streamflow_n_weeks = (int) std::round(Constants::WEEKS_IN_YEAR * Constants::NUMBER_REALIZATIONS_ROF);
@@ -50,7 +50,7 @@ TEST_CASE("Split of demand among water sources of a utility proportionally to th
 
     vector<vector<double>> demands = Utils::parse2DCsvFile("../TestFiles/demandsLong.csv");
 
-    SECTION("Split demand among reservoirs only") {
+    SECTION("Split total_demand among reservoirs only") {
         Utility u1((char *) "U1", 0, &demands, streamflow_n_weeks, NON_INITIALIZED,
                    NON_INITIALIZED);
         u1.addWaterSource(&r1);
@@ -61,7 +61,7 @@ TEST_CASE("Split of demand among water sources of a utility proportionally to th
         REQUIRE(result[0] == Approx(9.0617079441 * 1 / 3));
     }
 
-    SECTION("Split demand among intakes and reservoirs") {
+    SECTION("Split total_demand among intakes and reservoirs") {
         Utility u2((char *) "U1", 0, &demands, streamflow_n_weeks, NON_INITIALIZED,
                    NON_INITIALIZED);
         Intake i1("I1", 2, min_env_flow_intake, catchments1, 5);

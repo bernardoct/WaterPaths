@@ -22,7 +22,7 @@ Intake::Intake(
 //        upstream_catchment_inflow += c->getStreamflow(0);
 //    }
 //
-//    demand = 0;
+//    total_demand = 0;
 //    available_volume = upstream_catchment_inflow - min_environmental_outflow;
 }
 
@@ -44,13 +44,13 @@ Intake::Intake(
                     bond_term,
                     bond_interest_rate) {
 
-//    /// Update total catchment inflow, demand, and available water volume for week 0;
+//    /// Update total catchment inflow, total_demand, and available water volume for week 0;
 //    this->upstream_catchment_inflow = 0;
 //    for (Catchment *c : catchments) {
 //        this->upstream_catchment_inflow = c->getStreamflow(0);
 //    }
 //
-//    demand = 0;
+//    total_demand = 0;
 //    available_volume = this->upstream_catchment_inflow - min_environmental_outflow;
 }
 
@@ -135,7 +135,7 @@ void Intake::applyContinuity(
             min_environmental_outflow + over_under_use);
 
     /// Records for the sake of output.
-    this->demand = total_demand;
+    this->total_demand = total_demand;
     this->upstream_source_inflow = upstream_source_inflow;
 }
 
@@ -146,7 +146,7 @@ void Intake::setUpstream_min_env_flow(double upstream_min_env_flow) {
 void Intake::setRealization(unsigned long r) {
     WaterSource::setRealization(r);
 
-    demand = 0;
+    total_demand = 0;
     available_volume = this->upstream_catchment_inflow -
                        min_environmental_outflow;
 }

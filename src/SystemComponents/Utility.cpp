@@ -184,7 +184,7 @@ void Utility::calculateWeeklyAverageWaterPrices(
     weekly_average_volumetric_price = new double[(int) WEEKS_IN_YEAR + 1]();
     double *monthly_average_price = new double[NUMBER_OF_MONTHS]();
     if (typesMonthlyDemandFraction->size() != NUMBER_OF_MONTHS)
-        __throw_invalid_argument("There must be 12 demand fractions per tier.");
+        __throw_invalid_argument("There must be 12 total_demand fractions per tier.");
     if (typesMonthlyWaterPrice->size() != NUMBER_OF_MONTHS)
         __throw_invalid_argument("There must be 12 water prices per tier.");
     if ((*typesMonthlyWaterPrice)[0].size() !=
@@ -219,8 +219,6 @@ void Utility::updateTotalStoredVolume() {
         } else
             total_stored_volume += 1.0e-6;
     }
-
-    int i = 5;
 }
 
 void Utility::clearWaterSources() {

@@ -19,7 +19,7 @@ protected:
     double total_outflow = 0;
     double upstream_source_inflow = 0;
     double upstream_catchment_inflow = 0;
-    double demand = 0;
+    double total_demand = 0;
     double upstream_min_env_inflow;
     double capacity;
     double *available_allocated_volumes = new double();;

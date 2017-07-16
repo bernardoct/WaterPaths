@@ -75,7 +75,7 @@ private:
     vector<WaterSource_t> water_sources_t;
     vector<RestrictionPolicy_t> restriction_policies_t;
     vector<TransfersPolicy_t> transfers_policies_t;
-    string output_directory = "../TestFiles/output/";
+    string output_directory = "/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/output/";
 //    string output_directory = "..\\TestFiles\\";
     vector<vector<vector<int>>> pathways;
 

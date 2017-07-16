@@ -162,7 +162,7 @@ void WaterSource::bypass(int week, double upstream_source_inflow) {
         upstream_catchment_inflow += c->getStreamflow((week));
     }
 
-    demand = NONE;
+    total_demand = NONE;
     available_volume = NONE;
     total_outflow = upstream_catchment_inflow + upstream_source_inflow;
     this->upstream_source_inflow = upstream_source_inflow;
@@ -224,7 +224,7 @@ double WaterSource::getAvailableAllocatedVolume(int utility_id) {
  */
 void WaterSource::removeWater(int allocation_id, double volume) {
     available_volume -= volume;
-    demand += volume;
+    total_demand += volume;
 }
 
 bool WaterSource::isOnline() const {
@@ -256,7 +256,7 @@ double WaterSource::getAllocatedCapacity(int utility_id) {
 }
 
 double WaterSource::getDemand() const {
-    return demand;
+    return total_demand;
 }
 
 double WaterSource::getUpstream_source_inflow() const {

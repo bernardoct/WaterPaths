@@ -132,7 +132,7 @@ void AllocatedReservoir::setAllocations(
     allocated_capacities = new double[wq_pool_id + 1]();
     unallocated_volume = capacity;
 
-    /// Populate
+    /// Populate vectors.
     for (unsigned long i = 0; i < utilities_with_allocations->size(); ++i) {
         int u = utilities_with_allocations->at(i);
         u = (u == WATER_QUALITY_ALLOCATION ? wq_pool_id : u);
@@ -195,11 +195,12 @@ AllocatedReservoir::operator=(
 AllocatedReservoir::~AllocatedReservoir() {}
 
 void AllocatedReservoir::applyContinuity(
-        int week, double upstream_source_inflow,
-        vector<double> *demand_outflow) {
+        int week, double upstream_source_inflow, vector<double> *demand_outflow,
+        int n_utilities) {
     Reservoir::applyContinuity(week,
                                upstream_source_inflow,
-                               demand_outflow);
+                               demand_outflow,
+                               n_utilities);
 
     /// Water exceeding allocated capacities.
     double excess_allocated_water = 0.;
@@ -216,7 +217,9 @@ void AllocatedReservoir::applyContinuity(
                                              allocated_fractions[u];
         }
     } else {
-        double total_inflow = upstream_catchment_inflow +
+        /// Volume of water that entered the reservoir and stayed until being
+        /// used or released.
+        double net_inflow = upstream_catchment_inflow +
                               upstream_source_inflow - evaporated_volume;
 
         for (int u : *utilities_with_allocations) {
@@ -224,13 +227,13 @@ void AllocatedReservoir::applyContinuity(
                 /// Split inflows and evaporation among allocations and
                 /// subtract demands.
                 available_allocated_volumes[u] +=
-                        total_inflow * allocated_fractions[u] -
+                        net_inflow * allocated_fractions[u] -
                         (*demand_outflow)[u];
             } else {
                 /// the water quality pool has no demand and provided the
                 /// minimum environmental flows.
                 available_allocated_volumes[u] +=
-                        total_inflow * allocated_fractions[u] -
+                        net_inflow * allocated_fractions[u] -
                         min_environmental_outflow;
             }
 
@@ -264,10 +267,9 @@ void AllocatedReservoir::applyContinuity(
             for (int u : *utilities_with_allocations) {
                 /// Redistribute excess based on allocations fractions.
                 if (available_allocated_volumes[u] < allocated_capacities[u]) {
-                    available_allocated_volumes[u] += excess_allocated_water
-                                                      * (allocated_fractions[u]
-                                                         /
-                                                         fraction_needing_water);
+                    available_allocated_volumes[u] +=
+                            excess_allocated_water * (allocated_fractions[u]
+                                                      / fraction_needing_water);
 
                     /// Check if redistribution of excesses didn't make an
                     /// allocation exceed its capacity.

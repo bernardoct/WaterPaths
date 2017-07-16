@@ -1275,6 +1275,8 @@ void triangleTest() {
     DataSeries falls_lake_storage_area(&falls_lake_storage, &falls_lake_area);
     DataSeries wheeler_benson_storage_area(&wheeler_benson_storage,
                                            &wheeler_benson_area);
+    DataSeries teer_storage_area(&teer_storage,
+                                 &teer_area);
     DataSeries little_river_storage_area(&little_river_res_storage,
                                          &little_river_res_area);
 
@@ -1432,15 +1434,27 @@ void triangleTest() {
                                      construction_time_interval, 263.0,
                                      bond_length[3], bond_rate[3]);
     Quarry richland_creek_quarry("Richland Creek Quarry", 8, gage_clayton,
-                                 4000.0, 99999, 50 * 7,
+                                 4000.0,
+                                 99999,
+                                 &evaporation_falls_lake,
+                                 100.,//FIXME: GET RIGHT AREA.
                                  city_infrastructure_rof_triggers[3],
                                  construction_time_interval, 400.0,
-                                 bond_length[3], bond_rate[3]);
+                                 bond_length[3],
+                                 bond_rate[3],
+                                 50 * 7);
     // diversions to Richland Creek Quarry based on ability to meet downstream flow target at Clayton, NC
-    Quarry teer_quarry("Teer Quarry", 9, vector<Catchment *>(), 1315.0, 99999,
-                       15 * 7, city_infrastructure_rof_triggers[1],
+    Quarry teer_quarry("Teer Quarry",
+                       9,
+                       vector<Catchment *>(),
+                       1315.0,
+                       99999,
+                       &evaporation_falls_lake,
+                       &teer_storage_area,
+                       city_infrastructure_rof_triggers[1],
                        construction_time_interval, 22.6, bond_length[1],
-                       bond_rate[1]); //FIXME: MAX PUMPING CAPACITY?
+                       bond_rate[1],
+                       15 * 7); //FIXME: MAX PUMPING CAPACITY?
     //Reservoir rNeuseRiverIntake("rNeuseRiverIntake", 10, 0, catchment_flat, 16.0, 99999, city_infrastructure_rof_triggers[3], construction_time_interval, 5000, 20, 0.05);
     Intake neuse_river_intake("Neuse River Intake", 10, catchment_flat, 16 * 7,
                               city_infrastructure_rof_triggers[3],
@@ -1789,10 +1803,10 @@ void triangleTest() {
                  drought_mitigation_policies,
                  min_env_flow_controls,
                  2316,
-                 1000,
+                 10,
                  data_collector); //2385
     cout << "Beginning simulation." << endl;
-    s.runFullSimulation(8);
+    s.runFullSimulation(4);
     cout << "Ending simulation" << endl;
 }
 

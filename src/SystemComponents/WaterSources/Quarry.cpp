@@ -8,36 +8,82 @@
 Quarry::Quarry(
         const char *name, const int id,
         const vector<Catchment *> &catchments, const double capacity,
-        const double max_treatment_capacity, double max_diversion_capacity)
-        : WaterSource(name,
-                      id,
-                      catchments,
-                      capacity,
-                      max_treatment_capacity,
-                      QUARRY), max_diversion(max_diversion_capacity) {}
+        const double max_treatment_capacity,
+        EvaporationSeries *evaporation_series,
+        DataSeries *storage_area_curve, double max_diversion)
+        : Reservoir(name,
+                    id,
+                    catchments,
+                    capacity,
+                    max_treatment_capacity,
+                    evaporation_series,
+                    storage_area_curve,
+                    QUARRY),
+          max_diversion(max_diversion) {}
 
 Quarry::Quarry(
         const char *name, const int id,
         const vector<Catchment *> &catchments, const double capacity,
-        const double raw_water_main_capacity, double max_diversion,
+        const double max_treatment_capacity,
+        EvaporationSeries *evaporation_series,
+        DataSeries *storage_area_curve, const double construction_rof,
+        const vector<double> &construction_time_range,
+        double construction_cost, double bond_term,
+        double bond_interest_rate, double max_diversion)
+        : Reservoir(name,
+                    id,
+                    catchments,
+                    capacity,
+                    max_treatment_capacity,
+                    evaporation_series,
+                    storage_area_curve,
+                    construction_rof,
+                    construction_time_range,
+                    construction_cost,
+                    bond_term,
+                    bond_interest_rate,
+                    QUARRY), max_diversion(max_diversion) {}
+
+Quarry::Quarry(
+        const char *name, const int id,
+        const vector<Catchment *> &catchments, const double capacity,
+        const double max_treatment_capacity,
+        EvaporationSeries *evaporation_series, double storage_area,
+        double max_diversion) : Reservoir(name,
+                                          id,
+                                          catchments,
+                                          capacity,
+                                          max_treatment_capacity,
+                                          evaporation_series,
+                                          storage_area,
+                                          QUARRY),
+                                max_diversion(max_diversion) {}
+
+Quarry::Quarry(
+        const char *name, const int id,
+        const vector<Catchment *> &catchments, const double capacity,
+        const double max_treatment_capacity,
+        EvaporationSeries *evaporation_series, double storage_area,
         const double construction_rof,
         const vector<double> &construction_time_range,
-        double construction_cost_of_capital, double bond_term,
-        double bond_interest_rate)
-        : WaterSource(name,
-                      id,
-                      catchments,
-                      capacity,
-                      raw_water_main_capacity,
-                      QUARRY,
-                      construction_rof,
-                      construction_time_range,
-                      construction_cost_of_capital,
-                      bond_term,
-                      bond_interest_rate), max_diversion(max_diversion) {}
+        double construction_cost, double bond_term,
+        double bond_interest_rate, double max_diversion)
+        : Reservoir(name,
+                    id,
+                    catchments,
+                    capacity,
+                    max_treatment_capacity,
+                    evaporation_series,
+                    storage_area,
+                    construction_rof,
+                    construction_time_range,
+                    construction_cost,
+                    bond_term,
+                    bond_interest_rate,
+                    QUARRY), max_diversion(max_diversion) {}
 
 Quarry::Quarry(const Quarry &quarry, const double max_diversion) :
-        WaterSource(quarry), max_diversion(max_diversion) {}
+        Reservoir(quarry), max_diversion(max_diversion) {}
 
 /**
  * Copy assignment operator
@@ -50,9 +96,7 @@ Quarry &Quarry::operator=(const Quarry &quarry) {
     return *this;
 }
 
-Quarry::~Quarry() {
-
-}
+Quarry::~Quarry() {}
 
 /**
  * Reservoir mass balance. Gets releases from upstream reservoirs, demands from
@@ -63,8 +107,8 @@ Quarry::~Quarry() {
  * @param demand_outflow
  */
 void Quarry::applyContinuity(
-        int week, double upstream_source_inflow,
-        vector<double> *demand_outflow) {
+        int week, double upstream_source_inflow, vector<double> *demand_outflow,
+        int n_utilities) {
 
     double total_demand = std::accumulate(demand_outflow->begin(),
                                           demand_outflow->end(),

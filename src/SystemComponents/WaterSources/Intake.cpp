@@ -101,8 +101,8 @@ Intake::~Intake() {
  * @param demand current demand
  */
 void Intake::applyContinuity(
-        int week, double upstream_source_inflow,
-        vector<double> *demand) {
+        int week, double upstream_source_inflow, vector<double> *demand,
+        int n_utilities) {
 
     double total_demand = std::accumulate(demand->begin(),
                                           demand->end(),

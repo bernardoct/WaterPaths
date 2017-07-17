@@ -305,7 +305,10 @@ void ContinuityModelROF::updateOnlineInfrastructure(int week) {
     for (int i = 0; i < realization_water_sources.size(); ++i) {
         if (realization_water_sources[i]->isOnline() &&
             !continuity_water_sources[i]->isOnline()) {
-            continuity_water_sources[i]->setOnline();
+//            continuity_water_sources[i]->setOnline();
+            for (int u : utilities_to_water_sources[i])
+                continuity_utilities[u]->setWaterSourceOnline((unsigned int) i);
+
             water_sources_capacities[i] =
                     continuity_water_sources[i]->getCapacity();
         }

@@ -124,6 +124,15 @@ bool WaterSource::operator>(const WaterSource *other) {
     return id > other->id;
 }
 
+/**
+ * Sorting by id compare operator.
+ * @param other
+ * @return
+ */
+bool WaterSource::operator==(const WaterSource *other) {
+    return id == other->id;
+}
+
 bool WaterSource::compare(WaterSource *lhs, WaterSource *rhs) {
     return lhs->id < rhs->id;
 }
@@ -177,8 +186,8 @@ void WaterSource::bypass(int week, double upstream_source_inflow) {
  * @return Net present cost
  */
 double WaterSource::calculateNetPresentConstructionCost(
-        int week, double
-discount_rate, double *level_debt_service_payment) const {
+        int week, double discount_rate, double *level_debt_service_payment)
+const {
     double rate = bond_interest_rate / BOND_INTEREST_PAYMENTS_PER_YEAR;
     double principal = construction_cost_of_capital;
     double n_payments = bond_term * BOND_INTEREST_PAYMENTS_PER_YEAR;

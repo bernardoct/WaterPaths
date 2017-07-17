@@ -34,7 +34,8 @@ Simulation::Simulation(
     /// Check if sources listed in construction order array are of a utility are
     // listed as belonging to that utility
     for (int u = 0; u < utilities.size(); ++u) {
-        for (int ws : utilities[u]->getInfrastructure_construction_order())
+        for (unsigned int ws :
+                utilities[u]->getInfrastructure_construction_order())
             if (std::find(water_sources_to_utilities[u].begin(),
                           water_sources_to_utilities[u].end(),
                           ws)

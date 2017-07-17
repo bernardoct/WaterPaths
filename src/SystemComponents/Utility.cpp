@@ -3,10 +3,10 @@
 //
 
 #include <iostream>
+#include <algorithm>
 #include "Utility.h"
 #include "../Utils/Utils.h"
 #include "WaterSources/ReservoirExpansion.h"
-#include "WaterSources/Quarry.h"
 
 /**
  * Main constructor for the Utility class.
@@ -72,7 +72,7 @@ Utility::Utility(
         const vector<vector<double>> *typesMonthlyDemandFraction,
         const vector<vector<double>> *typesMonthlyWaterPrice,
         WwtpDischargeRule wwtp_discharge_rule,
-        vector<int> infrastructure_construction_order,
+        vector<unsigned int> infrastructure_construction_order,
         double infrastructure_discount_rate) :
         name(name), id(id), demands_all_realizations(demands_all_realizations),
         number_of_week_demands(number_of_week_demands),
@@ -111,31 +111,9 @@ Utility::Utility(Utility &utility) :
 
     /// Create copies of sources
     water_sources.clear();
-    for (map<int, WaterSource *>::value_type &ws : utility.water_sources) {
-        if (ws.second->source_type == RESERVOIR) {
-            water_sources.insert(
-                    pair<int, WaterSource *>(ws.first,
-                                             new Reservoir(*dynamic_cast<Reservoir *>(ws
-                                                             .second))));
-        } else if (ws.second->source_type == INTAKE) {
-            water_sources.insert(
-                    pair<int, WaterSource *>(ws.first,
-                                             new Intake(*dynamic_cast<Intake
-                                             *>(ws.second))));
-        } else if (ws.second->source_type == QUARRY) {
-            water_sources.insert(
-                    pair<int, WaterSource *>(ws.first,
-                                             new Quarry
-                                                     (*dynamic_cast<Quarry *>(ws
-                                                             .second))));
-        } else {
-            string error_message = "Water source  of type " +
-                                   std::to_string(ws.second->source_type) +
-                                   " cannot be added to utility. \nSource ID: "
-                                   + std::to_string(ws.second->id);
-            throw logic_error(error_message);
-        }
-    }
+//    water_sources = Utils::copyWaterSourceVector(utility.water_sources);
+
+    int i = 5;
 }
 
 Utility::~Utility() {
@@ -147,20 +125,7 @@ Utility &Utility::operator=(const Utility &utility) {
 
     /// Create copies of sources
     water_sources.clear();
-    for (auto &ws : utility.water_sources)
-        if (ws.second->source_type == RESERVOIR)
-            water_sources.insert(
-                    pair<int, WaterSource *>(ws.first,
-                                             new Reservoir
-                                                     (*dynamic_cast<Reservoir *>(ws
-                                                             .second))));
-        else
-            water_sources.insert(pair<int, WaterSource *>(
-                    ws.first,
-                    new Intake(*dynamic_cast<Intake *>(ws.second))));
-
-    weekly_average_volumetric_price = utility.weekly_average_volumetric_price;
-    demands_all_realizations = utility.demands_all_realizations;
+//    water_sources = Utils::copyWaterSourceVector(utility.water_sources);
 
     return *this;
 }
@@ -207,18 +172,12 @@ void Utility::calculateWeeklyAverageWaterPrices(
 void Utility::updateTotalStoredVolume() {
     total_stored_volume = 0.0;
 
-    for (map<int, WaterSource *>::value_type &ws : water_sources) {
-//        total_stored_volume +=
-//                (ws.second->isOnline() ?
-//                 max(1.0e-6, ws.second->getAvailableAllocatedVolume(this->id))
-//                                       : 1.0e-6);
-        if (ws.second->isOnline()) {
-            double volume = ws.second->getAvailableAllocatedVolume(this->id);
+    for (WaterSource *ws : water_sources)
+        if (ws && ws->isOnline())
             total_stored_volume += max(1.0e-6,
-                                       volume);
-        } else
+                                       ws->getAvailableAllocatedVolume(this->id));
+        else
             total_stored_volume += 1.0e-6;
-    }
 }
 
 void Utility::clearWaterSources() {
@@ -230,15 +189,16 @@ void Utility::clearWaterSources() {
  * @param water_source
  */
 void Utility::addWaterSource(WaterSource *water_source) {
-    if (water_sources.count(water_source->id)) {
-        cout << "Water source ID: " << water_source->id << endl <<
-             "Utility ID: " << id << endl;
-        __throw_invalid_argument("Attempt to add water source with duplicate ID"" to utility.");
-    }
+    for (WaterSource *ws : water_sources)
+        if (ws && ws->id == water_source->id) {
+            cout << "Water source ID: " << water_source->id << endl <<
+                 "Utility ID: " << id << endl;
+            __throw_invalid_argument("Attempt to add water source with duplicate ID"" to utility.");
+        }
 
     /// Catch if user entered a water source as to be built but didn't enter
     /// bond parameters.
-    for (int ws : infrastructure_construction_order)
+    for (unsigned int ws : infrastructure_construction_order)
         if (water_source->id == ws)
             if (water_source->construction_cost_of_capital == NON_INITIALIZED) {
                 cout << "Utility " << id << " set to build water source " <<
@@ -247,7 +207,9 @@ void Utility::addWaterSource(WaterSource *water_source) {
                                                  "but set as to be built.");
             }
 
-    water_sources.insert(pair<int, WaterSource *>(water_source->id, water_source));
+    if (water_source->id > (int) water_sources.size() - 1)
+        water_sources.resize((unsigned long) (water_source->id + 1));
+    water_sources[water_source->id] = water_source;
 
     if (water_source->isOnline()) {
         total_storage_capacity += water_source->getAllocatedCapacity(id);
@@ -356,7 +318,7 @@ void Utility::updateContingencyFund(
                                   0.0);
 }
 
-void Utility::setWaterSourceOnline(int source_id) {
+void Utility::setWaterSourceOnline(unsigned int source_id) {
 
     /// Sets water source online. If reservoir expansion, add its capacity to
     /// the corresponding existing reservoir.
@@ -422,7 +384,7 @@ void Utility::infrastructureConstructionHandler(double long_term_rof, int week) 
             /// Record ID of and when infrastructure option construction was
             /// completed.
             infrastructure_built = {id, week,
-                                    infrastructure_construction_order[0]};
+                                    (int) infrastructure_construction_order[0]};
 
             /// Erase infrastructure option from vector of infrastructure to
             /// be built.
@@ -592,7 +554,8 @@ double Utility::getInsurance_purchase() const {
     return insurance_purchase;
 }
 
-const vector<int> &Utility::getInfrastructure_construction_order() const {
+const vector<unsigned int> &Utility::getInfrastructure_construction_order()
+const {
     return infrastructure_construction_order;
 }
 

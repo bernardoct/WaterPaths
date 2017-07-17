@@ -278,6 +278,7 @@ double WaterSource::getUpstreamCatchmentInflow() const {
 
 void WaterSource::addCapacity(double capacity) {
     WaterSource::capacity += capacity;
+
 }
 
 void WaterSource::setRealization(unsigned long r) {
@@ -303,4 +304,8 @@ double WaterSource::getMin_environmental_outflow() const {
 
 double WaterSource::getAllocatedFraction(int utility_id) {
     return 1.0;
+}
+
+double WaterSource::getEvaporated_volume() const {
+    return evaporated_volume;
 }

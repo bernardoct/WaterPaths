@@ -72,6 +72,7 @@ DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<Wa
             wst.outflows.push_back(vector<double>());
             wst.total_catchments_inflow.push_back(vector<double>());
             wst.total_upstream_sources_inflows.push_back(vector<double>());
+            wst.evaporated_volume.push_back(vector<double>());
         }
 
         for (RestrictionPolicy_t &rp : restriction_policies_t) {
@@ -127,6 +128,8 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
         water_sources_t[i].total_upstream_sources_inflows[r].push_back(ws->getUpstream_source_inflow());
         water_sources_t[i].outflows[r].push_back(ws->getTotal_outflow());
         water_sources_t[i].total_catchments_inflow[r].push_back(ws->getUpstreamCatchmentInflow());
+        water_sources_t[i].evaporated_volume[r]
+                .push_back(ws->getEvaporated_volume());
     }
 
     /// Get drought mitigation policy data.
@@ -184,7 +187,7 @@ void DataCollector::printReservoirOutput(string file_name) {
         outStream << endl
                   << setw(COLUMN_WIDTH) << " ";
         for (auto &ws : water_sources_t) {
-            outStream << setw(6 * COLUMN_WIDTH) << ws.name;
+            outStream << setw(7 * COLUMN_WIDTH) << ws.name;
         }
 
         /// Print realization header.
@@ -197,6 +200,7 @@ void DataCollector::printReservoirOutput(string file_name) {
                     << setw(COLUMN_WIDTH) << "Demands"
                     << setw(COLUMN_WIDTH) << "Up_spil"
                     << setw(COLUMN_WIDTH) << "Catc_Q"
+                    << setw(COLUMN_WIDTH) << "Evap_Q"
                     << setw(COLUMN_WIDTH) << "Out_Q";
         }
         outStream << endl;
@@ -209,15 +213,15 @@ void DataCollector::printReservoirOutput(string file_name) {
                         << setw(2 * COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
                         << u.available_volume[r][w]
                         << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                        << u
-                                .demands[r][w]
+                        << u.demands[r][w]
                         << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
                         << u.total_upstream_sources_inflows[r][w]
                         << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
                         << u.total_catchments_inflow[r][w]
                         << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                        << u
-                                .outflows[r][w];
+                        << u.evaporated_volume[r][w]
+                        << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+                        << u.outflows[r][w];
             }
             outStream << endl;
         }
@@ -247,6 +251,8 @@ void DataCollector::printReservoirOutputCompact(string file_name) {
                         << water_sources_t[u].total_upstream_sources_inflows[r][w]
                         << "," << setprecision(COLUMN_PRECISION)
                         << water_sources_t[u].total_catchments_inflow[r][w]
+                        << "," << setprecision(COLUMN_PRECISION)
+                        << water_sources_t[u].evaporated_volume[r][w]
                         << "," << setprecision(COLUMN_PRECISION)
                         << water_sources_t[u].outflows[r][w];
                 if (u < water_sources_t.size() - 1)

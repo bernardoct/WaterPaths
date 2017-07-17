@@ -86,6 +86,8 @@ public:
 
     double getAllocatedFraction(int utility_id) override;
 
+    void addCapacity(double capacity) override;
+
 
 };
 

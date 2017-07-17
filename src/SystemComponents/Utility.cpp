@@ -111,9 +111,6 @@ Utility::Utility(Utility &utility) :
 
     /// Create copies of sources
     water_sources.clear();
-//    water_sources = Utils::copyWaterSourceVector(utility.water_sources);
-
-    int i = 5;
 }
 
 Utility::~Utility() {
@@ -125,7 +122,6 @@ Utility &Utility::operator=(const Utility &utility) {
 
     /// Create copies of sources
     water_sources.clear();
-//    water_sources = Utils::copyWaterSourceVector(utility.water_sources);
 
     return *this;
 }
@@ -172,12 +168,23 @@ void Utility::calculateWeeklyAverageWaterPrices(
 void Utility::updateTotalStoredVolume() {
     total_stored_volume = 0.0;
 
-    for (WaterSource *ws : water_sources)
-        if (ws && ws->isOnline())
-            total_stored_volume += max(1.0e-6,
-                                       ws->getAvailableAllocatedVolume(this->id));
-        else
-            total_stored_volume += 1.0e-6;
+//    for (WaterSource *ws : water_sources)
+//        if (ws && ws->isOnline())
+//            total_stored_volume += max(1.0e-6,
+//                                       ws->getAvailableAllocatedVolume(this->id));
+//        else
+//            total_stored_volume += 1.0e-6;
+
+    for (int ws : priority_draw_water_source)
+        total_stored_volume +=
+                max(1.0e-6,
+                    water_sources[ws]->getAvailableAllocatedVolume(this->id));
+
+    for (int ws : non_priority_draw_water_source)
+        total_stored_volume +=
+                max(1.0e-6,
+                    water_sources[ws]->getAvailableAllocatedVolume(this->id));
+
 }
 
 void Utility::clearWaterSources() {
@@ -214,14 +221,14 @@ void Utility::addWaterSource(WaterSource *water_source) {
     if (water_source->isOnline()) {
         total_storage_capacity += water_source->getAllocatedCapacity(id);
         total_treatment_capacity += water_source->raw_water_main_capacity;
+
+        if ((water_source->source_type == INTAKE ||
+             water_source->source_type == WATER_REUSE))
+            priority_draw_water_source.push_back(water_source->id);
+        else
+            non_priority_draw_water_source.push_back(water_source->id);
     }
     total_stored_volume = total_storage_capacity;
-
-    if (water_source->source_type == INTAKE ||
-        water_source->source_type == WATER_REUSE)
-        priority_draw_water_source.push_back(water_source->id);
-    else
-        non_priority_draw_water_source.push_back(water_source->id);
 }
 
 /**
@@ -237,27 +244,25 @@ void Utility::splitDemands(int week, vector<vector<double>> *demands) {
 
     /// Allocates demand to intakes and reuse based on allocated volume to
     /// this utility.
-    for (int id : priority_draw_water_source)
-        if (water_sources[id]->isOnline()) {
-            double source_demand = min(restricted_demand,
-                                       water_sources[id]
-                                               ->getAvailableAllocatedVolume(this->id));
-            (*demands)[id][this->id] = source_demand;
-            reservoirs_demand -= source_demand;
-        }
+    for (int id : priority_draw_water_source) {
+        double source_demand =
+                min(restricted_demand,
+                    water_sources[id]->getAvailableAllocatedVolume(this->id));
+        (*demands)[id][this->id] = source_demand;
+        reservoirs_demand -= source_demand;
+    }
 
     /// Allocates remaining demand to reservoirs based on allocated available
     /// volume to this utility.
-    for (int id : non_priority_draw_water_source)
-        if (water_sources[id]->isOnline()) {
-            double source_demand =
-                    reservoirs_demand * max(1.0e-6,
-                                            water_sources[id]
-                                                    ->getAvailableAllocatedVolume(this->id)) /
-                                   total_stored_volume;
-            (*demands)[id][this->id] = source_demand;
-            reservoirs_demand -= source_demand;
-        }
+    for (int id : non_priority_draw_water_source) {
+        double demand_fraction =
+                max(1.0e-6,
+                    water_sources[id]->getAvailableAllocatedVolume(this->id)) /
+                total_stored_volume;
+        double source_demand = restricted_demand * demand_fraction;
+        (*demands)[id][this->id] = source_demand;
+        reservoirs_demand -= source_demand;
+    }
 
     /// Update contingency fund
     updateContingencyFund(unrestricted_demand,
@@ -275,7 +280,7 @@ void Utility::resetDataColletionVariables() {
         insurance_payout = 0;
         insurance_purchase = 0;
         drought_mitigation_cost = 0;
-        infrastructure_built = {};
+        infrastructure_built_last_week = {};
         fund_contribution = 0;
         gross_revenue = 0;
         current_debt_payment = 0;
@@ -320,10 +325,18 @@ void Utility::updateContingencyFund(
 
 void Utility::setWaterSourceOnline(unsigned int source_id) {
 
-    /// Sets water source online. If reservoir expansion, add its capacity to
-    /// the corresponding existing reservoir.
-    if (water_sources.at(source_id)->source_type != RESERVOIR_EXPANSION)
+    /// Sets water source online and add its ID to appropriate
+    /// priority/non-priority ID vector. If reservoir expansion, add its
+    /// capacity to the corresponding existing reservoir.
+    if (water_sources.at(source_id)->source_type != RESERVOIR_EXPANSION) {
         water_sources.at(source_id)->setOnline();
+
+        if ((water_sources.at(source_id)->source_type == INTAKE ||
+             water_sources.at(source_id)->source_type == WATER_REUSE))
+            priority_draw_water_source.push_back((int) source_id);
+        else
+            non_priority_draw_water_source.push_back((int) source_id);
+    }
     else {
         ReservoirExpansion reservoir_expansion =
                 *dynamic_cast<ReservoirExpansion *>(water_sources
@@ -383,8 +396,8 @@ void Utility::infrastructureConstructionHandler(double long_term_rof, int week) 
 
             /// Record ID of and when infrastructure option construction was
             /// completed.
-            infrastructure_built = {id, week,
-                                    (int) infrastructure_construction_order[0]};
+            infrastructure_built_last_week = {id, week,
+                                              (int) infrastructure_construction_order[0]};
 
             /// Erase infrastructure option from vector of infrastructure to
             /// be built.
@@ -560,7 +573,7 @@ const {
 }
 
 const vector<int> Utility::getInfrastructure_built() const {
-    return infrastructure_built;
+    return infrastructure_built_last_week;
 }
 
 const double Utility::waterPrice(int week) {

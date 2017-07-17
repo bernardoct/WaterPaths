@@ -377,4 +377,11 @@ double AllocatedReservoir::getAllocatedFraction(int utility_id) {
     return allocated_fractions[utility_id];
 }
 
+void AllocatedReservoir::addCapacity(double capacity) {
+    WaterSource::addCapacity(capacity);
+
+    for (int i : *utilities_with_allocations)
+        allocated_capacities[i] += capacity * allocated_fractions[i];
+}
+
 

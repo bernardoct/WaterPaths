@@ -46,7 +46,7 @@ private:
     vector<WaterSource *> water_sources;
     vector<unsigned int> infrastructure_construction_order;
     vector<vector<double>> debt_payment_streams;
-    vector<int> infrastructure_built;
+    vector<int> infrastructure_built_last_week;
     vector<vector<double>> *demands_all_realizations;
     WwtpDischargeRule wwtp_discharge_rule;
 

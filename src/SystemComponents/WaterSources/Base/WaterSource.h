@@ -26,6 +26,7 @@ protected:
     bool online;
     vector<Catchment *> catchments;
     double min_environmental_outflow;
+    double evaporated_volume = 0;
 
     virtual void applyContinuity(
             int week, double upstream_source_inflow,
@@ -117,6 +118,8 @@ public:
     virtual double getAllocatedCapacity(int utility_id);
 
     virtual double getAllocatedFraction(int utility_id);
+
+    double getEvaporated_volume() const;
 };
 
 

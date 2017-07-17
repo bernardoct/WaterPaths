@@ -144,6 +144,7 @@ void Simulation::runFullSimulation(int num_threads) {
             realization_models[r]->applyDroughtMitigationPolicies(w);
             realization_models[r]->continuityStep(w);
             data_collector->collectData(realization_models[r]);
+//            cout << w << endl;
         }
     }
     time(&timer_f);

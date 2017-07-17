@@ -19,7 +19,6 @@ protected:
     EvaporationSeries *evaporation_series;
     DataSeries *storage_area_curve;
     const bool fixed_area;
-    double evaporated_volume;
     double area = NON_INITIALIZED;
 
 public:

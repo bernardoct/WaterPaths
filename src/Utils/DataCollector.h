@@ -43,6 +43,7 @@ struct WaterSource_t {
     vector<vector<double>> demands;
     vector<vector<double>> outflows;
     vector<vector<double>> total_catchments_inflow;
+    vector<vector<double>> evaporated_volume;
     double capacity;
     int id;
     const char *name;

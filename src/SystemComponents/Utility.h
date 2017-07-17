@@ -50,8 +50,6 @@ private:
     vector<vector<double>> *demands_all_realizations;
     WwtpDischargeRule wwtp_discharge_rule;
 
-    void setWaterSourceOnline(unsigned int source_id);
-
 public:
     const int id;
     const int number_of_week_demands;
@@ -122,6 +120,8 @@ public:
     double getRestrictedDemand() const;
 
     void beginConstruction(int week, int infra_id);
+
+    void setWaterSourceOnline(unsigned int source_id);
 
     void infrastructureConstructionHandler(double long_term_rof, int week);
 

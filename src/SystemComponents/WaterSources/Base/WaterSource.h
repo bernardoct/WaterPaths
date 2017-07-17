@@ -69,6 +69,8 @@ public:
 
     bool operator>(const WaterSource *other);
 
+    bool operator==(const WaterSource *other);
+
     void continuityWaterSource(
             int week, double upstream_source_inflow,
             vector<double> *demand_outflow,

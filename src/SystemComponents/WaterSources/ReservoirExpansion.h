@@ -11,7 +11,7 @@
 class ReservoirExpansion : public WaterSource {
 public:
 
-    const int parent_reservoir_ID;
+    const unsigned int parent_reservoir_ID;
 
     ReservoirExpansion(
             const char *name, const int id,

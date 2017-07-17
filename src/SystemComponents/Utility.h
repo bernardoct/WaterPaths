@@ -42,14 +42,15 @@ private:
     double gross_revenue = 0;
     bool under_construction = false;
     int construction_end_date = 0;
-    map<int, WaterSource *> water_sources;
-    vector<int> infrastructure_construction_order;
+//    map<int, WaterSource *> water_sources;
+    vector<WaterSource *> water_sources;
+    vector<unsigned int> infrastructure_construction_order;
     vector<vector<double>> debt_payment_streams;
     vector<int> infrastructure_built;
     vector<vector<double>> *demands_all_realizations;
     WwtpDischargeRule wwtp_discharge_rule;
 
-    void setWaterSourceOnline(int source_id);
+    void setWaterSourceOnline(unsigned int source_id);
 
 public:
     const int id;
@@ -75,7 +76,7 @@ public:
             const vector<vector<double>> *typesMonthlyDemandFraction,
             const vector<vector<double>> *typesMonthlyWaterPrice,
             WwtpDischargeRule wwtp_discharge_rule,
-            vector<int> infrastructure_construction_order,
+            vector<unsigned int> infrastructure_construction_order,
             double infrastructure_discount_rate);
 
     Utility(Utility &utility);
@@ -150,7 +151,7 @@ public:
 
     void resetDataColletionVariables();
 
-    const vector<int> &getInfrastructure_construction_order() const;
+    const vector<unsigned int> &getInfrastructure_construction_order() const;
 
     void setRelization(unsigned long r);
 

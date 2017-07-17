@@ -210,7 +210,7 @@ void Reservoir::applyContinuity(
     }
 
     /// Update data collection variables.
-    total_demand = total_demand;
+    this->total_demand = total_demand;
     available_volume = stored_volume_new;//max(stored_volume_new, 0.0);
     total_outflow = outflow_new;
     this->upstream_source_inflow = upstream_source_inflow;

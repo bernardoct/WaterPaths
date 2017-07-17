@@ -1633,9 +1633,9 @@ void triangleTest() {
 //    vector<int> infra_order_durham = {9, 15, 16, 18, 19, 20, 21};
 //    vector<int> infra_order_owasa = {26, 12, 13, 14, 20, 21};
 //    vector<int> infra_order_raleigh = {7, 8, 17, 10, 20, 21};
-    vector<int> infra_order_durham = {9, 15, 16, 18, 19};
-    vector<int> infra_order_owasa = {12, 13, 14};
-    vector<int> infra_order_raleigh = {7, 8, 17, 10};
+    vector<unsigned int> infra_order_durham = {9, 15, 16, 18, 19};
+    vector<unsigned int> infra_order_owasa = {12, 13, 14};
+    vector<unsigned int> infra_order_raleigh = {7, 8, 17, 10};
     int demand_n_weeks = (int) round(46 * WEEKS_IN_YEAR);
 
     vector<int> cary_ws_return_id = {};

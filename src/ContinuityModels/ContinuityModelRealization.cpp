@@ -37,9 +37,7 @@ ContinuityModelRealization::ContinuityModelRealization(ContinuityModelRealizatio
                           continuity_model_realization.realization_id) {
 }
 
-ContinuityModelRealization::~ContinuityModelRealization() {
-
-}
+ContinuityModelRealization::~ContinuityModelRealization() {}
 
 vector<WaterSource *> ContinuityModelRealization::getWater_sources() {
     return continuity_water_sources;

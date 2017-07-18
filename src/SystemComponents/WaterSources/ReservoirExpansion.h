@@ -28,8 +28,7 @@ public:
 
     void applyContinuity(
             int week, double upstream_source_inflow,
-            vector<double> *demand_outflow,
-            int n_utilities) override;
+            vector<double> *demand_outflow) override;
 
 };
 

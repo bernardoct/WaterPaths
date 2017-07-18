@@ -124,6 +124,10 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
         }
     }
 
+//    cout << "Week " << week_of_the_year << endl;
+//    storage_to_rof_table->print(week_of_the_year);
+//    cout << endl;
+
     /// Finish ROF calculations
     for (int i = 0; i < n_utilities; ++i) {
         risk_of_failure[i] /= NUMBER_REALIZATIONS_ROF;
@@ -173,7 +177,7 @@ void ContinuityModelROF::updateStorageToROFTable(
         for (unsigned int u = 0; u < n_utilities; ++u) {
             double utility_storage = 0;
             /// Calculate combined stored volume for each utility based on shifted storages.
-            for (int ws : water_sources_to_utilities[u])
+            for (int ws : water_sources_online_to_utilities[u])
                 utility_storage += available_volumes_shifted[ws] *
                                    continuity_water_sources[ws]
                                            ->getAllocatedFraction(u);
@@ -302,17 +306,17 @@ void ContinuityModelROF::setRealization_water_sources(
  * Checks if new infrastructure became online.
  */
 void ContinuityModelROF::updateOnlineInfrastructure(int week) {
-    for (int i = 0; i < realization_water_sources.size(); ++i) {
+    for (int i = 0; i < realization_water_sources.size(); ++i)
         if (realization_water_sources[i]->isOnline() &&
             !continuity_water_sources[i]->isOnline()) {
-//            continuity_water_sources[i]->setOnline();
-            for (int u : utilities_to_water_sources[i])
+            for (int u : utilities_to_water_sources[i]) {
+                water_sources_online_to_utilities[u].push_back(i);
                 continuity_utilities[u]->setWaterSourceOnline((unsigned int) i);
+            }
 
             water_sources_capacities[i] =
                     continuity_water_sources[i]->getCapacity();
         }
-    }
 
     if (Utils::isFirstWeekOfTheYear(week) || week == 0)
         for (int u = 0; u < continuity_utilities.size(); ++u) {

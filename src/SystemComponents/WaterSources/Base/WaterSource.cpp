@@ -145,13 +145,12 @@ bool WaterSource::compare(WaterSource *lhs, WaterSource *rhs) {
  * @param demand_outflow demand from utility.
  */
 void WaterSource::continuityWaterSource(
-        int week, double upstream_source_inflow, vector<double> *demand_outflow,
-        int n_utilities) {
+        int week, double upstream_source_inflow,
+        vector<double> *demand_outflow) {
     if (online)
         applyContinuity(week,
                         upstream_source_inflow,
-                        demand_outflow,
-                        n_utilities);
+                        demand_outflow);
     else
         bypass(week, upstream_source_inflow);
 }

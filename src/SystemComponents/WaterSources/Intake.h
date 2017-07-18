@@ -37,10 +37,7 @@ public:
 
     void applyContinuity(
             int week, double upstream_source_min_env_flow,
-            vector<double> *demand,
-            int n_utilities) override;
-
-    void setUpstream_min_env_flow(double upstream_min_env_flow);
+            vector<double> *demand) override;
 
     void setRealization(unsigned long r) override;
 

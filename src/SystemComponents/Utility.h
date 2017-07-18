@@ -166,6 +166,8 @@ public:
     double getGrossRevenue() const;
 
     static bool compById(Utility *a, Utility *b);
+
+    void addWaterSourceToOnlineLists(int source_id);
 };
 
 

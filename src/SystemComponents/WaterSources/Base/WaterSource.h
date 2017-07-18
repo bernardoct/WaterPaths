@@ -22,7 +22,7 @@ protected:
     double total_demand = 0;
     double upstream_min_env_inflow;
     double capacity;
-    double *available_allocated_volumes = new double();;
+    double *available_allocated_volumes = new double();
     bool online;
     vector<Catchment *> catchments;
     double min_environmental_outflow;
@@ -30,8 +30,7 @@ protected:
 
     virtual void applyContinuity(
             int week, double upstream_source_inflow,
-            vector<double> *demand_outflow,
-            int n_utilities) = 0;
+            vector<double> *demand_outflow) = 0;
 
     void bypass(int week, double upstream_source_inflow);
 
@@ -74,8 +73,7 @@ public:
 
     void continuityWaterSource(
             int week, double upstream_source_inflow,
-            vector<double> *demand_outflow,
-            int n_utilities);
+            vector<double> *demand_outflow);
 
     virtual void setOnline();
 

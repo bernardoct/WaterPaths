@@ -195,8 +195,8 @@ AllocatedReservoir::operator=(
 AllocatedReservoir::~AllocatedReservoir() {}
 
 void AllocatedReservoir::applyContinuity(
-        int week, double upstream_source_inflow, vector<double> *demand_outflow,
-        int n_utilities) {
+        int week, double upstream_source_inflow,
+        vector<double> *demand_outflow) {
 
     total_demand = std::accumulate(demand_outflow->begin(),
                                    demand_outflow->end(),

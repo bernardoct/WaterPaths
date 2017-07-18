@@ -24,6 +24,7 @@ protected:
     vector<MinEnvironFlowControl *> min_env_flow_controls;
     Graph water_sources_graph;
     vector<vector<int> > water_sources_to_utilities;
+    vector<vector<int> > water_sources_online_to_utilities;
     vector<vector<int> > utilities_to_water_sources;
     vector<int> sources_continuity_order;
     vector<int> downstream_sources;

@@ -168,13 +168,6 @@ void Utility::calculateWeeklyAverageWaterPrices(
 void Utility::updateTotalStoredVolume() {
     total_stored_volume = 0.0;
 
-//    for (WaterSource *ws : water_sources)
-//        if (ws && ws->isOnline())
-//            total_stored_volume += max(1.0e-6,
-//                                       ws->getAvailableAllocatedVolume(this->id));
-//        else
-//            total_stored_volume += 1.0e-6;
-
     for (int ws : priority_draw_water_source)
         total_stored_volume +=
                 max(1.0e-6,
@@ -184,7 +177,6 @@ void Utility::updateTotalStoredVolume() {
         total_stored_volume +=
                 max(1.0e-6,
                     water_sources[ws]->getAvailableAllocatedVolume(this->id));
-
 }
 
 void Utility::clearWaterSources() {
@@ -222,13 +214,18 @@ void Utility::addWaterSource(WaterSource *water_source) {
         total_storage_capacity += water_source->getAllocatedCapacity(id);
         total_treatment_capacity += water_source->raw_water_main_capacity;
 
-        if ((water_source->source_type == INTAKE ||
-             water_source->source_type == WATER_REUSE))
-            priority_draw_water_source.push_back(water_source->id);
-        else
-            non_priority_draw_water_source.push_back(water_source->id);
+        addWaterSourceToOnlineLists(water_source->id);
     }
     total_stored_volume = total_storage_capacity;
+}
+
+void Utility::addWaterSourceToOnlineLists(int source_id) {
+
+    if ((water_sources[source_id]->source_type == INTAKE ||
+         water_sources[source_id]->source_type == WATER_REUSE))
+        priority_draw_water_source.push_back(source_id);
+    else
+        non_priority_draw_water_source.push_back(source_id);
 }
 
 /**
@@ -331,11 +328,7 @@ void Utility::setWaterSourceOnline(unsigned int source_id) {
     if (water_sources.at(source_id)->source_type != RESERVOIR_EXPANSION) {
         water_sources.at(source_id)->setOnline();
 
-        if ((water_sources.at(source_id)->source_type == INTAKE ||
-             water_sources.at(source_id)->source_type == WATER_REUSE))
-            priority_draw_water_source.push_back((int) source_id);
-        else
-            non_priority_draw_water_source.push_back((int) source_id);
+        addWaterSourceToOnlineLists(source_id);
     }
     else {
         ReservoirExpansion reservoir_expansion =

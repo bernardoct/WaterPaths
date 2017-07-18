@@ -21,18 +21,24 @@ ContinuityModel::ContinuityModel(
         water_sources_to_utilities(water_sources_to_utilities),
         realization_id(realization_id) {
 
-    /// Connect water sources to utilities.
-    for (int i = 0; i < utilities.size(); ++i) {
-        for (int j = 0; j < water_sources_to_utilities[i].size(); ++j) {
-            this->continuity_utilities[i]->addWaterSource(
-                    water_sources[water_sources_to_utilities[i][j]]);
+    /// Link water sources to utilities by passing pointers of the former to
+    /// the latter.
+    for (int u = 0; u < utilities.size(); ++u) {
+        for (int ws = 0; ws < water_sources_to_utilities[u].size(); ++ws) {
+            this->continuity_utilities[u]->addWaterSource(
+                    water_sources[water_sources_to_utilities[u][ws]]);
         }
     }
 
+    /// Create table showing which utilities draw water from each water source.
     utilities_to_water_sources.assign(water_sources.size(), vector<int>(0));
-    for (int i = 0; i < utilities.size(); ++i) {
-        for (const int &j : water_sources_to_utilities[i]) {
-            utilities_to_water_sources[j].push_back(i);
+    water_sources_online_to_utilities.assign(water_sources.size(),
+                                             vector<int>(0));
+    for (int u = 0; u < utilities.size(); ++u) {
+        for (const int &ws : water_sources_to_utilities[u]) {
+            utilities_to_water_sources[ws].push_back(u);
+            if (water_sources[ws]->isOnline())
+                water_sources_online_to_utilities[u].push_back(ws);
         }
     }
 
@@ -84,7 +90,9 @@ ContinuityModel::ContinuityModel(
 ContinuityModel::~ContinuityModel() {}
 
 ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) :
-        realization_id(continuity_model.realization_id) {}
+        realization_id(continuity_model.realization_id),
+        water_sources_online_to_utilities(
+                continuity_model.water_sources_online_to_utilities) {}
 
 /**
  * Calculates continuity for one week time step for streamflows of id_rof years
@@ -137,8 +145,7 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
         continuity_water_sources[i]->continuityWaterSource(
                 week - (int) std::round((rof_realization + 1) * WEEKS_IN_YEAR),
                 upstream_spillage[i] + wastewater_discharges[i],
-                &(demands[i]),
-                0);
+                &(demands[i]));
     }
 
     /// updates combined storage for utilities.

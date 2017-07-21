@@ -46,12 +46,17 @@ ContinuityModel::ContinuityModel(
     sources_continuity_order = water_sources_graph.getTopological_order();
 
     /// The variables below are to make the storage-ROF table calculation
-    /// faster.
-    //FIXME: DO I NEED THIS FOR LOOP BELOW?
-    for (int ws = 0; ws < water_sources.size(); ++ws) {
-        if (water_sources[ws]->isOnline())
+    /// faster by limiting the storage curve shifting to online water sources.
+    for (auto water_source : water_sources) {
+        bool online = false;
+
+        for (int u = 0; u < utilities.size(); ++u)
+            if (water_source->isOnline())
+                online = true;
+
+        if (online)
             water_sources_capacities.push_back(
-                    water_sources[ws]->getCapacity());
+                    water_source->getCapacity());
         else
             water_sources_capacities.push_back((double &&) NONE);
     }
@@ -87,7 +92,7 @@ ContinuityModel::ContinuityModel(
                                                          0.));
 }
 
-ContinuityModel::~ContinuityModel() {}
+ContinuityModel::~ContinuityModel() = default;
 
 ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) :
         realization_id(continuity_model.realization_id),
@@ -116,8 +121,7 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
         u->calculateWastewater_releases(week,
                                         wastewater_discharges);
         u->splitDemands(week,
-                        &demands); //FIXME: MAKE IT POSSIBLE TO HAVE AN
-        // ARRAY OF DEMANDS BEING PASSED TO THE SPLITDEMANDS FUNCTION TO MAKE IT WORK WITH RESERVOIR WITH ALLOCATIONS.
+                        &demands);
     }
 
     /**
@@ -157,7 +161,3 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
 const vector<Utility *> &ContinuityModel::getUtilities() const {
     return continuity_utilities;
 }
-
-
-
-

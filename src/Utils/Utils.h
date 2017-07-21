@@ -16,9 +16,13 @@
 class Utils {
 public:
 
-    static vector<vector<double>> parse2DCsvFile(char const *file_name);
+    static vector<vector<double>> parse2DCsvFile(
+            char const *file_name, int
+    max_lines = 100000000);
 
-    static vector<double> parse1DCsvFile(char const *file_name);
+    static vector<double> parse1DCsvFile(
+            char const *file_name, int
+    max_lines = 100000000);
 
     static vector<WaterSource *> copyWaterSourceVector(vector<WaterSource *> water_sources_original);
 

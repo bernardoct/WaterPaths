@@ -307,16 +307,19 @@ void ContinuityModelROF::setRealization_water_sources(
  */
 void ContinuityModelROF::updateOnlineInfrastructure(int week) {
     for (int i = 0; i < realization_water_sources.size(); ++i)
-        if (realization_water_sources[i]->isOnline() &&
-            !continuity_water_sources[i]->isOnline()) {
-            for (int u : utilities_to_water_sources[i]) {
-                water_sources_online_to_utilities[u].push_back(i);
-                continuity_utilities[u]->setWaterSourceOnline((unsigned int) i);
+        for (int u = 0; u < continuity_utilities.size(); ++u)
+            if (realization_water_sources[i]->isOnline() &&
+                !continuity_water_sources[i]->isOnline()) {
+                for (int u : utilities_to_water_sources[i]) {
+                    water_sources_online_to_utilities[u].push_back(i);
+                    continuity_utilities[u]
+                            ->setWaterSourceOnline((unsigned int) i);
+                }
+
+                water_sources_capacities[i] =
+                        continuity_water_sources[i]->getCapacity();
             }
 
-            water_sources_capacities[i] =
-                    continuity_water_sources[i]->getCapacity();
-        }
 
     if (Utils::isFirstWeekOfTheYear(week) || week == 0)
         for (int u = 0; u < continuity_utilities.size(); ++u) {

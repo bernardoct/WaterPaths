@@ -109,7 +109,7 @@ void Intake::applyContinuity(
     /// - this week's minimum environmental outflow (assuming next week's
     /// will be more or less the same and this week's) as long as the intake
     /// capacity is not exceeded. This should work well for small intakes.
-    available_volume = min(raw_water_main_capacity,
+    available_volume = min(total_treatment_capacity,
                            next_upstream_catchment_inflow -
                            min_environmental_outflow);
 

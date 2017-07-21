@@ -9,6 +9,7 @@
 #include "../DroughtMitigationInstruments/InsuranceStorageToROF.h"
 #include "../SystemComponents/WaterSources/WaterReuse.h"
 #include "../SystemComponents/WaterSources/AllocatedReservoir.h"
+#include "../SystemComponents/WaterSources/JointWaterTreatmentPlant.h"
 #include <fstream>
 #include <algorithm>
 #include <climits>
@@ -22,13 +23,15 @@
  * @param number_of_weeks Number of time steps in each year (52 weeks, 365 days, etc.)
  * @return Double pointer array containing years in rows and time steps in columns.
  */
-vector<vector<double>> Utils::parse2DCsvFile(char const *file_name) {
+vector<vector<double>> Utils::parse2DCsvFile(
+        char const *file_name,
+        int max_lines) {
 
     vector<vector<double> > data;
     ifstream infile(file_name);
     int l = 0;
 
-    while (infile) {
+    while (infile && l < max_lines) {
         l++;
         string s;
         if (!getline(infile, s)) break;
@@ -55,20 +58,23 @@ vector<vector<double>> Utils::parse2DCsvFile(char const *file_name) {
             data.push_back(record);
         }
     }
-    if (!infile.eof()) {
+
+    if (!infile.eof() && l < max_lines) {
         cerr << "Could not read file " << file_name << "\n";
     }
 
     return data;
 }
 
-vector<double> Utils::parse1DCsvFile(char const *file_name) {
+vector<double> Utils::parse1DCsvFile(
+        char const *file_name,
+        int max_lines) {
 
     vector<double> data;
     ifstream infile(file_name);
     int l = 0;
 
-    while (infile) {
+    while (infile && l < max_lines) {
         l++;
         string s;
         if (!getline(infile,
@@ -86,7 +92,8 @@ vector<double> Utils::parse1DCsvFile(char const *file_name) {
             e.what();
         }
     }
-    if (!infile.eof()) {
+
+    if (!infile.eof() && l < max_lines) {
         cerr << "Could not read file " << file_name << "\n";
     }
 
@@ -118,6 +125,10 @@ vector<WaterSource *> Utils::copyWaterSourceVector(
             water_sources_new.push_back(
                     new AllocatedReservoir(
                             *dynamic_cast<AllocatedReservoir *>(ws)));
+        else if (ws->source_type == NEW_WATER_TREATMENT_PLANT)
+            water_sources_new.push_back(
+                    new JointWaterTreatmentPlant(
+                            *dynamic_cast<JointWaterTreatmentPlant *>(ws)));
         else
             __throw_invalid_argument("One of the water sources does not have "
                                              "an implementation in the "

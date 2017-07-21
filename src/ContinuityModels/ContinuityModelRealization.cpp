@@ -50,9 +50,21 @@ void ContinuityModelRealization::setShortTermROFs(const vector<double> &risks_of
 }
 
 void ContinuityModelRealization::setLongTermROFs(const vector<double> &risks_of_failure, const int week) {
-    for (unsigned long i = 0; i < continuity_utilities.size(); ++i) {
-        continuity_utilities.at(i)->infrastructureConstructionHandler(risks_of_failure.at(i), week);
+    vector<int> new_infra_triggered(0);
+    int nit;
+    for (unsigned long u = 0; u < continuity_utilities.size(); ++u) {
+        nit = continuity_utilities.at(u)->
+                infrastructureConstructionHandler(risks_of_failure.at(u),
+                                                  week);
+        if (nit != NON_INITIALIZED)
+            new_infra_triggered.push_back(nit);
     }
+
+    if (!new_infra_triggered.empty())
+        for (Utility *u : continuity_utilities) {
+            u->forceInfrastructureConstruction(week,
+                                               new_infra_triggered);
+        }
 }
 
 void ContinuityModelRealization::applyDroughtMitigationPolicies(int week) {

@@ -7,6 +7,7 @@
 #include "Utility.h"
 #include "../Utils/Utils.h"
 #include "WaterSources/ReservoirExpansion.h"
+#include "WaterSources/JointWaterTreatmentPlant.h"
 
 /**
  * Main constructor for the Utility class.
@@ -138,6 +139,11 @@ bool Utility::compById(Utility *a, Utility *b) {
     return a->id < b->id;
 }
 
+/**
+ * Calculates average water price from consumer types and respective prices.
+ * @param typesMonthlyDemandFraction
+ * @param typesMonthlyWaterPrice
+ */
 void Utility::calculateWeeklyAverageWaterPrices(
         const vector<vector<double>> *typesMonthlyDemandFraction,
         const vector<vector<double>> *typesMonthlyWaterPrice) {
@@ -149,7 +155,7 @@ void Utility::calculateWeeklyAverageWaterPrices(
     if (typesMonthlyWaterPrice->size() != NUMBER_OF_MONTHS)
         __throw_invalid_argument("There must be 12 water prices per tier.");
     if ((*typesMonthlyWaterPrice)[0].size() !=
-        (*typesMonthlyDemandFraction)[0].size())
+            (*typesMonthlyDemandFraction)[0].size())
         __throw_invalid_argument("There must be Demand fractions and water "
                                          "prices for the same number of tiers.");
 
@@ -165,6 +171,9 @@ void Utility::calculateWeeklyAverageWaterPrices(
     delete[] monthly_average_price;
 }
 
+/**
+ * updates combined stored volume for this utility.
+ */
 void Utility::updateTotalStoredVolume() {
     total_stored_volume = 0.0;
 
@@ -188,39 +197,27 @@ void Utility::clearWaterSources() {
  * @param water_source
  */
 void Utility::addWaterSource(WaterSource *water_source) {
-    for (WaterSource *ws : water_sources)
-        if (ws && ws->id == water_source->id) {
-            cout << "Water source ID: " << water_source->id << endl <<
-                 "Utility ID: " << id << endl;
-            __throw_invalid_argument("Attempt to add water source with duplicate ID"" to utility.");
-        }
-
-    /// Catch if user entered a water source as to be built but didn't enter
-    /// bond parameters.
-    for (unsigned int ws : infrastructure_construction_order)
-        if (water_source->id == ws)
-            if (water_source->construction_cost_of_capital == NON_INITIALIZED) {
-                cout << "Utility " << id << " set to build water source " <<
-                     ws << ", which has no bond parameters set." << endl;
-                __throw_invalid_argument("Water source with no bond parameters "
-                                                 "but set as to be built.");
-            }
+    checkErrorsAddWaterSourceOnline(water_source);
 
     if (water_source->id > (int) water_sources.size() - 1)
         water_sources.resize((unsigned long) (water_source->id + 1));
     water_sources[water_source->id] = water_source;
 
-    if (water_source->isOnline()) {
-        total_storage_capacity += water_source->getAllocatedCapacity(id);
-        total_treatment_capacity += water_source->raw_water_main_capacity;
-
+    if (water_source->isOnline() &&
+        water_source->getAllocatedTreatmentCapacity(id) > 0)
         addWaterSourceToOnlineLists(water_source->id);
-    }
-    total_stored_volume = total_storage_capacity;
 }
 
 void Utility::addWaterSourceToOnlineLists(int source_id) {
 
+    /// Add capacities to utility.
+    total_storage_capacity +=
+            water_sources[source_id]->getAllocatedCapacity(id);
+    total_treatment_capacity +=
+            water_sources[source_id]->getAllocatedTreatmentCapacity(id);
+    total_stored_volume = total_storage_capacity;
+
+    /// Add source to the corresponding list of online water sources.
     if ((water_sources[source_id]->source_type == INTAKE ||
          water_sources[source_id]->source_type == WATER_REUSE))
         priority_draw_water_source.push_back(source_id);
@@ -237,35 +234,79 @@ void Utility::addWaterSourceToOnlineLists(int source_id) {
 void Utility::splitDemands(int week, vector<vector<double>> *demands) {
     unrestricted_demand = demand_series[week];
     restricted_demand = unrestricted_demand * demand_multiplier - demand_offset;
-    double reservoirs_demand = restricted_demand;
+    double unallocated_reservoirs_demand = restricted_demand;
+    bool over_allocation_ws[water_sources.size()] = {};
 
     /// Allocates demand to intakes and reuse based on allocated volume to
     /// this utility.
-    for (int id : priority_draw_water_source) {
-        double source_demand =
-                min(restricted_demand,
-                    water_sources[id]->getAvailableAllocatedVolume(this->id));
-        (*demands)[id][this->id] = source_demand;
-        reservoirs_demand -= source_demand;
-    }
+    if (!priority_draw_water_source.empty())
+        for (int ws : priority_draw_water_source) {
+            double source_demand =
+                    min(restricted_demand,
+                        water_sources[ws]->getAvailableAllocatedVolume(id));
+            (*demands)[ws][this->id] = source_demand;
+//            unallocated_reservoirs_demand -= source_demand;
+        }
 
     /// Allocates remaining demand to reservoirs based on allocated available
     /// volume to this utility.
-    for (int id : non_priority_draw_water_source) {
+    bool over_allocation = false;
+    double remaining_stored_volume = total_stored_volume;
+    for (int ws : non_priority_draw_water_source) {
+        /// Calculate allocation based on sources' available volumes.
         double demand_fraction =
                 max(1.0e-6,
-                    water_sources[id]->getAvailableAllocatedVolume(this->id)) /
-                total_stored_volume;
+                    water_sources[ws]->getAvailableAllocatedVolume(id) /
+                    total_stored_volume);
+
         double source_demand = restricted_demand * demand_fraction;
-        (*demands)[id][this->id] = source_demand;
-        reservoirs_demand -= source_demand;
+        (*demands)[ws][id] = source_demand;
+
+        /// Check if allocated demand was greater than treatment capacity.
+        double over_allocated_demand_ws =
+                max(source_demand -
+                    water_sources[ws]->getAllocatedTreatmentCapacity(id),
+                    0.);
+
+        if (over_allocated_demand_ws > 0.) {
+            over_allocation = true;
+            over_allocation_ws[ws] = true;
+            remaining_stored_volume -=
+                    water_sources[ws]->getAvailableAllocatedVolume(id);
+            (*demands)[ws][id] = source_demand - over_allocated_demand_ws;
+        }
+
+        unallocated_reservoirs_demand -=
+                source_demand - over_allocated_demand_ws;
     }
+
+    /// Do one iteration of demand redistribution if there is overallocation.
+    double unallocated_reservoirs_demand_aux = unallocated_reservoirs_demand;
+    if (over_allocation && remaining_stored_volume > 0)
+        for (int ws : non_priority_draw_water_source)
+            if (!over_allocation_ws[ws]) {
+                double demand_fraction =
+                        max(1.0e-6,
+                            water_sources[ws]->getAvailableAllocatedVolume(id) /
+                            remaining_stored_volume);
+                double extra_demand_share = demand_fraction *
+                                            unallocated_reservoirs_demand_aux;
+                (*demands)[ws][id] += extra_demand_share;
+                unallocated_reservoirs_demand -= extra_demand_share;
+            }
 
     /// Update contingency fund
     updateContingencyFund(unrestricted_demand,
                           demand_multiplier,
                           demand_offset,
+                          unallocated_reservoirs_demand,
                           week);
+
+    //FIXME: IMPROVE CONTINUITY ERROR CHECKING HERE TO DETECT POORLY SPLIT DEMANDS WITHOUT CAPTURING UNFULFILLED DEMAND DUE TO LACK OF STORED WATER.
+//    if (unallocated_reservoirs_demand > 1e-4)
+//        __throw_logic_error("There is demand not being allocated to a water "
+//                                    "source when the demand is being split "
+//                                    "among water sources.");
 }
 
 void Utility::resetDataColletionVariables() {
@@ -297,14 +338,15 @@ void Utility::resetDataColletionVariables() {
  */
 void Utility::updateContingencyFund(
         double unrestricted_demand, double demand_multiplier,
-        double demand_offset, int week) {
+        double demand_offset, double unfulfilled_demand, int week) {
     int price_week = Utils::weekOfTheYear(week);
     fund_contribution = percent_contingency_fund_contribution *
-                        unrestricted_demand *
+                        (unrestricted_demand - unfulfilled_demand) *
                         weekly_average_volumetric_price[price_week];
     gross_revenue =
             restricted_demand * weekly_average_volumetric_price[price_week];
-    double revenue_losses = unrestricted_demand * (1 - demand_multiplier) *
+    double revenue_losses = (unrestricted_demand * (1 - demand_multiplier) +
+                             unfulfilled_demand) *
                             weekly_average_volumetric_price[price_week];
     double transfer_costs =
             demand_offset * (offset_rate_per_volume -
@@ -325,23 +367,126 @@ void Utility::setWaterSourceOnline(unsigned int source_id) {
     /// Sets water source online and add its ID to appropriate
     /// priority/non-priority ID vector. If reservoir expansion, add its
     /// capacity to the corresponding existing reservoir.
-    if (water_sources.at(source_id)->source_type != RESERVOIR_EXPANSION) {
+    if (water_sources.at(source_id)->source_type == NEW_WATER_TREATMENT_PLANT) {
+        waterTreatmentPlantConstructionHandler(source_id);
+    } else if (water_sources.at(source_id)->source_type ==
+               RESERVOIR_EXPANSION) {
+        reservoirExpansionConstructionHandler(source_id);
+    } else {
         water_sources.at(source_id)->setOnline();
-
         addWaterSourceToOnlineLists(source_id);
     }
-    else {
-        ReservoirExpansion reservoir_expansion =
-                *dynamic_cast<ReservoirExpansion *>(water_sources
-                        .at(source_id));
-        water_sources.at(reservoir_expansion.parent_reservoir_ID)->
-                addCapacity(reservoir_expansion.getAllocatedCapacity(id));
-    }
     /// Updates total storage and treatment capacities.
-    total_storage_capacity += water_sources.at(source_id)
-            ->getAllocatedCapacity(id);
-    total_treatment_capacity +=
-            water_sources.at(source_id)->raw_water_main_capacity;
+//    total_storage_capacity +=
+//            water_sources.at(source_id)->getAllocatedCapacity(id);
+//    total_treatment_capacity +=
+//            water_sources.at(source_id)->getAllocatedTreatmentCapacity(id);
+    total_storage_capacity = 0;
+    total_treatment_capacity = 0;
+    total_stored_volume = 0;
+    for (WaterSource *ws : water_sources)
+        if (ws &&
+            (find(priority_draw_water_source.begin(),
+                  priority_draw_water_source.end(),
+                  ws->id) !=
+             priority_draw_water_source.end() ||
+             find(non_priority_draw_water_source.begin(),
+                  non_priority_draw_water_source.end(),
+                  ws->id) !=
+             non_priority_draw_water_source.end())) {
+            total_storage_capacity += ws->getAllocatedCapacity(id);
+            total_treatment_capacity += ws->getAllocatedTreatmentCapacity(id);
+            total_stored_volume += ws->getAvailableAllocatedVolume(id);
+        }
+
+}
+
+void Utility::waterTreatmentPlantConstructionHandler(unsigned int source_id) {
+    JointWaterTreatmentPlant wtp = *dynamic_cast<JointWaterTreatmentPlant *>
+    (water_sources.at(source_id));
+
+    /// Add treatment capacity to source
+    water_sources.at(wtp.parent_reservoir_ID)
+            ->addTreatmentCapacity(
+                    wtp.total_treatment_capacity,
+                    wtp.added_treatment_capacity_fractions
+                            ->at((unsigned long) id),
+                    id);
+
+    /// If source is intake or reuse and is not in the list of active
+    /// sources, add it to the priority list.
+    /// If source is not intake or reuse and is not in the list of active
+    /// sources, add it to the non-priority list.
+    bool is_priority_source =
+            water_sources.at(wtp.parent_reservoir_ID)->source_type == INTAKE ||
+            water_sources.at(wtp.parent_reservoir_ID)->source_type ==
+            WATER_REUSE;
+    bool is_not_in_priority_list =
+            find(priority_draw_water_source.begin(),
+                 priority_draw_water_source.end(),
+                 wtp.parent_reservoir_ID)
+            == priority_draw_water_source.end();
+    bool is_not_in_non_priority_list = // I know, the code may never need this variable. But it helps keeping the code organized.
+            find(non_priority_draw_water_source.begin(),
+                 non_priority_draw_water_source.end(),
+                 wtp.parent_reservoir_ID)
+            == non_priority_draw_water_source.end();
+    bool small_treatment_allocation =
+            water_sources.at(wtp.parent_reservoir_ID)
+                    ->getAllocatedTreatmentCapacity(id) <
+            water_sources.at(wtp.parent_reservoir_ID)
+                    ->getAllocatedTreatmentCapacity(id) /
+            TREATMENT_CAPACITY_VS_VOLUME_SMALL_WTP;
+
+    /// Finally, the checking.
+    if ((is_priority_source && is_not_in_priority_list) ||
+        small_treatment_allocation) {
+        priority_draw_water_source.push_back((int) wtp.parent_reservoir_ID);
+        total_storage_capacity +=
+                water_sources.at(wtp.parent_reservoir_ID)
+                        ->getAllocatedCapacity(id);
+    } else if (is_not_in_non_priority_list) {
+        non_priority_draw_water_source.push_back((int) wtp.parent_reservoir_ID);
+    }
+}
+
+void Utility::reservoirExpansionConstructionHandler(unsigned int source_id) {
+    ReservoirExpansion re =
+            *dynamic_cast<ReservoirExpansion *>(water_sources.at(source_id));
+
+    water_sources.at(re.parent_reservoir_ID)->
+            addCapacity(re.getAllocatedCapacity(id));
+}
+
+/**
+ * Force utility to build a certain infrastructure option, if present in its
+ * queue.
+ * @param week
+ * @param new_infra_triggered
+ */
+void Utility::forceInfrastructureConstruction(
+        int week, vector<int> new_infra_triggered) {
+    for (int ws : new_infra_triggered) {
+        /// Variable storing the position of an infrastructure option in the
+        /// queue of infrastructure to be built.
+        auto it = find(infrastructure_construction_order.begin(),
+                       infrastructure_construction_order.end(),
+                       ws);
+        /// If one of the infrastructure options built this year by one of
+        /// the other utilities is in this utility's queue, force it to be
+        /// triggered.
+        if (it != infrastructure_construction_order.end()) {
+            /// Bring new_infra_triggered from its current position in the
+            /// queue to the first position.
+            infrastructure_construction_order.erase(it);
+            infrastructure_construction_order.insert(
+                    infrastructure_construction_order.begin(),
+                    (unsigned int) ws);
+            /// Force infrastructure option new_infra_triggered to be built.
+            beginConstruction(week,
+                              ws);
+        }
+    }
 }
 
 /**
@@ -350,7 +495,9 @@ void Utility::setWaterSourceOnline(unsigned int source_id) {
  * @param long_term_rof
  * @param week
  */
-void Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
+int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
+
+    int new_infra_triggered = NON_INITIALIZED;
 
     /// Checks whether the long erm ROF has been exceeded for the next
     /// infrastructure option in the list and, if not already under
@@ -362,21 +509,7 @@ void Utility::infrastructureConstructionHandler(double long_term_rof, int week) 
         if (long_term_rof > water_sources.at(
                 infrastructure_construction_order[0])->construction_rof &&
             !under_construction) {
-
-            /// Add water source construction cost to the books.
-            double level_debt_service_payments;
-            infrastructure_net_present_cost +=
-                    water_sources[infrastructure_construction_order[0]]->
-                            calculateNetPresentConstructionCost(
-                            week,
-                            infrastructure_discount_rate,
-                            &level_debt_service_payments);
-
-            /// Create stream of level debt service payments for water source.
-            debt_payment_streams.push_back(vector<double>(
-                    (unsigned long) (water_sources.at(
-                            infrastructure_construction_order[0])->bond_term),
-                    level_debt_service_payments));
+            new_infra_triggered = infrastructure_construction_order[0];
 
             /// Begin construction.
             beginConstruction(week, infrastructure_construction_order[0]);
@@ -389,8 +522,8 @@ void Utility::infrastructureConstructionHandler(double long_term_rof, int week) 
 
             /// Record ID of and when infrastructure option construction was
             /// completed.
-            infrastructure_built_last_week = {id, week,
-                                              (int) infrastructure_construction_order[0]};
+            infrastructure_built_last_week = {
+                    id, week, (int) infrastructure_construction_order[0]};
 
             /// Erase infrastructure option from vector of infrastructure to
             /// be built.
@@ -403,6 +536,8 @@ void Utility::infrastructureConstructionHandler(double long_term_rof, int week) 
     /// Calculate current annual debt payment to be made on that week (it first
     /// week of year), if any.
     current_debt_payment = updateCurrent_debt_payment(week);
+
+    return new_infra_triggered;
 }
 
 /**
@@ -442,6 +577,24 @@ double Utility::updateCurrent_debt_payment(int week) {
  * @param week
  */
 void Utility::beginConstruction(int week, int infra_id) {
+
+    /// Add water source construction cost to the books.
+    double level_debt_service_payments;
+    infrastructure_net_present_cost +=
+            water_sources[infrastructure_construction_order[0]]->
+                    calculateNetPresentConstructionCost(
+                    week,
+                    infrastructure_discount_rate,
+                    &level_debt_service_payments);
+
+    /// Create stream of level debt service payments for water source.
+    debt_payment_streams.emplace_back(
+            (unsigned long) (water_sources.at(
+                    infrastructure_construction_order[0])->bond_term),
+            level_debt_service_payments);
+
+    /// Make water utility as under construction and determine construction
+    /// end date (I wish that was how it worked in real constructions...)
     under_construction = true;
     construction_end_date =
             week + (int) water_sources[infra_id]->construction_time;
@@ -483,7 +636,7 @@ void Utility::setRelization(unsigned long r) {
     std::copy(demands_all_realizations->at(r).begin(),
               demands_all_realizations->at(r).end(),
               demand_series);
-    demands_all_realizations = NULL;
+    demands_all_realizations = nullptr;
 }
 
 //========================= GETTERS AND SETTERS =============================//
@@ -571,4 +724,25 @@ const vector<int> Utility::getInfrastructure_built() const {
 
 const double Utility::waterPrice(int week) {
     return weekly_average_volumetric_price[week];
+}
+
+void Utility::checkErrorsAddWaterSourceOnline(WaterSource *water_source) {
+    for (WaterSource *ws : water_sources)
+        if ((ws != nullptr) && ws->id == water_source->id) {
+            cout << "Water source ID: " << water_source->id << endl <<
+                 "Utility ID: " << id << endl;
+            __throw_invalid_argument("Attempt to add water source with "
+                                             "duplicate ID to utility.");
+        }
+
+    /// Catch if user entered a water source as to be built but didn't enter
+    /// bond parameters.
+    for (unsigned int ws : infrastructure_construction_order)
+        if (water_source->id == ws)
+            if (water_source->construction_cost_of_capital == NON_INITIALIZED) {
+                cout << "Utility " << id << " set to build water source " <<
+                     ws << ", which has no bond parameters set." << endl;
+                __throw_invalid_argument("Water source with no bond parameters "
+                                                 "but set as to be built.");
+            }
 }

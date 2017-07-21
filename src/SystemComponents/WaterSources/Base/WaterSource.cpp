@@ -15,16 +15,17 @@ using namespace std;
  * @param min_environmental_outflow
  * @param catchments
  * @param capacity
- * @param raw_water_main_capacity
+ * @param treatment_capacity
  * @param source_type
  */
 WaterSource::WaterSource(
         const char *name, const int id,
         const vector<Catchment *> &catchments, const double capacity,
-        const double raw_water_main_capacity, const int source_type)
+        double treatment_capacity, const int source_type)
         : name(name), capacity(capacity), min_environmental_outflow(min_environmental_outflow),
           total_outflow(min_environmental_outflow), catchments(catchments), online(ONLINE), available_volume(capacity),
-          id(id), raw_water_main_capacity(raw_water_main_capacity), source_type(source_type),
+          id(id), total_treatment_capacity(treatment_capacity),
+          source_type(source_type),
           construction_rof(NON_INITIALIZED), construction_time(NON_INITIALIZED),
           construction_cost_of_capital(NON_INITIALIZED), bond_term(NON_INITIALIZED),
           bond_interest_rate(NON_INITIALIZED) {}
@@ -36,7 +37,7 @@ WaterSource::WaterSource(
  * @param min_environmental_outflow
  * @param catchments
  * @param capacity
- * @param raw_water_main_capacity
+ * @param treatment_capacity
  * @param source_type
  * @param construction_rof
  * @param construction_time_range
@@ -45,14 +46,15 @@ WaterSource::WaterSource(
 WaterSource::WaterSource(
         const char *name, const int id,
         const vector<Catchment *> &catchments, const double capacity,
-        const double raw_water_main_capacity, const int source_type,
+        double treatment_capacity, const int source_type,
         const double construction_rof,
         const vector<double> construction_time_range,
         double construction_cost_of_capital, double bond_term,
         double bond_interest_rate)
         : name(name), capacity(capacity), min_environmental_outflow(min_environmental_outflow),
           total_outflow(min_environmental_outflow), catchments(catchments), online(OFFLINE), available_volume(capacity),
-          id(id), raw_water_main_capacity(raw_water_main_capacity), source_type(source_type),
+          id(id), total_treatment_capacity(treatment_capacity),
+          source_type(source_type),
           construction_rof(construction_rof),
           construction_time(construction_time_range[0] * WEEKS_IN_YEAR + (construction_time_range[1] -
                   construction_time_range[0]) * (rand() % (int) WEEKS_IN_YEAR)),
@@ -71,7 +73,7 @@ WaterSource::WaterSource(const WaterSource &water_source) :
         source_type(water_source.source_type),
         upstream_min_env_inflow(water_source.upstream_min_env_inflow),
         upstream_catchment_inflow(water_source.upstream_catchment_inflow),
-        raw_water_main_capacity(water_source.raw_water_main_capacity),
+        total_treatment_capacity(water_source.total_treatment_capacity),
         construction_rof(water_source.construction_rof),
         construction_time(water_source.construction_time),
         construction_cost_of_capital(water_source.construction_cost_of_capital),
@@ -206,6 +208,43 @@ const {
                                               week / WEEKS_IN_YEAR);
 }
 
+/**
+ * If creating a new water source that can be allocated to different utilities,
+ * this function must be overwritten to:
+ * available_allocated_volumes[allocation_id] -= volume;
+   available_volume -= volume;
+   demand += volume;
+ * @param utility_id
+ * @return
+ */
+void WaterSource::removeWater(int allocation_id, double volume) {
+    available_volume -= volume;
+    total_demand += volume;
+}
+
+void WaterSource::addCapacity(double capacity) {
+    WaterSource::capacity += capacity;
+}
+
+void WaterSource::addTreatmentCapacity(
+        const double added_treatment_capacity,
+        double allocations_added_treatment_capacity,
+        int utility_id) {
+    total_treatment_capacity += added_treatment_capacity;
+}
+
+void WaterSource::setRealization(unsigned long r) {
+    for (Catchment *c : catchments)
+        c->setRealization(r);
+
+    /// Update total catchment inflow, demand, and available water volume for
+    /// week 0;
+    this->upstream_catchment_inflow = 0;
+    for (Catchment *c : catchments) {
+        this->upstream_catchment_inflow = c->getStreamflow(0);
+    }
+}
+
 double WaterSource::getAvailable_volume() const {
     return available_volume;
 }
@@ -219,20 +258,6 @@ double WaterSource::getAvailable_volume() const {
  */
 double WaterSource::getAvailableAllocatedVolume(int utility_id) {
     return getAvailable_volume();
-}
-
-/**
- * If creating a new water source that can be allocated to different utilities,
- * this function must be overwritten to:
- * available_allocated_volumes[allocation_id] -= volume;
-   available_volume -= volume;
-   demand += volume;
- * @param utility_id
- * @return
- */
-void WaterSource::removeWater(int allocation_id, double volume) {
-    available_volume -= volume;
-    total_demand += volume;
 }
 
 bool WaterSource::isOnline() const {
@@ -275,23 +300,6 @@ double WaterSource::getUpstreamCatchmentInflow() const {
     return upstream_catchment_inflow;
 }
 
-void WaterSource::addCapacity(double capacity) {
-    WaterSource::capacity += capacity;
-
-}
-
-void WaterSource::setRealization(unsigned long r) {
-    for (Catchment *c : catchments)
-        c->setRealization(r);
-
-    /// Update total catchment inflow, demand, and available water volume for
-    /// week 0;
-    this->upstream_catchment_inflow = 0;
-    for (Catchment *c : catchments) {
-        this->upstream_catchment_inflow = c->getStreamflow(0);
-    }
-}
-
 void WaterSource::setMin_environmental_outflow(
         double min_environmental_outflow) {
     WaterSource::min_environmental_outflow = min_environmental_outflow;
@@ -307,4 +315,8 @@ double WaterSource::getAllocatedFraction(int utility_id) {
 
 double WaterSource::getEvaporated_volume() const {
     return evaporated_volume;
+}
+
+double WaterSource::getAllocatedTreatmentCapacity(int utility_id) const {
+    return total_treatment_capacity;
 }

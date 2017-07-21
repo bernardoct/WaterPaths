@@ -130,11 +130,13 @@ void Simulation::runFullSimulation(int num_threads) {
     time(&timer_i);
     int count = 0;
     std::cout << "Simulated time: " << total_simulation_time << endl;
-    std::cout << "Number of Realizations: " << number_of_realizations << endl;
+    std::cout << "Number of realizations: " << number_of_realizations << endl;
+    std::cout << "Beginning realizations loop." << endl;
 #pragma omp parallel for num_threads(num_threads)
     for (int r = 0; r < number_of_realizations; ++r) {
         count++;
-        std::cout << "Realization " << count << std::endl;
+        time_t timer_ir, timer_fr;
+        time(&timer_ir);
         for (int w = 0; w < total_simulation_time; ++w) {
             // DO NOT change the order of the steps. This would mess up
             // important dependencies.
@@ -144,8 +146,11 @@ void Simulation::runFullSimulation(int num_threads) {
             realization_models[r]->applyDroughtMitigationPolicies(w);
             realization_models[r]->continuityStep(w);
             data_collector->collectData(realization_models[r]);
-//            cout << w << endl;
         }
+        time(&timer_fr);
+        std::cout << "Realization " << count << ": "
+                  << difftime(timer_fr,
+                              timer_ir) << std::endl;
     }
     time(&timer_f);
     seconds = difftime(timer_f, timer_i);

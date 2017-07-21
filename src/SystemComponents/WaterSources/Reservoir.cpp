@@ -229,7 +229,7 @@ void Reservoir::setRealization(unsigned long r) {
 
     /// Set evaporation time series and cut off access to series set by setting
     /// its pointer to the set to NULL.
-    if (evaporation_series)
+    if (evaporation_series != nullptr)
         evaporation_series->setRealization(r);
     else {
         cout << "WARNING: No evaporated_volume time series for Reservoir "

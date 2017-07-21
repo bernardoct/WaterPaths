@@ -11,15 +11,18 @@
 class AllocatedReservoir : public Reservoir {
 private:
     double *allocated_capacities;
+    double *allocated_treatment_capacities;
+    double *allocated_treatment_fractions;
     int wq_pool_id;
     double *allocated_fractions;
     vector<int> *utilities_with_allocations;
-    double unallocated_volume;
     double total_allocated_fraction;
+    vector<bool> *online;
 
     void setAllocations(
             vector<int> *utilities_with_allocations,
-            vector<double> *allocated_fractions);
+            vector<double> *allocated_fractions,
+            vector<double> *allocated_treatment_fractions);
 
 public:
     AllocatedReservoir(
@@ -29,7 +32,8 @@ public:
             EvaporationSeries *evaporation_series,
             DataSeries *storage_area_curve,
             vector<int> *utilities_with_allocations,
-            vector<double> *allocated_fractions);
+            vector<double> *allocated_fractions, vector<double>
+            *allocated_treatment_fractions);
 
     AllocatedReservoir(
             const char *name, const int id,
@@ -41,7 +45,8 @@ public:
             double construction_cost, double bond_term,
             double bond_interest_rate,
             vector<int> *utilities_with_allocations,
-            vector<double> *allocated_fractions);
+            vector<double> *allocated_fractions, vector<double>
+            *allocated_treatment_fractions);
 
     AllocatedReservoir(
             const char *name, const int id,
@@ -49,7 +54,8 @@ public:
             const double max_treatment_capacity,
             EvaporationSeries *evaporation_series, double storage_area,
             vector<int> *utilities_with_allocations,
-            vector<double> *allocated_fractions);
+            vector<double> *allocated_fractions, vector<double>
+            *allocated_treatment_fractions);
 
     AllocatedReservoir(
             const char *name, const int id,
@@ -61,7 +67,8 @@ public:
             double construction_cost, double bond_term,
             double bond_interest_rate,
             vector<int> *utilities_with_allocations,
-            vector<double> *allocated_fractions);
+            vector<double> *allocated_fractions, vector<double>
+            *allocated_treatment_fractions);
 
     AllocatedReservoir &operator=(
             const AllocatedReservoir
@@ -86,6 +93,14 @@ public:
     double getAllocatedFraction(int utility_id) override;
 
     void addCapacity(double capacity) override;
+
+    void addTreatmentCapacity(
+            const double added_plant_treatment_capacity,
+            double
+            allocated_fraction_of_total_capacity, int utility_id)
+    override;
+
+    double getAllocatedTreatmentCapacity(int utility_id) const override;
 
 
 };

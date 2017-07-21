@@ -19,6 +19,7 @@ namespace Constants {
     const int LONG_TERM_ROF = 1;
     const int NUMBER_REALIZATIONS_INSURANCE_PRICING = 50;
     const int NUMBER_REALIZATIONS_ROF = 50;
+    const int TREATMENT_CAPACITY_VS_VOLUME_SMALL_WTP = 200;
 
     const bool ONLINE = true;
     const bool OFFLINE = false;
@@ -36,6 +37,7 @@ namespace Constants {
     const int QUARRY = 3;
     const int WATER_REUSE = 4;
     const int ALLOCATED_RESERVOIR = 5;
+    const int NEW_WATER_TREATMENT_PLANT = 6;
 
     const int TRANSFERS = 0;
     const int RESTRICTIONS = 1;

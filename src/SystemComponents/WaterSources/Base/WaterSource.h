@@ -27,6 +27,7 @@ protected:
     vector<Catchment *> catchments;
     double min_environmental_outflow;
     double evaporated_volume = 0;
+    double total_treatment_capacity;
 
     virtual void applyContinuity(
             int week, double upstream_source_inflow,
@@ -38,7 +39,6 @@ public:
     const int id;
     const char *name;
     const int source_type;
-    const double raw_water_main_capacity;
     const double construction_rof;
     const double construction_cost_of_capital;
     const double construction_time;
@@ -48,12 +48,12 @@ public:
     WaterSource(
             const char *name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
-            const double raw_water_main_capacity, const int source_type);
+            double treatment_capacity, const int source_type);
 
     WaterSource(
             const char *source_name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
-            const double raw_water_main_capacity, const int source_type,
+            double treatment_capacity, const int source_type,
             const double construction_rof,
             const vector<double> construction_time_range,
             double construction_cost_of_capital, double bond_term,
@@ -75,6 +75,19 @@ public:
             int week, double upstream_source_inflow,
             vector<double> *demand_outflow);
 
+    virtual void addTreatmentCapacity(
+            const double added_treatment_capacity,
+            double allocations_added_treatment_capacity,
+            int utility_id);
+
+    double calculateNetPresentConstructionCost(
+            int week, double
+    discount_rate, double *level_debt_service_payment) const;
+
+    virtual void removeWater(int allocation_id, double volume);
+
+    virtual void addCapacity(double capacity);
+
     virtual void setOnline();
 
     virtual double getAvailableAllocatedVolume(int utility_id);
@@ -95,29 +108,23 @@ public:
 
     virtual double getCapacity();
 
-    virtual void addCapacity(double capacity);
-
     double getUpstream_source_inflow() const;
 
     double getDemand() const;
 
     double getUpstreamCatchmentInflow() const;
 
-    double calculateNetPresentConstructionCost(
-            int week, double
-    discount_rate, double *level_debt_service_payment) const;
-
     static bool compare(WaterSource *lhs, WaterSource *rhs);
 
     virtual void setRealization(unsigned long r);
-
-    virtual void removeWater(int allocation_id, double volume);
 
     virtual double getAllocatedCapacity(int utility_id);
 
     virtual double getAllocatedFraction(int utility_id);
 
     double getEvaporated_volume() const;
+
+    virtual double getAllocatedTreatmentCapacity(int utility_id) const;
 };
 
 

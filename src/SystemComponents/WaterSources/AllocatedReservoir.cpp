@@ -3,6 +3,7 @@
 //
 
 #include <algorithm>
+#include <iostream>
 #include "AllocatedReservoir.h"
 
 
@@ -11,7 +12,8 @@ AllocatedReservoir::AllocatedReservoir(
         const double capacity, const double max_treatment_capacity,
         EvaporationSeries *evaporation_series, DataSeries *storage_area_curve,
         vector<int> *utilities_with_allocations,
-        vector<double> *allocated_fractions)
+        vector<double> *allocated_fractions, vector<double>
+        *allocated_treatment_fractions)
         : Reservoir(name,
                     id,
                     catchments,
@@ -22,7 +24,8 @@ AllocatedReservoir::AllocatedReservoir(
                     ALLOCATED_RESERVOIR),
           utilities_with_allocations(utilities_with_allocations) {
     setAllocations(utilities_with_allocations,
-                   allocated_fractions);
+                   allocated_fractions,
+                   allocated_treatment_fractions);
 }
 
 AllocatedReservoir::AllocatedReservoir(
@@ -33,7 +36,8 @@ AllocatedReservoir::AllocatedReservoir(
         const vector<double> &construction_time_range, double construction_cost,
         double bond_term, double bond_interest_rate,
         vector<int> *utilities_with_allocations,
-        vector<double> *allocated_fractions)
+        vector<double> *allocated_fractions, vector<double>
+        *allocated_treatment_fractions)
         : Reservoir(name,
                     id,
                     catchments,
@@ -49,7 +53,8 @@ AllocatedReservoir::AllocatedReservoir(
                     ALLOCATED_RESERVOIR),
           utilities_with_allocations(utilities_with_allocations) {
     setAllocations(utilities_with_allocations,
-                   allocated_fractions);
+                   allocated_fractions,
+                   allocated_treatment_fractions);
 }
 
 AllocatedReservoir::AllocatedReservoir(
@@ -57,7 +62,8 @@ AllocatedReservoir::AllocatedReservoir(
         const double capacity, const double max_treatment_capacity,
         EvaporationSeries *evaporation_series, double storage_area,
         vector<int> *utilities_with_allocations,
-        vector<double> *allocated_fractions)
+        vector<double> *allocated_fractions, vector<double>
+        *allocated_treatment_fractions)
         : Reservoir(name,
                     id,
                     catchments,
@@ -68,7 +74,8 @@ AllocatedReservoir::AllocatedReservoir(
                     ALLOCATED_RESERVOIR),
           utilities_with_allocations(utilities_with_allocations) {
     setAllocations(utilities_with_allocations,
-                   allocated_fractions);
+                   allocated_fractions,
+                   allocated_treatment_fractions);
 }
 
 AllocatedReservoir::AllocatedReservoir(
@@ -79,7 +86,8 @@ AllocatedReservoir::AllocatedReservoir(
         const vector<double> &construction_time_range, double construction_cost,
         double bond_term, double bond_interest_rate,
         vector<int> *utilities_with_allocations,
-        vector<double> *allocated_fractions)
+        vector<double> *allocated_fractions, vector<double>
+        *allocated_treatment_fractions)
         : Reservoir(name,
                     id,
                     catchments,
@@ -95,8 +103,93 @@ AllocatedReservoir::AllocatedReservoir(
                     ALLOCATED_RESERVOIR),
           utilities_with_allocations(utilities_with_allocations) {
     setAllocations(utilities_with_allocations,
-                   allocated_fractions);
+                   allocated_fractions,
+                   allocated_treatment_fractions);
 }
+
+AllocatedReservoir::AllocatedReservoir(
+        const AllocatedReservoir &allocated_reservoir)
+        : Reservoir(allocated_reservoir),
+          utilities_with_allocations(allocated_reservoir
+                                             .utilities_with_allocations),
+          allocated_fractions(allocated_reservoir.allocated_fractions) {
+
+    wq_pool_id = allocated_reservoir.wq_pool_id;
+
+    this->allocated_fractions = new double[wq_pool_id + 1]();
+    this->allocated_treatment_fractions = new double[wq_pool_id + 1]();
+    available_allocated_volumes = new double[wq_pool_id + 1]();
+    allocated_capacities = new double[wq_pool_id + 1]();
+    allocated_treatment_capacities = new double[wq_pool_id + 1]();
+
+    int length = wq_pool_id + 1;//    *std::max_element
+//            (utilities_with_allocations->begin(),
+//                                   utilities_with_allocations->end()) + 1;
+
+    std::copy(allocated_reservoir.allocated_fractions,
+              allocated_reservoir.allocated_fractions + length,
+              allocated_fractions);
+
+    std::copy(allocated_reservoir.allocated_treatment_fractions,
+              allocated_reservoir.allocated_treatment_fractions + length,
+              allocated_treatment_fractions);
+
+    std::copy(allocated_reservoir.available_allocated_volumes,
+              allocated_reservoir.available_allocated_volumes + length,
+              available_allocated_volumes);
+
+    std::copy(allocated_reservoir.allocated_capacities,
+              allocated_reservoir.allocated_capacities + length,
+              allocated_capacities);
+
+    std::copy(allocated_reservoir.allocated_treatment_capacities,
+              allocated_reservoir.allocated_treatment_capacities + length,
+              allocated_treatment_capacities);
+}
+
+/**
+ * Copy assignment operator
+ * @param allocated_reservoir
+ * @return
+ */
+AllocatedReservoir &
+AllocatedReservoir::operator=(
+        const AllocatedReservoir &allocated_reservoir) {
+
+    wq_pool_id = allocated_reservoir.wq_pool_id;
+
+    this->allocated_fractions = new double[wq_pool_id + 1]();
+    this->allocated_treatment_fractions = new double[wq_pool_id + 1]();
+    available_allocated_volumes = new double[wq_pool_id + 1]();
+    allocated_capacities = new double[wq_pool_id + 1]();
+    allocated_treatment_capacities = new double[wq_pool_id + 1]();
+
+    int length = wq_pool_id + 1;//    *std::max_element
+//            (utilities_with_allocations->begin(),
+//                                   utilities_with_allocations->end()) + 1;
+
+    std::copy(allocated_fractions,
+              allocated_fractions + length,
+              allocated_reservoir.allocated_fractions);
+
+    std::copy(allocated_treatment_fractions,
+              allocated_treatment_fractions + length,
+              allocated_reservoir.allocated_treatment_fractions);
+
+    std::copy(available_allocated_volumes,
+              available_allocated_volumes + length,
+              allocated_reservoir.available_allocated_volumes);
+
+    std::copy(allocated_capacities,
+              allocated_capacities + length,
+              allocated_reservoir.allocated_capacities);
+
+    std::copy(allocated_treatment_capacities,
+              allocated_treatment_capacities + length,
+              allocated_reservoir.allocated_treatment_capacities);
+
+    return *this;
+};
 
 /**
  * Initial set up of allocations with full reservoir in the beginning of the
@@ -106,7 +199,8 @@ AllocatedReservoir::AllocatedReservoir(
  */
 void AllocatedReservoir::setAllocations(
         vector<int> *utilities_with_allocations,
-        vector<double> *allocated_fractions) {
+        vector<double> *allocated_fractions,
+        vector<double> *allocated_treatment_fractions) {
     if (utilities_with_allocations->size() != allocated_fractions->size())
         __throw_invalid_argument("There must be one allocation fraction in "
                                          "utilities_with_allocations for "
@@ -128,71 +222,36 @@ void AllocatedReservoir::setAllocations(
                                    utilities_with_allocations->end()) + 1;
 
     this->allocated_fractions = new double[wq_pool_id + 1]();
+    this->allocated_treatment_fractions = new double[wq_pool_id + 1]();
     available_allocated_volumes = new double[wq_pool_id + 1]();
     allocated_capacities = new double[wq_pool_id + 1]();
-    unallocated_volume = capacity;
+    allocated_treatment_capacities = new double[wq_pool_id + 1]();
 
     /// Populate vectors.
     for (unsigned long i = 0; i < utilities_with_allocations->size(); ++i) {
         int u = utilities_with_allocations->at(i);
         u = (u == WATER_QUALITY_ALLOCATION ? wq_pool_id : u);
         this->allocated_fractions[u] = (*allocated_fractions)[i];
+        this->allocated_treatment_fractions[u] =
+                (*allocated_treatment_fractions)[u];
+
         (*this->utilities_with_allocations)[i] = u;
+
         allocated_capacities[u] = this->capacity * (*allocated_fractions)[i];
+        allocated_treatment_capacities[u] = total_treatment_capacity *
+                                            this->allocated_treatment_fractions[u];
+
         available_allocated_volumes[u] = allocated_capacities[u];
-        unallocated_volume -= allocated_capacities[u];
     }
 }
 
-AllocatedReservoir::AllocatedReservoir(
-        const AllocatedReservoir &allocated_reservoir)
-        : Reservoir(allocated_reservoir),
-          utilities_with_allocations(allocated_reservoir
-                                             .utilities_with_allocations),
-          allocated_fractions(allocated_reservoir.allocated_fractions) {
-
-    wq_pool_id = allocated_reservoir.wq_pool_id;
-    unallocated_volume = allocated_reservoir.unallocated_volume;
-
-    available_allocated_volumes = new double[wq_pool_id + 1];
-    allocated_capacities = new double[wq_pool_id + 1];
-
-    std::copy(allocated_reservoir.available_allocated_volumes,
-              allocated_reservoir.available_allocated_volumes + wq_pool_id + 1,
-              available_allocated_volumes);
-
-    std::copy(allocated_reservoir.allocated_capacities,
-              allocated_reservoir.allocated_capacities + wq_pool_id + 1,
-              allocated_capacities);
+AllocatedReservoir::~AllocatedReservoir() {
+    delete[] allocated_fractions;
+    delete[] allocated_treatment_fractions;
+    delete[] available_allocated_volumes;
+    delete[] allocated_capacities;
+    delete[] allocated_treatment_capacities;
 }
-
-/**
- * Copy assignment operator
- * @param allocated_reservoir
- * @return
- */
-AllocatedReservoir &
-AllocatedReservoir::operator=(
-        const AllocatedReservoir &allocated_reservoir) {
-
-    int length = *std::max_element(utilities_with_allocations->begin(),
-                                   utilities_with_allocations->end()) + 1;
-
-    available_allocated_volumes = new double[length];
-    allocated_capacities = new double[length];
-
-    std::copy(available_allocated_volumes,
-              available_allocated_volumes + length,
-              allocated_reservoir.available_allocated_volumes);
-
-    std::copy(allocated_capacities,
-              allocated_capacities + length,
-              allocated_reservoir.allocated_capacities);
-
-    return *this;
-};
-
-AllocatedReservoir::~AllocatedReservoir() {}
 
 void AllocatedReservoir::applyContinuity(
         int week, double upstream_source_inflow,
@@ -295,8 +354,7 @@ void AllocatedReservoir::applyContinuity(
                         available_allocated_volumes[u] +=
                                 excess_allocated_water *
                                 (allocated_fractions[u]
-                                 /
-                                 fraction_needing_water);
+                                 / fraction_needing_water);
 
                         /// Check if redistribution of excesses didn't make an
                         /// allocation exceed its capacity.
@@ -335,6 +393,7 @@ void AllocatedReservoir::applyContinuity(
         }
     }
 
+    /// Sanity checking from now on.
     for (int u : *utilities_with_allocations)
         if (isnan(available_allocated_volumes[u]) ||
             available_allocated_volumes[u] > allocated_capacities[u])
@@ -342,15 +401,54 @@ void AllocatedReservoir::applyContinuity(
                                         "nan or greater than capacity. Please "
                                         "report this error to  bct52@cornell"
                                         ".edu.");
+
     double sum_allocations = accumulate(available_allocated_volumes,
                                         available_allocated_volumes +
                                         wq_pool_id + 1,
                                         0.);
-    if ((int) std::round(sum_allocations) !=
-        (int) std::round(available_volume - unallocated_volume))
+    if ((int) std::round(sum_allocations) != (int) std::round(available_volume))
         __throw_logic_error("Sum of allocated volumes in a reservoir must "
                                     "total current storage minus unallocated "
                                     "volume");
+}
+
+void AllocatedReservoir::addCapacity(double capacity) {
+    WaterSource::addCapacity(capacity);
+
+    for (int i : *utilities_with_allocations)
+        allocated_capacities[i] += capacity * allocated_fractions[i];
+}
+
+/**
+ * Addes treatment capacity to a source. The specification of both the total
+ * treatment capacity of the new plant and the fraction of the treatment
+ * capacity allocated to a given utility allow for joint treatment plants. To
+ * have one utility only building an exclusive plant, the fraction will be 1.
+ * @param added_plant_treatment_capacity
+ * @param allocated_fraction_of_total_capacity
+ * @param utility_id
+ */
+void AllocatedReservoir::addTreatmentCapacity(
+        const double added_plant_treatment_capacity,
+        double allocated_fraction_of_total_capacity,
+        int utility_id) {
+    WaterSource::addTreatmentCapacity(
+            added_plant_treatment_capacity *
+            allocated_fraction_of_total_capacity,
+            allocated_fraction_of_total_capacity,
+            utility_id);
+
+    /// Add capacity to respective treatment allocation.
+    allocated_treatment_capacities[utility_id] +=
+            added_plant_treatment_capacity *
+            allocated_fraction_of_total_capacity;
+
+    /// Update treatment allocation fractions based on new allocated amounts
+    /// and new total treatment capacity.
+    for (int i = 0; i < utilities_with_allocations->size(); ++i) {
+        allocated_treatment_fractions[i] = allocated_treatment_capacities[i]
+                                           / total_treatment_capacity;
+    }
 }
 
 double AllocatedReservoir::getAvailableAllocatedVolume(int utility_id) {
@@ -377,11 +475,7 @@ double AllocatedReservoir::getAllocatedFraction(int utility_id) {
     return allocated_fractions[utility_id];
 }
 
-void AllocatedReservoir::addCapacity(double capacity) {
-    WaterSource::addCapacity(capacity);
-
-    for (int i : *utilities_with_allocations)
-        allocated_capacities[i] += capacity * allocated_fractions[i];
+double AllocatedReservoir::getAllocatedTreatmentCapacity(int utility_id) const {
+    return allocated_treatment_capacities[utility_id];
 }
-
 

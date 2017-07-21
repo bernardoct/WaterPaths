@@ -111,7 +111,7 @@ public:
 
     void updateContingencyFund(
             double unrestricted_demand, double demand_multiplier,
-            double demand_offset, int week);
+            double demand_offset, double unfulfilled_demand, int week);
 
     double getContingency_fund() const;
 
@@ -123,7 +123,7 @@ public:
 
     void setWaterSourceOnline(unsigned int source_id);
 
-    void infrastructureConstructionHandler(double long_term_rof, int week);
+    int infrastructureConstructionHandler(double long_term_rof, int week);
 
     double getDemand_multiplier() const;
 
@@ -168,6 +168,15 @@ public:
     static bool compById(Utility *a, Utility *b);
 
     void addWaterSourceToOnlineLists(int source_id);
+
+    void
+    forceInfrastructureConstruction(int week, vector<int> new_infra_triggered);
+
+    void checkErrorsAddWaterSourceOnline(WaterSource *water_source);
+
+    void reservoirExpansionConstructionHandler(unsigned int source_id);
+
+    void waterTreatmentPlantConstructionHandler(unsigned int source_id);
 };
 
 

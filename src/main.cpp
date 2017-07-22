@@ -1135,7 +1135,7 @@ void triangleTest() {
 //    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongRaleighOther.csv");
 //    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongWB.csv");
 
-    int max_lines = 1000;
+    int max_lines = 64;
 
     cout << "Reading inflows." << endl;
     vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/inflows/durham_inflows.csv",
@@ -1209,6 +1209,9 @@ void triangleTest() {
             ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/raleighUserClassesWaterPrices.csv");
     vector<vector<double>> owasaUserClassesWaterPrices = Utils::parse2DCsvFile
             ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/owasaUserClassesWaterPrices.csv");
+
+    vector<vector<double>> owasaPriceSurcharges = Utils::parse2DCsvFile
+            ("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/owasaPriceRestMultipliers.csv");
 
 //    vector<double> sewageFractions = Utils::parse1DCsvFile(
 //            "/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/sewageFractions.csv");
@@ -1784,7 +1787,10 @@ void triangleTest() {
                                 restriction_stage_triggers_durham);
     Restrictions restrictions_o(0,
                                 restriction_stage_multipliers_owasa,
-                                restriction_stage_triggers_owasa);
+                                restriction_stage_triggers_owasa,
+                                &owasaDemandClassesFractions,
+                                &owasaUserClassesWaterPrices,
+                                &owasaPriceSurcharges);
     Restrictions restrictions_r(3,
                                 restriction_stage_multipliers_raleigh,
                                 restriction_stage_triggers_raleigh);
@@ -1840,7 +1846,7 @@ void triangleTest() {
                  drought_mitigation_policies,
                  min_env_flow_controls,
                  2316,//678, //
-                 128,
+                 4,
                  data_collector); //2385
     cout << "Beginning simulation." << endl;
     s.runFullSimulation(4);

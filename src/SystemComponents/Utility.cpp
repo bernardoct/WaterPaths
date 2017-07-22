@@ -148,27 +148,40 @@ void Utility::calculateWeeklyAverageWaterPrices(
         const vector<vector<double>> *typesMonthlyDemandFraction,
         const vector<vector<double>> *typesMonthlyWaterPrice) {
 
-    weekly_average_volumetric_price = new double[(int) WEEKS_IN_YEAR + 1]();
-    double *monthly_average_price = new double[NUMBER_OF_MONTHS]();
-    if (typesMonthlyDemandFraction->size() != NUMBER_OF_MONTHS)
-        __throw_invalid_argument("There must be 12 total_demand fractions per tier.");
-    if (typesMonthlyWaterPrice->size() != NUMBER_OF_MONTHS)
-        __throw_invalid_argument("There must be 12 water prices per tier.");
-    if ((*typesMonthlyWaterPrice)[0].size() !=
-            (*typesMonthlyDemandFraction)[0].size())
-        __throw_invalid_argument("There must be Demand fractions and water "
-                                         "prices for the same number of tiers.");
+    priceCalculationErrorChecking(typesMonthlyDemandFraction,
+                                  typesMonthlyWaterPrice);
 
+    weekly_average_volumetric_price = new double[(int) WEEKS_IN_YEAR + 1]();
+    double monthly_average_price[NUMBER_OF_MONTHS] = {};
+
+    /// Calculate monthly average prices across consumer types.
     for (int m = 0; m < NUMBER_OF_MONTHS; ++m)
         for (int t = 0; t < typesMonthlyWaterPrice->size(); ++t)
             monthly_average_price[m] += (*typesMonthlyDemandFraction)[m][t] *
                                         (*typesMonthlyWaterPrice)[m][t];
 
+    /// Create weekly price table from monthly prices.
     for (int w = 0; w < (int) (WEEKS_IN_YEAR + 1); ++w)
         weekly_average_volumetric_price[w] =
                 monthly_average_price[(int) (w / WEEKS_IN_MONTH)];
+}
 
-    delete[] monthly_average_price;
+/**
+ * Checks price calculation input matrixes for errors.
+ * @param typesMonthlyDemandFraction
+ * @param typesMonthlyWaterPrice
+ */
+void Utility::priceCalculationErrorChecking(
+        const vector<vector<double>> *typesMonthlyDemandFraction,
+        const vector<vector<double>> *typesMonthlyWaterPrice) {
+    if (typesMonthlyDemandFraction->size() != NUMBER_OF_MONTHS)
+        __throw_invalid_argument("There must be 12 total_demand fractions per tier.");
+    if (typesMonthlyWaterPrice->size() != NUMBER_OF_MONTHS)
+        __throw_invalid_argument("There must be 12 water prices per tier.");
+    if ((*typesMonthlyWaterPrice)[0].size() !=
+        (*typesMonthlyDemandFraction)[0].size())
+        __throw_invalid_argument("There must be Demand fractions and water "
+                                         "prices for the same number of tiers.");
 }
 
 /**
@@ -231,22 +244,22 @@ void Utility::addWaterSourceToOnlineLists(int source_id) {
  * allocations in reservoirs.
  * @param week
  */
-void Utility::splitDemands(int week, vector<vector<double>> *demands) {
-    unrestricted_demand = demand_series[week];
+void Utility::splitDemands(
+        int week, vector<vector<double>> *demands,
+        int weeks_future_demand) {
+    unrestricted_demand = demand_series[week + weeks_future_demand];
     restricted_demand = unrestricted_demand * demand_multiplier - demand_offset;
     double unallocated_reservoirs_demand = restricted_demand;
     bool over_allocation_ws[water_sources.size()] = {};
 
     /// Allocates demand to intakes and reuse based on allocated volume to
     /// this utility.
-    if (!priority_draw_water_source.empty())
-        for (int ws : priority_draw_water_source) {
-            double source_demand =
-                    min(restricted_demand,
-                        water_sources[ws]->getAvailableAllocatedVolume(id));
-            (*demands)[ws][this->id] = source_demand;
-//            unallocated_reservoirs_demand -= source_demand;
-        }
+    for (int ws : priority_draw_water_source) {
+        double source_demand =
+                min(restricted_demand,
+                    water_sources[ws]->getAvailableAllocatedVolume(id));
+        (*demands)[ws][this->id] = source_demand;
+    }
 
     /// Allocates remaining demand to reservoirs based on allocated available
     /// volume to this utility.
@@ -259,6 +272,7 @@ void Utility::splitDemands(int week, vector<vector<double>> *demands) {
                     water_sources[ws]->getAvailableAllocatedVolume(id) /
                     total_stored_volume);
 
+        /// Calculate demand allocated to a given source.
         double source_demand = restricted_demand * demand_fraction;
         (*demands)[ws][id] = source_demand;
 
@@ -268,6 +282,7 @@ void Utility::splitDemands(int week, vector<vector<double>> *demands) {
                     water_sources[ws]->getAllocatedTreatmentCapacity(id),
                     0.);
 
+        /// Set reallocation variables for the sake of reallocating demand.
         if (over_allocated_demand_ws > 0.) {
             over_allocation = true;
             over_allocation_ws[ws] = true;
@@ -280,13 +295,14 @@ void Utility::splitDemands(int week, vector<vector<double>> *demands) {
                 source_demand - over_allocated_demand_ws;
     }
 
-    /// Do one iteration of demand redistribution if there is overallocation.
+    /// Do one iteration of demand reallocation among sources whose treatment
+    /// capacities have not yet been exceeded if there is an instance of
+    /// overallocation.
     double unallocated_reservoirs_demand_aux = unallocated_reservoirs_demand;
     if (over_allocation && remaining_stored_volume > 0)
         for (int ws : non_priority_draw_water_source)
             if (!over_allocation_ws[ws]) {
-                double demand_fraction =
-                        max(1.0e-6,
+                double demand_fraction = max(1.0e-6,
                             water_sources[ws]->getAvailableAllocatedVolume(id) /
                             remaining_stored_volume);
                 double extra_demand_share = demand_fraction *
@@ -296,11 +312,12 @@ void Utility::splitDemands(int week, vector<vector<double>> *demands) {
             }
 
     /// Update contingency fund
-    updateContingencyFund(unrestricted_demand,
-                          demand_multiplier,
-                          demand_offset,
-                          unallocated_reservoirs_demand,
-                          week);
+    if (calc_financial)
+        updateContingencyFund(unrestricted_demand,
+                              demand_multiplier,
+                              demand_offset,
+                              unallocated_reservoirs_demand,
+                              week);
 
     //FIXME: IMPROVE CONTINUITY ERROR CHECKING HERE TO DETECT POORLY SPLIT DEMANDS WITHOUT CAPTURING UNFULFILLED DEMAND DUE TO LACK OF STORED WATER.
 //    if (unallocated_reservoirs_demand > 1e-4)
@@ -339,27 +356,56 @@ void Utility::resetDataColletionVariables() {
 void Utility::updateContingencyFund(
         double unrestricted_demand, double demand_multiplier,
         double demand_offset, double unfulfilled_demand, int week) {
-    int price_week = Utils::weekOfTheYear(week);
-    fund_contribution = percent_contingency_fund_contribution *
-                        (unrestricted_demand - unfulfilled_demand) *
-                        weekly_average_volumetric_price[price_week];
-    gross_revenue =
-            restricted_demand * weekly_average_volumetric_price[price_week];
-    double revenue_losses = (unrestricted_demand * (1 - demand_multiplier) +
-                             unfulfilled_demand) *
-                            weekly_average_volumetric_price[price_week];
-    double transfer_costs =
-            demand_offset * (offset_rate_per_volume -
-                             weekly_average_volumetric_price[price_week]);
+
+    int week_of_year = Utils::weekOfTheYear(week);
+    double unrestricted_price = weekly_average_volumetric_price[week_of_year];
+    double current_price;
+
+    /// Set current water price, contingent on restrictions being enacted.
+    if (restricted_price == NON_INITIALIZED)
+        current_price = unrestricted_price;
+    else
+        current_price = restricted_price;
+
+    if (current_price < unrestricted_price)
+        __throw_logic_error("Prices under surcharge cannot be smaller than "
+                                    "prices w/o restrictions enacted.");
+
+    /// calculate fund contributions if there were no shortage.
+    double projected_fund_contribution = percent_contingency_fund_contribution *
+                                         unrestricted_demand *
+                                         unrestricted_price;
+
+    /// Calculate actual gross revenue.
+    gross_revenue = restricted_demand * current_price;
+
+    /// Calculate losses due to restrictions and transfers.
+    double lost_demand_vol_sales =
+            (unrestricted_demand * (1 - demand_multiplier) +
+             unfulfilled_demand);
+    double revenue_losses = lost_demand_vol_sales * unrestricted_price;
+    double transfer_costs = demand_offset * (offset_rate_per_volume -
+                                             unrestricted_price);
+    double recouped_loss_price_surcharge =
+            restricted_demand * (current_price - unrestricted_price);
 
     /// contingency fund cannot get negative.
-    contingency_fund = max(contingency_fund + fund_contribution -
-                           revenue_losses - transfer_costs,
+    contingency_fund = max(contingency_fund + projected_fund_contribution -
+                           revenue_losses - transfer_costs +
+                           recouped_loss_price_surcharge,
                            0.0);
 
+    /// Update variables for data collection and next iteration.
     drought_mitigation_cost = max(revenue_losses + transfer_costs -
-                                  insurance_payout,
+                                  insurance_payout -
+                                  recouped_loss_price_surcharge,
                                   0.0);
+
+    fund_contribution =
+            projected_fund_contribution - revenue_losses - transfer_costs +
+            recouped_loss_price_surcharge;
+
+    restricted_price = NON_INITIALIZED;
 }
 
 void Utility::setWaterSourceOnline(unsigned int source_id) {
@@ -376,11 +422,7 @@ void Utility::setWaterSourceOnline(unsigned int source_id) {
         water_sources.at(source_id)->setOnline();
         addWaterSourceToOnlineLists(source_id);
     }
-    /// Updates total storage and treatment capacities.
-//    total_storage_capacity +=
-//            water_sources.at(source_id)->getAllocatedCapacity(id);
-//    total_treatment_capacity +=
-//            water_sources.at(source_id)->getAllocatedTreatmentCapacity(id);
+    /// Updates total storage and treatment variables.
     total_storage_capacity = 0;
     total_treatment_capacity = 0;
     total_stored_volume = 0;
@@ -426,7 +468,7 @@ void Utility::waterTreatmentPlantConstructionHandler(unsigned int source_id) {
                  priority_draw_water_source.end(),
                  wtp.parent_reservoir_ID)
             == priority_draw_water_source.end();
-    bool is_not_in_non_priority_list = // I know, the code may never need this variable. But it helps keeping the code organized.
+    bool is_not_in_non_priority_list =
             find(non_priority_draw_water_source.begin(),
                  non_priority_draw_water_source.end(),
                  wtp.parent_reservoir_ID)
@@ -745,4 +787,12 @@ void Utility::checkErrorsAddWaterSourceOnline(WaterSource *water_source) {
                 __throw_invalid_argument("Water source with no bond parameters "
                                                  "but set as to be built.");
             }
+}
+
+void Utility::setRestricted_price(double restricted_price) {
+    Utility::restricted_price = restricted_price;
+}
+
+void Utility::setNoFinaicalCalculations() {
+    calc_financial = false;
 }

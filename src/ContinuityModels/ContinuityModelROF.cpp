@@ -23,6 +23,7 @@ ContinuityModelROF::ContinuityModelROF(
     /// update utilities' total stored volume
     for (Utility *u : this->continuity_utilities) {
         u->updateTotalStoredVolume();
+        u->setNoFinaicalCalculations();
     }
 
     storage_to_rof_realization = Matrix3D<double>(
@@ -162,8 +163,9 @@ void ContinuityModelROF::updateStorageToROFTable(
                   available_volumes + n_water_sources,
                   available_volumes_shifted);
 
-        /// calculate the difference between the simulated available water and the one for the table calculated above
-        /// based on the percent decrement.
+        /// calculate the difference between the simulated available water and
+        /// the one for the table calculated above based on the percent
+        /// decrement.
         for (int k = 0; k < n_water_sources; ++k)
             delta_storage[k] = water_sources_capacities[k] *
                                percent_percent_storage_level -
@@ -203,63 +205,51 @@ void ContinuityModelROF::updateStorageToROFTable(
             break;
         }
 
-        /// Sets the beginning percent storage for the next realization two levels above the first level in which
-        /// at least one failure was observed.
+        /// Sets the beginning percent storage for the next realization two
+        /// levels above the first level in which at least one failure was
+        /// observed.
         if (count_fails == 0)
-            beginning_res_level = s + 2;
-        else if (beginning_res_level < s + 2)
-            beginning_res_level = s + 2;
+            beginning_res_level = s + 1;
+        else if (beginning_res_level < s + 1)
+            beginning_res_level = s + 1;
     }
 }
 
 //FIXME: MAKE THIS MORE EFFICIENT. THIS METHOD IS THE MOST EXPENSIVE ONE IN THE CODE.
 void ContinuityModelROF::shiftStorages(
         double *available_volumes_shifted,
-        double *delta_storage) {
+        const double *delta_storage) {
 
     /// Add deltas to all sources following the topological order, so that
     /// upstream is calculated before downstream.
     for (int ws : sources_topological_order) {
-//        bool no_downstream = downstream_sources[ws] != NON_INITIALIZED;
 
         /// calculate initial estimate for shifted
         available_volumes_shifted[ws] += delta_storage[ws];
 
+        double available_volume_to_full = water_sources_capacities[ws] -
+                                          available_volumes_shifted[ws];
+
         /// if not full, retrieve spill to downstream source.
-        if (available_volumes_shifted[ws] < water_sources_capacities[ws]) {
+        if (available_volume_to_full > 0) {
             /// Calculate spilled water. Since the curves are shifted as the
             /// weeks of the rof realizations are calculated, the minimum
-            /// environmental outflows below will be the ones pertinent to
-            /// the time in which the storage is being shifted.
-            double excess_spilled =
+            /// environmental outflows below will be the ones at the time when
+            /// the storage is being shifted.
+            double spillage =
                     continuity_water_sources[ws]->getTotal_outflow() -
                     continuity_water_sources[ws]
                             ->getMin_environmental_outflow();
 
-            available_volumes_shifted[ws] += excess_spilled;
-            //FIXME: CHECK IF THIS SUBSTITUTION RETURNS THE SAME RESULTS AS COMMENTED LINES
-//            if (no_downstream)
+            double spillage_retrieved = min(available_volume_to_full,
+                                            spillage);
+
+            available_volumes_shifted[ws] += spillage_retrieved;
+
             if (storage_wout_downstream[ws])
                 available_volumes_shifted[downstream_sources[ws]] -=
-                        excess_spilled;
+                        spillage_retrieved;
         }
-
-        /// if after retrieving spill the source is full, send excess
-        /// downstream. Works for intakes as well, since their capacities are
-        /// 0, meaning all excess from above overflows.
-        if (available_volumes_shifted[ws] > water_sources_capacities[ws]) {
-            //FIXME: CHECK IF THIS SUBSTITUTION RETURNS THE SAME RESULTS AS COMMENTED LINES
-//            if (no_downstream)
-            if (storage_wout_downstream[ws])
-                available_volumes_shifted[downstream_sources[ws]] +=
-                        available_volumes_shifted[ws] -
-                        water_sources_capacities[ws];
-
-            available_volumes_shifted[ws] = water_sources_capacities[ws];
-            /// prevent negative storages.
-        } else
-            available_volumes_shifted[ws] = max(available_volumes_shifted[ws],
-                                                0.);
     }
 }
 

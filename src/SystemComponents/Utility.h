@@ -15,11 +15,8 @@
 
 class Utility {
 private:
-
-    const int NUMBER_OF_MONTHS = 12;
-    const double WEEKS_IN_MONTH = WEEKS_IN_YEAR / (double) NUMBER_OF_MONTHS;
     double fund_contribution;
-    double *demand_series = NULL;
+    double *demand_series = nullptr;
     double *weekly_average_volumetric_price;
     vector<int> priority_draw_water_source;
     vector<int> non_priority_draw_water_source;
@@ -29,6 +26,7 @@ private:
     double total_treatment_capacity;
     double demand_multiplier = 1;
     double demand_offset = 0;
+    double restricted_price = NON_INITIALIZED;
     double offset_rate_per_volume = 0;
     double contingency_fund = 0;
     double drought_mitigation_cost = 0;
@@ -42,6 +40,7 @@ private:
     double gross_revenue = 0;
     bool under_construction = false;
     int construction_end_date = 0;
+    bool calc_financial = true;
 //    map<int, WaterSource *> water_sources;
     vector<WaterSource *> water_sources;
     vector<unsigned int> infrastructure_construction_order;
@@ -87,9 +86,9 @@ public:
 
     bool operator>(const Utility* other);
 
-    void setRisk_of_failure(double risk_of_failure);
+    static bool compById(Utility *a, Utility *b);
 
-    double getRisk_of_failure() const;
+    void setRisk_of_failure(double risk_of_failure);
 
     void updateTotalStoredVolume();
 
@@ -97,11 +96,38 @@ public:
 
     void addWaterSource(WaterSource *water_source);
 
-    double getStorageToCapacityRatio() const;
+    void splitDemands(
+            int week, vector<vector<double>> *demands, int
+    weeks_future_demand = 0);
 
-    void splitDemands(int week, vector<vector<double>> *demands);
+    void calculateWeeklyAverageWaterPrices(
+            const vector<vector<double>> *typesMonthlyDemandFraction,
+            const vector<vector<double>> *typesMonthlyWaterPrice);
+
+    const double waterPrice(int week);
+
+    void addWaterSourceToOnlineLists(int source_id);
+
+    void
+    forceInfrastructureConstruction(int week, vector<int> new_infra_triggered);
+
+    void checkErrorsAddWaterSourceOnline(WaterSource *water_source);
+
+    void reservoirExpansionConstructionHandler(unsigned int source_id);
+
+    void waterTreatmentPlantConstructionHandler(unsigned int source_id);
+
+    void priceCalculationErrorChecking(
+            const vector<vector<double>> *typesMonthlyDemandFraction,
+            const vector<vector<double>> *typesMonthlyWaterPrice);
 
     double getTotal_storage_capacity() const;
+
+    double getRisk_of_failure() const;
+
+    double getStorageToCapacityRatio() const;
+
+    double getGrossRevenue() const;
 
     void setDemand_multiplier(double demand_multiplier);
 
@@ -113,17 +139,21 @@ public:
             double unrestricted_demand, double demand_multiplier,
             double demand_offset, double unfulfilled_demand, int week);
 
+    void beginConstruction(int week, int infra_id);
+
+    void setWaterSourceOnline(unsigned int source_id);
+
+    int infrastructureConstructionHandler(double long_term_rof, int week);
+
+    double updateCurrent_debt_payment(int week);
+
     double getContingency_fund() const;
 
     double getUnrestrictedDemand() const;
 
     double getRestrictedDemand() const;
 
-    void beginConstruction(int week, int infra_id);
-
-    void setWaterSourceOnline(unsigned int source_id);
-
-    int infrastructureConstructionHandler(double long_term_rof, int week);
+    void setRestricted_price(double restricted_price);
 
     double getDemand_multiplier() const;
 
@@ -132,8 +162,6 @@ public:
     double getInfrastructure_net_present_cost() const;
 
     double getCurrent_debt_payment() const;
-
-    double updateCurrent_debt_payment(int week);
 
     double getCurrent_contingency_fund_contribution() const;
 
@@ -157,26 +185,7 @@ public:
 
     const vector<int> getInfrastructure_built() const;
 
-    void calculateWeeklyAverageWaterPrices(
-            const vector<vector<double>> *typesMonthlyDemandFraction,
-            const vector<vector<double>> *typesMonthlyWaterPrice);
-
-    const double waterPrice(int week);
-
-    double getGrossRevenue() const;
-
-    static bool compById(Utility *a, Utility *b);
-
-    void addWaterSourceToOnlineLists(int source_id);
-
-    void
-    forceInfrastructureConstruction(int week, vector<int> new_infra_triggered);
-
-    void checkErrorsAddWaterSourceOnline(WaterSource *water_source);
-
-    void reservoirExpansionConstructionHandler(unsigned int source_id);
-
-    void waterTreatmentPlantConstructionHandler(unsigned int source_id);
+    void setNoFinaicalCalculations();
 };
 
 

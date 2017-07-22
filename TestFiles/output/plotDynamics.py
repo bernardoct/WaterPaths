@@ -30,7 +30,7 @@ p = Pool(8)
 # 6 Price
 realizations_utilities = p.map(read_append_file, glob.glob('Utilities.out*'))
 
-policies = p.map(read_append_file, glob.glob('Policies.out*'))
+policies = p.map(read_append_2file, glob.glob('Policies.out*'))
 
 alpha = 1.0 / len(policies)  # + 0.004
 # alpha = 0.005

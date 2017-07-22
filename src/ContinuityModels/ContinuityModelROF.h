@@ -42,7 +42,7 @@ public:
 
     void updateStorageToROFTable(double storage_percent_decrement, int week_of_the_year);
 
-    void shiftStorages(double *storages, double *deltas);
+    void shiftStorages(double *storages, const double *deltas);
 
     const Matrix3D<double> *getStorage_to_rof_table() const;
 };

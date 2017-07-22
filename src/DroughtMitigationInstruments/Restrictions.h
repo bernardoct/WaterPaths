@@ -12,25 +12,38 @@
 class Restrictions : public DroughtMitigationPolicy {
 
 private:
-
     const vector<double> stage_multipliers;
     const vector<double> stage_triggers;
     double current_multiplier = 0;
-    int current_stage = 0;
-public:
+    double **restricted_weekly_average_volumetric_price = nullptr;
 
+public:
     Restrictions(const int id, const vector<double> &stage_multipliers,
                  const vector<double> &stage_triggers);
 
+    Restrictions(
+            const int id, const vector<double> &stage_multipliers,
+            const vector<double> &stage_triggers,
+            const vector<vector<double>> *typesMonthlyDemandFraction,
+            const vector<vector<double>> *typesMonthlyWaterPrice,
+            const vector<vector<double>> *priceMultipliers);
+
     Restrictions(const Restrictions &reservoir);
 
-    virtual void applyPolicy(int week) override;
+    void applyPolicy(int week) override;
 
-    virtual void addSystemComponents(vector<Utility *> systems_utilities, vector<WaterSource *> water_sources) override;
+    void addSystemComponents(
+            vector<Utility *> systems_utilities,
+            vector<WaterSource *> water_sources) override;
 
     double getCurrent_multiplier() const;
 
-    virtual ~Restrictions();
+    ~Restrictions();
+
+    void calculateWeeklyAverageWaterPrices(
+            const vector<vector<double>> *typesMonthlyDemandFraction,
+            const vector<vector<double>> *typesMonthlyWaterPrice,
+            const vector<vector<double>> *priceMultipliers);
 };
 
 

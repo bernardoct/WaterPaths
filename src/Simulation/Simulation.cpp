@@ -133,7 +133,7 @@ void Simulation::runFullSimulation(int num_threads) {
     std::cout << "Number of realizations: " << number_of_realizations << endl;
     std::cout << "Beginning realizations loop." << endl;
 #pragma omp parallel for num_threads(num_threads)
-    for (int r = 0; r < number_of_realizations; ++r) {
+    for (int r = 251; r < number_of_realizations; ++r) {
         count++;
         time_t timer_ir, timer_fr;
         time(&timer_ir);

@@ -102,6 +102,7 @@ void Restrictions::calculateWeeklyAverageWaterPrices(
         vector<vector<double>> *priceMultipliers) {
 
     if (priceMultipliers) {
+        int n_tiers = static_cast<int>(typesMonthlyWaterPrice->at(0).size());
         restricted_weekly_average_volumetric_price = new
                 double *[priceMultipliers->size()];
 
@@ -111,7 +112,7 @@ void Restrictions::calculateWeeklyAverageWaterPrices(
             double monthly_average_price[NUMBER_OF_MONTHS] = {};
 
             for (int m = 0; m < NUMBER_OF_MONTHS; ++m) // monthly loop
-                for (int t = 0; t < typesMonthlyWaterPrice->size();
+                for (int t = 0; t < n_tiers;
                      ++t) // consumer type loop
                     monthly_average_price[m] +=
                             (*typesMonthlyDemandFraction)[m][t] *

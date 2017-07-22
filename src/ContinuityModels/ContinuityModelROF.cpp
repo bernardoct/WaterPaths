@@ -148,8 +148,9 @@ void ContinuityModelROF::updateStorageToROFTable(
         available_volumes[ws] =
                 continuity_water_sources[ws]->getAvailable_volume();
 
-    /// loops over the percent storage levels to populate table. The loop begins from two levels above the level
-    /// where at least one failure was observed in the last iteration. This saves a lot of computational time.
+    /// loops over the percent storage levels to populate table. The loop
+    /// begins from one level above the level  where at least one failure was
+    /// observed in the last iteration. This saves a lot of computational time.
     for (int s = beginning_res_level; s >= 0; --s) {
         /// calculate delta storage for all reservoirs and array that will receive the shifted storage curves.
         double percent_percent_storage_level = (double) s *

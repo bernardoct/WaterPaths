@@ -153,10 +153,11 @@ void Utility::calculateWeeklyAverageWaterPrices(
 
     weekly_average_volumetric_price = new double[(int) WEEKS_IN_YEAR + 1]();
     double monthly_average_price[NUMBER_OF_MONTHS] = {};
+    int n_tiers = static_cast<int>(typesMonthlyWaterPrice->at(0).size());
 
     /// Calculate monthly average prices across consumer types.
     for (int m = 0; m < NUMBER_OF_MONTHS; ++m)
-        for (int t = 0; t < typesMonthlyWaterPrice->size(); ++t)
+        for (int t = 0; t < n_tiers; ++t)
             monthly_average_price[m] += (*typesMonthlyDemandFraction)[m][t] *
                                         (*typesMonthlyWaterPrice)[m][t];
 

@@ -1135,7 +1135,7 @@ void triangleTest() {
 //    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongRaleighOther.csv");
 //    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongWB.csv");
 
-    int max_lines = 64;
+    int max_lines = 260;
 
     cout << "Reading inflows." << endl;
     vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/inflows/durham_inflows.csv",
@@ -1846,7 +1846,7 @@ void triangleTest() {
                  drought_mitigation_policies,
                  min_env_flow_controls,
                  2316,//678, //
-                 32,
+                 max_lines,
                  data_collector); //2385
     cout << "Beginning simulation." << endl;
     s.runFullSimulation(8);

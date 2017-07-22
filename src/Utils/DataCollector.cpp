@@ -233,11 +233,12 @@ void DataCollector::printReservoirOutput(string file_name) {
 
 void DataCollector::printReservoirOutputCompact(string file_name) {
 
-    std::ofstream outStream;
     int n_weeks =
             (int) water_sources_t[0].total_upstream_sources_inflows[0].size();
 
+#pragma omp parallel for
     for (int r = 0; r < number_of_realizations; ++r) {
+        std::ofstream outStream;
         outStream.open(output_directory + file_name + std::to_string(r));
         /// Print numbers.
         for (int w = 0; w < n_weeks; ++w) {
@@ -265,7 +266,6 @@ void DataCollector::printReservoirOutputCompact(string file_name) {
     cout << "Water sources output printed. Files " << output_directory <<
          file_name << "XX" << endl;
 }
-
 
 void DataCollector::printUtilityOutput(string file_name) {
 
@@ -341,10 +341,11 @@ void DataCollector::printUtilityOutput(string file_name) {
 
 void DataCollector::printUtilityOutputCompact(string file_name) {
 
-    std::ofstream outStream;
     int n_weeks = (int) utilities_t[0].rof[0].size();
 
+#pragma omp parallel for
     for (int r = 0; r < number_of_realizations; ++r) {
+        std::ofstream outStream;
         outStream.open(output_directory + file_name + std::to_string(r));
         outStream << "#";
         for (auto &u : utilities_t) {
@@ -387,7 +388,6 @@ void DataCollector::printUtilityOutputCompact(string file_name) {
          file_name << "XX" << endl;
 
 }
-
 
 void DataCollector::printPoliciesOutput(string file_name) {
 
@@ -451,7 +451,6 @@ void DataCollector::printPoliciesOutput(string file_name) {
 
 void DataCollector::printPoliciesOutputCompact(string file_name) {
 
-    std::ofstream outStream;
 
     /// Checks if there were drought mitigation policies in place.
     if (!restriction_policies_t.empty()) {
@@ -462,7 +461,9 @@ void DataCollector::printPoliciesOutputCompact(string file_name) {
         sort(restriction_policies_t.begin(),
              restriction_policies_t.end());
 
+#pragma omp parallel for
         for (int r = 0; r < number_of_realizations; ++r) {
+            std::ofstream outStream;
             outStream.open(output_directory + file_name + std::to_string(r));
             if (!restriction_policies_t.empty()) {
                 outStream << "#";
@@ -517,6 +518,8 @@ void DataCollector::printPoliciesOutputCompact(string file_name) {
         cout << "Policies output printed. Files " << output_directory <<
              file_name << "XX" << endl;
     } else {
+        std::ofstream outStream;
+        outStream.open(output_directory + file_name + std::to_string(-1));
         outStream << "No restriction policies in place.";
     }
 }

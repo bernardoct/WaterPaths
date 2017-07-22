@@ -1846,10 +1846,10 @@ void triangleTest() {
                  drought_mitigation_policies,
                  min_env_flow_controls,
                  2316,//678, //
-                 4,
+                 32,
                  data_collector); //2385
     cout << "Beginning simulation." << endl;
-    s.runFullSimulation(4);
+    s.runFullSimulation(8);
     cout << "Ending simulation" << endl;
 }
 

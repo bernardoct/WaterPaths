@@ -27,10 +27,22 @@ TEST_CASE("Net present cost calculations", "[NPC]") {
                 0.05);
 
     double level_debt_service_payment = 0;
-    REQUIRE(r.calculateNetPresentConstructionCost(0, 0.05, &level_debt_service_payment) == Approx(5000));
-    REQUIRE(r.calculateNetPresentConstructionCost(0, 0.04, &level_debt_service_payment) == Approx(5452.6147334301));
+    REQUIRE(r.calculateNetPresentConstructionCost(0,
+                                                  0,
+                                                  0.05,
+                                                  &level_debt_service_payment) ==
+            Approx(5000));
+    REQUIRE(r.calculateNetPresentConstructionCost(0,
+                                                  0,
+                                                  0.04,
+                                                  &level_debt_service_payment) ==
+            Approx(5452.6147334301));
     REQUIRE(level_debt_service_payment == Approx(401.21));
-    REQUIRE(r.calculateNetPresentConstructionCost(521, 0.04, &level_debt_service_payment) == Approx(3685.751));
+    REQUIRE(r.calculateNetPresentConstructionCost(521,
+                                                  0,
+                                                  0.04,
+                                                  &level_debt_service_payment) ==
+            Approx(3685.751));
 }
 /*
 TEST_CASE("Split of total_demand among water sources of a utility proportionally to their stored volume", "[Split Demand]") {
@@ -864,7 +876,8 @@ TEST_CASE("Test Matrix3D", "[Matrix3D]") {
     }
 }
 
-TEST_CASE("Get ROF from storage-rof-table", "[rof from table]") {
+TEST_CASE("Get ROF from storage-st_rof-table",
+          "[st_rof from table]") {
 
 
     /// Read streamflows
@@ -966,6 +979,7 @@ TEST_CASE("Get ROF from storage-rof-table", "[rof from table]") {
                                  std::vector<int>()),
                vector<int>(1,
                            1),
+               vector<int>(),
                0.05);
     Utility u3((char *) "U3", 2, &demands_test, streamflow_n_weeks, 0.05, 1,
                WwtpDischargeRule(std::vector<vector<double, allocator<double>>>(), std::vector<int>()));
@@ -1020,7 +1034,7 @@ TEST_CASE("Get ROF from storage-rof-table", "[rof from table]") {
     REQUIRE(result[2] == 0.);
 }
 
-//TEST_CASE("ROF storage-rof table", "[Storage-rof table]") {
+//TEST_CASE("ROF storage-st_rof table", "[Storage-st_rof table]") {
 //
 //
 //    /// Read streamflows

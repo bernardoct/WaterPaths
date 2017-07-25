@@ -15,12 +15,16 @@
 
 class Utility {
 private:
+
     double fund_contribution;
+    int under_construction_id = NON_INITIALIZED;
     double *demand_series = nullptr;
     double *weekly_average_volumetric_price;
     vector<int> priority_draw_water_source;
     vector<int> non_priority_draw_water_source;
-    double risk_of_failure;
+    vector<double> weekly_peaking_factor;
+    double short_term_risk_of_failure;
+    double long_term_risk_of_failure;
     double total_storage_capacity = 0;
     double total_stored_volume = 0;
     double total_treatment_capacity;
@@ -34,18 +38,19 @@ private:
     double insurance_purchase = 0;
     double restricted_demand = 0;
     double unrestricted_demand = 0;
-    double infrastructure_net_present_cost = 0;
+    double infra_net_present_cost = 0;
     double current_debt_payment = 0;
     double waste_water_discharge = 0;
     double gross_revenue = 0;
     bool under_construction = false;
     int construction_end_date = 0;
-    bool calc_financial = true;
+    bool used_for_realization = true;
 //    map<int, WaterSource *> water_sources;
     vector<WaterSource *> water_sources;
-    vector<unsigned int> infrastructure_construction_order;
+    vector<int> rof_infra_construction_order;
+    vector<int> demand_infra_construction_order;
     vector<vector<double>> debt_payment_streams;
-    vector<int> infrastructure_built_last_week;
+    vector<int> infra_built_last_week;
     vector<vector<double>> *demands_all_realizations;
     WwtpDischargeRule wwtp_discharge_rule;
 
@@ -54,16 +59,8 @@ public:
     const int number_of_week_demands;
     const char *name;
     const double percent_contingency_fund_contribution;
-    const double infrastructure_discount_rate;
-
-    Utility(
-            char *name, int id,
-            vector<vector<double>> *demands_all_realizations,
-            int number_of_week_demands,
-            const double percent_contingency_fund_contribution,
-            const vector<vector<double>> *typesMonthlyDemandFraction,
-            const vector<vector<double>> *typesMonthlyWaterPrice,
-            WwtpDischargeRule wwtp_discharge_rule);
+    const double infra_discount_rate;
+    const double demand_buffer;
 
     Utility(
             char *name, int id,
@@ -73,8 +70,20 @@ public:
             const vector<vector<double>> *typesMonthlyDemandFraction,
             const vector<vector<double>> *typesMonthlyWaterPrice,
             WwtpDischargeRule wwtp_discharge_rule,
-            vector<unsigned int> infrastructure_construction_order,
-            double infrastructure_discount_rate);
+            double demand_buffer);
+
+    Utility(
+            const char *name, int id,
+            vector<vector<double>> *demands_all_realizations,
+            int number_of_week_demands,
+            const double percent_contingency_fund_contribution,
+            const vector<vector<double>> *typesMonthlyDemandFraction,
+            const vector<vector<double>> *typesMonthlyWaterPrice,
+            WwtpDischargeRule wwtp_discharge_rule,
+            double demand_buffer,
+            const vector<int> &rof_infra_construction_order,
+            const vector<int> &demand_infra_construction_order,
+            double infra_discount_rate);
 
     Utility(Utility &utility);
 
@@ -97,8 +106,8 @@ public:
     void addWaterSource(WaterSource *water_source);
 
     void splitDemands(
-            int week, vector<vector<double>> *demands, int
-    weeks_future_demand = 0);
+            int week, vector<vector<double>> *demands, bool
+    apply_demand_buffer = false);
 
     void calculateWeeklyAverageWaterPrices(
             const vector<vector<double>> *typesMonthlyDemandFraction,
@@ -112,6 +121,8 @@ public:
     forceInfrastructureConstruction(int week, vector<int> new_infra_triggered);
 
     void checkErrorsAddWaterSourceOnline(WaterSource *water_source);
+
+    int infrastructureConstructionHandler(double long_term_rof, int week);
 
     void reservoirExpansionConstructionHandler(unsigned int source_id);
 
@@ -142,8 +153,6 @@ public:
     void beginConstruction(int week, int infra_id);
 
     void setWaterSourceOnline(unsigned int source_id);
-
-    int infrastructureConstructionHandler(double long_term_rof, int week);
 
     double updateCurrent_debt_payment(int week);
 
@@ -179,13 +188,19 @@ public:
 
     void resetDataColletionVariables();
 
-    const vector<unsigned int> &getInfrastructure_construction_order() const;
+    const vector<int> &getRof_infrastructure_construction_order() const;
 
-    void setRelization(unsigned long r);
+    void setRealization(unsigned long r);
 
     const vector<int> getInfrastructure_built() const;
 
     void setNoFinaicalCalculations();
+
+    double getLong_term_risk_of_failure() const;
+
+    const vector<int> &getDemand_infra_construction_order() const;
+
+    vector<double> calculateWeeklyPeakingFactor(vector<double> *demands);
 };
 
 

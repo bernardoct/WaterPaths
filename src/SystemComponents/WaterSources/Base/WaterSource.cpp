@@ -4,6 +4,8 @@
 
 #include <iostream>
 #include <cmath>
+#include <numeric>
+#include <algorithm>
 #include "WaterSource.h"
 
 using namespace std;
@@ -22,13 +24,13 @@ WaterSource::WaterSource(
         const char *name, const int id,
         const vector<Catchment *> &catchments, const double capacity,
         double treatment_capacity, const int source_type)
-        : name(name), capacity(capacity), min_environmental_outflow(min_environmental_outflow),
-          total_outflow(min_environmental_outflow), catchments(catchments), online(ONLINE), available_volume(capacity),
-          id(id), total_treatment_capacity(treatment_capacity),
-          source_type(source_type),
-          construction_rof(NON_INITIALIZED), construction_time(NON_INITIALIZED),
-          construction_cost_of_capital(NON_INITIALIZED), bond_term(NON_INITIALIZED),
-          bond_interest_rate(NON_INITIALIZED) {}
+        : name(name), capacity(capacity), catchments(catchments),
+          online(ONLINE), available_volume(capacity), id(id),
+          total_treatment_capacity(treatment_capacity),
+          source_type(source_type), construction_rof_or_demand(NON_INITIALIZED),
+          construction_time(NON_INITIALIZED),
+          construction_cost_of_capital(NON_INITIALIZED),
+          bond_term(NON_INITIALIZED), bond_interest_rate(NON_INITIALIZED) {}
 
 /**
  * Constructor for when water source does not exist in the beginning of the simulation.
@@ -39,7 +41,7 @@ WaterSource::WaterSource(
  * @param capacity
  * @param treatment_capacity
  * @param source_type
- * @param construction_rof
+ * @param construction_rof_or_demand
  * @param construction_time_range
  * @param construction_cost_of_capital
  */
@@ -47,19 +49,155 @@ WaterSource::WaterSource(
         const char *name, const int id,
         const vector<Catchment *> &catchments, const double capacity,
         double treatment_capacity, const int source_type,
-        const double construction_rof,
+        const double construction_rof_or_demand,
         const vector<double> construction_time_range,
         double construction_cost_of_capital, double bond_term,
         double bond_interest_rate)
-        : name(name), capacity(capacity), min_environmental_outflow(min_environmental_outflow),
-          total_outflow(min_environmental_outflow), catchments(catchments), online(OFFLINE), available_volume(capacity),
-          id(id), total_treatment_capacity(treatment_capacity),
+        : name(name), capacity(capacity), catchments(catchments),
+          online(OFFLINE), available_volume(capacity), id(id),
+          total_treatment_capacity(treatment_capacity),
           source_type(source_type),
-          construction_rof(construction_rof),
+          construction_rof_or_demand(construction_rof_or_demand),
           construction_time(construction_time_range[0] * WEEKS_IN_YEAR + (construction_time_range[1] -
                   construction_time_range[0]) * (rand() % (int) WEEKS_IN_YEAR)),
           construction_cost_of_capital(construction_cost_of_capital), bond_term(bond_term),
           bond_interest_rate(bond_interest_rate) {}
+
+
+/**
+ * Constructor for when water source is built and operational.
+ * @param name
+ * @param id
+ * @param min_environmental_outflow
+ * @param catchments
+ * @param capacity
+ * @param treatment_capacity
+ * @param source_type
+ */
+WaterSource::WaterSource(
+        const char *name, const int id,
+        const vector<Catchment *> &catchments, const double capacity,
+        double treatment_capacity, const int source_type,
+        vector<double> *allocated_treatment_fractions,
+        vector<double> *allocated_fractions,
+        vector<int> *utilities_with_allocations)
+        : name(name), capacity(capacity), catchments(catchments),
+          online(ONLINE), available_volume(capacity), id(id),
+          total_treatment_capacity(treatment_capacity),
+          source_type(source_type), construction_rof_or_demand(NON_INITIALIZED),
+          construction_time(NON_INITIALIZED),
+          construction_cost_of_capital(NON_INITIALIZED),
+          bond_term(NON_INITIALIZED), bond_interest_rate(NON_INITIALIZED),
+          available_allocated_volumes(available_allocated_volumes),
+          allocated_capacities(allocated_capacities),
+          allocated_treatment_capacities(allocated_treatment_capacities),
+          utilities_with_allocations(utilities_with_allocations),
+          wq_pool_id(wq_pool_id) {
+    setAllocations(utilities_with_allocations,
+                   allocated_fractions,
+                   allocated_treatment_fractions);
+}
+
+/**
+ * Constructor for when water source does not exist in the beginning of the simulation.
+ * @param source_name
+ * @param id
+ * @param min_environmental_outflow
+ * @param catchments
+ * @param capacity
+ * @param treatment_capacity
+ * @param source_type
+ * @param construction_rof_or_demand
+ * @param construction_time_range
+ * @param construction_cost_of_capital
+ */
+WaterSource::WaterSource(
+        const char *name, const int id,
+        const vector<Catchment *> &catchments, const double capacity,
+        double treatment_capacity, const int source_type,
+        vector<double> *allocated_treatment_fractions,
+        vector<double> *allocated_fractions,
+        vector<int> *utilities_with_allocations,
+        const double construction_rof_or_demand,
+        const vector<double> construction_time_range,
+        double construction_cost_of_capital, double bond_term,
+        double bond_interest_rate)
+        : name(name), capacity(capacity), catchments(catchments),
+          online(OFFLINE), available_volume(capacity), id(id),
+          total_treatment_capacity(treatment_capacity),
+          source_type(source_type),
+          available_allocated_volumes(available_allocated_volumes),
+          allocated_capacities(allocated_capacities),
+          allocated_treatment_capacities(allocated_treatment_capacities),
+          utilities_with_allocations(utilities_with_allocations),
+          wq_pool_id(wq_pool_id),
+          construction_rof_or_demand(construction_rof_or_demand),
+          construction_time(construction_time_range[0] * WEEKS_IN_YEAR +
+                            (construction_time_range[1] -
+                             construction_time_range[0]) *
+                            (rand() % (int) WEEKS_IN_YEAR)),
+          construction_cost_of_capital(construction_cost_of_capital),
+          bond_term(bond_term),
+          bond_interest_rate(bond_interest_rate) {
+    setAllocations(utilities_with_allocations,
+                   allocated_fractions,
+                   allocated_treatment_fractions);
+}
+
+/**
+ * Initial set up of allocations with full reservoir in the beginning of the
+ * simulations. To be used in constructors only.
+ * @param utilities_with_allocations
+ * @param allocated_fractions
+ */
+void WaterSource::setAllocations(
+        vector<int> *utilities_with_allocations,
+        vector<double> *allocated_fractions,
+        vector<double> *allocated_treatment_fractions) {
+    if (utilities_with_allocations->size() != allocated_fractions->size())
+        __throw_invalid_argument("There must be one allocation fraction in "
+                                         "utilities_with_allocations for "
+                                         "each utility id in "
+                                         "allocated_fractions.");
+
+    total_allocated_fraction = accumulate(allocated_fractions->begin(),
+                                          allocated_fractions->end(),
+                                          0.);
+
+    if (total_allocated_fraction < 1.0)
+        for (int i = 0; i < utilities_with_allocations->size(); ++i)
+            if ((*utilities_with_allocations)[i] == WATER_QUALITY_ALLOCATION)
+                (*allocated_fractions)[i] += 1. - total_allocated_fraction;
+
+    /// Have water quality pool as a reservoir with ID next to highest ID
+    /// allocation.
+    wq_pool_id = *std::max_element(utilities_with_allocations->begin(),
+                                   utilities_with_allocations->end()) + 1;
+
+    this->allocated_fractions = new double[wq_pool_id + 1]();
+    this->allocated_treatment_fractions = new double[wq_pool_id + 1]();
+    available_allocated_volumes = new double[wq_pool_id + 1]();
+    allocated_capacities = new double[wq_pool_id + 1]();
+    allocated_treatment_capacities = new double[wq_pool_id + 1]();
+
+    /// Populate vectors.
+    for (unsigned long i = 0; i < utilities_with_allocations->size(); ++i) {
+        int u = utilities_with_allocations->at(i);
+        u = (u == WATER_QUALITY_ALLOCATION ? wq_pool_id : u);
+        this->allocated_fractions[u] = (*allocated_fractions)[i];
+        this->allocated_treatment_fractions[u] =
+                (*allocated_treatment_fractions)[u];
+
+        (*this->utilities_with_allocations)[i] = u;
+
+        allocated_capacities[u] = this->capacity * (*allocated_fractions)[i];
+        allocated_treatment_capacities[u] = total_treatment_capacity *
+                                            this->allocated_treatment_fractions[u];
+
+        available_allocated_volumes[u] = allocated_capacities[u];
+    }
+}
+
 
 /**
  * Copy constructor.
@@ -74,11 +212,48 @@ WaterSource::WaterSource(const WaterSource &water_source) :
         upstream_min_env_inflow(water_source.upstream_min_env_inflow),
         upstream_catchment_inflow(water_source.upstream_catchment_inflow),
         total_treatment_capacity(water_source.total_treatment_capacity),
-        construction_rof(water_source.construction_rof),
+        construction_rof_or_demand(water_source.construction_rof_or_demand),
         construction_time(water_source.construction_time),
         construction_cost_of_capital(water_source.construction_cost_of_capital),
         bond_term(water_source.bond_term),
-        bond_interest_rate(water_source.bond_interest_rate) {
+        bond_interest_rate(water_source.bond_interest_rate),
+        utilities_with_allocations(water_source
+                                           .utilities_with_allocations),
+        allocated_fractions(water_source.allocated_fractions) {
+
+    if (water_source.wq_pool_id != NON_INITIALIZED) {
+        wq_pool_id = water_source.wq_pool_id;
+
+        this->allocated_fractions = new double[wq_pool_id + 1]();
+        this->allocated_treatment_fractions = new double[wq_pool_id + 1]();
+        available_allocated_volumes = new double[wq_pool_id + 1]();
+        allocated_capacities = new double[wq_pool_id + 1]();
+        allocated_treatment_capacities = new double[wq_pool_id + 1]();
+
+        int length = wq_pool_id + 1;//    *std::max_element
+//            (utilities_with_allocations->begin(),
+//                                   utilities_with_allocations->end()) + 1;
+
+        std::copy(water_source.allocated_fractions,
+                  water_source.allocated_fractions + length,
+                  allocated_fractions);
+
+        std::copy(water_source.allocated_treatment_fractions,
+                  water_source.allocated_treatment_fractions + length,
+                  allocated_treatment_fractions);
+
+        std::copy(water_source.available_allocated_volumes,
+                  water_source.available_allocated_volumes + length,
+                  available_allocated_volumes);
+
+        std::copy(water_source.allocated_capacities,
+                  water_source.allocated_capacities + length,
+                  allocated_capacities);
+
+        std::copy(water_source.allocated_treatment_capacities,
+                  water_source.allocated_treatment_capacities + length,
+                  allocated_treatment_capacities);
+    }
 
     catchments.clear();
     for (Catchment *c : water_source.catchments) {
@@ -99,6 +274,40 @@ WaterSource::~WaterSource() {
  * @return
  */
 WaterSource &WaterSource::operator=(const WaterSource &water_source) {
+
+    if (wq_pool_id != NON_INITIALIZED) {
+        wq_pool_id = water_source.wq_pool_id;
+
+        this->allocated_fractions = new double[wq_pool_id + 1]();
+        this->allocated_treatment_fractions = new double[wq_pool_id + 1]();
+        available_allocated_volumes = new double[wq_pool_id + 1]();
+        allocated_capacities = new double[wq_pool_id + 1]();
+        allocated_treatment_capacities = new double[wq_pool_id + 1]();
+
+        int length = wq_pool_id + 1;//    *std::max_element
+//            (utilities_with_allocations->begin(),
+//                                   utilities_with_allocations->end()) + 1;
+
+        std::copy(water_source.allocated_fractions,
+                  water_source.allocated_fractions + length,
+                  allocated_fractions);
+
+        std::copy(water_source.allocated_treatment_fractions,
+                  water_source.allocated_treatment_fractions + length,
+                  allocated_treatment_fractions);
+
+        std::copy(water_source.available_allocated_volumes,
+                  water_source.available_allocated_volumes + length,
+                  available_allocated_volumes);
+
+        std::copy(water_source.allocated_capacities,
+                  water_source.allocated_capacities + length,
+                  allocated_capacities);
+
+        std::copy(water_source.allocated_treatment_capacities,
+                  water_source.allocated_treatment_capacities + length,
+                  allocated_treatment_capacities);
+    }
 
     catchments.clear();
     for (Catchment *c : water_source.catchments) {
@@ -187,10 +396,13 @@ void WaterSource::bypass(int week, double upstream_source_inflow) {
  * @return Net present cost
  */
 double WaterSource::calculateNetPresentConstructionCost(
-        int week, double discount_rate, double *level_debt_service_payment)
+        int week, int utility_id, double discount_rate,
+        double *level_debt_service_payment)
 const {
     double rate = bond_interest_rate / BOND_INTEREST_PAYMENTS_PER_YEAR;
-    double principal = construction_cost_of_capital;
+    double principal = construction_cost_of_capital *
+                       (allocated_fractions ? allocated_fractions[utility_id]
+                                            : 1.);
     double n_payments = bond_term * BOND_INTEREST_PAYMENTS_PER_YEAR;
 
     /// Level debt service payment value
@@ -200,8 +412,9 @@ const {
     /// Net present cost of stream of level debt service payments for the whole
     /// bond term, at the time of issuance.
     double net_present_cost_at_issuance =
-            *level_debt_service_payment * (1 - pow(1 + discount_rate,
-                                                   -n_payments)) / discount_rate;
+            *level_debt_service_payment *
+            (1 - pow(1 + discount_rate,
+                     -n_payments)) / discount_rate;
 
     /// Return NPC discounted from the time of issuance to the present.
     return net_present_cost_at_issuance / pow(1 + discount_rate,

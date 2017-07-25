@@ -24,7 +24,7 @@ public:
             const char *name, const int id,
             const vector<Catchment *> &catchments,
             const double raw_water_main_capacity,
-            const double construction_rof,
+            const double construction_rof_or_demand,
             const vector<double> construction_time_range,
             double construction_npv_cost_of_capital, double bond_term,
             double bond_interest_rate);

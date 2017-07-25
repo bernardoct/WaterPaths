@@ -9,21 +9,6 @@
 #include "Reservoir.h"
 
 class AllocatedReservoir : public Reservoir {
-private:
-    double *allocated_capacities;
-    double *allocated_treatment_capacities;
-    double *allocated_treatment_fractions;
-    int wq_pool_id;
-    double *allocated_fractions;
-    vector<int> *utilities_with_allocations;
-    double total_allocated_fraction;
-    vector<bool> *online;
-
-    void setAllocations(
-            vector<int> *utilities_with_allocations,
-            vector<double> *allocated_fractions,
-            vector<double> *allocated_treatment_fractions);
-
 public:
     AllocatedReservoir(
             const char *name, const int id,
@@ -40,7 +25,8 @@ public:
             const vector<Catchment *> &catchments, const double capacity,
             const double max_treatment_capacity,
             EvaporationSeries *evaporation_series,
-            DataSeries *storage_area_curve, const double construction_rof,
+            DataSeries *storage_area_curve,
+            const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
             double construction_cost, double bond_term,
             double bond_interest_rate,
@@ -62,7 +48,7 @@ public:
             const vector<Catchment *> &catchments, const double capacity,
             const double max_treatment_capacity,
             EvaporationSeries *evaporation_series, double storage_area,
-            const double construction_rof,
+            const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
             double construction_cost, double bond_term,
             double bond_interest_rate,

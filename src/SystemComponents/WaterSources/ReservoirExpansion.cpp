@@ -5,7 +5,8 @@
 #include "ReservoirExpansion.h"
 
 ReservoirExpansion::ReservoirExpansion(const char *name, const int id, const int parent_reservoir_ID,
-                                       const double capacity, const double construction_rof,
+                                       const double capacity,
+                                       const double construction_rof_or_demand,
                                        const vector<double> &construction_time_range,
                                        double construction_cost, double bond_term,
                                        double bond_interest_rate)
@@ -15,7 +16,7 @@ ReservoirExpansion::ReservoirExpansion(const char *name, const int id, const int
                       capacity,
                       NON_INITIALIZED,
                       RESERVOIR_EXPANSION,
-                      construction_rof,
+                      construction_rof_or_demand,
                       construction_time_range,
                       construction_cost,
                       bond_term,

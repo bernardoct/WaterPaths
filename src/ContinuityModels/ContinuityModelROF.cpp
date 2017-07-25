@@ -64,6 +64,7 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
     // vector where risks of failure will be stored.
     vector<double> risk_of_failure(n_utilities, 0.0);
     vector<double> year_failure(n_utilities, 0.0);
+    bool apply_demand_buffer;
 
     /// If this is the first week of the year, reset storage-rof table.
     if (rof_type == LONG_TERM_ROF)
@@ -77,11 +78,13 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
 
     int n_weeks_rof;
     /// short-term rof calculations.
-    if (rof_type == SHORT_TERM_ROF)
+    if (rof_type == SHORT_TERM_ROF) {
         n_weeks_rof = WEEKS_ROF_SHORT_TERM;
-    /// long-term rof calculations.
-    else {
+        apply_demand_buffer = !APPLY_DEMAND_BUFFER;
+        /// long-term rof calculations.
+    } else {
         n_weeks_rof = WEEKS_ROF_LONG_TERM;
+        apply_demand_buffer = APPLY_DEMAND_BUFFER;
     }
 
     /// perform a continuity simulation for NUMBER_REALIZATIONS_ROF (50) yearly realization.
@@ -94,7 +97,9 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
         for (int w = week; w < week + n_weeks_rof; ++w) {
 
             /// one week continuity time-step.
-            continuityStep(w, r);
+            continuityStep(w,
+                           r,
+                           apply_demand_buffer);
 
             /// check total available storage for each utility and, if smaller than the fail ration,
             /// increase the number of failed years of that utility by 1 (FAILURE).

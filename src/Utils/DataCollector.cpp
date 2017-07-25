@@ -29,60 +29,63 @@ DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<Wa
 
     /// Create data utilities.
     for (Utility *u : utilities) {
-        utilities_t.push_back(Utility_t(u->id, u->name));
+        utilities_t.emplace_back(u->id,
+                                 u->name);
     }
 
     /// Create data water sources.
     for (WaterSource *ws : water_sources) {
-        water_sources_t.push_back(WaterSource_t(ws->id,
-                                                ws->getCapacity(),
-                                                ws->name));
+        water_sources_t.emplace_back(ws->id,
+                                     ws->getCapacity(),
+                                     ws->name);
     }
 
     /// Create data drought mitigation policies
     for (DroughtMitigationPolicy *dmp : drought_mitigation_policies) {
         if (dmp->type == RESTRICTIONS)
-            restriction_policies_t.push_back(RestrictionPolicy_t(dmp->id));
+            restriction_policies_t.emplace_back(dmp->id);
         else if (dmp->type == TRANSFERS)
-            transfers_policies_t.push_back(TransfersPolicy_t(
-                    dmp->id, dynamic_cast<Transfers *>(dmp)->getUtilities_ids()));
+            transfers_policies_t.emplace_back(
+                    dmp->id,
+                    dynamic_cast<Transfers *>(dmp)->getUtilities_ids());
     }
 
     /// Create vectors to store weekly information.
     for (int r = 0; r < number_of_realizations; ++r) {
         for (Utility_t &ut : utilities_t) {
-            ut.restricted_demand.push_back(vector<double>());
-            ut.combined_storage.push_back(vector<double>());
-            ut.unrestricted_demand.push_back(vector<double>());
-            ut.contingency_fund_size.push_back(vector<double>());
+            ut.restricted_demand.emplace_back();
+            ut.combined_storage.emplace_back();
+            ut.unrestricted_demand.emplace_back();
+            ut.contingency_fund_size.emplace_back();
             ut.net_present_infrastructure_cost.push_back((double &&) NONE);
-            ut.gross_revenues.push_back(vector<double>());
-            ut.debt_service_payments.push_back(vector<double>());
-            ut.contingency_fund_contribution.push_back(vector<double>());
-            ut.insurance_contract_cost.push_back(vector<double>());
-            ut.insurance_payout.push_back(vector<double>());
-            ut.rof.push_back(vector<double>());
-            ut.drought_mitigation_cost.push_back(vector<double>());
-            ut.capacity.push_back(vector<double>());
+            ut.gross_revenues.emplace_back();
+            ut.debt_service_payments.emplace_back();
+            ut.contingency_fund_contribution.emplace_back();
+            ut.insurance_contract_cost.emplace_back();
+            ut.insurance_payout.emplace_back();
+            ut.st_rof.push_back(vector<double>());
+            ut.lt_rof.push_back(vector<double>());
+            ut.drought_mitigation_cost.emplace_back();
+            ut.capacity.emplace_back();
         }
 
         for (WaterSource_t &wst : water_sources_t) {
-            wst.available_volume.push_back(vector<double>());
-            wst.demands.push_back(vector<double>());
-            wst.outflows.push_back(vector<double>());
-            wst.total_catchments_inflow.push_back(vector<double>());
-            wst.total_upstream_sources_inflows.push_back(vector<double>());
-            wst.evaporated_volume.push_back(vector<double>());
+            wst.available_volume.emplace_back();
+            wst.demands.emplace_back();
+            wst.outflows.emplace_back();
+            wst.total_catchments_inflow.emplace_back();
+            wst.total_upstream_sources_inflows.emplace_back();
+            wst.evaporated_volume.emplace_back();
         }
 
         for (RestrictionPolicy_t &rp : restriction_policies_t) {
-            rp.restriction_multiplier.push_back(vector<double>());
+            rp.restriction_multiplier.emplace_back();
         }
 
         for (TransfersPolicy_t &tp : transfers_policies_t)
-            tp.demand_offsets.push_back(vector<vector<double>>());
+            tp.demand_offsets.emplace_back();
 
-        pathways.push_back(vector<vector<int>>());
+        pathways.emplace_back();
     }
 }
 
@@ -104,7 +107,8 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
     for (int i = 0; i < continuity_model_realization->getUtilities().size(); ++i) {
         u = continuity_model_realization->getUtilities()[i];
         utilities_t[i].combined_storage[r].push_back(u->getStorageToCapacityRatio() * u->getTotal_storage_capacity());
-        utilities_t[i].rof[r].push_back(u->getRisk_of_failure());
+        utilities_t[i].lt_rof[r].push_back(u->getLong_term_risk_of_failure());
+        utilities_t[i].st_rof[r].push_back(u->getRisk_of_failure());
         utilities_t[i].unrestricted_demand[r].push_back(u->getUnrestrictedDemand());
         utilities_t[i].restricted_demand[r].push_back(u->getRestrictedDemand());
         utilities_t[i].contingency_fund_size[r].push_back(u->getContingency_fund());
@@ -270,7 +274,7 @@ void DataCollector::printReservoirOutputCompact(string file_name) {
 void DataCollector::printUtilityOutput(string file_name) {
 
     std::ofstream outStream;
-    int n_weeks = (int) utilities_t[0].rof[0].size();
+    int n_weeks = (int) utilities_t[0].st_rof[0].size();
     outStream.open(output_directory + file_name);
 
     for (int r = 0; r < number_of_realizations; ++r) {
@@ -288,6 +292,8 @@ void DataCollector::printUtilityOutput(string file_name) {
         for (int i = 0; i < utilities_t.size(); ++i) {
             outStream << setw(2 * COLUMN_WIDTH) << "Stored"
                       << setw(COLUMN_WIDTH) << " "
+                      << setw(COLUMN_WIDTH) << " "
+                      << setw(COLUMN_WIDTH) << " "
                       << setw(COLUMN_WIDTH) << "Rest."
                       << setw(COLUMN_WIDTH) << "Unrest."
                       << setw(COLUMN_WIDTH) << "Conting."
@@ -297,7 +303,9 @@ void DataCollector::printUtilityOutput(string file_name) {
         outStream << endl << setw(COLUMN_WIDTH) << "Week";
         for (int i = 0; i < utilities_t.size(); ++i) {
             outStream << setw(2 * COLUMN_WIDTH) << "Volume"
-                      << setw(COLUMN_WIDTH) << "ROF"
+                      << setw(COLUMN_WIDTH) << "Capacity"
+                      << setw(COLUMN_WIDTH) << "ST-ROF"
+                      << setw(COLUMN_WIDTH) << "LT-ROF"
                       << setw(COLUMN_WIDTH) << "Demand"
                       << setw(COLUMN_WIDTH) << "Demand"
                       << setw(COLUMN_WIDTH) << "Fund"
@@ -313,7 +321,13 @@ void DataCollector::printUtilityOutput(string file_name) {
                 outStream << setw(2 * COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
                           << u.combined_storage[r][w]
                           << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                          << u.rof[r][w]
+                          << u.capacity[r][w]
+                          << setw(COLUMN_WIDTH)
+                          << setprecision(COLUMN_PRECISION)
+                          << u.st_rof[r][w]
+                          << setw(COLUMN_WIDTH)
+                          << setprecision(COLUMN_PRECISION)
+                          << u.lt_rof[r][w]
                           << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
                           << u.restricted_demand[r][w]
                           << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
@@ -341,7 +355,7 @@ void DataCollector::printUtilityOutput(string file_name) {
 
 void DataCollector::printUtilityOutputCompact(string file_name) {
 
-    int n_weeks = (int) utilities_t[0].rof[0].size();
+    int n_weeks = (int) utilities_t[0].st_rof[0].size();
 
 #pragma omp parallel for
     for (int r = 0; r < number_of_realizations; ++r) {
@@ -357,7 +371,11 @@ void DataCollector::printUtilityOutputCompact(string file_name) {
             for (int u = 0; u < utilities_t.size(); ++u) {
                 outStream << utilities_t[u].combined_storage[r][w]
                           << "," << setprecision(COLUMN_PRECISION)
-                          << utilities_t[u].rof[r][w]
+                          << utilities_t[u].capacity[r][w]
+                          << "," << setprecision(COLUMN_PRECISION)
+                          << utilities_t[u].st_rof[r][w]
+                          << "," << setprecision(COLUMN_PRECISION)
+                          << utilities_t[u].lt_rof[r][w]
                           << "," << setprecision(COLUMN_PRECISION)
                           << utilities_t[u].restricted_demand[r][w]
                           << "," << setprecision(COLUMN_PRECISION)

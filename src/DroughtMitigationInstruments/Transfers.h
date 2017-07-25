@@ -6,7 +6,7 @@
 #define TRIANGLEMODEL_TRANSFERS_H
 
 #include "Base/DroughtMitigationPolicy.h"
-#include "../Utils/QPSolver/QuadProg++.hh"
+#include "../Utils/QPSolver/QuadProg++.h"
 #include "../Utils/Graph/Graph.h"
 
 class Transfers : public DroughtMitigationPolicy {

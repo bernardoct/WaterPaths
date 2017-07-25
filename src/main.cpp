@@ -5,7 +5,7 @@
 #include "SystemComponents/Utility.h"
 #include "Utils/Utils.h"
 #include "Simulation/Simulation.h"
-#include "Utils/QPSolver/QuadProg++.hh"
+#include "Utils/QPSolver/QuadProg++.h"
 #include "DroughtMitigationInstruments/Transfers.h"
 #include "SystemComponents/WaterSources/ReservoirExpansion.h"
 #include "SystemComponents/WaterSources/Quarry.h"
@@ -1051,10 +1051,87 @@ void simulation3U5RInfraTest() {
 
 
 
-void triangleTest() {
+void triangleTest(
+        int n_threads, const double *x_real, int n_realizations, int n_weeks) {
     srand((unsigned int) time(NULL));
+    double Durham_restriction_trigger = x_real[0];
+    double OWASA_restriction_trigger = x_real[1];
+    double raleigh_restriction_trigger = x_real[2];
+    double cary_restriction_trigger = x_real[3];
+    double durham_transfer_trigger = x_real[4];
+    double owasa_transfer_trigger = x_real[5];
+    double raleigh_transfer_trigger = x_real[6];
+    double OWASA_JLA = x_real[7];
+    double Raleigh_JLA = x_real[8];
+    double Durham_JLA = x_real[9];
+    double Cary_JLA = x_real[10];
+    double durham_annual_payment = x_real[11]; // contingency fund
+    double owasa_annual_payment = x_real[12];
+    double raleigh_annual_payment = x_real[13];
+    double cary_annual_payment = x_real[14];
+    double durham_insurance_use = x_real[15]; // insurance st_rof
+    double owasa_insurance_use = x_real[16];
+    double raleigh_insurance_use = x_real[17];
+    double cary_insurance_use = x_real[18];
+    double durham_insurance_payment = x_real[19];
+    double owasa_insurance_payment = x_real[20];
+    double raleigh_insurance_payment = x_real[21];
+    double cary_insurance_payment = x_real[22];
+    double durham_inftrigger = x_real[23];
+    double owasa_inftrigger = x_real[24];
+    double raleigh_inftrigger = x_real[25];
+    double cary_inftrigger = x_real[26];
+    double university_lake_expansion_ranking = x_real[27];
+    double Cane_creek_expansion_ranking = x_real[28];
+    double Quarry__reservoir_expansion_shallow_ranking = x_real[29];
+    double Quarry__reservoir_expansion_deep_ranking = x_real[30];
+    double Teer_quarry_expansion_ranking = x_real[31];
+    double reclaimed_water_ranking_low = x_real[32];
+    double reclaimed_water_high = x_real[33];
+    double lake_michie_expansion_ranking_low = x_real[34];
+    double lake_michie_expansion_ranking_high = x_real[35];
+    double little_river_reservoir_ranking = x_real[36];
+    double richland_creek_quarry_rank = x_real[37];
+    double neuse_river_intake_rank = x_real[38];
+    double reallocate_falls_lake = x_real[39]; // 10000
+    double western_wake_treatment_plant_rank_OWASA_low = x_real[40];
+    double western_wake_treatment_plant_rank_OWASA_high = x_real[41];
+    double western_wake_treatment_plant_rank_durham_low = x_real[42];
+    double western_wake_treatment_plant_rank_durham_high = x_real[43];
+    double western_wake_treatment_plant_rank_raleigh_low = x_real[44];
+    double western_wake_treatment_plant_rank_raleigh_high = x_real[45];
+//    double caryupgrades_1 = x_real[46]; // not used: already built.
+    double caryupgrades_2 = x_real[47];
+    double caryupgrades_3 = x_real[48];
+    double western_wake_treatment_plant_owasa_frac = x_real[49];
+    double western_wake_treatment_frac_durham = x_real[50];
+    double western_wake_treatment_plant_raleigh_frac = x_real[51];
+    double falls_lake_reallocation = 10000;//x_real[52]; //FIXME: THIS DV IS COMMENTED ONLY IN ORDER TO REPLICATE HB'S RESULTS. IT SHOULD BE REMOVED ONCE OPTIMIZATION RUNS BEGIN.
+    double durham_inf_buffer = x_real[53];
+    double owasa_inf_buffer = x_real[54];
+    double raleigh_inf_buffer = x_real[55];
+    double cary_inf_buffer = x_real[56];
+
+    /// Normalize Jordan Lake Allocations in case they exceed 1.
+    double sum_jla_allocations = OWASA_JLA + Durham_JLA + Cary_JLA +
+                                 Raleigh_JLA;
+    if (sum_jla_allocations > 1.) {
+        OWASA_JLA /= sum_jla_allocations;
+        Durham_JLA /= sum_jla_allocations;
+        Cary_JLA /= sum_jla_allocations;
+        Raleigh_JLA /= sum_jla_allocations;
+    }
+
+    /// Normalize West Jordan Lake WTP allocations.
+    double sum_wjlwtp = western_wake_treatment_frac_durham +
+                        western_wake_treatment_plant_owasa_frac +
+                        western_wake_treatment_plant_raleigh_frac;
+    western_wake_treatment_frac_durham /= sum_wjlwtp;
+    western_wake_treatment_plant_owasa_frac /= sum_wjlwtp;
+    western_wake_treatment_plant_raleigh_frac /= sum_wjlwtp;
 
     cout << "BEGINNING TRIANGLE TEST" << endl << endl;
+    cout << "Using " << n_threads << " cores." << endl;
 //    cout << getexepath() << endl;
 
     /// Read streamflows
@@ -1135,7 +1212,7 @@ void triangleTest() {
 //    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongRaleighOther.csv");
 //    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/evapLongWB.csv");
 
-    int max_lines = 260;
+    int max_lines = n_realizations;
 
     cout << "Reading inflows." << endl;
     vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile("/home/bernardoct/CLionProjects/RevampedTriangleModel/TestFiles/inflows/durham_inflows.csv",
@@ -1368,7 +1445,10 @@ void triangleTest() {
 
     /// Create reservoirs and corresponding vector
     vector<double> construction_time_interval = {3.0, 5.0};
-    vector<double> city_infrastructure_rof_triggers = {0.02, 0.02, 0.02, 0.02};
+    vector<double> city_infrastructure_rof_triggers = {owasa_inftrigger,
+                                                       durham_inftrigger,
+                                                       cary_inftrigger,
+                                                       raleigh_inftrigger};
     vector<double> bond_length = {25, 25, 25, 25};
     vector<double> bond_rate = {0.05, 0.05, 0.05, 0.05};
 
@@ -1378,10 +1458,10 @@ void triangleTest() {
     double jl_storage_capacity = jl_wq_capacity + jl_supply_capacity;
     vector<int> jl_allocations_ids = {0, 1, 2, 3, WATER_QUALITY_ALLOCATION};
     vector<double> jl_allocation_fractions = {
-            0.05 * jl_supply_capacity / jl_storage_capacity,
-            0.1 * jl_supply_capacity / jl_storage_capacity,
-            0.39 * jl_supply_capacity / jl_storage_capacity,
-            0.,
+            OWASA_JLA * jl_supply_capacity / jl_storage_capacity,
+            Durham_JLA * jl_supply_capacity / jl_storage_capacity,
+            Cary_JLA * jl_supply_capacity / jl_storage_capacity,
+            Raleigh_JLA * jl_supply_capacity / jl_storage_capacity,
             jl_wq_capacity / jl_storage_capacity};
     vector<double> jl_treatment_allocation_fractions = {0.0, 0.0, 1.0, 0.0};
 
@@ -1391,8 +1471,9 @@ void triangleTest() {
     double fl_storage_capacity = fl_wq_capacity + fl_supply_capacity;
     vector<int> fl_allocations_ids = {3, WATER_QUALITY_ALLOCATION};
     vector<double> fl_allocation_fractions = {
-            fl_supply_capacity / fl_storage_capacity,
-            fl_wq_capacity / fl_storage_capacity};
+            (fl_supply_capacity + falls_lake_reallocation) /
+            fl_storage_capacity,
+            (fl_wq_capacity - falls_lake_reallocation) / fl_storage_capacity};
     vector<double> fl_treatment_allocation_fractions = {0.0, 0.0, 0.0, 1.0};
 
     // Existing Sources
@@ -1400,7 +1481,7 @@ void triangleTest() {
                                 0,
                                 catchment_durham,
                                 6349.0,
-                                99999,
+                                ILLIMITED_TREATMENT_CAPACITY,
                                 &evaporation_durham, 1069);
 //    Reservoir falls_lake("Falls Lake", 1, catchment_flat,
 //                         34700.0, 99999,
@@ -1409,7 +1490,7 @@ void triangleTest() {
                                   1,
                                   catchment_flat,
                                   fl_storage_capacity,
-                                  99999,
+                                  ILLIMITED_TREATMENT_CAPACITY,
                                   &evaporation_falls_lake,
                                   &falls_lake_storage_area,
                                   &fl_allocations_ids,
@@ -1418,7 +1499,7 @@ void triangleTest() {
     //FIXME: SET WB ONLINE AGAIN.
     Reservoir wheeler_benson_lakes("Wheeler-Benson Lakes", 2, catchment_swift,
                                    2789.66,
-                                   99999,
+                                   ILLIMITED_TREATMENT_CAPACITY,
                                    &evaporation_wheeler_benson,
                                    &wheeler_benson_storage_area,
                                    city_infrastructure_rof_triggers[3],
@@ -1426,12 +1507,24 @@ void triangleTest() {
                                    263.0,
                                    bond_length[3],
                                    bond_rate[3]);
-    Reservoir stone_quarry("Stone Quarry", 3, catchment_phils, 200.0, 99999,
-                           &evaporation_owasa, 10);
-    Reservoir ccr("Cane Creek Reservoir", 4, catchment_cane, 2909.0, 99999,
-                  &evaporation_owasa, 500);
+    Reservoir stone_quarry("Stone Quarry",
+                           3,
+                           catchment_phils,
+                           200.0,
+                           ILLIMITED_TREATMENT_CAPACITY,
+                           &evaporation_owasa,
+                           10);
+    Reservoir ccr("Cane Creek Reservoir",
+                  4,
+                  catchment_cane,
+                  2909.0,
+                  ILLIMITED_TREATMENT_CAPACITY,
+                  &evaporation_owasa,
+                  500);
     Reservoir university_lake("University Lake", 5, catchment_morgan, 449.0,
-                              99999, &evaporation_owasa, 212);
+                              ILLIMITED_TREATMENT_CAPACITY,
+                              &evaporation_owasa,
+                              212);
 //    Reservoir jordan_lake("Jordan Lake", 6, catchment_haw,
 //                          jl_supply_capacity, 448,
 //                          &evaporation_jordan_lake, 13940);
@@ -1457,14 +1550,15 @@ void triangleTest() {
     // expansion, the maximum capacity through expansion is 7.7BG, NOT 2.5BG + 7.7BG.
     Reservoir little_river_reservoir("Little River Reservoir (Raleigh)", 7,
                                      catchment_little_river_raleigh, 3700.0,
-                                     99999, &evaporation_little_river,
+                                     ILLIMITED_TREATMENT_CAPACITY,
+                                     &evaporation_little_river,
                                      &little_river_storage_area,
                                      city_infrastructure_rof_triggers[3],
                                      construction_time_interval, 263.0,
                                      bond_length[3], bond_rate[3]);
     Quarry richland_creek_quarry("Richland Creek Quarry", 8, gage_clayton,
                                  4000.0,
-                                 99999,
+                                 ILLIMITED_TREATMENT_CAPACITY,
                                  &evaporation_falls_lake,
                                  100.,//FIXME: GET RIGHT AREA.
                                  city_infrastructure_rof_triggers[3],
@@ -1477,7 +1571,7 @@ void triangleTest() {
                        9,
                        vector<Catchment *>(),
                        1315.0,
-                       99999,
+                       ILLIMITED_TREATMENT_CAPACITY,
                        &evaporation_falls_lake,
                        &teer_storage_area,
                        city_infrastructure_rof_triggers[1],
@@ -1496,7 +1590,9 @@ void triangleTest() {
                                        city_infrastructure_rof_triggers[3],
                                        construction_time_interval, 68.2,
                                        bond_length[3], bond_rate[3]);
-    ReservoirExpansion ccr_expansion("Cane Creek Reservoir Expansion", 26, 4,
+    ReservoirExpansion ccr_expansion("Cane Creek Reservoir Expansion",
+                                     24,
+                                     4,
                                      3000.0,
                                      city_infrastructure_rof_triggers[2],
                                      construction_time_interval, 127.0,
@@ -1537,17 +1633,54 @@ void triangleTest() {
 
     //FIXME: ONCE ONE UTILITY DECIDES TO BUILD THE WJLWTP, ALL OTHERS PAY FOR IT TOO, RIGHT? IF SO, WHAT'S THE PROPORTION?
     //FIXME: FIX AREAS.
-    vector<double> treatment_capacity_fractions = {0.33, 0.33, 0., 0., 0.};
+    vector<double> wjlwtp_treatment_capacity_fractions =
+            {western_wake_treatment_plant_owasa_frac,
+             western_wake_treatment_frac_durham,
+             0.,
+             western_wake_treatment_plant_raleigh_frac,
+             0.};
+    vector<double> cary_upgrades_treatment_capacity_fractions = {0., 0., 1.,
+                                                                 0., 0.};
     JointWaterTreatmentPlant low_wjlwtp("Low WJLWTP",
                                         20,
                                         6,
                                         33,
-                                        &treatment_capacity_fractions,
+                                        &wjlwtp_treatment_capacity_fractions,
                                         city_infrastructure_rof_triggers[1],
                                         construction_time_interval,
-                                        243. / 2,
+                                        243.3,
                                         bond_length[1],
                                         bond_rate[1]);
+    JointWaterTreatmentPlant high_wjlwtp("High WJLWTP",
+                                         21,
+                                         6,
+                                         56,
+                                         &wjlwtp_treatment_capacity_fractions,
+                                         city_infrastructure_rof_triggers[1],
+                                         construction_time_interval,
+                                         316.8,
+                                         bond_length[1],
+                                         bond_rate[1]);
+    JointWaterTreatmentPlant caryWtpUpgrade1("Cary WTP upgrade 1",
+                                             22,
+                                             6,
+                                             56, // (72*7 - 448 = 56)
+                                             &cary_upgrades_treatment_capacity_fractions,
+                                             caryupgrades_2 * 7,
+                                             construction_time_interval,
+                                             243. / 2,
+                                             bond_length[1],
+                                             bond_rate[1]);
+    JointWaterTreatmentPlant caryWtpUpgrade2("Cary WTP upgrade 2",
+                                             23,
+                                             6,
+                                             56, // (7*80 - 72*7 = 56)
+                                             &cary_upgrades_treatment_capacity_fractions,
+                                             caryupgrades_3 * 7,
+                                             construction_time_interval,
+                                             316.8 / 2,
+                                             bond_length[1],
+                                             bond_rate[1]);
 //    Reservoir low_wjlwtp_durham("Low WJLWTP (Durham)", 20, 0, catchment_haw,
 //                                jl_storage_capacity * JL_allocation_fractions[1], 33.0 * JL_allocation_fractions[1],
 //                                &evaporation_jordan_lake, 13940,
@@ -1602,15 +1735,14 @@ void triangleTest() {
     water_sources.push_back(&low_sq_expansion);
     water_sources.push_back(&low_lm_expansion);
     water_sources.push_back(&low_reclaimed);
-    water_sources.push_back(&low_wjlwtp);
-//    water_sources.push_back(&low_wjlwtp_owasa);
-//    water_sources.push_back(&low_wjlwtp_raleigh);
     water_sources.push_back(&high_sq_expansion);
     water_sources.push_back(&high_lm_expansion);
     water_sources.push_back(&high_reclaimed);
-//    water_sources.push_back(&high_wjlwtp_durham);
-//    water_sources.push_back(&high_wjlwtp_owasa);
-//    water_sources.push_back(&high_wjlwtp_raleigh);
+
+    water_sources.push_back(&caryWtpUpgrade1);
+    water_sources.push_back(&caryWtpUpgrade2);
+    water_sources.push_back(&low_wjlwtp);
+    water_sources.push_back(&high_wjlwtp);
 
     water_sources.push_back(&dummy_endpoint);
 
@@ -1620,7 +1752,7 @@ void triangleTest() {
      * Potential projects and expansions
      * of existing sources in parentheses
      *
-     *      3(12,13)   4(26)   5(14)            0(15,16)    (18,19)
+     *      3(12,13)   4(24)   5(14)            0(15,16)    (18,19)
      *         \         /      /                  |
      *          \       /      /                   |
      *           \     /      /                    |
@@ -1670,12 +1802,12 @@ void triangleTest() {
     g.addEdge(6, 11);
 
     /// Create catchments and corresponding vector
-//    vector<int> infra_order_durham = {9, 15, 16, 18, 19, 20, 21};
-//    vector<int> infra_order_owasa = {26, 12, 13, 14, 20, 21};
-//    vector<int> infra_order_raleigh = {7, 8, 17, 10, 20, 21};
-    vector<unsigned int> infra_order_durham = {20, 16, 15, 9, 18, 19};
-    vector<unsigned int> infra_order_owasa = {20, 12, 13, 14};
-    vector<unsigned int> infra_order_raleigh = {7, 8, 17, 10};
+    vector<int> rof_triggered_infra_order_durham = {20, 16, 15, 9, 18, 19};
+    vector<int> rof_triggered_infra_order_owasa = {20, 12, 13, 14};
+    vector<int> rof_triggered_infra_order_raleigh = {7, 8, 17, 10};
+
+    vector<int> demand_triggered_infra_order_cary = {22, 23};
+
     int demand_n_weeks = (int) round(46 * WEEKS_IN_YEAR);
 
     vector<int> cary_ws_return_id = {};
@@ -1701,39 +1833,49 @@ void triangleTest() {
                  2,
                  &demand_cary,
                  demand_n_weeks,
-                 0.03,
+                 cary_annual_payment,
                  &caryDemandClassesFractions,
                  &caryUserClassesWaterPrices,
-                 wwtp_discharge_cary);
+                 wwtp_discharge_cary,
+                 cary_inf_buffer,
+                 vector<int>(),
+                 demand_triggered_infra_order_cary,
+                 0.05);
     Utility durham((char *) "Durham",
                    1,
                    &demand_durham,
                    demand_n_weeks,
-                   0.07,
+                   durham_annual_payment,
                    &durhamDemandClassesFractions,
                    &durhamUserClassesWaterPrices,
                    wwtp_discharge_durham,
-                   infra_order_durham,
+                   durham_inf_buffer,
+                   rof_triggered_infra_order_durham,
+                   vector<int>(),
                    0.05);
     Utility owasa((char *) "OWASA",
                   0,
                   &demand_owasa,
                   demand_n_weeks,
-                  0.05,
+                  owasa_annual_payment,
                   &owasaDemandClassesFractions,
                   &owasaUserClassesWaterPrices,
                   wwtp_discharge_owasa,
-                  infra_order_owasa,
+                  owasa_inf_buffer,
+                  rof_triggered_infra_order_owasa,
+                  vector<int>(),
                   0.05);
     Utility raleigh((char *) "Raleigh",
                     3,
                     &demand_raleigh,
                     demand_n_weeks,
-                    0.05,
+                    raleigh_annual_payment,
                     &raleighDemandClassesFractions,
                     &raleighUserClassesWaterPrices,
                     wwtp_discharge_raleigh,
-                    infra_order_raleigh,
+                    raleigh_inf_buffer,
+                    rof_triggered_infra_order_raleigh,
+                    vector<int>(),
                     0.05);
 
     vector<Utility *> utilities;
@@ -1751,13 +1893,16 @@ void triangleTest() {
 //            {1, 2, 7,  8,  17, 10, 24, 25, 20, 21}
             {3, 4, 5, 6,  12, 13, 14, 20}, //OWASA
             {0, 6, 9, 15, 16, 18, 19, 20}, //Durham
-            {6},                    //Cary
+            {6, 22, 23},                    //Cary
             {1, 2, 6, 7,  8,  17, 10}  //Raleigh
     };
 
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
     /// Restriction policies
-    vector<double> initial_restriction_triggers = {0.02, 0.02, 0.02, 0.02};
+    vector<double> initial_restriction_triggers = {OWASA_restriction_trigger,
+                                                   Durham_restriction_trigger,
+                                                   cary_restriction_trigger,
+                                                   raleigh_restriction_trigger};
 
     vector<double> restriction_stage_multipliers_cary = {0.9, 0.8, 0.7, 0.6};
     vector<double> restriction_stage_triggers_cary = {initial_restriction_triggers[0],
@@ -1809,10 +1954,12 @@ void triangleTest() {
      */
 
     vector<int> buyers_ids = {0, 1, 3};
-    //FIXME: TRANSFER CAPACITIES MUST BE UPDATED FOLLOWING NEW IDS.
+    //FIXME: CHECK IF TRANSFER CAPACITIES MATCH IDS IN BUYERS_IDS.
     vector<double> buyers_transfers_capacities = {10.8 * 7, 10.0 * 7, 11.5 * 7,
                                                   7.0 * 7};
-    vector<double> buyers_transfers_trigger = {0.01, 0.01, 0.01};
+    vector<double> buyers_transfers_trigger = {owasa_transfer_trigger,
+                                               durham_transfer_trigger,
+                                               raleigh_transfer_trigger};
 
     Graph ug(4);
     ug.addEdge(2,
@@ -1845,15 +1992,74 @@ void triangleTest() {
                  utilities,
                  drought_mitigation_policies,
                  min_env_flow_controls,
-                 2316,//678, //
+                 n_weeks,//678, //
                  max_lines,
                  data_collector); //2385
     cout << "Beginning simulation." << endl;
-    s.runFullSimulation(8);
+    s.runFullSimulation(n_threads);
     cout << "Ending simulation" << endl;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+
+    double x_real[57] = {0.963126, //Durham restriction trigger
+                         0.001, //OWASA restriction trigger
+                         0.0165026, //raleigh restriction trigger
+                         0.0158446, //cary restriction trigger
+                         0.00203824, //durham transfer trigger
+                         0.991772, //owasa transfer trigger
+                         0.0759845, //raleigh transfer trigger
+                         0.109251, //OWASA JLA
+                         0.0456465, //Raleigh JLA
+                         0.0503415, //Durham JLA
+                         0.527226, //Cary JLA
+                         0.0768186, //durham annual payment
+                         0.00101558, //owasa annual payment
+                         0.0209892, //raleigh annual payment
+                         0.0997788, //cary annual payment
+                         0.422693, //durham insurance use
+                         0.981162, //owasa insurance use
+                         0.687073, //raleigh insurance use
+                         0.953765, //cary insurance use
+                         0.00151499, //durham insurance payment
+                         0.0189007, //owasa insurance payment
+                         0.0166652, //raleigh insurance payment
+                         0.017396, //cary insurance payment
+                         0.001, //durham inftrigger
+                         0.893212, //owasa inftrigger
+                         0.0114582, //raleigh inftrigger
+                         0.671276, //cary inftrigger
+                         0.61143, //university lake expansion ranking
+                         0.493596, //Cane creek expansion ranking
+                         0.72242, //Quarry (stone?) reservoir expansion (Shallow) ranking
+                         0.874358, //Quarry (stone?) reservoir expansion (deep) ranking
+                         0.938602, //Teer quarry expansion ranking
+                         0.995383, //reclaimed water ranking (low)
+                         0.0152792, //reclaimed water (high)
+                         0.235675, //lake michie expansion ranking (low)
+                         0.993166, //lake michie expansion ranking (high)
+                         0.960062, //little river reservoir ranking
+                         0.467553, //richland creek quarry rank
+                         0.000729602, //neuse river intake rank
+                         1, //reallocate falls lake
+                         0.405893, //western wake treatment plant rank OWASA low
+                         0.942959, //western wake treatment plant rank OWASA high
+                         0.00085049, //western wake treatment plant rank durham low
+                         0.0321197, //western wake treatment plant rank durham high
+                         0.000928368, //western wake treatment plant rank raleigh low
+                         0.999997, //western wake treatment plant rank raleigh high
+                         64.0285, //caryupgrades 1
+                         2.0556, //caryugrades 2
+                         5.84962, //caryugrades 3
+                         0.0212207, //western wake treatment plant owasa frac
+                         0.324296, //western wake treatment frac durham
+                         0.169109, //western wake treatment plant raleigh frac
+                         6198.43, //falls lake reallocation
+                         19.7202, //durham inf buffer
+                         19.2861, //owasa inf buffer
+                         17.6756, //raleigh inf buffer
+                         19.7285, //cary inf buffer
+    };
 //
 // Uncomment the lines below to run the tests.
 //
@@ -1874,7 +2080,10 @@ int main() {
 //    ::test_transfers();
 //    ::test_getcontinuityMatrix();
 //    ::simulation3U5RInfraTest();
-    triangleTest();
+    triangleTest(atoi(argv[1]),
+                 x_real,
+                 atoi(argv[2]),
+                 atoi(argv[3]));
 //    U3R5 problem(1);
 //    problem.run();
 

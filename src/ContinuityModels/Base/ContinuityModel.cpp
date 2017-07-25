@@ -25,8 +25,9 @@ ContinuityModel::ContinuityModel(
     /// the latter.
     for (int u = 0; u < utilities.size(); ++u) {
         for (int ws = 0; ws < water_sources_to_utilities[u].size(); ++ws) {
-            this->continuity_utilities[u]->addWaterSource(
-                    water_sources[water_sources_to_utilities[u][ws]]);
+            WaterSource *water_source =
+                    water_sources[water_sources_to_utilities[u][ws]];
+            this->continuity_utilities[u]->addWaterSource(water_source);
         }
     }
 
@@ -75,7 +76,7 @@ ContinuityModel::ContinuityModel(
     /// Set realization id on utilities and water sources, so that they use the
     /// right streamflow and demand data.
     for (Utility *u : continuity_utilities)
-        u->setRelization(realization_id);
+        u->setRealization(realization_id);
     for (WaterSource *ws : continuity_water_sources)
         ws->setRealization(realization_id);
     for (MinEnvironFlowControl *mef : this->min_env_flow_controls)
@@ -105,7 +106,9 @@ ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) :
  * @param week current week.
  * @param rof_realization rof realization id (between 0 and 49 inclusive).
  */
-void ContinuityModel::continuityStep(int week, int rof_realization) {
+void ContinuityModel::continuityStep(
+        int week, int rof_realization, bool
+apply_demand_buffer) {
     double upstream_spillage[continuity_water_sources.size()] = {};
     double wastewater_discharges[continuity_water_sources.size()] = {};
 
@@ -121,7 +124,8 @@ void ContinuityModel::continuityStep(int week, int rof_realization) {
         u->calculateWastewater_releases(week,
                                         wastewater_discharges);
         u->splitDemands(week,
-                        &demands);
+                        &demands,
+                        apply_demand_buffer);
     }
 
     /**

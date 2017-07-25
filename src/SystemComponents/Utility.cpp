@@ -34,12 +34,16 @@ Utility::Utility(
         const double percent_contingency_fund_contribution,
         const vector<vector<double>> *typesMonthlyDemandFraction,
         const vector<vector<double>> *typesMonthlyWaterPrice,
-        WwtpDischargeRule wwtp_discharge_rule) :
+        WwtpDischargeRule wwtp_discharge_rule,
+        double demand_buffer) :
         name(name), id(id), demands_all_realizations(demands_all_realizations),
         number_of_week_demands(number_of_week_demands),
         percent_contingency_fund_contribution(percent_contingency_fund_contribution),
-        infrastructure_discount_rate(NON_INITIALIZED),
-        wwtp_discharge_rule(wwtp_discharge_rule) {
+        infra_discount_rate(NON_INITIALIZED),
+        wwtp_discharge_rule(wwtp_discharge_rule),
+        demand_buffer(demand_buffer),
+        total_stored_volume(NONE),
+        total_storage_capacity(NONE) {
 
     calculateWeeklyAverageWaterPrices(typesMonthlyDemandFraction,
                                       typesMonthlyWaterPrice);
@@ -62,35 +66,42 @@ Utility::Utility(
  * @param wwtp_discharge_rule 53 weeks long time series according to which
  * fractions of sewage is discharged in different water sources (normally one
  * for each WWTP).
- * @param infrastructure_construction_order
- * @param infrastructure_discount_rate
+ * @param rof_infra_construction_order
+ * @param infra_discount_rate
  */
 Utility::Utility(
-        char *name, int id,
+        const char *name, int id,
         vector<vector<double>> *demands_all_realizations,
         int number_of_week_demands,
         const double percent_contingency_fund_contribution,
         const vector<vector<double>> *typesMonthlyDemandFraction,
         const vector<vector<double>> *typesMonthlyWaterPrice,
         WwtpDischargeRule wwtp_discharge_rule,
-        vector<unsigned int> infrastructure_construction_order,
-        double infrastructure_discount_rate) :
+        double demand_buffer,
+        const vector<int> &rof_infra_construction_order,
+        const vector<int> &demand_infra_construction_order,
+        double infra_discount_rate) :
         name(name), id(id), demands_all_realizations(demands_all_realizations),
         number_of_week_demands(number_of_week_demands),
         percent_contingency_fund_contribution
                 (percent_contingency_fund_contribution),
-        infrastructure_construction_order(infrastructure_construction_order),
-        infrastructure_discount_rate(infrastructure_discount_rate),
+        rof_infra_construction_order(rof_infra_construction_order),
+        demand_infra_construction_order(demand_infra_construction_order),
+        infra_discount_rate(infra_discount_rate),
         wwtp_discharge_rule(wwtp_discharge_rule),
+        demand_buffer(demand_buffer),
         total_stored_volume(NONE),
         total_storage_capacity(NONE) {
 
-    if (infrastructure_construction_order.empty())
-        throw std::invalid_argument("Infrastructure construction order vector "
-                                            "must have at least one water source ID. If there's not "
-                                            "infrastructure to be build, use the other constructor "
+    if (rof_infra_construction_order.empty() &&
+        demand_infra_construction_order.empty())
+        throw std::invalid_argument("At least one infrastructure construction "
+                                            "order vector  must have at least "
+                                            "one water source ID. If there's "
+                                            "not infrastructure to be build, "
+                                            "use other constructor "
                                             "instead.");
-    if (infrastructure_discount_rate <= 0)
+    if (infra_discount_rate <= 0)
         throw std::invalid_argument("Infrastructure discount rate must be "
                                             "greater than 0.");
 
@@ -105,10 +116,12 @@ Utility::Utility(Utility &utility) :
         demand_series(new double[utility.number_of_week_demands]),
         percent_contingency_fund_contribution(utility.percent_contingency_fund_contribution),
         weekly_average_volumetric_price(utility.weekly_average_volumetric_price),
-        infrastructure_construction_order(utility.infrastructure_construction_order),
-        infrastructure_discount_rate(utility.infrastructure_discount_rate),
+        rof_infra_construction_order(utility.rof_infra_construction_order),
+        demand_infra_construction_order(utility.demand_infra_construction_order),
+        infra_discount_rate(utility.infra_discount_rate),
         demands_all_realizations(utility.demands_all_realizations),
-        wwtp_discharge_rule(utility.wwtp_discharge_rule) {
+        wwtp_discharge_rule(utility.wwtp_discharge_rule),
+        demand_buffer(utility.demand_buffer) {
 
     /// Create copies of sources
     water_sources.clear();
@@ -247,8 +260,10 @@ void Utility::addWaterSourceToOnlineLists(int source_id) {
  */
 void Utility::splitDemands(
         int week, vector<vector<double>> *demands,
-        int weeks_future_demand) {
-    unrestricted_demand = demand_series[week + weeks_future_demand];
+        bool apply_demand_buffer) {
+    unrestricted_demand = demand_series[week] +
+                          apply_demand_buffer * demand_buffer *
+                          weekly_peaking_factor[Utils::weekOfTheYear(week)];
     restricted_demand = unrestricted_demand * demand_multiplier - demand_offset;
     double unallocated_reservoirs_demand = restricted_demand;
     bool over_allocation_ws[water_sources.size()] = {};
@@ -313,7 +328,7 @@ void Utility::splitDemands(
             }
 
     /// Update contingency fund
-    if (calc_financial)
+    if (used_for_realization)
         updateContingencyFund(unrestricted_demand,
                               demand_multiplier,
                               demand_offset,
@@ -336,7 +351,7 @@ void Utility::resetDataColletionVariables() {
         insurance_payout = 0;
         insurance_purchase = 0;
         drought_mitigation_cost = 0;
-        infrastructure_built_last_week = {};
+        infra_built_last_week = {};
         fund_contribution = 0;
         gross_revenue = 0;
         current_debt_payment = 0;
@@ -512,18 +527,18 @@ void Utility::forceInfrastructureConstruction(
     for (int ws : new_infra_triggered) {
         /// Variable storing the position of an infrastructure option in the
         /// queue of infrastructure to be built.
-        auto it = find(infrastructure_construction_order.begin(),
-                       infrastructure_construction_order.end(),
+        auto it = find(rof_infra_construction_order.begin(),
+                       rof_infra_construction_order.end(),
                        ws);
         /// If one of the infrastructure options built this year by one of
         /// the other utilities is in this utility's queue, force it to be
         /// triggered.
-        if (it != infrastructure_construction_order.end()) {
+        if (it != rof_infra_construction_order.end()) {
             /// Bring new_infra_triggered from its current position in the
             /// queue to the first position.
-            infrastructure_construction_order.erase(it);
-            infrastructure_construction_order.insert(
-                    infrastructure_construction_order.begin(),
+            rof_infra_construction_order.erase(it);
+            rof_infra_construction_order.insert(
+                    rof_infra_construction_order.begin(),
                     (unsigned int) ws);
             /// Force infrastructure option new_infra_triggered to be built.
             beginConstruction(week,
@@ -541,39 +556,81 @@ void Utility::forceInfrastructureConstruction(
 int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
 
     int new_infra_triggered = NON_INITIALIZED;
+    long_term_risk_of_failure = long_term_rof;
 
-    /// Checks whether the long erm ROF has been exceeded for the next
+    /// Checks whether the long-term ROF has been exceeded for the next
     /// infrastructure option in the list and, if not already under
     /// construction, starts building it.
-    if (!infrastructure_construction_order.empty()) { // if there is anything to be built
+    if (!rof_infra_construction_order.empty() ||
+        under_construction) { // if there is anything to be built
 
         /// Checks if ROF threshold for next infrastructure in line has been
         /// reached and if there is already infrastructure being built.
-        if (long_term_rof > water_sources.at(
-                infrastructure_construction_order[0])->construction_rof &&
-            !under_construction) {
-            new_infra_triggered = infrastructure_construction_order[0];
+        if (!under_construction &&
+            long_term_rof > water_sources.at(
+                            (unsigned long) rof_infra_construction_order[0])
+                    ->construction_rof_or_demand) {
+            new_infra_triggered = rof_infra_construction_order[0];
 
             /// Begin construction.
-            beginConstruction(week, infrastructure_construction_order[0]);
+            beginConstruction(week,
+                              rof_infra_construction_order[0]);
         }
+    }
 
-        /// If there's a water source under construction, check if it's ready
-        /// and, if so, clear it from the to-build list.
-        if (under_construction && week > construction_end_date) {
-            setWaterSourceOnline(infrastructure_construction_order[0]);
+    /// Checks whether the target demand has been exceeded for the next
+    /// infrastructure option in the list and, if not already under
+    /// construction, starts building it.
+    if (!demand_infra_construction_order.empty() || under_construction &&
+                                                    week >
+                                                    WEEKS_IN_YEAR) { // if there is anything to be built
 
-            /// Record ID of and when infrastructure option construction was
-            /// completed.
-            infrastructure_built_last_week = {
-                    id, week, (int) infrastructure_construction_order[0]};
+        double average_demand =
+                std::accumulate(demand_series + week - (int) WEEKS_IN_YEAR,
+                                demand_series + week,
+                                0.) / WEEKS_IN_YEAR;
 
-            /// Erase infrastructure option from vector of infrastructure to
-            /// be built.
-            infrastructure_construction_order.erase(
-                    infrastructure_construction_order.begin());
-            under_construction = false;
+        /// Checks if demand threshold for next infrastructure in line has been
+        /// reached and if there is already infrastructure being built.
+        if (!under_construction && !demand_infra_construction_order.empty() &&
+            average_demand >
+            water_sources[demand_infra_construction_order[0]]
+                    ->construction_rof_or_demand) {
+            new_infra_triggered = demand_infra_construction_order[0];
+
+            /// Begin construction.
+            beginConstruction(week,
+                              demand_infra_construction_order[0]);
         }
+    }
+
+    /// If there's a water source under construction, check if it's ready
+    /// and, if so, clear it from the to-build list.
+    if (under_construction && week > construction_end_date) {
+        setWaterSourceOnline((unsigned int) under_construction_id);
+
+        /// Record ID of and when infrastructure option construction was
+        /// completed.
+        infra_built_last_week = {id, week, under_construction_id};
+
+        /// Erase infrastructure option from either vector of infrastructure to
+        /// be built.
+        if (!rof_infra_construction_order.empty()
+            && rof_infra_construction_order[0] ==
+               under_construction_id)
+            rof_infra_construction_order.erase(
+                    rof_infra_construction_order.begin());
+        else if (!demand_infra_construction_order.empty()
+                 && demand_infra_construction_order[0] == under_construction_id)
+            demand_infra_construction_order.erase
+                    (demand_infra_construction_order.begin());
+        else
+            __throw_logic_error("Infrastructure option whose construction was"
+                                        " complete is not in the demand or "
+                                        "rof triggered construction lists.");
+
+        under_construction = false;
+        under_construction_id = NON_INITIALIZED;
     }
 
     /// Calculate current annual debt payment to be made on that week (it first
@@ -623,22 +680,24 @@ void Utility::beginConstruction(int week, int infra_id) {
 
     /// Add water source construction cost to the books.
     double level_debt_service_payments;
-    infrastructure_net_present_cost +=
-            water_sources[infrastructure_construction_order[0]]->
+    infra_net_present_cost +=
+            water_sources[infra_id]->
                     calculateNetPresentConstructionCost(
                     week,
-                    infrastructure_discount_rate,
+                    id,
+                    infra_discount_rate,
                     &level_debt_service_payments);
 
     /// Create stream of level debt service payments for water source.
     debt_payment_streams.emplace_back(
-            (unsigned long) (water_sources.at(
-                    infrastructure_construction_order[0])->bond_term),
+            (unsigned long) (water_sources[infra_id]->bond_term),
             level_debt_service_payments);
 
     /// Make water utility as under construction and determine construction
     /// end date (I wish that was how it worked in real constructions...)
     under_construction = true;
+    under_construction_id = infra_id;
+
     construction_end_date =
             week + (int) water_sources[infra_id]->construction_time;
 }
@@ -674,12 +733,61 @@ Utility::setDemand_offset(double demand_offset, double offset_rate_per_volume) {
  * comprehensive demand data set.
  * @param r
  */
-void Utility::setRelization(unsigned long r) {
-    demand_series = new double[demands_all_realizations->at(r).size()];
+void Utility::setRealization(unsigned long r) {
+    int n_weeks = static_cast<int>(demands_all_realizations->at(r).size());
+    demand_series = new double[n_weeks];
     std::copy(demands_all_realizations->at(r).begin(),
               demands_all_realizations->at(r).end(),
               demand_series);
+
+    weekly_peaking_factor = calculateWeeklyPeakingFactor
+            (&demands_all_realizations->at(r));
+
     demands_all_realizations = nullptr;
+}
+
+vector<double> Utility::calculateWeeklyPeakingFactor(vector<double> *demands) {
+    unsigned long n_weeks = (unsigned long) WEEKS_IN_YEAR + 1;
+    int n_years = (int) (demands->size() / WEEKS_IN_YEAR - 1);
+    vector<double> year_averages(n_weeks,
+                                 0.);
+
+    double year_average_demand;
+    for (int y = 0; y < n_years; ++y) {
+        year_average_demand = accumulate(
+                demands->begin() + y * WEEKS_IN_YEAR,
+                demands->begin() + (y + 1) * WEEKS_IN_YEAR,
+                0.) /
+                              ((int) ((y + 1) * WEEKS_IN_YEAR) -
+                               (int) (y * WEEKS_IN_YEAR));
+        for (int w = 0; w < n_weeks; ++w) {
+            year_averages[w] += (*demands)[y * WEEKS_IN_YEAR + w] /
+                                year_average_demand / n_years;
+        }
+    }
+
+    return year_averages;
+}
+
+void Utility::checkErrorsAddWaterSourceOnline(WaterSource *water_source) {
+    for (WaterSource *ws : water_sources)
+        if ((ws != nullptr) && ws->id == water_source->id) {
+            cout << "Water source ID: " << water_source->id << endl <<
+                 "Utility ID: " << id << endl;
+            __throw_invalid_argument("Attempt to add water source with "
+                                             "duplicate ID to utility.");
+        }
+
+    /// Catch if user entered a water source as to be built but didn't enter
+    /// bond parameters.
+    for (int ws : rof_infra_construction_order)
+        if (water_source->id == ws)
+            if (water_source->construction_cost_of_capital == NON_INITIALIZED) {
+                cout << "Utility " << id << " set to build water source " <<
+                     ws << ", which has no bond parameters set." << endl;
+                __throw_invalid_argument("Water source with no bond parameters "
+                                                 "but set as to be built.");
+            }
 }
 
 //========================= GETTERS AND SETTERS =============================//
@@ -693,11 +801,11 @@ double Utility::getTotal_storage_capacity() const {
 }
 
 double Utility::getRisk_of_failure() const {
-    return risk_of_failure;
+    return short_term_risk_of_failure;
 }
 
 void Utility::setRisk_of_failure(double risk_of_failure) {
-    this->risk_of_failure = risk_of_failure;
+    this->short_term_risk_of_failure = risk_of_failure;
 }
 
 double Utility::getTotal_treatment_capacity() const {
@@ -733,7 +841,7 @@ double Utility::getUnrestrictedDemand(int week) const {
 }
 
 double Utility::getInfrastructure_net_present_cost() const {
-    return infrastructure_net_present_cost;
+    return infra_net_present_cost;
 }
 
 double Utility::getCurrent_debt_payment() const {
@@ -756,38 +864,21 @@ double Utility::getInsurance_purchase() const {
     return insurance_purchase;
 }
 
-const vector<unsigned int> &Utility::getInfrastructure_construction_order()
+const vector<int> &Utility::getRof_infrastructure_construction_order()
 const {
-    return infrastructure_construction_order;
+    return rof_infra_construction_order;
+}
+
+const vector<int> &Utility::getDemand_infra_construction_order() const {
+    return demand_infra_construction_order;
 }
 
 const vector<int> Utility::getInfrastructure_built() const {
-    return infrastructure_built_last_week;
+    return infra_built_last_week;
 }
 
 const double Utility::waterPrice(int week) {
     return weekly_average_volumetric_price[week];
-}
-
-void Utility::checkErrorsAddWaterSourceOnline(WaterSource *water_source) {
-    for (WaterSource *ws : water_sources)
-        if ((ws != nullptr) && ws->id == water_source->id) {
-            cout << "Water source ID: " << water_source->id << endl <<
-                 "Utility ID: " << id << endl;
-            __throw_invalid_argument("Attempt to add water source with "
-                                             "duplicate ID to utility.");
-        }
-
-    /// Catch if user entered a water source as to be built but didn't enter
-    /// bond parameters.
-    for (unsigned int ws : infrastructure_construction_order)
-        if (water_source->id == ws)
-            if (water_source->construction_cost_of_capital == NON_INITIALIZED) {
-                cout << "Utility " << id << " set to build water source " <<
-                     ws << ", which has no bond parameters set." << endl;
-                __throw_invalid_argument("Water source with no bond parameters "
-                                                 "but set as to be built.");
-            }
 }
 
 void Utility::setRestricted_price(double restricted_price) {
@@ -795,5 +886,9 @@ void Utility::setRestricted_price(double restricted_price) {
 }
 
 void Utility::setNoFinaicalCalculations() {
-    calc_financial = false;
+    used_for_realization = false;
+}
+
+double Utility::getLong_term_risk_of_failure() const {
+    return long_term_risk_of_failure;
 }

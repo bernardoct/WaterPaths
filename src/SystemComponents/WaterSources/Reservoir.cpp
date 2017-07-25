@@ -72,7 +72,7 @@ Reservoir::Reservoir(
  * @param capacity
  * @param max_treatment_capacity
  * @param source_type
- * @param construction_rof
+ * @param construction_rof_or_demand
  * @param construction_time_range
  * @param construction_price
  */
@@ -81,7 +81,7 @@ Reservoir::Reservoir(
         const vector<Catchment *> &catchments, const double capacity,
         const double max_treatment_capacity,
         EvaporationSeries *evaporation_series,
-        DataSeries *storage_area_curve, const double construction_rof,
+        DataSeries *storage_area_curve, const double construction_rof_or_demand,
         const vector<double> &construction_time_range,
         double construction_cost, double bond_term,
         double bond_interest_rate, int source_type) :
@@ -91,7 +91,7 @@ Reservoir::Reservoir(
                     capacity,
                     max_treatment_capacity,
                     source_type,
-                    construction_rof,
+                    construction_rof_or_demand,
                     construction_time_range,
                     construction_cost,
                     bond_term,
@@ -112,7 +112,7 @@ Reservoir::Reservoir(
  * @param capacity
  * @param max_treatment_capacity
  * @param source_type
- * @param construction_rof
+ * @param construction_rof_or_demand
  * @param construction_time_range
  * @param construction_price
  */
@@ -121,7 +121,7 @@ Reservoir::Reservoir(
         const vector<Catchment *> &catchments, const double capacity,
         const double max_treatment_capacity,
         EvaporationSeries *evaporation_series, double storage_area,
-        const double construction_rof,
+        const double construction_rof_or_demand,
         const vector<double> &construction_time_range,
         double construction_cost, double bond_term,
         double bond_interest_rate, int source_type) :
@@ -131,7 +131,163 @@ Reservoir::Reservoir(
                     capacity,
                     max_treatment_capacity,
                     source_type,
-                    construction_rof,
+                    construction_rof_or_demand,
+                    construction_time_range,
+                    construction_cost,
+                    bond_term,
+                    bond_interest_rate),
+        evaporation_series(evaporation_series),
+        storage_area_curve(nullptr), fixed_area(true), area(storage_area) {}
+
+/**
+ * Constructor for when Reservoir is built and operational.
+ * @param name
+ * @param id
+ * @param min_environmental_outflow
+ * @param catchments
+ * @param capacity
+ * @param max_treatment_capacity
+ * @param source_type
+ */
+Reservoir::Reservoir(
+        const char *name, const int id,
+        const vector<Catchment *> &catchments, const double capacity,
+        const double max_treatment_capacity,
+        EvaporationSeries *evaporation_series,
+        DataSeries *storage_area_curve,
+        vector<double> *allocated_treatment_fractions,
+        vector<double> *allocated_fractions,
+        vector<int> *utilities_with_allocations, int source_type) :
+        WaterSource(name,
+                    id,
+                    catchments,
+                    capacity,
+                    max_treatment_capacity,
+                    source_type,
+                    allocated_treatment_fractions,
+                    allocated_fractions,
+                    utilities_with_allocations),
+        evaporation_series(evaporation_series),
+        storage_area_curve(storage_area_curve), fixed_area(false) {
+
+    if (storage_area_curve &&
+        storage_area_curve->getSeries_x().back() != capacity)
+        __throw_invalid_argument("Last storage of data series must be equal to reservoir capacity.");
+}
+
+/**
+ * Constructor for when Reservoir is built and operational.
+ * @param name
+ * @param id
+ * @param min_environmental_outflow
+ * @param catchments
+ * @param capacity
+ * @param max_treatment_capacity
+ * @param source_type
+ */
+Reservoir::Reservoir(
+        const char *name, const int id,
+        const vector<Catchment *> &catchments, const double capacity,
+        const double max_treatment_capacity,
+        EvaporationSeries *evaporation_series, double storage_area,
+        vector<double> *allocated_treatment_fractions,
+        vector<double> *allocated_fractions,
+        vector<int> *utilities_with_allocations, int source_type) :
+        WaterSource(name,
+                    id,
+                    catchments,
+                    capacity,
+                    max_treatment_capacity,
+                    source_type,
+                    allocated_treatment_fractions,
+                    allocated_fractions,
+                    utilities_with_allocations),
+        evaporation_series(evaporation_series),
+        storage_area_curve(nullptr), fixed_area(true), area(storage_area) {}
+
+/**
+ * Constructor for when Reservoir does not exist in the beginning of the simulation.
+ * @param name
+ * @param id
+ * @param min_environmental_outflow
+ * @param catchments
+ * @param capacity
+ * @param max_treatment_capacity
+ * @param source_type
+ * @param construction_rof_or_demand
+ * @param construction_time_range
+ * @param construction_price
+ */
+Reservoir::Reservoir(
+        const char *name, const int id,
+        const vector<Catchment *> &catchments, const double capacity,
+        const double max_treatment_capacity,
+        EvaporationSeries *evaporation_series,
+        DataSeries *storage_area_curve,
+        vector<double> *allocated_treatment_fractions,
+        vector<double> *allocated_fractions,
+        vector<int> *utilities_with_allocations,
+        const double construction_rof_or_demand,
+        const vector<double> &construction_time_range,
+        double construction_cost, double bond_term,
+        double bond_interest_rate, int source_type) :
+        WaterSource(name,
+                    id,
+                    catchments,
+                    capacity,
+                    max_treatment_capacity,
+                    source_type,
+                    allocated_treatment_fractions,
+                    allocated_fractions,
+                    utilities_with_allocations,
+                    construction_rof_or_demand,
+                    construction_time_range,
+                    construction_cost,
+                    bond_term,
+                    bond_interest_rate),
+        evaporation_series(evaporation_series),
+        storage_area_curve(storage_area_curve), fixed_area(false) {
+
+    if (storage_area_curve &&
+        storage_area_curve->getSeries_x().back() != capacity)
+        __throw_invalid_argument("Last storage of data series must be equal to reservoir capacity.");
+}
+
+/**
+ * Constructor for when Reservoir does not exist in the beginning of the simulation.
+ * @param name
+ * @param id
+ * @param min_environmental_outflow
+ * @param catchments
+ * @param capacity
+ * @param max_treatment_capacity
+ * @param source_type
+ * @param construction_rof_or_demand
+ * @param construction_time_range
+ * @param construction_price
+ */
+Reservoir::Reservoir(
+        const char *name, const int id,
+        const vector<Catchment *> &catchments, const double capacity,
+        const double max_treatment_capacity,
+        EvaporationSeries *evaporation_series, double storage_area,
+        vector<double> *allocated_treatment_fractions,
+        vector<double> *allocated_fractions,
+        vector<int> *utilities_with_allocations,
+        const double construction_rof_or_demand,
+        const vector<double> &construction_time_range,
+        double construction_cost, double bond_term,
+        double bond_interest_rate, int source_type) :
+        WaterSource(name,
+                    id,
+                    catchments,
+                    capacity,
+                    max_treatment_capacity,
+                    source_type,
+                    allocated_treatment_fractions,
+                    allocated_fractions,
+                    utilities_with_allocations,
+                    construction_rof_or_demand,
                     construction_time_range,
                     construction_cost,
                     bond_term,

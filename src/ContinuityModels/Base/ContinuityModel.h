@@ -46,7 +46,9 @@ public:
 
     ContinuityModel(ContinuityModel &continuity_model);
 
-    void continuityStep(int week, int rof_realization = -1);
+    void continuityStep(
+            int week, int rof_realization = -1, bool
+    apply_demand_buffer = false);
 
     const vector<Utility *> &getUtilities() const;
 

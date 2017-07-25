@@ -15,6 +15,7 @@ const int BOND_INTEREST_PAYMENTS_PER_YEAR = 1;
 
 class WaterSource {
 protected:
+
     double available_volume = 0;
     double total_outflow = 0;
     double upstream_source_inflow = 0;
@@ -23,6 +24,13 @@ protected:
     double upstream_min_env_inflow;
     double capacity;
     double *available_allocated_volumes = new double();
+    double *allocated_capacities = nullptr;
+    double *allocated_treatment_capacities = nullptr;
+    double *allocated_treatment_fractions = nullptr;
+    double *allocated_fractions = nullptr;
+    vector<int> *utilities_with_allocations = nullptr;
+    int wq_pool_id = NON_INITIALIZED;
+    double total_allocated_fraction = NON_INITIALIZED;
     bool online;
     vector<Catchment *> catchments;
     double min_environmental_outflow;
@@ -39,7 +47,7 @@ public:
     const int id;
     const char *name;
     const int source_type;
-    const double construction_rof;
+    const double construction_rof_or_demand;
     const double construction_cost_of_capital;
     const double construction_time;
     const double bond_term;
@@ -54,10 +62,30 @@ public:
             const char *source_name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
             double treatment_capacity, const int source_type,
-            const double construction_rof,
+            const double construction_rof_or_demand,
             const vector<double> construction_time_range,
             double construction_cost_of_capital, double bond_term,
             double bond_interest_rate);
+
+    WaterSource(
+            const char *name, const int id,
+            const vector<Catchment *> &catchments, const double capacity,
+            double treatment_capacity, const int source_type,
+            vector<double> *allocated_treatment_fractions,
+            vector<double> *allocated_fractions,
+            vector<int> *utilities_with_allocations,
+            const double construction_rof_or_demand,
+            const vector<double> construction_time_range,
+            double construction_cost_of_capital, double bond_term,
+            double bond_interest_rate);
+
+    WaterSource(
+            const char *name, const int id,
+            const vector<Catchment *> &catchments, const double capacity,
+            double treatment_capacity, const int source_type,
+            vector<double> *allocated_treatment_fractions,
+            vector<double> *allocated_fractions,
+            vector<int> *utilities_with_allocations);
 
     WaterSource(const WaterSource &water_source);
 
@@ -81,8 +109,8 @@ public:
             int utility_id);
 
     double calculateNetPresentConstructionCost(
-            int week, double
-    discount_rate, double *level_debt_service_payment) const;
+            int week, int utility_id, double discount_rate,
+            double *level_debt_service_payment) const;
 
     virtual void removeWater(int allocation_id, double volume);
 
@@ -125,6 +153,11 @@ public:
     double getEvaporated_volume() const;
 
     virtual double getAllocatedTreatmentCapacity(int utility_id) const;
+
+    void setAllocations(
+            vector<int> *utilities_with_allocations,
+            vector<double> *allocated_fractions,
+            vector<double> *allocated_treatment_fractions);
 };
 
 

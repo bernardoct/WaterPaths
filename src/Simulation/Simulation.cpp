@@ -31,11 +31,41 @@ Simulation::Simulation(
               Utility::compById);
 #endif
 
+    /// Check if IDs are sequential.
+    for (int ws = 1; ws < water_sources.size(); ++ws) {
+        if (water_sources[ws]->id != water_sources[ws - 1]->id + 1) {
+            cout << "The IDs of water sources " << water_sources[ws]->id << " "
+                    "and " << water_sources[ws - 1]->id << " do not follow a "
+                         "progression unit progression." << endl;
+            __throw_invalid_argument("Improper ID sequencing");
+        }
+    }
+
+    for (int u = 1; u < utilities.size(); ++u) {
+        if (utilities[u]->id != utilities[u - 1]->id + 1) {
+            cout << "The IDs of utilities " << utilities[u]->id << " "
+                    "and " << utilities[u - 1]->id << " do not follow a "
+                         "progression unit progression." << endl;
+            __throw_invalid_argument("Improper ID sequencing");
+        }
+    }
+
     /// Check if sources listed in construction order array are of a utility are
-    // listed as belonging to that utility
+    /// listed as belonging to that utility
     for (int u = 0; u < utilities.size(); ++u) {
-        for (unsigned int ws :
-                utilities[u]->getInfrastructure_construction_order())
+        /// Create a vector with rof and demand triggered infrastructure for
+        /// utility u.
+        vector<int> demand_rof_infra_order =
+                utilities[u]->getRof_infrastructure_construction_order();
+        demand_rof_infra_order.insert(
+                demand_rof_infra_order.begin(),
+                utilities[u]->getDemand_infra_construction_order().begin(),
+                utilities[u]->getDemand_infra_construction_order().end());
+        /// Iterate over demand and rof combined infrastructure vector
+        /// looking for sources declared as to be constructed that were not
+        /// declared as belonging to utility u.
+        for (int ws :
+                demand_rof_infra_order)
             if (std::find(water_sources_to_utilities[u].begin(),
                           water_sources_to_utilities[u].end(),
                           ws)
@@ -47,6 +77,20 @@ Simulation::Simulation(
                      << endl;
                 throw std::invalid_argument("Utility's construction order and "
                                                     "owned sources mismatch.");
+            }
+
+        for (int ws : water_sources_to_utilities[u])
+            if (find_if(water_sources.begin(),
+                        water_sources.end(),
+                        [&ws](
+                                const WaterSource *
+                                obj) { return obj->id == ws; }) ==
+                water_sources.end()) {
+                cout << "Water source #" << ws << " not present in "
+                        "comprehensive water sources vector." << endl;
+                __throw_invalid_argument("Water sources declared to belong to"
+                                                 " a utility is not present "
+                                                 "in vector of water sources.");
             }
     }
 
@@ -104,7 +148,7 @@ Simulation::Simulation(
     }
 }
 
-Simulation::~Simulation() {}
+Simulation::~Simulation() = default;
 
 /**
  * Assignment constructor
@@ -133,7 +177,7 @@ void Simulation::runFullSimulation(int num_threads) {
     std::cout << "Number of realizations: " << number_of_realizations << endl;
     std::cout << "Beginning realizations loop." << endl;
 #pragma omp parallel for num_threads(num_threads)
-    for (int r = 251; r < number_of_realizations; ++r) {
+    for (int r = 0; r < number_of_realizations; ++r) {
         count++;
         time_t timer_ir, timer_fr;
         time(&timer_ir);

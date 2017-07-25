@@ -21,18 +21,17 @@ AllocatedReservoir::AllocatedReservoir(
                     max_treatment_capacity,
                     evaporation_series,
                     storage_area_curve,
-                    ALLOCATED_RESERVOIR),
-          utilities_with_allocations(utilities_with_allocations) {
-    setAllocations(utilities_with_allocations,
-                   allocated_fractions,
-                   allocated_treatment_fractions);
+                    allocated_treatment_fractions,
+                    allocated_fractions,
+                    utilities_with_allocations,
+                    ALLOCATED_RESERVOIR) {
 }
 
 AllocatedReservoir::AllocatedReservoir(
         const char *name, const int id, const vector<Catchment *> &catchments,
         const double capacity, const double max_treatment_capacity,
         EvaporationSeries *evaporation_series, DataSeries *storage_area_curve,
-        const double construction_rof,
+        const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double construction_cost,
         double bond_term, double bond_interest_rate,
         vector<int> *utilities_with_allocations,
@@ -45,16 +44,15 @@ AllocatedReservoir::AllocatedReservoir(
                     max_treatment_capacity,
                     evaporation_series,
                     storage_area_curve,
-                    construction_rof,
+                    allocated_treatment_fractions,
+                    allocated_fractions,
+                    utilities_with_allocations,
+                    construction_rof_or_demand,
                     construction_time_range,
                     construction_cost,
                     bond_term,
                     bond_interest_rate,
-                    ALLOCATED_RESERVOIR),
-          utilities_with_allocations(utilities_with_allocations) {
-    setAllocations(utilities_with_allocations,
-                   allocated_fractions,
-                   allocated_treatment_fractions);
+                    ALLOCATED_RESERVOIR) {
 }
 
 AllocatedReservoir::AllocatedReservoir(
@@ -71,18 +69,17 @@ AllocatedReservoir::AllocatedReservoir(
                     max_treatment_capacity,
                     evaporation_series,
                     storage_area,
-                    ALLOCATED_RESERVOIR),
-          utilities_with_allocations(utilities_with_allocations) {
-    setAllocations(utilities_with_allocations,
-                   allocated_fractions,
-                   allocated_treatment_fractions);
+                    allocated_treatment_fractions,
+                    allocated_fractions,
+                    utilities_with_allocations,
+                    ALLOCATED_RESERVOIR) {
 }
 
 AllocatedReservoir::AllocatedReservoir(
         const char *name, const int id, const vector<Catchment *> &catchments,
         const double capacity, const double max_treatment_capacity,
         EvaporationSeries *evaporation_series, double storage_area,
-        const double construction_rof,
+        const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double construction_cost,
         double bond_term, double bond_interest_rate,
         vector<int> *utilities_with_allocations,
@@ -95,57 +92,20 @@ AllocatedReservoir::AllocatedReservoir(
                     max_treatment_capacity,
                     evaporation_series,
                     storage_area,
-                    construction_rof,
+                    allocated_treatment_fractions,
+                    allocated_fractions,
+                    utilities_with_allocations,
+                    construction_rof_or_demand,
                     construction_time_range,
                     construction_cost,
                     bond_term,
                     bond_interest_rate,
-                    ALLOCATED_RESERVOIR),
-          utilities_with_allocations(utilities_with_allocations) {
-    setAllocations(utilities_with_allocations,
-                   allocated_fractions,
-                   allocated_treatment_fractions);
+                    ALLOCATED_RESERVOIR) {
 }
 
 AllocatedReservoir::AllocatedReservoir(
         const AllocatedReservoir &allocated_reservoir)
-        : Reservoir(allocated_reservoir),
-          utilities_with_allocations(allocated_reservoir
-                                             .utilities_with_allocations),
-          allocated_fractions(allocated_reservoir.allocated_fractions) {
-
-    wq_pool_id = allocated_reservoir.wq_pool_id;
-
-    this->allocated_fractions = new double[wq_pool_id + 1]();
-    this->allocated_treatment_fractions = new double[wq_pool_id + 1]();
-    available_allocated_volumes = new double[wq_pool_id + 1]();
-    allocated_capacities = new double[wq_pool_id + 1]();
-    allocated_treatment_capacities = new double[wq_pool_id + 1]();
-
-    int length = wq_pool_id + 1;//    *std::max_element
-//            (utilities_with_allocations->begin(),
-//                                   utilities_with_allocations->end()) + 1;
-
-    std::copy(allocated_reservoir.allocated_fractions,
-              allocated_reservoir.allocated_fractions + length,
-              allocated_fractions);
-
-    std::copy(allocated_reservoir.allocated_treatment_fractions,
-              allocated_reservoir.allocated_treatment_fractions + length,
-              allocated_treatment_fractions);
-
-    std::copy(allocated_reservoir.available_allocated_volumes,
-              allocated_reservoir.available_allocated_volumes + length,
-              available_allocated_volumes);
-
-    std::copy(allocated_reservoir.allocated_capacities,
-              allocated_reservoir.allocated_capacities + length,
-              allocated_capacities);
-
-    std::copy(allocated_reservoir.allocated_treatment_capacities,
-              allocated_reservoir.allocated_treatment_capacities + length,
-              allocated_treatment_capacities);
-}
+        : Reservoir(allocated_reservoir) {}
 
 /**
  * Copy assignment operator
@@ -190,60 +150,6 @@ AllocatedReservoir::operator=(
 
     return *this;
 };
-
-/**
- * Initial set up of allocations with full reservoir in the beginning of the
- * simulations. To be used in constructors only.
- * @param utilities_with_allocations
- * @param allocated_fractions
- */
-void AllocatedReservoir::setAllocations(
-        vector<int> *utilities_with_allocations,
-        vector<double> *allocated_fractions,
-        vector<double> *allocated_treatment_fractions) {
-    if (utilities_with_allocations->size() != allocated_fractions->size())
-        __throw_invalid_argument("There must be one allocation fraction in "
-                                         "utilities_with_allocations for "
-                                         "each utility id in "
-                                         "allocated_fractions.");
-
-    total_allocated_fraction = accumulate(allocated_fractions->begin(),
-                                          allocated_fractions->end(),
-                                          0.);
-
-    if (total_allocated_fraction < 1.0)
-        for (int i = 0; i < utilities_with_allocations->size(); ++i)
-            if ((*utilities_with_allocations)[i] == WATER_QUALITY_ALLOCATION)
-                (*allocated_fractions)[i] += 1. - total_allocated_fraction;
-
-    /// Have water quality pool as a reservoir with ID next to highest ID
-    /// allocation.
-    wq_pool_id = *std::max_element(utilities_with_allocations->begin(),
-                                   utilities_with_allocations->end()) + 1;
-
-    this->allocated_fractions = new double[wq_pool_id + 1]();
-    this->allocated_treatment_fractions = new double[wq_pool_id + 1]();
-    available_allocated_volumes = new double[wq_pool_id + 1]();
-    allocated_capacities = new double[wq_pool_id + 1]();
-    allocated_treatment_capacities = new double[wq_pool_id + 1]();
-
-    /// Populate vectors.
-    for (unsigned long i = 0; i < utilities_with_allocations->size(); ++i) {
-        int u = utilities_with_allocations->at(i);
-        u = (u == WATER_QUALITY_ALLOCATION ? wq_pool_id : u);
-        this->allocated_fractions[u] = (*allocated_fractions)[i];
-        this->allocated_treatment_fractions[u] =
-                (*allocated_treatment_fractions)[u];
-
-        (*this->utilities_with_allocations)[i] = u;
-
-        allocated_capacities[u] = this->capacity * (*allocated_fractions)[i];
-        allocated_treatment_capacities[u] = total_treatment_capacity *
-                                            this->allocated_treatment_fractions[u];
-
-        available_allocated_volumes[u] = allocated_capacities[u];
-    }
-}
 
 AllocatedReservoir::~AllocatedReservoir() {
     delete[] allocated_fractions;
@@ -394,20 +300,24 @@ void AllocatedReservoir::applyContinuity(
     }
 
     /// Sanity checking from now on.
-    for (int u : *utilities_with_allocations)
-        if (isnan(available_allocated_volumes[u]) ||
-            available_allocated_volumes[u] > allocated_capacities[u])
-            __throw_logic_error("Available allocated volume for utility is "
-                                        "nan or greater than capacity. Please "
+    for (int u : *utilities_with_allocations) {
+        if (available_allocated_volumes[u] > allocated_capacities[u])
+            __throw_runtime_error("Available allocated volume for utility is "
+                                          "greater than capacity. Please "
                                         "report this error to  bct52@cornell"
                                         ".edu.");
+        if (isnan(available_allocated_volumes[u]))
+            __throw_runtime_error("Available allocated volume for utility is "
+                                          "nan. Please report this error to "
+                                          "bct52@cornell.edu.");
+    }
 
     double sum_allocations = accumulate(available_allocated_volumes,
                                         available_allocated_volumes +
                                         wq_pool_id + 1,
                                         0.);
     if ((int) std::round(sum_allocations) != (int) std::round(available_volume))
-        __throw_logic_error("Sum of allocated volumes in a reservoir must "
+        __throw_runtime_error("Sum of allocated volumes in a reservoir must "
                                     "total current storage minus unallocated "
                                     "volume");
 }

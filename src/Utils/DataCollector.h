@@ -17,7 +17,8 @@
 struct Utility_t {
     Utility_t(int id, const char *name) : id(id), name(name) {};
 
-    vector<vector<double>> rof;
+    vector<vector<double>> st_rof;
+    vector<vector<double>> lt_rof;
     vector<vector<double>> combined_storage;
     vector<vector<double>> unrestricted_demand;
     vector<vector<double>> restricted_demand;

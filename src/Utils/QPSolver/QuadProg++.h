@@ -62,7 +62,7 @@ s.t.
 #ifndef _QUADPROGPP
 #define _QUADPROGPP
 
-#include "Array.hh"
+#include "Array.h"
 
 double solve_quadprog(Matrix<double>& G, Vector<double>& g0, 
                       const Matrix<double>& CE, const Vector<double>& ce0,  

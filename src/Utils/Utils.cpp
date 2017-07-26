@@ -9,7 +9,8 @@
 #include "../DroughtMitigationInstruments/InsuranceStorageToROF.h"
 #include "../SystemComponents/WaterSources/WaterReuse.h"
 #include "../SystemComponents/WaterSources/AllocatedReservoir.h"
-#include "../SystemComponents/WaterSources/JointWaterTreatmentPlant.h"
+#include "../SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
+#include "../SystemComponents/WaterSources/Relocation.h"
 #include <fstream>
 #include <algorithm>
 #include <climits>
@@ -106,29 +107,33 @@ vector<WaterSource *> Utils::copyWaterSourceVector(
 
     for (WaterSource *ws : water_sources_original) {
         if (ws->source_type == RESERVOIR)
-            water_sources_new.push_back(new Reservoir(
-                    *dynamic_cast<Reservoir *>(ws)));
+            water_sources_new.push_back(
+                    new Reservoir(*dynamic_cast<Reservoir *>(ws)));
         else if (ws->source_type == INTAKE)
-            water_sources_new.push_back(new Intake(
-                    *dynamic_cast<Intake *>(ws)));
+            water_sources_new.push_back(
+                    new Intake(*dynamic_cast<Intake *>(ws)));
         else if (ws->source_type == RESERVOIR_EXPANSION)
             water_sources_new.push_back(
                     new ReservoirExpansion(
                             *dynamic_cast<ReservoirExpansion *>(ws)));
         else if (ws->source_type == QUARRY)
-            water_sources_new.push_back(new Quarry(
-                    *dynamic_cast<Quarry *>(ws)));
+            water_sources_new.push_back(
+                    new Quarry(*dynamic_cast<Quarry *>(ws)));
         else if (ws->source_type == WATER_REUSE)
-            water_sources_new.push_back(new WaterReuse(
-                    *dynamic_cast<WaterReuse *>(ws)));
+            water_sources_new.push_back(
+                    new WaterReuse(*dynamic_cast<WaterReuse *>(ws)));
         else if (ws->source_type == ALLOCATED_RESERVOIR)
             water_sources_new.push_back(
                     new AllocatedReservoir(
                             *dynamic_cast<AllocatedReservoir *>(ws)));
         else if (ws->source_type == NEW_WATER_TREATMENT_PLANT)
             water_sources_new.push_back(
-                    new JointWaterTreatmentPlant(
-                            *dynamic_cast<JointWaterTreatmentPlant *>(ws)));
+                    new SequentialJointTreatmentExpansion(
+                            *dynamic_cast<SequentialJointTreatmentExpansion *>(ws)));
+        else if (ws->source_type == SOURCE_RELOCATION)
+            water_sources_new.push_back(
+                    new Relocation(
+                            *dynamic_cast<Relocation *>(ws)));
         else
             __throw_invalid_argument("One of the water sources does not have "
                                              "an implementation in the "

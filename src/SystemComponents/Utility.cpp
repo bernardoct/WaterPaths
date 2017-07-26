@@ -7,7 +7,8 @@
 #include "Utility.h"
 #include "../Utils/Utils.h"
 #include "WaterSources/ReservoirExpansion.h"
-#include "WaterSources/JointWaterTreatmentPlant.h"
+#include "WaterSources/SequentialJointTreatmentExpansion.h"
+#include "WaterSources/Relocation.h"
 
 /**
  * Main constructor for the Utility class.
@@ -28,7 +29,7 @@
  */
 
 Utility::Utility(
-        char *name, int id,
+        const char *name, int id,
         vector<vector<double>> *demands_all_realizations,
         int number_of_week_demands,
         const double percent_contingency_fund_contribution,
@@ -80,6 +81,48 @@ Utility::Utility(
         double demand_buffer,
         const vector<int> &rof_infra_construction_order,
         const vector<int> &demand_infra_construction_order,
+        double infra_discount_rate, const vector<vector<int>>
+        *infra_if_built_remove) :
+        name(name), id(id), demands_all_realizations(demands_all_realizations),
+        number_of_week_demands(number_of_week_demands),
+        percent_contingency_fund_contribution
+                (percent_contingency_fund_contribution),
+        rof_infra_construction_order(rof_infra_construction_order),
+        demand_infra_construction_order(demand_infra_construction_order),
+        infra_discount_rate(infra_discount_rate),
+        wwtp_discharge_rule(wwtp_discharge_rule),
+        demand_buffer(demand_buffer),
+        total_stored_volume(NONE),
+        total_storage_capacity(NONE),
+        infra_if_built_remove(infra_if_built_remove) {
+
+    if (rof_infra_construction_order.empty() &&
+        demand_infra_construction_order.empty())
+        throw std::invalid_argument("At least one infrastructure construction "
+                                            "order vector  must have at least "
+                                            "one water source ID. If there's "
+                                            "not infrastructure to be build, "
+                                            "use other constructor "
+                                            "instead.");
+    if (infra_discount_rate <= 0)
+        throw std::invalid_argument("Infrastructure discount rate must be "
+                                            "greater than 0.");
+
+    calculateWeeklyAverageWaterPrices(typesMonthlyDemandFraction,
+                                      typesMonthlyWaterPrice);
+}
+
+Utility::Utility(
+        const char *name, int id,
+        vector<vector<double>> *demands_all_realizations,
+        int number_of_week_demands,
+        const double percent_contingency_fund_contribution,
+        const vector<vector<double>> *typesMonthlyDemandFraction,
+        const vector<vector<double>> *typesMonthlyWaterPrice,
+        WwtpDischargeRule wwtp_discharge_rule,
+        double demand_buffer,
+        const vector<int> &rof_infra_construction_order,
+        const vector<int> &demand_infra_construction_order,
         double infra_discount_rate) :
         name(name), id(id), demands_all_realizations(demands_all_realizations),
         number_of_week_demands(number_of_week_demands),
@@ -91,7 +134,8 @@ Utility::Utility(
         wwtp_discharge_rule(wwtp_discharge_rule),
         demand_buffer(demand_buffer),
         total_stored_volume(NONE),
-        total_storage_capacity(NONE) {
+        total_storage_capacity(NONE),
+        infra_if_built_remove(new vector<vector<int>>()) {
 
     if (rof_infra_construction_order.empty() &&
         demand_infra_construction_order.empty())
@@ -121,7 +165,8 @@ Utility::Utility(Utility &utility) :
         infra_discount_rate(utility.infra_discount_rate),
         demands_all_realizations(utility.demands_all_realizations),
         wwtp_discharge_rule(utility.wwtp_discharge_rule),
-        demand_buffer(utility.demand_buffer) {
+        demand_buffer(utility.demand_buffer),
+        infra_if_built_remove(utility.infra_if_built_remove) {
 
     /// Create copies of sources
     water_sources.clear();
@@ -133,6 +178,8 @@ Utility::~Utility() {
 }
 
 Utility &Utility::operator=(const Utility &utility) {
+
+    demand_series = new double[utility.number_of_week_demands];
 
     /// Create copies of sources
     water_sources.clear();
@@ -345,7 +392,6 @@ void Utility::splitDemands(
 void Utility::resetDataColletionVariables() {
     /// Reset demand multiplier, offset from transfers and insurance payout and
     /// price.
-    if (fund_contribution > 0) {
         demand_multiplier = 1;
         demand_offset = 0;
         insurance_payout = 0;
@@ -355,7 +401,6 @@ void Utility::resetDataColletionVariables() {
         fund_contribution = 0;
         gross_revenue = 0;
         current_debt_payment = 0;
-    }
 }
 
 /**
@@ -434,6 +479,8 @@ void Utility::setWaterSourceOnline(unsigned int source_id) {
     } else if (water_sources.at(source_id)->source_type ==
                RESERVOIR_EXPANSION) {
         reservoirExpansionConstructionHandler(source_id);
+    } else if (water_sources.at(source_id)->source_type == SOURCE_RELOCATION) {
+        sourceRelocationConstructionHandler(source_id);
     } else {
         water_sources.at(source_id)->setOnline();
         addWaterSourceToOnlineLists(source_id);
@@ -460,14 +507,15 @@ void Utility::setWaterSourceOnline(unsigned int source_id) {
 }
 
 void Utility::waterTreatmentPlantConstructionHandler(unsigned int source_id) {
-    JointWaterTreatmentPlant wtp = *dynamic_cast<JointWaterTreatmentPlant *>
+    auto wtp = dynamic_cast<SequentialJointTreatmentExpansion *>
     (water_sources.at(source_id));
 
     /// Add treatment capacity to source
-    water_sources.at(wtp.parent_reservoir_ID)
+    double added_capacity = wtp->implementTreatmentCapacity(id);
+    water_sources.at(wtp->parent_reservoir_ID)
             ->addTreatmentCapacity(
-                    wtp.total_treatment_capacity,
-                    wtp.added_treatment_capacity_fractions
+                    added_capacity,
+                    wtp->added_treatment_capacity_fractions
                             ->at((unsigned long) id),
                     id);
 
@@ -476,35 +524,29 @@ void Utility::waterTreatmentPlantConstructionHandler(unsigned int source_id) {
     /// If source is not intake or reuse and is not in the list of active
     /// sources, add it to the non-priority list.
     bool is_priority_source =
-            water_sources.at(wtp.parent_reservoir_ID)->source_type == INTAKE ||
-            water_sources.at(wtp.parent_reservoir_ID)->source_type ==
+            water_sources.at(wtp->parent_reservoir_ID)->source_type == INTAKE ||
+            water_sources.at(wtp->parent_reservoir_ID)->source_type ==
             WATER_REUSE;
     bool is_not_in_priority_list =
             find(priority_draw_water_source.begin(),
                  priority_draw_water_source.end(),
-                 wtp.parent_reservoir_ID)
+                 wtp->parent_reservoir_ID)
             == priority_draw_water_source.end();
     bool is_not_in_non_priority_list =
             find(non_priority_draw_water_source.begin(),
                  non_priority_draw_water_source.end(),
-                 wtp.parent_reservoir_ID)
+                 wtp->parent_reservoir_ID)
             == non_priority_draw_water_source.end();
-    bool small_treatment_allocation =
-            water_sources.at(wtp.parent_reservoir_ID)
-                    ->getAllocatedTreatmentCapacity(id) <
-            water_sources.at(wtp.parent_reservoir_ID)
-                    ->getAllocatedTreatmentCapacity(id) /
-            TREATMENT_CAPACITY_VS_VOLUME_SMALL_WTP;
 
     /// Finally, the checking.
-    if ((is_priority_source && is_not_in_priority_list) ||
-        small_treatment_allocation) {
-        priority_draw_water_source.push_back((int) wtp.parent_reservoir_ID);
+    if (is_priority_source && is_not_in_priority_list) {
+        priority_draw_water_source.push_back((int) wtp->parent_reservoir_ID);
         total_storage_capacity +=
-                water_sources.at(wtp.parent_reservoir_ID)
+                water_sources.at(wtp->parent_reservoir_ID)
                         ->getAllocatedCapacity(id);
     } else if (is_not_in_non_priority_list) {
-        non_priority_draw_water_source.push_back((int) wtp.parent_reservoir_ID);
+        non_priority_draw_water_source
+                .push_back((int) wtp->parent_reservoir_ID);
     }
 }
 
@@ -514,6 +556,16 @@ void Utility::reservoirExpansionConstructionHandler(unsigned int source_id) {
 
     water_sources.at(re.parent_reservoir_ID)->
             addCapacity(re.getAllocatedCapacity(id));
+}
+
+void Utility::sourceRelocationConstructionHandler(unsigned int source_id) {
+    Relocation re =
+            *dynamic_cast<Relocation *>(water_sources.at(source_id));
+
+    const vector<double> *new_allocated_fractions = re.new_allocated_fractions;
+
+    water_sources.at(re.parent_reservoir_ID)->
+            resetAllocations(new_allocated_fractions);
 }
 
 /**
@@ -561,16 +613,30 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
     /// Checks whether the long-term ROF has been exceeded for the next
     /// infrastructure option in the list and, if not already under
     /// construction, starts building it.
-    if (!rof_infra_construction_order.empty() ||
-        under_construction) { // if there is anything to be built
+    if (!rof_infra_construction_order.empty() &&
+        !under_construction) { // if there is anything to be built
 
         /// Checks if ROF threshold for next infrastructure in line has been
         /// reached and if there is already infrastructure being built.
+        int next_construction = rof_infra_construction_order[0];
         if (!under_construction &&
-            long_term_rof > water_sources.at(
-                            (unsigned long) rof_infra_construction_order[0])
+            long_term_rof > water_sources.at((unsigned long) next_construction)
                     ->construction_rof_or_demand) {
-            new_infra_triggered = rof_infra_construction_order[0];
+            new_infra_triggered = next_construction;
+
+            if (infra_if_built_remove)
+                for (auto v : *infra_if_built_remove) {
+                    if (v[0] == next_construction)
+                        for (int i = 0; i < v.size(); ++i) {
+                            rof_infra_construction_order.erase(
+                                    std::remove(
+                                            rof_infra_construction_order
+                                                    .begin(),
+                                            rof_infra_construction_order.end(),
+                                            v[i]),
+                                    rof_infra_construction_order.end());
+                        }
+                }
 
             /// Begin construction.
             beginConstruction(week,
@@ -581,9 +647,9 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
     /// Checks whether the target demand has been exceeded for the next
     /// infrastructure option in the list and, if not already under
     /// construction, starts building it.
-    if (!demand_infra_construction_order.empty() || under_construction &&
-                                                    week >
-                                                    WEEKS_IN_YEAR) { // if there is anything to be built
+    if (!demand_infra_construction_order.empty() &&
+        !under_construction &&
+        week > WEEKS_IN_YEAR) { // if there is anything to be built
 
         double average_demand =
                 std::accumulate(demand_series + week - (int) WEEKS_IN_YEAR,
@@ -891,4 +957,8 @@ void Utility::setNoFinaicalCalculations() {
 
 double Utility::getLong_term_risk_of_failure() const {
     return long_term_risk_of_failure;
+}
+
+const vector<WaterSource *> &Utility::getWater_sources() const {
+    return water_sources;
 }

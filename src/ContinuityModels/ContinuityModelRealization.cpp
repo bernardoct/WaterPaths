@@ -3,7 +3,9 @@
 //
 
 #include <iostream>
+#include <algorithm>
 #include "ContinuityModelRealization.h"
+#include "../SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
 
 ContinuityModelRealization::ContinuityModelRealization(
         const vector<WaterSource *> &water_sources,
@@ -50,21 +52,54 @@ void ContinuityModelRealization::setShortTermROFs(const vector<double> &risks_of
 }
 
 void ContinuityModelRealization::setLongTermROFs(const vector<double> &risks_of_failure, const int week) {
-    vector<int> new_infra_triggered(0);
-    int nit;
+    vector<int> new_infra_triggered;
+    int nit; // new infrastruction triggered - id.
+
+    /// Loop over utilities to see if any of them will build new infrastructure.
     for (unsigned long u = 0; u < continuity_utilities.size(); ++u) {
-        nit = continuity_utilities.at(u)->
-                infrastructureConstructionHandler(risks_of_failure.at(u),
+        /// Runs utility's infrastructure construction handler and get the id
+        /// of new source built, if any.
+        nit = continuity_utilities[u]->
+                infrastructureConstructionHandler(risks_of_failure[u],
                                                   week);
+        /// If new source was built, check add it to the list of sources
+        /// built by all utilities.
         if (nit != NON_INITIALIZED)
             new_infra_triggered.push_back(nit);
     }
 
+    /// Look for and remove duplicates, in the unlikely case two utilities
+    /// build the same source at the same time. This will prevent the source
+    /// from being erased from a utility which will later try to build it.
+    sort(new_infra_triggered.begin(),
+         new_infra_triggered.end());
+    new_infra_triggered.erase(unique(new_infra_triggered.begin(),
+                                     new_infra_triggered.end()),
+                              new_infra_triggered.end());
+
+    /// If infrastructure was built, force utilities to build their share of
+    /// that infrastructure option (which will only happen it the listed
+    /// option is in the list of sources to be built for other utilities.
     if (!new_infra_triggered.empty())
         for (Utility *u : continuity_utilities) {
             u->forceInfrastructureConstruction(week,
                                                new_infra_triggered);
         }
+
+    auto v1 = dynamic_cast<SequentialJointTreatmentExpansion *>
+    (continuity_utilities[0]->getWater_sources()[20])
+            ->getMax_sequential_added_capacity();
+    auto v2 = dynamic_cast<SequentialJointTreatmentExpansion *>
+    (continuity_utilities[1]->getWater_sources()[20])
+            ->getMax_sequential_added_capacity();
+    auto v3 = dynamic_cast<SequentialJointTreatmentExpansion *>
+    (continuity_utilities[0]->getWater_sources()[21])
+            ->getMax_sequential_added_capacity();
+    auto v4 = dynamic_cast<SequentialJointTreatmentExpansion *>
+    (continuity_utilities[1]->getWater_sources()[21])
+            ->getMax_sequential_added_capacity();
+
+    int i = 5;
 }
 
 void ContinuityModelRealization::applyDroughtMitigationPolicies(int week) {

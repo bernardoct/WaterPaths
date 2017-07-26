@@ -533,3 +533,26 @@ double WaterSource::getEvaporated_volume() const {
 double WaterSource::getAllocatedTreatmentCapacity(int utility_id) const {
     return total_treatment_capacity;
 }
+
+double WaterSource::getTotal_treatment_capacity(int utility_id) const {
+    return total_treatment_capacity;
+}
+
+void WaterSource::resetAllocations(
+        const vector<double>
+        *new_allocated_fractions) {
+
+    /// Populate vectors.
+    for (unsigned long i = 0; i < utilities_with_allocations->size(); ++i) {
+        int u = utilities_with_allocations->at(i);
+        u = (u == WATER_QUALITY_ALLOCATION ? wq_pool_id : u);
+        allocated_fractions[u] = (*new_allocated_fractions)[i];
+
+        (*this->utilities_with_allocations)[i] = u;
+
+        allocated_capacities[u] = capacity * (*new_allocated_fractions)[i];
+
+        available_allocated_volumes[u] =
+                available_volume * allocated_fractions[u];
+    }
+}

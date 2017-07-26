@@ -108,7 +108,7 @@ public:
             double allocations_added_treatment_capacity,
             int utility_id);
 
-    double calculateNetPresentConstructionCost(
+    virtual double calculateNetPresentConstructionCost(
             int week, int utility_id, double discount_rate,
             double *level_debt_service_payment) const;
 
@@ -154,10 +154,14 @@ public:
 
     virtual double getAllocatedTreatmentCapacity(int utility_id) const;
 
+    double getTotal_treatment_capacity(int utility_id) const;
+
     void setAllocations(
             vector<int> *utilities_with_allocations,
             vector<double> *allocated_fractions,
             vector<double> *allocated_treatment_fractions);
+
+    void resetAllocations(const vector<double> *new_allocated_fractions);
 };
 
 

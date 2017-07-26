@@ -15,7 +15,7 @@ public:
 
     ReservoirExpansion(
             const char *name, const int id,
-            const int parent_reservoir_ID,
+            const unsigned int parent_reservoir_ID,
             const double capacity, const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
             double construction_cost, double bond_term,

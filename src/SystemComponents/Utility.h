@@ -15,7 +15,6 @@
 
 class Utility {
 private:
-
     double fund_contribution;
     int under_construction_id = NON_INITIALIZED;
     double *demand_series = nullptr;
@@ -61,9 +60,10 @@ public:
     const double percent_contingency_fund_contribution;
     const double infra_discount_rate;
     const double demand_buffer;
+    const vector<vector<int>> *infra_if_built_remove;
 
     Utility(
-            char *name, int id,
+            const char *name, int id,
             vector<vector<double>> *demands_all_realizations,
             int number_of_week_demands,
             const double percent_contingency_fund_contribution,
@@ -81,6 +81,19 @@ public:
             const vector<vector<double>> *typesMonthlyWaterPrice,
             WwtpDischargeRule wwtp_discharge_rule,
             double demand_buffer,
+            const vector<int> &rof_infra_construction_order,
+            const vector<int> &demand_infra_construction_order,
+            double infra_discount_rate, const vector<vector<int>>
+            *infra_if_built_remove);
+
+    Utility(
+            const char *name, int id,
+            vector<vector<double>> *demands_all_realizations,
+            int number_of_week_demands,
+            const double percent_contingency_fund_contribution,
+            const vector<vector<double>> *typesMonthlyDemandFraction,
+            const vector<vector<double>> *typesMonthlyWaterPrice,
+            WwtpDischargeRule wwtp_discharge_rule, double demand_buffer,
             const vector<int> &rof_infra_construction_order,
             const vector<int> &demand_infra_construction_order,
             double infra_discount_rate);
@@ -201,6 +214,10 @@ public:
     const vector<int> &getDemand_infra_construction_order() const;
 
     vector<double> calculateWeeklyPeakingFactor(vector<double> *demands);
+
+    void sourceRelocationConstructionHandler(unsigned int source_id);
+
+    const vector<WaterSource *> &getWater_sources() const;
 };
 
 

@@ -5,12 +5,13 @@
 #include <iostream>
 #include <cmath>
 #include <cstring>
+#include <algorithm>
 #include "ContinuityModel.h"
 #include "../../SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
 
 ContinuityModel::ContinuityModel(
-        const vector<WaterSource *> &water_sources,
-        const vector<Utility *> &utilities,
+        vector<WaterSource *> &water_sources,
+        vector<Utility *> &utilities,
         vector<MinEnvironFlowControl *> &min_env_flow_controls,
         const Graph &water_sources_graph,
         const vector<vector<int>> &water_sources_to_utilities,
@@ -21,6 +22,14 @@ ContinuityModel::ContinuityModel(
         water_sources_graph(water_sources_graph),
         water_sources_to_utilities(water_sources_to_utilities),
         realization_id(realization_id) {
+
+    //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
+    std::sort(continuity_water_sources.begin(), continuity_water_sources.end(), WaterSource::compare);
+#ifdef _WIN32
+    sort(continuity_utilities.begin(), continuity_utilities.end(), std::greater<>());
+#else
+    std::sort(continuity_utilities.begin(), continuity_utilities.end(), Utility::compById);
+#endif
 
     /// Set pointer to vector with capacities to be built on parent reservoir
     /// for each sequential joint treatment expansion with the same parent

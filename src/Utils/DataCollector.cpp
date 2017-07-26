@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <sys/stat.h>
+#include <numeric>
 #include "DataCollector.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
 #include "Utils.h"

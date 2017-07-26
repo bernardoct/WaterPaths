@@ -8,10 +8,10 @@
 
 InsuranceStorageToROF::InsuranceStorageToROF(
         const int id,
-        const vector<WaterSource *> &water_sources,
+        vector<WaterSource *> &water_sources,
         const Graph &water_sources_graph,
         const vector<vector<int>> &water_sources_to_utilities,
-        const vector<Utility *> &utilities,
+        vector<Utility *> &utilities,
         vector<MinEnvironFlowControl *>
         min_env_flow_controls,
         double *rof_triggers,
@@ -42,9 +42,8 @@ InsuranceStorageToROF::InsuranceStorageToROF(
                 insurance.continuity_water_sources),
                            insurance.water_sources_graph,
                            insurance.water_sources_to_utilities,
-                           Utils::copyUtilityVector(insurance
-                                                            .continuity_utilities,
-                                                    true),
+                           Utils::copyUtilityVector(
+                                   insurance.continuity_utilities, true),
                            insurance.min_env_flow_controls,
                            insurance.realization_id),
         insurance_premium(insurance.insurance_premium),
@@ -57,9 +56,8 @@ InsuranceStorageToROF::InsuranceStorageToROF(
 InsuranceStorageToROF::~InsuranceStorageToROF() {}
 
 void InsuranceStorageToROF::applyPolicy(int week) {
-    /// Calculate insurance price if it is the first week of the year.
 
-    /// Price insurance for coming year.
+    /// If first week of the year, price insurance for coming year.
     if (Utils::isFirstWeekOfTheYear(week + 1)) {
         priceInsurance(Utils::weekOfTheYear(week));
     }
@@ -97,7 +95,7 @@ void InsuranceStorageToROF::priceInsurance(int week) {
     int n_utilities = (int) realization_utilities.size();
 
     /// Reset prices.
-    if (insurance_price) delete[] insurance_price;
+    if (week > WEEKS_IN_YEAR) delete[] insurance_price;
     insurance_price = new double[n_utilities];
     for (int u : utilities_ids) insurance_price[u] = 0;
 
@@ -165,12 +163,8 @@ void InsuranceStorageToROF::getUtilitiesApproxROFs(
             utilities_approx_rof[u] = (*storage_to_rof_table)(u, s, week);
         else
             utilities_approx_rof[u] =
-                    ((*storage_to_rof_table)(u,
-                                             s,
-                                             week) +
-                     (*storage_to_rof_table)(u,
-                                             s + 1,
-                                             week)) / 2;
+                    ((*storage_to_rof_table)(u, s, week) +
+                     (*storage_to_rof_table)(u, s + 1, week)) / 2;
     }
 }
 

@@ -37,8 +37,8 @@ public:
     const unsigned int realization_id;
 
     ContinuityModel(
-            const vector<WaterSource *> &water_sources,
-            const vector<Utility *> &utilities,
+            vector<WaterSource *> &water_sources,
+            vector<Utility *> &utilities,
             vector<MinEnvironFlowControl *> &min_env_flow_controls,
             const Graph &water_sources_graph,
             const vector<vector<int>> &water_sources_to_utilities,

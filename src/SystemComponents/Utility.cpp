@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <numeric>
 #include "Utility.h"
 #include "../Utils/Utils.h"
 #include "WaterSources/ReservoirExpansion.h"
@@ -809,7 +810,7 @@ void Utility::setRealization(unsigned long r) {
     weekly_peaking_factor = calculateWeeklyPeakingFactor
             (&demands_all_realizations->at(r));
 
-    demands_all_realizations = nullptr;
+//    demands_all_realizations = nullptr;
 }
 
 vector<double> Utility::calculateWeeklyPeakingFactor(vector<double> *demands) {

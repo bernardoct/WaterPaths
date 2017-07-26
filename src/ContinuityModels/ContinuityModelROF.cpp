@@ -8,10 +8,10 @@
 #include "../Utils/Utils.h"
 
 ContinuityModelROF::ContinuityModelROF(
-        const vector<WaterSource *> &water_sources,
+        vector<WaterSource *> water_sources,
         const Graph &water_sources_graph,
         const vector<vector<int>> &water_sources_to_utilities,
-        const vector<Utility *> &utilities,
+        vector<Utility *> utilities,
         vector<MinEnvironFlowControl *> &min_env_flow_controls,
         const unsigned int realization_id) : ContinuityModel(water_sources,
                                                              utilities,

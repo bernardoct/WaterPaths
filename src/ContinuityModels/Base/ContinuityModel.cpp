@@ -113,12 +113,7 @@ ContinuityModel::ContinuityModel(
 
     /// Set realization id on utilities and water sources, so that they use the
     /// right streamflow and demand data.
-    for (Utility *u : continuity_utilities)
-        u->setRealization(realization_id);
-    for (WaterSource *ws : continuity_water_sources)
-        ws->setRealization(realization_id);
-    for (MinEnvironFlowControl *mef : this->min_env_flow_controls)
-        mef->setRealization(realization_id);
+    setRealization(realization_id);
 
     /// Add reference to water sources and utilities so that controls can
     /// access their info.
@@ -202,4 +197,15 @@ apply_demand_buffer) {
 
 const vector<Utility *> &ContinuityModel::getUtilities() const {
     return continuity_utilities;
+}
+
+void ContinuityModel::setRealization(unsigned int realization) {
+    if (realization != NON_INITIALIZED) {
+        for (Utility *u : continuity_utilities)
+            u->setRealization(realization);
+        for (WaterSource *ws : continuity_water_sources)
+            ws->setRealization(realization);
+        for (MinEnvironFlowControl *mef : min_env_flow_controls)
+            mef->setRealization(realization);
+    }
 }

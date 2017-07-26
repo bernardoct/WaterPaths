@@ -38,6 +38,8 @@ public:
 
     void setStorage_to_rof_table_(const Matrix3D<double> *storage_to_rof_table_);
 
+    virtual void setRealization(unsigned int realization_id)= 0;
+
 };
 
 

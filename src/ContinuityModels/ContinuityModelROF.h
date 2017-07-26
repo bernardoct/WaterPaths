@@ -12,10 +12,10 @@
 class ContinuityModelROF : public ContinuityModel {
 private:
     Matrix3D<double> *storage_to_rof_table;
+    Matrix3D<double> storage_to_rof_realization;
     bool *storage_wout_downstream;
 
 protected:
-    Matrix3D<double> storage_to_rof_realization;
     int beginning_res_level;
     vector<WaterSource *> realization_water_sources;
 

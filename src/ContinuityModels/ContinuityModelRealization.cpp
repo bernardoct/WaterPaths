@@ -5,7 +5,6 @@
 #include <iostream>
 #include <algorithm>
 #include "ContinuityModelRealization.h"
-#include "../SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
 
 ContinuityModelRealization::ContinuityModelRealization(
         vector<WaterSource *> &water_sources,
@@ -26,6 +25,7 @@ ContinuityModelRealization::ContinuityModelRealization(
     /// Pass corresponding utilities to drought mitigation instruments.
     for (DroughtMitigationPolicy *dmp : this->drought_mitigation_policies) {
         dmp->addSystemComponents(utilities, water_sources);
+        dmp->setRealization(realization_id);
     }
 }
 
@@ -85,21 +85,6 @@ void ContinuityModelRealization::setLongTermROFs(const vector<double> &risks_of_
             u->forceInfrastructureConstruction(week,
                                                new_infra_triggered);
         }
-
-    auto v1 = dynamic_cast<SequentialJointTreatmentExpansion *>
-    (continuity_utilities[0]->getWater_sources()[20])
-            ->getMax_sequential_added_capacity();
-    auto v2 = dynamic_cast<SequentialJointTreatmentExpansion *>
-    (continuity_utilities[1]->getWater_sources()[20])
-            ->getMax_sequential_added_capacity();
-    auto v3 = dynamic_cast<SequentialJointTreatmentExpansion *>
-    (continuity_utilities[0]->getWater_sources()[21])
-            ->getMax_sequential_added_capacity();
-    auto v4 = dynamic_cast<SequentialJointTreatmentExpansion *>
-    (continuity_utilities[1]->getWater_sources()[21])
-            ->getMax_sequential_added_capacity();
-
-    int i = 5;
 }
 
 void ContinuityModelRealization::applyDroughtMitigationPolicies(int week) {

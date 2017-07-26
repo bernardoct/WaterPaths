@@ -44,6 +44,8 @@ public:
             const vector<vector<double>> *typesMonthlyDemandFraction,
             const vector<vector<double>> *typesMonthlyWaterPrice,
             const vector<vector<double>> *priceMultipliers);
+
+    void setRealization(unsigned int realization_id) override;
 };
 
 

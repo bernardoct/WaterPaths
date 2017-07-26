@@ -54,6 +54,8 @@ public:
     solve_QP(vector<double> allocation_requests, double available_transfer_volume, double min_transfer_volume,
                  int week);
 
+    void setRealization(unsigned int realization_id) override;
+
 };
 
 

@@ -390,3 +390,7 @@ vector<double> Transfers::solve_QP(
 const vector<double> &Transfers::getAllocations() const {
     return allocations;
 }
+
+void Transfers::setRealization(unsigned int realization_id) {
+
+}

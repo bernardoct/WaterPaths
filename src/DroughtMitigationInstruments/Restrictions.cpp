@@ -124,6 +124,8 @@ void Restrictions::calculateWeeklyAverageWaterPrices(
                         monthly_average_price[(int) (w / WEEKS_IN_MONTH)];
         }
     }
+}
 
-    int i = 5;
+void Restrictions::setRealization(unsigned int realization_id) {
+
 }

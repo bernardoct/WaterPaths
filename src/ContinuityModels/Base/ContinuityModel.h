@@ -53,6 +53,8 @@ public:
     const vector<Utility *> &getUtilities() const;
 
     virtual ~ContinuityModel();
+
+    void setRealization(unsigned int realization);
 };
 
 

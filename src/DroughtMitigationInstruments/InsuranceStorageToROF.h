@@ -17,6 +17,7 @@ private:
     const double *rof_triggers;
     const double insurance_premium;
     const double *fixed_payouts;
+    Matrix3D<double> storage_to_rof_table_prev_year;
 
 public:
 
@@ -45,6 +46,8 @@ public:
     void applyPolicy(int week) override;
 
     void addSystemComponents(vector<Utility *> utilities, vector<WaterSource *> water_sources) override;
+
+    void setRealization(unsigned int realization_id) override;
 
 };
 

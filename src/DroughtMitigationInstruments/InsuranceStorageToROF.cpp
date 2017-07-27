@@ -81,9 +81,9 @@ void InsuranceStorageToROF::applyPolicy(int week) {
                                utilities_rof);
 
 //        //FIXME: FOR DEBUGGING.
-        cout << week << " " << week_of_year << endl;
-        storage_to_rof_table_prev_year.print(week_of_year);
-        cout << endl;
+//        cout << week << " " << week_of_year << endl;
+//        storage_to_rof_table_prev_year.print(week_of_year);
+//        cout << endl;
 
         /// Make payouts, if needed.
         for (int u = 0; u < continuity_utilities.size(); ++u) {

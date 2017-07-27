@@ -80,7 +80,7 @@ void InsuranceStorageToROF::applyPolicy(int week) {
                                week_of_year,
                                utilities_rof);
 
-//        //FIXME: FOR DEBUGGING.
+        //FIXME: FOR DEBUGGING.
 //        cout << week << " " << week_of_year << endl;
 //        storage_to_rof_table_prev_year.print(week_of_year);
 //        cout << endl;

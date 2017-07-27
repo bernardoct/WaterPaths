@@ -32,9 +32,9 @@ public:
 
     void applyPolicy(int week) override;
 
-    void addSystemComponents(
-            vector<Utility *> systems_utilities,
-            vector<WaterSource *> water_sources) override;
+    void addSystemComponents(vector<Utility *> systems_utilities,
+                                 vector<WaterSource *> water_sources,
+                                 vector<MinEnvironFlowControl *> min_env_flow_controls) override;
 
     double getCurrent_multiplier() const;
 

@@ -24,7 +24,7 @@ ContinuityModelRealization::ContinuityModelRealization(
 
     /// Pass corresponding utilities to drought mitigation instruments.
     for (DroughtMitigationPolicy *dmp : this->drought_mitigation_policies) {
-        dmp->addSystemComponents(utilities, water_sources);
+        dmp->addSystemComponents(utilities, water_sources,min_env_flow_control);
         dmp->setRealization(realization_id);
     }
 }

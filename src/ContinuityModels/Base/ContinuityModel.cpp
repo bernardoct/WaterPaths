@@ -154,11 +154,8 @@ apply_demand_buffer) {
      * source, and (2) sums the flow contributions of upstream reservoirs.
      */
     for (Utility *u : continuity_utilities) {
-        u->calculateWastewater_releases(week,
-                                        wastewater_discharges);
-        u->splitDemands(week,
-                        &demands,
-                        apply_demand_buffer);
+        u->calculateWastewater_releases(week, wastewater_discharges);
+        u->splitDemands(week, &demands, apply_demand_buffer);
     }
 
     /**

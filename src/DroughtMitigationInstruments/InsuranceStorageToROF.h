@@ -45,7 +45,9 @@ public:
 
     void applyPolicy(int week) override;
 
-    void addSystemComponents(vector<Utility *> utilities, vector<WaterSource *> water_sources) override;
+    void addSystemComponents(vector<Utility *> utilities,
+                                 vector<WaterSource *> water_sources,
+                                 vector<MinEnvironFlowControl *> min_env_flow_controls) override;
 
     void setRealization(unsigned int realization_id) override;
 

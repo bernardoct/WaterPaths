@@ -77,7 +77,9 @@ double Restrictions::getCurrent_multiplier() const {
     return current_multiplier;
 }
 
-void Restrictions::addSystemComponents(vector<Utility *> systems_utilities, vector<WaterSource *> water_sources) {
+void Restrictions::addSystemComponents(vector<Utility *> systems_utilities,
+                                       vector<WaterSource *> water_sources,
+                                       vector<MinEnvironFlowControl *> min_env_flow_controls) {
     /// Get utility whose IDs correspond to restriction policy ID.
     for (Utility *u : systems_utilities) {
         if (u->id == id) {

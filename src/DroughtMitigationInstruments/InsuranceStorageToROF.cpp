@@ -95,9 +95,9 @@ void InsuranceStorageToROF::applyPolicy(int week) {
     }
 }
 
-void InsuranceStorageToROF::addSystemComponents(
-        vector<Utility *> utilities,
-        vector<WaterSource *> water_sources) {
+void InsuranceStorageToROF::addSystemComponents(vector<Utility *> utilities,
+                                                vector<WaterSource *> water_sources,
+                                                vector<MinEnvironFlowControl *> min_env_flow_controls) {
     realization_utilities = vector<Utility *>(utilities.size());
     for (int i : utilities_ids)
         realization_utilities[i] = utilities[i];
@@ -179,9 +179,7 @@ void InsuranceStorageToROF::getUtilitiesApproxROFs(
         else
             utilities_approx_rof[u] =
                     ((*storage_to_rof_table)(u, s, week) +
-                     (*storage_to_rof_table)(u,
-                                             s + 1,
-                                             week)) / 2.;
+                     (*storage_to_rof_table)(u, s + 1, week)) / 2.;
     }
 }
 

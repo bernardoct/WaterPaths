@@ -9,6 +9,7 @@
 #include "../../Utils/Constants.h"
 #include "../../Utils/Graph/Graph.h"
 #include "../../Utils/Matrices.h"
+#include "../../Controls/Base/MinEnvironFlowControl.h"
 
 class DroughtMitigationPolicy {
 protected:
@@ -16,6 +17,8 @@ protected:
 
     vector<int> utilities_ids;
     vector<Utility *> realization_utilities;
+    vector<WaterSource *> realization_water_sources;
+    vector<MinEnvironFlowControl *> realization_min_env_flow_controls;
     const Matrix3D<double> *storage_to_rof_table_;
 
 public:
@@ -26,7 +29,9 @@ public:
 
     virtual void applyPolicy(int week)= 0;
 
-    virtual void addSystemComponents(vector<Utility *> utilities, vector<WaterSource *> water_sources)= 0;
+    virtual void addSystemComponents(vector<Utility *> utilities,
+                                         vector<WaterSource *> water_sources,
+                                         vector<MinEnvironFlowControl *> min_env_flow_controls)= 0;
 
     const vector<int> &getUtilities_ids() const;
 

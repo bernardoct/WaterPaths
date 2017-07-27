@@ -162,9 +162,9 @@ Transfers::~Transfers() {
  * Adds source and buying utility.
  * @param system_utilities Utility to be added.
  */
-void Transfers::addSystemComponents(
-        vector<Utility *> system_utilities,
-        vector<WaterSource *> water_sources) {
+void Transfers::addSystemComponents(vector<Utility *> system_utilities,
+                                    vector<WaterSource *> water_sources,
+                                    vector<MinEnvironFlowControl *> min_env_flow_controls) {
 
     if (!realization_utilities.empty())
         throw std::invalid_argument("Utilities were already assigned to "

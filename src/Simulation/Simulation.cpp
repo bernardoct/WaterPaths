@@ -207,9 +207,9 @@ void Simulation::runFullSimulation(int num_threads) {
     data_collector->printUtilityOutputCompact("Utilities.out");
     data_collector->printReservoirOutputCompact("WaterSources.out");
     data_collector->printPoliciesOutputCompact("Policies.out");
-//    data_collector->printUtilityOutput("UtilitiesTabular.out");
-//    data_collector->printReservoirOutput("WaterSourcesTabular.out");
-//    data_collector->printPoliciesOutput("PoliciesTabular.out");
+    data_collector->printUtilityOutput("UtilitiesTabular.out");
+    data_collector->printReservoirOutput("WaterSourcesTabular.out");
+    data_collector->printPoliciesOutput("PoliciesTabular.out");
     data_collector->printObjectives("Objectives.out");
     data_collector->printPathways("Pathways.out");
 

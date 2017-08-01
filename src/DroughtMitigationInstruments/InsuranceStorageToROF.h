@@ -17,6 +17,8 @@ private:
     const double *rof_triggers;
     const double insurance_premium;
     const double *fixed_payouts;
+    double *utilities_revenue_update;
+    double *utilities_revenue_last_year;
     Matrix3D<double> storage_to_rof_table_prev_year;
 
 public:

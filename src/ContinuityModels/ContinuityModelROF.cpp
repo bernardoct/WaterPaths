@@ -311,9 +311,6 @@ void ContinuityModelROF::updateOnlineInfrastructure(int week) {
                     continuity_utilities[u]
                             ->setWaterSourceOnline((unsigned int) i);
                 }
-
-                water_sources_capacities[i] =
-                        continuity_water_sources[i]->getCapacity();
             }
 
 

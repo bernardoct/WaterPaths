@@ -30,7 +30,8 @@ WaterSource::WaterSource(
           source_type(source_type), construction_rof_or_demand(NON_INITIALIZED),
           construction_time(NON_INITIALIZED),
           construction_cost_of_capital(NON_INITIALIZED),
-          bond_term(NON_INITIALIZED), bond_interest_rate(NON_INITIALIZED) {}
+          bond_term(NON_INITIALIZED), bond_interest_rate(NON_INITIALIZED),
+          permitting_period(NON_INITIALIZED) {}
 
 /**
  * Constructor for when water source does not exist in the beginning of the simulation.
@@ -51,15 +52,19 @@ WaterSource::WaterSource(
         double treatment_capacity, const int source_type,
         const double construction_rof_or_demand,
         const vector<double> construction_time_range,
-        double construction_cost_of_capital, double bond_term,
-        double bond_interest_rate)
+        double permitting_period, double construction_cost_of_capital,
+        double bond_term, double bond_interest_rate)
         : name(name), capacity(capacity), catchments(catchments),
           online(OFFLINE), available_volume(capacity), id(id),
           total_treatment_capacity(treatment_capacity),
           source_type(source_type),
           construction_rof_or_demand(construction_rof_or_demand),
-          construction_time(construction_time_range[0] * WEEKS_IN_YEAR + (construction_time_range[1] -
-                  construction_time_range[0]) * (rand() % (int) WEEKS_IN_YEAR)),
+          construction_time(
+                  construction_time_range[0] * WEEKS_IN_YEAR +
+                  (construction_time_range[1] -
+                   construction_time_range[0]) *
+                  (rand() % (int) WEEKS_IN_YEAR)),
+          permitting_period(permitting_period),
           construction_cost_of_capital(construction_cost_of_capital), bond_term(bond_term),
           bond_interest_rate(bond_interest_rate) {}
 
@@ -88,11 +93,9 @@ WaterSource::WaterSource(
           construction_time(NON_INITIALIZED),
           construction_cost_of_capital(NON_INITIALIZED),
           bond_term(NON_INITIALIZED), bond_interest_rate(NON_INITIALIZED),
-          available_allocated_volumes(available_allocated_volumes),
-          allocated_capacities(allocated_capacities),
-          allocated_treatment_capacities(allocated_treatment_capacities),
+          available_allocated_volumes(nullptr),
           utilities_with_allocations(utilities_with_allocations),
-          wq_pool_id(wq_pool_id) {
+          wq_pool_id(NON_INITIALIZED), permitting_period(NON_INITIALIZED) {
     setAllocations(utilities_with_allocations,
                    allocated_fractions,
                    allocated_treatment_fractions);
@@ -120,22 +123,21 @@ WaterSource::WaterSource(
         vector<int> *utilities_with_allocations,
         const double construction_rof_or_demand,
         const vector<double> construction_time_range,
-        double construction_cost_of_capital, double bond_term,
-        double bond_interest_rate)
+        double permitting_period, double construction_cost_of_capital,
+        double bond_term, double bond_interest_rate)
         : name(name), capacity(capacity), catchments(catchments),
           online(OFFLINE), available_volume(capacity), id(id),
           total_treatment_capacity(treatment_capacity),
           source_type(source_type),
-          available_allocated_volumes(available_allocated_volumes),
-          allocated_capacities(allocated_capacities),
-          allocated_treatment_capacities(allocated_treatment_capacities),
+          available_allocated_volumes(nullptr),
           utilities_with_allocations(utilities_with_allocations),
-          wq_pool_id(wq_pool_id),
+          wq_pool_id(NON_INITIALIZED),
           construction_rof_or_demand(construction_rof_or_demand),
           construction_time(construction_time_range[0] * WEEKS_IN_YEAR +
                             (construction_time_range[1] -
                              construction_time_range[0]) *
                             (rand() % (int) WEEKS_IN_YEAR)),
+          permitting_period(permitting_period),
           construction_cost_of_capital(construction_cost_of_capital),
           bond_term(bond_term),
           bond_interest_rate(bond_interest_rate) {
@@ -219,7 +221,8 @@ WaterSource::WaterSource(const WaterSource &water_source) :
         bond_interest_rate(water_source.bond_interest_rate),
         utilities_with_allocations(water_source
                                            .utilities_with_allocations),
-        allocated_fractions(water_source.allocated_fractions) {
+        allocated_fractions(water_source.allocated_fractions),
+        permitting_period(water_source.permitting_period) {
 
     if (water_source.wq_pool_id != NON_INITIALIZED) {
         wq_pool_id = water_source.wq_pool_id;

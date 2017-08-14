@@ -70,7 +70,7 @@ public:
 
     double getAvailableAllocatedVolume(int utility_id) override;
 
-    void removeWater(int allocation_id, double volume) override;
+    void removeWater(int utility_id, double volume) override;
 
     void setFull() override;
 
@@ -89,6 +89,7 @@ public:
     double getAllocatedTreatmentCapacity(int utility_id) const override;
 
 
+    void addWater(int utility_id, double volume);
 };
 
 

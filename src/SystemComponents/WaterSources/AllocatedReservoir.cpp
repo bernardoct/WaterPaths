@@ -366,10 +366,22 @@ double AllocatedReservoir::getAvailableAllocatedVolume(int utility_id) {
     return available_allocated_volumes[utility_id];
 }
 
-void AllocatedReservoir::removeWater(int allocation_id, double volume) {
+void AllocatedReservoir::removeWater(int utility_id, double volume) {
+
+    int allocation_id = (utility_id == WATER_QUALITY_ALLOCATION ? wq_pool_id : utility_id);
+
     available_allocated_volumes[allocation_id] -= volume;
     available_volume -= volume;
     total_demand += volume;
+}
+
+void AllocatedReservoir::addWater(int utility_id, double volume) {
+
+    int allocation_id = (utility_id == WATER_QUALITY_ALLOCATION ? wq_pool_id : utility_id);
+
+    available_allocated_volumes[allocation_id] += volume;
+    available_volume += volume;
+    total_demand -= volume;
 }
 
 double AllocatedReservoir::getAllocatedCapacity(int utility_id) {

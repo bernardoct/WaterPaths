@@ -20,7 +20,6 @@
 #include "SystemComponents/WaterSources/Relocation.h"
 #include "DroughtMitigationInstruments/InsuranceStorageToROF.h"
 
-
 int regionOneUtilitiesTwoReservoirsContinuityTest();
 
 void simulation3U5RTest();

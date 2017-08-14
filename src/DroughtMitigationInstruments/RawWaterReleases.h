@@ -5,16 +5,16 @@
 #ifndef TRIANGLEMODEL_RAWWATERRELEASES_H
 #define TRIANGLEMODEL_RAWWATERRELEASES_H
 
-
 #include "../SystemComponents/Utility.h"
 #include "Base/DroughtMitigationPolicy.h"
+#include "../SystemComponents/WaterSources/AllocatedReservoir.h"
 
 class RawWaterReleases : DroughtMitigationPolicy {
 private:
     Utility *upstream_utility;
     Utility *downstream_utility;
-    Reservoir *upstream_reservoir;
-    Reservoir *downstream_reservoir;
+    AllocatedReservoir *upstream_reservoir;
+    AllocatedReservoir *downstream_reservoir;
     MinEnvironFlowControl *upstream_min_env_flow_control;
 
     const int upstream_utility_id;
@@ -22,17 +22,22 @@ private:
     const int upstream_reservoir_id;
     const int downstream_reservoir_id;
     const double max_releases;
-    const double min_releases;
+    const double *rof_triggers;
+    const double raw_water_transfer_downstream_allocation_ratio;
 
+    double downstream_storage_target;
+    double upstream_storage_target;
+    double raw_water_transfer_volume;
 
 public:
     RawWaterReleases(const int id,
-                         const int upstream_utility_id,
-                         const int downstream_utility_id,
-                         const int upstream_reservoir_id,
-                         const int downstream_reservoir_id,
-                         const double max_releases,
-                         const double min_releases);
+                     const int upstream_utility_id,
+                     const int downstream_utility_id,
+                     const int upstream_reservoir_id,
+                     const int downstream_reservoir_id,
+                     const double max_releases,
+                     double *rof_triggers,
+                     const double raw_water_transfer_downstream_allocation_ratio);
 
     void applyPolicy(int week) override;
 
@@ -42,8 +47,7 @@ public:
 
     void setRealization(unsigned int realization_id) override;
 
-
-public:
+    void getUtilityStorageFromROF(int week, const Matrix3D<double> *storage_to_rof_table);
 
 };
 

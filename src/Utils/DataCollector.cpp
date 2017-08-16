@@ -8,7 +8,6 @@
 #include <iomanip>
 #include <algorithm>
 #include <sys/stat.h>
-#include <numeric>
 #include "DataCollector.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
 #include "Utils.h"
@@ -165,7 +164,7 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
 
 void DataCollector::printPathways(string file_name) {
     std::ofstream outStream;
-    outStream.open(output_directory + file_name);
+    outStream.open(output_directory + file_name + ".out");
 
     outStream << "Realization\tutility\tweek\tinfra." << endl;
 
@@ -244,7 +243,8 @@ void DataCollector::printReservoirOutputCompact(string file_name) {
 #pragma omp parallel for
     for (int r = 0; r < number_of_realizations; ++r) {
         std::ofstream outStream;
-        outStream.open(output_directory + file_name + std::to_string(r));
+        outStream.open(output_directory + file_name + "_r"
+                       + std::to_string(r) + ".out");
         /// Print numbers.
         for (int w = 0; w < n_weeks; ++w) {
             for (int u = 0; u < water_sources_t.size(); ++u) {
@@ -361,7 +361,8 @@ void DataCollector::printUtilityOutputCompact(string file_name) {
 #pragma omp parallel for
     for (int r = 0; r < number_of_realizations; ++r) {
         std::ofstream outStream;
-        outStream.open(output_directory + file_name + std::to_string(r));
+        outStream.open(output_directory + file_name + "_r"
+                       + std::to_string(r) + ".out");
         outStream << "#";
         for (auto &u : utilities_t) {
             outStream << u.name << " ";
@@ -483,7 +484,8 @@ void DataCollector::printPoliciesOutputCompact(string file_name) {
 #pragma omp parallel for
         for (int r = 0; r < number_of_realizations; ++r) {
             std::ofstream outStream;
-            outStream.open(output_directory + file_name + std::to_string(r));
+            outStream.open(output_directory + file_name + "_r"
+                           + std::to_string(r) + ".out");
             if (!restriction_policies_t.empty()) {
                 outStream << "#";
                 for (auto &rp : restriction_policies_t) {
@@ -546,7 +548,7 @@ void DataCollector::printPoliciesOutputCompact(string file_name) {
 void DataCollector::printObjectives(string file_name) {
 
     std::ofstream outStream;
-    outStream.open(output_directory + file_name);
+    outStream.open(output_directory + file_name + ".out");
 
     outStream << setw(COLUMN_WIDTH) << "      " << setw((COLUMN_WIDTH * 2)) << "Reliability"
               << setw(COLUMN_WIDTH * 2) << "Restriction Freq."

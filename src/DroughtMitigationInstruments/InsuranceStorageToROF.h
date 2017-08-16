@@ -36,7 +36,7 @@ public:
 
     InsuranceStorageToROF(InsuranceStorageToROF &insurance);
 
-    virtual ~InsuranceStorageToROF();
+    ~InsuranceStorageToROF() override;
 
     void priceInsurance(int week);
 

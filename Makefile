@@ -2,7 +2,7 @@ CC=g++
 PCC=mpiCC
 
 #the following is for normal use:
-CFLAGS=-std=c++14 -O3 -march=native
+CFLAGS=-std=c++14 -O3 -march=native -Wall
 
 #the following is for using gprof:
 #CFLAGS=-g -c -O0 -Wall
@@ -19,11 +19,6 @@ LIB_DIR=./lib/
 LIBS=-lm
 
 all: $(SOURCES) $(TARGET)
-
-# parallel: CC=mpiCC
-mpi: LIBS += -lborgms
-mpi: CFLAGS += -DPARALLEL -ipo
-mpi: all
 
 openmp: CFLAGS += -fopenmp
 openmp: all

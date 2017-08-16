@@ -153,8 +153,8 @@ bool Matrix2D<T>::empty() {
 template<typename T>
 class Matrix3D {
 private:
-    int di_, dj_, dk_;
-    T *data_;
+    int di_ = NON_INITIALIZED, dj_ = NON_INITIALIZED, dk_ = NON_INITIALIZED;
+    T *data_ = nullptr;
 public:
     Matrix3D();
 
@@ -186,26 +186,28 @@ public:
 
 template<typename T>
 Matrix3D<T>::Matrix3D(int di, int dj, int dk) : di_(di), dj_(dj), dk_(dk)
-//, data_ ← initialized below after the if...throw statement
 {
     if (di == 0 || dj == 0 || dk == 0)
-        std::__throw_length_error("Matrix3D constructor has 0 size");
+        std::__throw_length_error("Matrix3D dimensions has 0 size");
     data_ = new T[di * dj * dk];
     memset(data_, 0, sizeof(T) * di_ * dj_ * dk_);
 }
 
 template<typename T>
 Matrix3D<T>::Matrix3D(const Matrix3D<T> &m) : di_(m.di_), dj_(m.dj_), dk_(m.dk_) {
+    if (di_ == 0 || dj_ == 0 || dk_ == 0)
+        std::__throw_length_error("Matrix3D dimensions has 0 size");
     data_ = new T[di_ * dj_ * dk_];
     std::copy(m.data_, m.data_ + di_ * dj_ * dk_, data_);
 }
 
 template<typename T>
-Matrix3D<T>::Matrix3D() {}
+Matrix3D<T>::Matrix3D() = default;
 
 template<typename T>
 Matrix3D<T>::~Matrix3D() {
-    delete[] data_;
+    if (di_ * dj_ * dk_ != 0)
+        delete[] data_;
 }
 
 template<typename T>
@@ -213,6 +215,8 @@ Matrix3D<T> &Matrix3D<T>::operator=(const Matrix3D<T> &m) {
     di_ = m.di_;
     dj_ = m.dj_;
     dk_ = m.dk_;
+    if (di_ == 0 || dj_ == 0 || dk_ == 0)
+        std::__throw_length_error("Matrix3D dimensions has 0 size");
     data_ = new T[di_ * dj_ * dk_];
     std::copy(m.data_, m.data_ + di_ * dj_ * dk_, data_);
     return *this;

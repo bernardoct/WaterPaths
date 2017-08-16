@@ -50,8 +50,7 @@ ContinuityModelROF::ContinuityModelROF(ContinuityModelROF &continuity_model_rof)
                           continuity_model_rof.realization_id) {
 }
 
-ContinuityModelROF::~ContinuityModelROF() {
-}
+ContinuityModelROF::~ContinuityModelROF() = default;
 
 /**
  * Runs one the full rof calculations for realization #realization_id for a given week.

@@ -23,18 +23,16 @@ class Simulation {
 public:
 
     Simulation(
-            vector<WaterSource *> &water_sources,
-            Graph &water_sources_graph,
+            vector<WaterSource *> &water_sources, Graph &water_sources_graph,
             const vector<vector<int>> &water_sources_to_utilities,
             vector<Utility *> &utilities,
             const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
             vector<MinEnvironFlowControl *> &min_env_flow_controls,
-            const int total_simulation_time, const int number_of_realizations,
-            DataCollector *data_collector);
+            const int total_simulation_time, const int number_of_realizations);
 
     Simulation &operator=(const Simulation &simulation);
 
-    void runFullSimulation(int num_threads = 2);
+    DataCollector *runFullSimulation(int num_threads = 2);
 
     virtual ~Simulation();
 

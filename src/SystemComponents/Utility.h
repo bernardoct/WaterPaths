@@ -15,18 +15,25 @@
 
 class Utility {
 private:
-    double fund_contribution;
-    int under_construction_id = NON_INITIALIZED;
     double *demand_series = nullptr;
     double *weekly_average_volumetric_price;
     vector<int> priority_draw_water_source;
     vector<int> non_priority_draw_water_source;
     vector<double> weekly_peaking_factor;
-    double short_term_risk_of_failure;
-    double long_term_risk_of_failure;
+    double short_term_risk_of_failure = 0;
+    double long_term_risk_of_failure = 0;
     double total_storage_capacity = 0;
     double total_stored_volume = 0;
-    double total_treatment_capacity;
+    double total_treatment_capacity = 0;
+    double waste_water_discharge = 0;
+    double gross_revenue = 0;
+    bool used_for_realization = true;
+    vector<WaterSource *> water_sources;
+    vector<vector<double>> *demands_all_realizations;
+    WwtpDischargeRule wwtp_discharge_rule;
+
+    /// Drought mitigation
+    double fund_contribution = 0;
     double demand_multiplier = 1;
     double demand_offset = 0;
     double restricted_price = NON_INITIALIZED;
@@ -39,21 +46,19 @@ private:
     double raw_water_transfer_sale = 0;
     double restricted_demand = 0;
     double unrestricted_demand = 0;
-    double infra_net_present_cost = 0;
+
+    /// Infrastructure cost
     double current_debt_payment = 0;
-    double waste_water_discharge = 0;
-    double gross_revenue = 0;
-    bool under_construction = false;
-    int construction_end_date = 0;
-    bool used_for_realization = true;
-//    map<int, WaterSource *> water_sources;
-    vector<WaterSource *> water_sources;
+    vector<vector<double>> debt_payment_streams;
+    double infra_net_present_cost = 0;
+
+    /// Infrastructure construction
+    vector<int> under_construction_id;
+    vector<int> infra_built_last_week;
     vector<int> rof_infra_construction_order;
     vector<int> demand_infra_construction_order;
-    vector<vector<double>> debt_payment_streams;
-    vector<int> infra_built_last_week;
-    vector<vector<double>> *demands_all_realizations;
-    WwtpDischargeRule wwtp_discharge_rule;
+    vector<int> construction_end_date;
+    vector<bool> under_construction;
 
 public:
     const int id;
@@ -220,6 +225,8 @@ public:
     void sourceRelocationConstructionHandler(unsigned int source_id);
 
     const vector<WaterSource *> &getWater_sources() const;
+
+    void removeRelatedSourcesFromQueue(int next_construction);
 
     void purchaseRawWaterTransfer(double payment_per_volume, double raw_water_transferred);
 

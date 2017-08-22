@@ -23,6 +23,7 @@ public:
             const vector<double> *added_treatment_capacity_fractions,
             const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
+            double permitting_period,
             double construction_cost, double bond_term,
             double bond_interest_rate);
 
@@ -35,6 +36,7 @@ public:
             vector<double> *max_sequential_added_construction_cost,
             const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
+            double permitting_period,
             double construction_cost, double bond_term,
             double bond_interest_rate);
 

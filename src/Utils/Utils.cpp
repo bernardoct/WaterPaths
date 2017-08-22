@@ -18,40 +18,34 @@
 #include <unistd.h>
 
 /**
- * Reads CSV file into 2D array.
- *
- * @param file_name Name of input file.
- * @param number_of_years Number of years in record (each row represents a year).
- * @param number_of_weeks Number of time steps in each year (52 weeks, 365 days, etc.)
- * @return Double pointer array containing years in rows and time steps in columns.
+ * Reads csv file into table, exported as a vector of vector of doubles.
+ * @param inputFileName input file name (full path).
+ * @param maxLines
+ * @return
  */
-vector<vector<double>> Utils::parse2DCsvFile(
-        char const *file_name,
-        int max_lines) {
+vector<vector<double>> Utils::parse2DCsvFile(string inputFileName, int maxLines) {
 
     vector<vector<double> > data;
-    ifstream infile(file_name);
+    ifstream inputFile(inputFileName);
     int l = 0;
 
-    while (infile && l < max_lines) {
+    while (inputFile && l < maxLines) {
         l++;
         string s;
-        if (!getline(infile, s)) break;
+        if (!getline(inputFile, s)) break;
         if (s[0] != '#') {
             istringstream ss(s);
             vector<double> record;
 
             while (ss) {
-                string sl;
-                if (!getline(ss,
-                             sl,
-                             ','))
+                string line;
+                if (!getline(ss, line, ','))
                     break;
                 try {
-                    record.push_back(stof(sl));
+                    record.push_back(stof(line));
                 }
                 catch (const std::invalid_argument e) {
-                    cout << "NaN found in file " << file_name << " line " << l
+                    cout << "NaN found in file " << inputFileName << " line " << l
                          << endl;
                     e.what();
                 }
@@ -61,95 +55,16 @@ vector<vector<double>> Utils::parse2DCsvFile(
         }
     }
 
-    if (!infile.eof() && l < max_lines) {
-        cout << "Could not read file " << file_name << "\n";
-        __throw_invalid_argument("Could not read file.");
+    if (!inputFile.eof() && l < maxLines) {
+        cerr << "Could not read file " << inputFileName << "\n";
+        __throw_invalid_argument("File not found.");
     }
 
     return data;
 }
-
-vector<vector<double>> Utils::parse2DCsvFile(
-        string file_name,
-        int max_lines) {
-
-    vector<vector<double> > data;
-    ifstream infile(file_name);
-    int l = 0;
-
-    while (infile && l < max_lines) {
-        l++;
-        string s;
-        if (!getline(infile, s)) break;
-        if (s[0] != '#') {
-            istringstream ss(s);
-            vector<double> record;
-
-            while (ss) {
-                string sl;
-                if (!getline(ss,
-                             sl,
-                             ','))
-                    break;
-                try {
-                    record.push_back(stof(sl));
-                }
-                catch (const std::invalid_argument e) {
-                    cout << "NaN found in file " << file_name << " line " << l
-                         << endl;
-                    e.what();
-                }
-            }
-
-            data.push_back(record);
-        }
-    }
-
-    if (!infile.eof() && l < max_lines) {
-        cout << "Could not read file " << file_name << "\n";
-        __throw_invalid_argument("Could not read file.");
-    }
-
-    return data;
-}
-
 
 vector<double> Utils::parse1DCsvFile(
         char const *file_name,
-        int max_lines) {
-
-    vector<double> data;
-    ifstream infile(file_name);
-    int l = 0;
-
-    while (infile && l < max_lines) {
-        l++;
-        string s;
-        if (!getline(infile,
-                     s))
-            break;
-
-        istringstream ss(s);
-        double record;
-
-        try {
-            record = stof(ss.str());
-            data.push_back(record);
-        } catch (const std::invalid_argument e) {
-            cout << "NaN found in file " << file_name << " line " << l << endl;
-            e.what();
-        }
-    }
-
-    if (!infile.eof() && l < max_lines) {
-        cerr << "Could not read file " << file_name << "\n";
-    }
-
-    return data;
-}
-
-vector<double> Utils::parse1DCsvFile(
-        string file_name,
         int max_lines) {
 
     vector<double> data;
@@ -330,11 +245,11 @@ vector<vector<double>> Utils::calculateDistances(vector<vector<double>> data_poi
 }
 
 
-//std::string Utils::getexepath() {
-//    char result[PATH_MAX];
-//    ssize_t count = readlink("/proc/self/exe",
-//                             result,
-//                             PATH_MAX);
-//    return std::string(result,
-//                       (unsigned long) ((count > 0) ? count : 0));
-//}
+std::string Utils::getexepath() {
+    char result[PATH_MAX];
+    ssize_t count = readlink("/proc/self/exe",
+                             result,
+                             PATH_MAX);
+    return std::string(result,
+                       (unsigned long) ((count > 0) ? count : 0));
+}

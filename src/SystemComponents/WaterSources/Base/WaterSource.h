@@ -36,6 +36,7 @@ protected:
     double min_environmental_outflow;
     double evaporated_volume = 0;
     double total_treatment_capacity;
+    int highest_alloc_id = NON_INITIALIZED;
 
     virtual void applyContinuity(
             int week, double upstream_source_inflow,
@@ -50,6 +51,7 @@ public:
     const double construction_rof_or_demand;
     const double construction_cost_of_capital;
     const double construction_time;
+    const double permitting_period;
     const double bond_term;
     const double bond_interest_rate;
 
@@ -64,8 +66,8 @@ public:
             double treatment_capacity, const int source_type,
             const double construction_rof_or_demand,
             const vector<double> construction_time_range,
-            double construction_cost_of_capital, double bond_term,
-            double bond_interest_rate);
+            double permitting_period, double construction_cost_of_capital,
+            double bond_term, double bond_interest_rate);
 
     WaterSource(
             const char *name, const int id,
@@ -76,8 +78,8 @@ public:
             vector<int> *utilities_with_allocations,
             const double construction_rof_or_demand,
             const vector<double> construction_time_range,
-            double construction_cost_of_capital, double bond_term,
-            double bond_interest_rate);
+            double permitting_period, double construction_cost_of_capital,
+            double bond_term, double bond_interest_rate);
 
     WaterSource(
             const char *name, const int id,
@@ -164,6 +166,11 @@ public:
             vector<double> *allocated_treatment_fractions);
 
     void resetAllocations(const vector<double> *new_allocated_fractions);
+
+    void setAvailableAllocatedVolumes(
+            double *available_allocated_volumes, double available_volume);
+
+    double *getAvailable_allocated_volumes() const;
 };
 
 

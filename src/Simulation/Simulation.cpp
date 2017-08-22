@@ -14,11 +14,9 @@ Simulation::Simulation(
         vector<Utility *> &utilities,
         const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
         vector<MinEnvironFlowControl *> &min_env_flow_controls,
-        const int total_simulation_time, const int number_of_realizations,
-        DataCollector *data_collector) :
+        const int total_simulation_time, const int number_of_realizations) :
         total_simulation_time(total_simulation_time),
-        number_of_realizations(number_of_realizations),
-        data_collector(data_collector) {
+        number_of_realizations(number_of_realizations) {
 
     /// Sort water sources and utilities by their IDs.
     //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
@@ -164,7 +162,7 @@ Simulation &Simulation::operator=(const Simulation &simulation) {
     return *this;
 }
 
-void Simulation::runFullSimulation(int num_threads) {
+DataCollector *Simulation::runFullSimulation(int num_threads) {
 
     int n_utilities = (int) realization_models[0]->getUtilities().size();
     vector<double> risks_of_failure_week((unsigned long) n_utilities, 0.0);
@@ -180,42 +178,36 @@ void Simulation::runFullSimulation(int num_threads) {
     std::cout << "Beginning realizations loop." << endl;
 #pragma omp parallel for num_threads(num_threads)
     for (int r = 0; r < number_of_realizations; ++r) {
-        count++;
-        time_t timer_ir, timer_fr;
-        time(&timer_ir);
-        for (int w = 0; w < total_simulation_time; ++w) {
-            // DO NOT change the order of the steps. This would mess up
-            // important dependencies.
-            if (Utils::isFirstWeekOfTheYear(w))
-                realization_models[r]->setLongTermROFs(rof_models[r]->calculateROF(w, LONG_TERM_ROF), w);
-            realization_models[r]->setShortTermROFs(rof_models[r]->calculateROF(w, SHORT_TERM_ROF));
-            realization_models[r]->applyDroughtMitigationPolicies(w);
-            realization_models[r]->continuityStep(w);
-            data_collector->collectData(realization_models[r]);
-        }
-        time(&timer_fr);
-        std::cout << "Realization " << count << ": "
-                  << difftime(timer_fr, timer_ir) << std::endl;
+//        try {
+            count++;
+            time_t timer_ir, timer_fr;
+            time(&timer_ir);
+            for (int w = 0; w < total_simulation_time; ++w) {
+                // DO NOT change the order of the steps. This would mess up
+                // important dependencies.
+                if (Utils::isFirstWeekOfTheYear(w))
+                    realization_models[r]->setLongTermROFs(rof_models[r]->calculateROF(w, LONG_TERM_ROF), w);
+                realization_models[r]->setShortTermROFs(rof_models[r]->calculateROF(w, SHORT_TERM_ROF));
+                realization_models[r]->applyDroughtMitigationPolicies(w);
+                realization_models[r]->continuityStep(w);
+                data_collector->collectData(realization_models[r]);
+            }
+            time(&timer_fr);
+            std::cout << "Realization " << r << ": "
+                      << difftime(timer_fr, timer_ir) << std::endl;
+//        } catch (const std::exception& e) {
+//            cout << "Error in realization " << r << endl;
+//            e.what();
+//        }
     }
     time(&timer_f);
     seconds = difftime(timer_f, timer_i);
     std::cout << "Calculations: " << seconds << "s" << std::endl;
 
-    /// Calculate objective values.
-    data_collector->calculateObjectives();
-
-    /// Print output files.
-    data_collector->printUtilityOutputCompact("Utilities.out");
-    data_collector->printReservoirOutputCompact("WaterSources.out");
-    data_collector->printPoliciesOutputCompact("Policies.out");
-//    data_collector->printUtilityOutput("UtilitiesTabular.out");
-//    data_collector->printReservoirOutput("WaterSourcesTabular.out");
-    data_collector->printPoliciesOutput("PoliciesTabular.out");
-    data_collector->printObjectives("Objectives.out");
-    data_collector->printPathways("Pathways.out");
-
     time(&timer_f);
     seconds = difftime(timer_f,
                        timer_i);
     std::cout << "Total: " << seconds << "s" << std::endl;
+
+    return data_collector;
 }

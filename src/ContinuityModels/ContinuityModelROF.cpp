@@ -50,8 +50,7 @@ ContinuityModelROF::ContinuityModelROF(ContinuityModelROF &continuity_model_rof)
                           continuity_model_rof.realization_id) {
 }
 
-ContinuityModelROF::~ContinuityModelROF() {
-}
+ContinuityModelROF::~ContinuityModelROF() = default;
 
 /**
  * Runs one the full rof calculations for realization #realization_id for a given week.
@@ -67,9 +66,8 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
     bool apply_demand_buffer;
 
     /// If this is the first week of the year, reset storage-rof table.
-    if (rof_type == LONG_TERM_ROF) {
+    if (rof_type == LONG_TERM_ROF)
         storage_to_rof_table->reset(NON_FAILURE);
-    }
 
     int week_of_the_year = Utils::weekOfTheYear(week);
 
@@ -312,9 +310,6 @@ void ContinuityModelROF::updateOnlineInfrastructure(int week) {
                     continuity_utilities[u]
                             ->setWaterSourceOnline((unsigned int) i);
                 }
-
-                water_sources_capacities[i] =
-                        continuity_water_sources[i]->getCapacity();
             }
 
 

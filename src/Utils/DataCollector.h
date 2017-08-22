@@ -5,6 +5,7 @@
 #ifndef TRIANGLEMODEL_DATACOLLECTOR_H
 #define TRIANGLEMODEL_DATACOLLECTOR_H
 
+#include <utility>
 #include <vector>
 #include "../SystemComponents/Utility.h"
 #include "../ContinuityModels/ContinuityModelRealization.h"
@@ -15,7 +16,6 @@
  */
 
 struct Utility_t {
-    Utility_t(int id, const char *name) : id(id), name(name) {};
 
     vector<vector<double>> st_rof;
     vector<vector<double>> lt_rof;
@@ -34,10 +34,11 @@ struct Utility_t {
     vector<double> net_present_infrastructure_cost;
     int id;
     const char *name;
+
+    Utility_t(int id, const char *name) : id(id), name(name) {};
 };
 
 struct WaterSource_t {
-    WaterSource_t(int id, double capacity, const char *name) : id(id), capacity(capacity), name(name) {};
 
     vector<vector<double>> available_volume;
     vector<vector<double>> total_upstream_sources_inflows;
@@ -48,13 +49,17 @@ struct WaterSource_t {
     double capacity;
     int id;
     const char *name;
+
+    WaterSource_t(int id, double capacity, const char *name)
+            : id(id), capacity(capacity), name(name) {};
 };
 
 struct RestrictionPolicy_t {
-    RestrictionPolicy_t(int utility_id) : utility_id(utility_id) {};
 
     int utility_id = NON_INITIALIZED;
     vector<vector<double>> restriction_multiplier;
+
+    explicit RestrictionPolicy_t(int utility_id) : utility_id(utility_id) {};
 
     bool operator<(const RestrictionPolicy_t other) { return this->utility_id < other.utility_id; };
 
@@ -62,12 +67,13 @@ struct RestrictionPolicy_t {
 };
 
 struct TransfersPolicy_t {
-    TransfersPolicy_t(int transfer_policy_id, vector<int> utilities_ids) :
-            utilities_ids(utilities_ids), transfer_policy_id(transfer_policy_id) {};
-
     int transfer_policy_id = NON_INITIALIZED;
     vector<int> utilities_ids;
     vector<vector<vector<double>>> demand_offsets;
+
+    TransfersPolicy_t(int transfer_policy_id, vector<int> utilities_ids) :
+            utilities_ids(std::move(utilities_ids)),
+            transfer_policy_id(transfer_policy_id) {};
 };
 
 struct RawWaterTransferPolicy_t {
@@ -88,6 +94,7 @@ private:
     vector<WaterSource_t> water_sources_t;
     vector<RestrictionPolicy_t> restriction_policies_t;
     vector<TransfersPolicy_t> transfers_policies_t;
+    string output_directory;
     vector<RawWaterTransferPolicy_t> raw_water_transfer_policies_t;
     string output_directory =
             base_directory + "/RevampedTriangleModel/TestFiles/output/";
@@ -105,6 +112,8 @@ public:
     const Graph water_sources_graph;
 
     const int number_of_realizations;
+
+    void setOutputDirectory(string directory);
 
     void collectData(ContinuityModelRealization *continuity_model_realization);
 

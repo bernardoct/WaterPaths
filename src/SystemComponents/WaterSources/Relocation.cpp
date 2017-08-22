@@ -9,7 +9,7 @@ Relocation::Relocation(
         vector<double> *allocated_fractions,
         vector<int> *utilities_with_allocations,
         const double construction_rof_or_demand,
-        const vector<double> &construction_time_range,
+        const vector<double> &construction_time_range, double permitting_period,
         double construction_cost_of_capital, double bond_term,
         double bond_interest_rate)
         : WaterSource(name,
@@ -20,6 +20,7 @@ Relocation::Relocation(
                       SOURCE_RELOCATION,
                       construction_rof_or_demand,
                       construction_time_range,
+                      permitting_period,
                       construction_cost_of_capital,
                       bond_term,
                       bond_interest_rate),

@@ -14,11 +14,9 @@ Simulation::Simulation(
         vector<Utility *> &utilities,
         const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
         vector<MinEnvironFlowControl *> &min_env_flow_controls,
-        const int total_simulation_time, const int number_of_realizations,
-        DataCollector *data_collector) :
+        const int total_simulation_time, const int number_of_realizations) :
         total_simulation_time(total_simulation_time),
-        number_of_realizations(number_of_realizations),
-        data_collector(data_collector) {
+        number_of_realizations(number_of_realizations) {
 
     /// Sort water sources and utilities by their IDs.
     //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
@@ -101,7 +99,6 @@ Simulation::Simulation(
             drought_mitigation_policies,
             number_of_realizations,
             water_sources_graph);
-    this->data_collector = data_collector;
 
     /// Create the realization and ROF models.
     for (unsigned int r = 0; r < number_of_realizations; ++r) {
@@ -162,7 +159,7 @@ Simulation &Simulation::operator=(const Simulation &simulation) {
     return *this;
 }
 
-void Simulation::runFullSimulation(int num_threads) {
+DataCollector *Simulation::runFullSimulation(int num_threads) {
 
     int n_utilities = (int) realization_models[0]->getUtilities().size();
     vector<double> risks_of_failure_week((unsigned long) n_utilities, 0.0);
@@ -200,21 +197,10 @@ void Simulation::runFullSimulation(int num_threads) {
     seconds = difftime(timer_f, timer_i);
     std::cout << "Calculations: " << seconds << "s" << std::endl;
 
-    /// Calculate objective values.
-    data_collector->calculateObjectives();
-
-    /// Print output files.
-    data_collector->printUtilityOutputCompact("Utilities.out");
-    data_collector->printReservoirOutputCompact("WaterSources.out");
-    data_collector->printPoliciesOutputCompact("Policies.out");
-//    data_collector->printUtilityOutput("UtilitiesTabular.out");
-//    data_collector->printReservoirOutput("WaterSourcesTabular.out");
-//    data_collector->printPoliciesOutput("PoliciesTabular.out");
-    data_collector->printObjectives("Objectives.out");
-    data_collector->printPathways("Pathways.out");
-
     time(&timer_f);
     seconds = difftime(timer_f,
                        timer_i);
     std::cout << "Total: " << seconds << "s" << std::endl;
+
+    return data_collector;
 }

@@ -50,8 +50,7 @@ ContinuityModelROF::ContinuityModelROF(ContinuityModelROF &continuity_model_rof)
                           continuity_model_rof.realization_id) {
 }
 
-ContinuityModelROF::~ContinuityModelROF() {
-}
+ContinuityModelROF::~ContinuityModelROF() = default;
 
 /**
  * Runs one the full rof calculations for realization #realization_id for a given week.
@@ -311,9 +310,6 @@ void ContinuityModelROF::updateOnlineInfrastructure(int week) {
                     continuity_utilities[u]
                             ->setWaterSourceOnline((unsigned int) i);
                 }
-
-                water_sources_capacities[i] =
-                        continuity_water_sources[i]->getCapacity();
             }
 
 

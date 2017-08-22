@@ -27,7 +27,7 @@ Quarry::Quarry(
         const double max_treatment_capacity,
         EvaporationSeries *evaporation_series,
         DataSeries *storage_area_curve, const double construction_rof_or_demand,
-        const vector<double> &construction_time_range,
+        const vector<double> &construction_time_range, double permitting_period,
         double construction_cost, double bond_term,
         double bond_interest_rate, double max_diversion)
         : Reservoir(name,
@@ -39,6 +39,7 @@ Quarry::Quarry(
                     storage_area_curve,
                     construction_rof_or_demand,
                     construction_time_range,
+                    permitting_period,
                     construction_cost,
                     bond_term,
                     bond_interest_rate,
@@ -65,7 +66,7 @@ Quarry::Quarry(
         const double max_treatment_capacity,
         EvaporationSeries *evaporation_series, double storage_area,
         const double construction_rof_or_demand,
-        const vector<double> &construction_time_range,
+        const vector<double> &construction_time_range, double permitting_period,
         double construction_cost, double bond_term,
         double bond_interest_rate, double max_diversion)
         : Reservoir(name,
@@ -77,6 +78,7 @@ Quarry::Quarry(
                     storage_area,
                     construction_rof_or_demand,
                     construction_time_range,
+                    permitting_period,
                     construction_cost,
                     bond_term,
                     bond_interest_rate,

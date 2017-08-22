@@ -9,7 +9,7 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
         double total_treatment_capacity,
         const vector<double> *added_treatment_capacity_fractions,
         const double construction_rof_or_demand,
-        const vector<double> &construction_time_range,
+        const vector<double> &construction_time_range, double permitting_period,
         double construction_cost, double bond_term,
         double bond_interest_rate)
         : WaterSource(name,
@@ -20,6 +20,7 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
                       NEW_WATER_TREATMENT_PLANT,
                       construction_rof_or_demand,
                       construction_time_range,
+                      parent_reservoir_ID,
                       construction_cost,
                       bond_term,
                       bond_interest_rate),
@@ -38,7 +39,7 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
         vector<double> *max_sequential_added_capacity,
         vector<double> *max_sequential_added_construction_cost,
         const double construction_rof_or_demand,
-        const vector<double> &construction_time_range,
+        const vector<double> &construction_time_range, double permitting_period,
         double construction_cost, double bond_term,
         double bond_interest_rate)
         : WaterSource(name,
@@ -49,6 +50,7 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
                       NEW_WATER_TREATMENT_PLANT,
                       construction_rof_or_demand,
                       construction_time_range,
+                      permitting_period,
                       construction_cost,
                       bond_term,
                       bond_interest_rate),

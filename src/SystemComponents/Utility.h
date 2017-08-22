@@ -218,6 +218,8 @@ public:
     void sourceRelocationConstructionHandler(unsigned int source_id);
 
     const vector<WaterSource *> &getWater_sources() const;
+
+    void removeSourcesFromQueue(int next_construction);
 };
 
 

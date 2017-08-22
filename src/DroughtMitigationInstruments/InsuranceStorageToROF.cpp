@@ -24,9 +24,10 @@ InsuranceStorageToROF::InsuranceStorageToROF(
                              Utils::copyUtilityVector(utilities, true),
                              min_env_flow_controls,
                              NON_INITIALIZED),
-          insurance_premium(insurance_premium),
-          fixed_payouts(fixed_payouts),
-          rof_triggers(rof_triggers) {
+          insurance_premium(insurance_premium), fixed_payouts(fixed_payouts),
+          rof_triggers(rof_triggers),
+          utilities_revenue_last_year(new double[utilities.size()]()),
+          utilities_revenue_update(new double[utilities.size()]()) {
 
     for (Utility *u : utilities) utilities_ids.push_back(u->id);
 
@@ -48,18 +49,33 @@ InsuranceStorageToROF::InsuranceStorageToROF(
                            insurance.realization_id),
         insurance_premium(insurance.insurance_premium),
         fixed_payouts(insurance.fixed_payouts),
-        rof_triggers(insurance.rof_triggers) {
+        rof_triggers(insurance.rof_triggers),
+        utilities_revenue_last_year(
+                new double[insurance.continuity_utilities.size()]()),
+        utilities_revenue_update(
+                new double[insurance.continuity_utilities.size()]()) {
 
     utilities_ids = insurance.utilities_ids;
 }
 
-InsuranceStorageToROF::~InsuranceStorageToROF() {}
+InsuranceStorageToROF::~InsuranceStorageToROF() = default;
 
 void InsuranceStorageToROF::applyPolicy(int week) {
     int week_of_year = Utils::weekOfTheYear(week);
 
-    /// If first week of the year, price insurance for coming year.
+    /// Update utilities year revenue.
+    for (int u = 0; u < continuity_utilities.size(); ++u) {
+        utilities_revenue_update[u] +=
+                realization_utilities[u]->getGrossRevenue();
+    }
+
+    /// If first week of the year, price insurance for coming year and update
+    /// gross revenue to base payouts.
     if (Utils::isFirstWeekOfTheYear(week + 1)) {
+        delete utilities_revenue_last_year;
+        utilities_revenue_last_year = utilities_revenue_update;
+        utilities_revenue_update = new double[continuity_utilities.size()]();
+
         priceInsurance(week_of_year);
         storage_to_rof_table_prev_year = Matrix3D<double>
                 (*storage_to_rof_table_);
@@ -89,7 +105,8 @@ void InsuranceStorageToROF::applyPolicy(int week) {
         for (int u = 0; u < continuity_utilities.size(); ++u) {
             if (utilities_rof[u] >
                 rof_triggers[u]) {
-                realization_utilities[u]->addInsurancePayout(fixed_payouts[u]);
+                realization_utilities[u]->addInsurancePayout(
+                        fixed_payouts[u] * utilities_revenue_last_year[u]);
             }
         }
     }
@@ -143,7 +160,9 @@ void InsuranceStorageToROF::priceInsurance(int week) {
             /// Increase the price of the insurance if payout is triggered.
             for (int u : utilities_ids)
                 if (utilities_rofs[u] > rof_triggers[u])
-                    insurance_price[u] += fixed_payouts[u] * insurance_premium;
+                    insurance_price[u] +=
+                            fixed_payouts[u] * utilities_revenue_last_year[u] *
+                            insurance_premium;
         }
     }
 

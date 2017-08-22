@@ -36,6 +36,7 @@ protected:
     double min_environmental_outflow;
     double evaporated_volume = 0;
     double total_treatment_capacity;
+    int highest_alloc_id = NON_INITIALIZED;
 
     virtual void applyContinuity(
             int week, double upstream_source_inflow,
@@ -163,6 +164,11 @@ public:
             vector<double> *allocated_treatment_fractions);
 
     void resetAllocations(const vector<double> *new_allocated_fractions);
+
+    void setAvailableAllocatedVolumes(
+            double *available_allocated_volumes, double available_volume);
+
+    double *getAvailable_allocated_volumes() const;
 };
 
 

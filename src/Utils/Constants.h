@@ -24,6 +24,7 @@ namespace Constants {
     const int TREATMENT_CAPACITY_VS_VOLUME_SMALL_WTP = 200;
     const int ILLIMITED_TREATMENT_CAPACITY = 99999;
     const double STORAGE_CAPACITY_RATIO_FAIL = 0.2;
+    const int NOT_ALLOCATED = 1;
 
     const bool APPLY_DEMAND_BUFFER = true;
 

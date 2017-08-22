@@ -175,23 +175,27 @@ DataCollector *Simulation::runFullSimulation(int num_threads) {
     std::cout << "Beginning realizations loop." << endl;
 #pragma omp parallel for num_threads(num_threads)
     for (int r = 0; r < number_of_realizations; ++r) {
-        count++;
-        time_t timer_ir, timer_fr;
-        time(&timer_ir);
-        for (int w = 0; w < total_simulation_time; ++w) {
-            // DO NOT change the order of the steps. This would mess up
-            // important dependencies.
-            if (Utils::isFirstWeekOfTheYear(w))
-                realization_models[r]->setLongTermROFs(rof_models[r]->calculateROF(w, LONG_TERM_ROF), w);
-            realization_models[r]->setShortTermROFs(rof_models[r]->calculateROF(w, SHORT_TERM_ROF));
-            realization_models[r]->applyDroughtMitigationPolicies(w);
-            realization_models[r]->continuityStep(w);
-            data_collector->collectData(realization_models[r]);
-        }
-        time(&timer_fr);
-        std::cout << "Realization " << count << ": "
-                  << difftime(timer_fr,
-                              timer_ir) << std::endl;
+//        try {
+            count++;
+            time_t timer_ir, timer_fr;
+            time(&timer_ir);
+            for (int w = 0; w < total_simulation_time; ++w) {
+                // DO NOT change the order of the steps. This would mess up
+                // important dependencies.
+                if (Utils::isFirstWeekOfTheYear(w))
+                    realization_models[r]->setLongTermROFs(rof_models[r]->calculateROF(w, LONG_TERM_ROF), w);
+                realization_models[r]->setShortTermROFs(rof_models[r]->calculateROF(w, SHORT_TERM_ROF));
+                realization_models[r]->applyDroughtMitigationPolicies(w);
+                realization_models[r]->continuityStep(w);
+                data_collector->collectData(realization_models[r]);
+            }
+            time(&timer_fr);
+            std::cout << "Realization " << r << ": "
+                      << difftime(timer_fr, timer_ir) << std::endl;
+//        } catch (const std::exception& e) {
+//            cout << "Error in realization " << r << endl;
+//            e.what();
+//        }
     }
     time(&timer_f);
     seconds = difftime(timer_f, timer_i);

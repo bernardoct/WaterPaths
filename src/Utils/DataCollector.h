@@ -83,8 +83,7 @@ private:
     vector<WaterSource_t> water_sources_t;
     vector<RestrictionPolicy_t> restriction_policies_t;
     vector<TransfersPolicy_t> transfers_policies_t;
-    string output_directory =
-            "/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/output/";
+    string output_directory;
 //    string output_directory = "..\\TestFiles\\";
     vector<vector<vector<int>>> pathways;
 
@@ -99,6 +98,8 @@ public:
     const Graph water_sources_graph;
 
     const int number_of_realizations;
+
+    void setOutputDirectory(string directory);
 
     void collectData(ContinuityModelRealization *continuity_model_realization);
 

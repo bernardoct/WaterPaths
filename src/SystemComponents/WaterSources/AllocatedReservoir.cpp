@@ -317,7 +317,8 @@ void AllocatedReservoir::applyContinuity(
                                         available_allocated_volumes +
                                         wq_pool_id + 1,
                                         0.);
-    if ((int) std::round(sum_allocations) != (int) std::round(available_volume))
+    if ((int) std::round(sum_allocations / 10) !=
+            (int) std::round(available_volume / 10))
         __throw_runtime_error("Sum of allocated volumes in a reservoir must "
                                     "total current storage minus unallocated "
                                     "volume");

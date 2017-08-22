@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <sys/stat.h>
+#include <numeric>
 #include "DataCollector.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
 #include "Utils.h"
@@ -17,15 +18,6 @@ DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<Wa
                              const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
                              int number_of_realizations, Graph water_sources_graph) :
         number_of_realizations(number_of_realizations), water_sources_graph(water_sources_graph) {
-
-    struct stat sb;
-    if (stat(output_directory.c_str(),
-             &sb) == 0 && S_ISDIR(sb.st_mode))
-        cout << "Output will be printed to folder " << output_directory << endl;
-    else {
-        cout << Utils::getexepath() << output_directory << endl;
-        __throw_invalid_argument("Output folder does not exist.");
-    }
 
     /// Create data utilities.
     for (Utility *u : utilities) {
@@ -164,7 +156,7 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
 
 void DataCollector::printPathways(string file_name) {
     std::ofstream outStream;
-    outStream.open(output_directory + file_name + ".out");
+    outStream.open(output_directory + "/" + file_name + ".out");
 
     outStream << "Realization\tutility\tweek\tinfra." << endl;
 
@@ -181,7 +173,7 @@ void DataCollector::printPathways(string file_name) {
 void DataCollector::printReservoirOutput(string file_name) {
 
     std::ofstream outStream;
-    outStream.open(output_directory + file_name);
+    outStream.open(output_directory + "/" + file_name);
     int n_weeks = (int) water_sources_t[0].total_upstream_sources_inflows[0].size();
 
     for (int r = 0; r < number_of_realizations; ++r) {
@@ -243,7 +235,7 @@ void DataCollector::printReservoirOutputCompact(string file_name) {
 #pragma omp parallel for
     for (int r = 0; r < number_of_realizations; ++r) {
         std::ofstream outStream;
-        outStream.open(output_directory + file_name + "_r"
+        outStream.open(output_directory + "/" + file_name + "_r"
                        + std::to_string(r) + ".out");
         /// Print numbers.
         for (int w = 0; w < n_weeks; ++w) {
@@ -269,14 +261,14 @@ void DataCollector::printReservoirOutputCompact(string file_name) {
         outStream.close();
     }
     cout << "Water sources output printed. Files " << output_directory <<
-         file_name << "XX" << endl;
+         "/" + file_name << "XX" << endl;
 }
 
 void DataCollector::printUtilityOutput(string file_name) {
 
     std::ofstream outStream;
     int n_weeks = (int) utilities_t[0].st_rof[0].size();
-    outStream.open(output_directory + file_name);
+    outStream.open(output_directory + "/" + file_name);
 
     for (int r = 0; r < number_of_realizations; ++r) {
 
@@ -361,7 +353,7 @@ void DataCollector::printUtilityOutputCompact(string file_name) {
 #pragma omp parallel for
     for (int r = 0; r < number_of_realizations; ++r) {
         std::ofstream outStream;
-        outStream.open(output_directory + file_name + "_r"
+        outStream.open(output_directory + "/" + file_name + "_r"
                        + std::to_string(r) + ".out");
         outStream << "#";
         for (auto &u : utilities_t) {
@@ -412,7 +404,7 @@ void DataCollector::printUtilityOutputCompact(string file_name) {
 void DataCollector::printPoliciesOutput(string file_name) {
 
     std::ofstream outStream;
-    outStream.open(output_directory + file_name);
+    outStream.open(output_directory + "/" + file_name);
 
     /// Checks if there were drought mitigation policies in place.
     if (!restriction_policies_t.empty()) {
@@ -484,7 +476,7 @@ void DataCollector::printPoliciesOutputCompact(string file_name) {
 #pragma omp parallel for
         for (int r = 0; r < number_of_realizations; ++r) {
             std::ofstream outStream;
-            outStream.open(output_directory + file_name + "_r"
+            outStream.open(output_directory + "/" + file_name + "_r"
                            + std::to_string(r) + ".out");
             if (!restriction_policies_t.empty()) {
                 outStream << "#";
@@ -540,7 +532,7 @@ void DataCollector::printPoliciesOutputCompact(string file_name) {
              file_name << "XX" << endl;
     } else {
         std::ofstream outStream;
-        outStream.open(output_directory + file_name + std::to_string(-1));
+        outStream.open(output_directory + "/" + file_name + std::to_string(-1));
         outStream << "No restriction policies in place.";
     }
 }
@@ -548,7 +540,7 @@ void DataCollector::printPoliciesOutputCompact(string file_name) {
 void DataCollector::printObjectives(string file_name) {
 
     std::ofstream outStream;
-    outStream.open(output_directory + file_name + ".out");
+    outStream.open(output_directory + "/" + file_name + ".out");
 
     outStream << setw(COLUMN_WIDTH) << "      " << setw((COLUMN_WIDTH * 2)) << "Reliability"
               << setw(COLUMN_WIDTH * 2) << "Restriction Freq."
@@ -793,4 +785,17 @@ double DataCollector::calculateWorseCaseCostsObjective(Utility_t utility_t) {
 
     return worse_year_financial_costs.at(
             (unsigned long) floor(WORSE_CASE_COST_PERCENTILE * n_realizations));
+}
+
+void DataCollector::setOutputDirectory(string directory) {
+    output_directory = directory;
+
+    struct stat sb;
+    if (stat(output_directory.c_str(),
+             &sb) == 0 && S_ISDIR(sb.st_mode))
+        cout << "Output will be printed to folder " << output_directory << endl;
+    else {
+        cout << Utils::getexepath() << output_directory << endl;
+        __throw_invalid_argument("Output folder does not exist.");
+    }
 }

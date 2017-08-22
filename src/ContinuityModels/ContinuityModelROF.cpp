@@ -87,7 +87,7 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
     }
 
     /// perform a continuity simulation for NUMBER_REALIZATIONS_ROF (50) yearly realization.
-    for (int r = 0; r < NUMBER_REALIZATIONS_ROF; ++r) {
+    for (int yr = 0; yr < NUMBER_REALIZATIONS_ROF; ++yr) {
         beginning_res_level = NO_OF_INSURANCE_STORAGE_TIERS;
         /// reset current reservoirs' and utilities' storage and combined storage, respectively,
         /// in the corresponding realization simulation.
@@ -96,9 +96,7 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
         for (int w = week; w < week + n_weeks_rof; ++w) {
 
             /// one week continuity time-step.
-            continuityStep(w,
-                           r,
-                           apply_demand_buffer);
+            continuityStep(w, yr, apply_demand_buffer);
 
             /// check total available storage for each utility and, if smaller than the fail ration,
             /// increase the number of failed years of that utility by 1 (FAILURE).
@@ -203,8 +201,7 @@ void ContinuityModelROF::updateStorageToROFTable(
                     /// Calculate combined stored volume for each utility based on shifted storages.
                     storage_to_rof_realization(u,
                                                ss,
-                                               week_of_the_year) =
-                            FAILURE;
+                                               week_of_the_year) = FAILURE;
                 }
             }
             break;
@@ -268,7 +265,10 @@ void ContinuityModelROF::resetUtilitiesAndReservoirs(int rof_type) {
     if (rof_type == SHORT_TERM_ROF)
         for (int i = 0; i < continuity_water_sources.size();
              ++i) {   // Current available volume
-            continuity_water_sources[i]->setFull();
+            continuity_water_sources[i]->setAvailableAllocatedVolumes
+                    (realization_water_sources[i]
+                             ->getAvailable_allocated_volumes(),
+                     realization_water_sources[i]->getAvailable_volume());
             continuity_water_sources[i]->setOutflow_previous_week(
                     realization_water_sources[i]->getTotal_outflow());
         }

@@ -64,7 +64,7 @@ ContinuityModel::ContinuityModel(
     for (int u = 0; u < utilities.size(); ++u) {
         for (int ws = 0; ws < water_sources_to_utilities[u].size(); ++ws) {
             WaterSource *water_source =
-                    water_sources[water_sources_to_utilities[u][ws]];
+                    continuity_water_sources[water_sources_to_utilities[u][ws]];
             this->continuity_utilities[u]->addWaterSource(water_source);
         }
     }
@@ -140,8 +140,7 @@ ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) :
  * @param rof_realization rof realization id (between 0 and 49 inclusive).
  */
 void ContinuityModel::continuityStep(
-        int week, int rof_realization, bool
-apply_demand_buffer) {
+        int week, int rof_realization, bool apply_demand_buffer) {
     double upstream_spillage[continuity_water_sources.size()] = {};
     double wastewater_discharges[continuity_water_sources.size()] = {};
 
@@ -176,10 +175,12 @@ apply_demand_buffer) {
      * be equal to -1 (see header file) so that there is no week shift.
      */
     for (int &i : sources_continuity_order) {
+        /// Sum spillage from all sources upstream source i.
         for (int &ws : water_sources_graph.getUpstream_sources(i))
             upstream_spillage[i] +=
                     continuity_water_sources[ws]->getTotal_outflow();
 
+        /// Apply
         continuity_water_sources[i]->continuityWaterSource(
                 week - (int) std::round((rof_realization + 1) * WEEKS_IN_YEAR),
                 upstream_spillage[i] + wastewater_discharges[i],

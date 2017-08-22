@@ -63,15 +63,12 @@ namespace Constants {
 
     const double WORSE_CASE_COST_PERCENTILE = 0.99;
 
-    const double INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD = 0.05;
-    const int NO_OF_INSURANCE_STORAGE_TIERS = (int) std::round(1. / INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD);
+    const double INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD = 0.02;
+    const int NO_OF_STORAGE_TO_ROF_TABLE_TIERS = (int) std::round(1. / INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD);
 
     const int WATER_QUALITY_ALLOCATION = -1;
 
     const std::string base_directory = "C:/Users/David/OneDrive/UNC/Research/WSC/Coding/RevampedTriangle";
-
-    // FIXME: SEE ABOUT HOW TO UP THIS TO 50 INSTEAD OF 20
-    const int NO_OF_RAW_WATER_TRANSFER_STORAGE_TIERS = NO_OF_INSURANCE_STORAGE_TIERS;
 };
 
 

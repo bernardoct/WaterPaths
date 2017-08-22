@@ -24,6 +24,7 @@ private:
     const double max_releases;
     const vector<double> rof_triggers;
     const double raw_water_transfer_downstream_allocation_ratio;
+    const double rate_per_volume;
 
     double raw_water_transfer_volume;
     vector<double> storage_targets;
@@ -36,7 +37,8 @@ public:
                      const int downstream_reservoir_id,
                      const double max_releases,
                      const vector<double> rof_triggers,
-                     const double raw_water_transfer_downstream_allocation_ratio);
+                     const double raw_water_transfer_downstream_allocation_ratio,
+                     const double rate_per_volume);
 
     void applyPolicy(int week) override;
 
@@ -46,7 +48,6 @@ public:
 
     void setRealization(unsigned int realization_id) override;
 
-    void getUtilityStorageFromROF(int week, const Matrix3D<double> *storage_to_rof_table);
     const double getUtilityStorageFromROF(int week, const Matrix3D<double> *storage_to_rof_table,
                                           const int u_id);
 

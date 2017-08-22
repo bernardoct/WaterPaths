@@ -28,11 +28,11 @@ ContinuityModelROF::ContinuityModelROF(
 
     storage_to_rof_realization = Matrix3D<double>(
             (unsigned int) continuity_utilities.size(),
-            (unsigned int) NO_OF_INSURANCE_STORAGE_TIERS,
+            (unsigned int) NO_OF_STORAGE_TO_ROF_TABLE_TIERS,
             (unsigned int) ceil(WEEKS_IN_YEAR));
     storage_to_rof_table = new Matrix3D<double>(
             (unsigned int) continuity_utilities.size(),
-            (unsigned int) NO_OF_INSURANCE_STORAGE_TIERS,
+            (unsigned int) NO_OF_STORAGE_TO_ROF_TABLE_TIERS,
             (unsigned int) ceil(WEEKS_IN_YEAR));
 
     /// Record which sources have no downstream sources.
@@ -67,8 +67,9 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
     bool apply_demand_buffer;
 
     /// If this is the first week of the year, reset storage-rof table.
-    if (rof_type == LONG_TERM_ROF)
+    if (rof_type == LONG_TERM_ROF) {
         storage_to_rof_table->reset(NON_FAILURE);
+    }
 
     int week_of_the_year = Utils::weekOfTheYear(week);
 
@@ -88,8 +89,8 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
     }
 
     /// perform a continuity simulation for NUMBER_REALIZATIONS_ROF (50) yearly realization.
-    for (int r = 0; r < NUMBER_REALIZATIONS_ROF; ++r) {
-        beginning_res_level = NO_OF_INSURANCE_STORAGE_TIERS;
+    for (int yr = 0; yr < NUMBER_REALIZATIONS_ROF; ++yr) {
+        beginning_res_level = NO_OF_STORAGE_TO_ROF_TABLE_TIERS;
         /// reset current reservoirs' and utilities' storage and combined storage, respectively,
         /// in the corresponding realization simulation.
         resetUtilitiesAndReservoirs(rof_type);
@@ -97,9 +98,7 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
         for (int w = week; w < week + n_weeks_rof; ++w) {
 
             /// one week continuity time-step.
-            continuityStep(w,
-                           r,
-                           apply_demand_buffer);
+            continuityStep(w, yr, apply_demand_buffer);
 
             /// check total available storage for each utility and, if smaller than the fail ration,
             /// increase the number of failed years of that utility by 1 (FAILURE).
@@ -204,8 +203,7 @@ void ContinuityModelROF::updateStorageToROFTable(
                     /// Calculate combined stored volume for each utility based on shifted storages.
                     storage_to_rof_realization(u,
                                                ss,
-                                               week_of_the_year) =
-                            FAILURE;
+                                               week_of_the_year) = FAILURE;
                 }
             }
             break;
@@ -269,7 +267,10 @@ void ContinuityModelROF::resetUtilitiesAndReservoirs(int rof_type) {
     if (rof_type == SHORT_TERM_ROF)
         for (int i = 0; i < continuity_water_sources.size();
              ++i) {   // Current available volume
-            continuity_water_sources[i]->setFull();
+            continuity_water_sources[i]->setAvailableAllocatedVolumes
+                    (realization_water_sources[i]
+                             ->getAvailable_allocated_volumes(),
+                     realization_water_sources[i]->getAvailable_volume());
             continuity_water_sources[i]->setOutflow_previous_week(
                     realization_water_sources[i]->getTotal_outflow());
         }
@@ -327,4 +328,3 @@ void ContinuityModelROF::updateOnlineInfrastructure(int week) {
 const Matrix3D<double> *ContinuityModelROF::getStorage_to_rof_table() const {
     return storage_to_rof_table;
 }
-

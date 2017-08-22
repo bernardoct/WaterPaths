@@ -229,7 +229,7 @@ void Utility::calculateWeeklyAverageWaterPrices(
 }
 
 /**
- * Checks price calculation input matrixes for errors.
+ * Checks price calculation input matrices for errors.
  * @param typesMonthlyDemandFraction
  * @param typesMonthlyWaterPrice
  */
@@ -787,6 +787,16 @@ void Utility::addInsurancePayout(double payout_value) {
 void Utility::purchaseInsurance(double insurance_price) {
     contingency_fund -= insurance_price;
     insurance_purchase = insurance_price;
+}
+
+void Utility::purchaseRawWaterTransfer(double payment_per_volume, double raw_water_transferred) {
+    contingency_fund -= payment_per_volume * raw_water_transferred;
+    raw_water_transfer_purchase = payment_per_volume * raw_water_transferred;
+}
+
+void Utility::sellRawWaterTransfer(double payment_per_volume, double raw_water_transferred) {
+    contingency_fund += payment_per_volume * raw_water_transferred;
+    raw_water_transfer_sale = payment_per_volume * raw_water_transferred;
 }
 
 void

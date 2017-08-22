@@ -2,7 +2,6 @@
 // Created by bct52 on 7/27/17.
 //
 
-#include <mshtmlc.h>
 #include <algorithm>
 #include "RawWaterReleases.h"
 #include "../Utils/Utils.h"
@@ -14,7 +13,8 @@ RawWaterReleases::RawWaterReleases(const int id,
                                    const int downstream_reservoir_id,
                                    const double max_releases,
                                    const vector<double> rof_triggers,
-                                   const double raw_water_transfer_downstream_allocation_ratio)
+                                   const double raw_water_transfer_downstream_allocation_ratio,
+                                   const double rate_per_volume)
         : DroughtMitigationPolicy(id, RAW_WATER_TRANSFERS),
           upstream_utility_id(upstream_utility_id),
           downstream_utility_id(downstream_utility_id),
@@ -22,7 +22,8 @@ RawWaterReleases::RawWaterReleases(const int id,
           downstream_reservoir_id(downstream_reservoir_id),
           max_releases(max_releases),
           rof_triggers(rof_triggers),
-          raw_water_transfer_downstream_allocation_ratio(raw_water_transfer_downstream_allocation_ratio) {}
+          raw_water_transfer_downstream_allocation_ratio(raw_water_transfer_downstream_allocation_ratio),
+          rate_per_volume(rate_per_volume) {}
 
 void RawWaterReleases::addSystemComponents(vector<Utility *> utilities,
                                            vector<WaterSource *> water_sources,
@@ -84,20 +85,6 @@ void RawWaterReleases::applyPolicy(int week) {
 
         raw_water_transfer_volume = *std::min_element(temp_vec.begin(), temp_vec.end());
 
-        /*if (raw_water_transfer_volume > upstream_reservoir->getAvailable_volume()) {
-            raw_water_transfer_volume = upstream_reservoir->getAvailable_volume();
-        }
-
-        if (raw_water_transfer_volume >
-                (downstream_reservoir->getCapacity() - downstream_reservoir->getAvailable_volume())) {
-            raw_water_transfer_volume =
-                    (downstream_reservoir->getCapacity() - downstream_reservoir->getAvailable_volume());
-        }
-
-        if (raw_water_transfer_volume > max_releases) {
-            raw_water_transfer_volume = max_releases;
-        }*/
-
         /// apply additional constraints:
         ///     1. remove required environmental releases from total
         ///     2. non-negativity
@@ -107,10 +94,6 @@ void RawWaterReleases::applyPolicy(int week) {
             raw_water_transfer_volume = 0.0;
         }
 
-        /*if (downstream_utility->getStorageToCapacityRatio() < 0.2) {
-            raw_water_transfer_downstream_allocation_ratio = 1.0;
-        }*/
-
         /// adjust storage (and water quality, when applicable) levels in each reservoir
         downstream_reservoir->addWater(WATER_QUALITY_ALLOCATION,
                                        raw_water_transfer_volume *
@@ -119,6 +102,11 @@ void RawWaterReleases::applyPolicy(int week) {
                                        raw_water_transfer_volume *
                                                raw_water_transfer_downstream_allocation_ratio);
         upstream_reservoir->removeWater(upstream_utility_id, raw_water_transfer_volume);
+
+        /// administer payments between utilities
+        /// UNITS OF VOLUME ASSUMED TO BE MG, UNITS OF COST ASSUMED $MM/MG
+        upstream_utility->sellRawWaterTransfer(rate_per_volume, raw_water_transfer_volume);
+        downstream_utility->purchaseRawWaterTransfer(rate_per_volume, raw_water_transfer_volume);
     }
 }
 
@@ -135,13 +123,9 @@ const double RawWaterReleases::getUtilityStorageFromROF(
         const int u_id) {
 
     /// Determine the storage associated with an ROF level
-    for (int s = (NO_OF_RAW_WATER_TRANSFER_STORAGE_TIERS - 1); s > -1; --s) {
+    for (int s = NO_OF_STORAGE_TO_ROF_TABLE_TIERS - 1; s > -1; --s) {
         if ((*storage_to_rof_table)(u_id, s, week) > rof_triggers[u_id]) {
-            if (s == (NO_OF_RAW_WATER_TRANSFER_STORAGE_TIERS - 1)) {
-                return ((double)s / (double)NO_OF_RAW_WATER_TRANSFER_STORAGE_TIERS);
-            } else {
-                return (((double)s + 1) / (double)NO_OF_RAW_WATER_TRANSFER_STORAGE_TIERS);
-            }
+            return ((double)s + 1) / (double)NO_OF_STORAGE_TO_ROF_TABLE_TIERS;
         }
     }
 }

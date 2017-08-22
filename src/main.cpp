@@ -2243,8 +2243,9 @@ void triangleTest(
     int downstream_reservoir_id0 = 1;
 
     /// other necessary arguments
-    double raw_water_transfer_weekly_volume_cap = 500;
+    double raw_water_transfer_weekly_volume_cap = 500; // cap in MG
     double raw_water_transfer_downstream_allocation_ratio = 0.423;
+    double raw_water_transfer_cost_per_MG = 0.0035; // cost in millions of dollars per MG
 
     /// raw water transfer triggers for ALL regional utilities (in order of their ids)
     vector<double> party_raw_water_transfer_triggers = {owasa_raw_water_transfer_trigger,
@@ -2253,10 +2254,11 @@ void triangleTest(
                                                         raleigh_raw_water_transfer_trigger};
 
     RawWaterReleases flat_river_raw_water_transfer(0, upstream_party_id0, downstream_party_id0,
-                                               upstream_reservoir_id0, downstream_reservoir_id0,
-                                               raw_water_transfer_weekly_volume_cap,
-                                               party_raw_water_transfer_triggers,
-                                               raw_water_transfer_downstream_allocation_ratio);
+                                                   upstream_reservoir_id0, downstream_reservoir_id0,
+                                                   raw_water_transfer_weekly_volume_cap,
+                                                   party_raw_water_transfer_triggers,
+                                                   raw_water_transfer_downstream_allocation_ratio,
+                                                   raw_water_transfer_cost_per_MG);
 
     drought_mitigation_policies.push_back(&flat_river_raw_water_transfer);
 

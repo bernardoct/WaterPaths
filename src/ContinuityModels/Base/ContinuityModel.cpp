@@ -140,8 +140,8 @@ ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) :
  * @param rof_realization rof realization id (between 0 and 49 inclusive).
  */
 void ContinuityModel::continuityStep(
-        int week, int rof_realization, bool
-apply_demand_buffer) {
+        int week, int rof_realization, bool apply_demand_buffer) {
+
     double upstream_spillage[continuity_water_sources.size()] = {};
     double wastewater_discharges[continuity_water_sources.size()] = {};
 

@@ -546,7 +546,7 @@ void DataCollector::printPoliciesOutputCompact(string file_name) {
                 for (auto &rwp : raw_water_transfer_policies_t) {
                     outStream << setw(COLUMN_WIDTH - 1) << "RWT. "
                               << rwp.raw_water_transfer_policy_id;
-                    for (int id = 0; id < rwp.utilities_ids.size(); ++id) {
+                    for (int id = 0; id < rwp.utilities_ids.size(); ++id) { // always two parties to raw water transfers
                         outStream << setw(COLUMN_WIDTH - 1) << "RWT. "
                                   << rwp.raw_water_transfer_policy_id;
                     }
@@ -582,16 +582,16 @@ void DataCollector::printPoliciesOutputCompact(string file_name) {
                     for (auto &rp : transfers_policies_t) {
                         for (int j = 0; j < transfer_size; ++j) {
                             outStream << setprecision(COLUMN_PRECISION)
-                                      << rp.demand_offsets[r].at(w)[j];
-                            if (j < transfer_size - 1)
-                                outStream << ",";
+                                      << rp.demand_offsets[r].at(w)[j] << ",";
+//                            if (j < transfer_size - 1)
+//                                outStream << ",";
                         }
                     }
                     for (auto &rwp : raw_water_transfer_policies_t) {
                         outStream << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                                  << rwp.raw_water_transfer_total[r].at(w);
+                                  << rwp.raw_water_transfer_total[r].at(w) << ",";
                         outStream << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                                  << rwp.utility_target_storage_ratio[r].at(w)[0];
+                                  << rwp.utility_target_storage_ratio[r].at(w)[0] << ",";
                         outStream << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
                                   << rwp.utility_target_storage_ratio[r].at(w)[1];
                     }

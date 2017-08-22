@@ -195,8 +195,7 @@ void Simulation::runFullSimulation(int num_threads) {
         }
         time(&timer_fr);
         std::cout << "Realization " << count << ": "
-                  << difftime(timer_fr,
-                              timer_ir) << std::endl;
+                  << difftime(timer_fr, timer_ir) << std::endl;
     }
     time(&timer_f);
     seconds = difftime(timer_f, timer_i);
@@ -211,7 +210,7 @@ void Simulation::runFullSimulation(int num_threads) {
     data_collector->printPoliciesOutputCompact("Policies.out");
 //    data_collector->printUtilityOutput("UtilitiesTabular.out");
 //    data_collector->printReservoirOutput("WaterSourcesTabular.out");
-//    data_collector->printPoliciesOutput("PoliciesTabular.out");
+    data_collector->printPoliciesOutput("PoliciesTabular.out");
     data_collector->printObjectives("Objectives.out");
     data_collector->printPathways("Pathways.out");
 

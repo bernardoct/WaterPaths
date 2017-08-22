@@ -35,6 +35,8 @@ private:
     double drought_mitigation_cost = 0;
     double insurance_payout = 0;
     double insurance_purchase = 0;
+    double raw_water_transfer_purchase = 0;
+    double raw_water_transfer_sale = 0;
     double restricted_demand = 0;
     double unrestricted_demand = 0;
     double infra_net_present_cost = 0;
@@ -218,6 +220,10 @@ public:
     void sourceRelocationConstructionHandler(unsigned int source_id);
 
     const vector<WaterSource *> &getWater_sources() const;
+
+    void purchaseRawWaterTransfer(double payment_per_volume, double raw_water_transferred);
+
+    void sellRawWaterTransfer(double payment_per_volume, double raw_water_transferred);
 };
 
 

@@ -24,7 +24,9 @@ Simulation::Simulation(
     //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
     std::sort(water_sources.begin(), water_sources.end(), WaterSource::compare);
 #ifdef _WIN32
-    sort(continuity_utilities.begin(), continuity_utilities.end(), std::greater<>());
+    std::sort(utilities.begin(),
+              utilities.end(),
+              Utility::compById);
 #else
     std::sort(utilities.begin(),
               utilities.end(),

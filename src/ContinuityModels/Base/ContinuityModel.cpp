@@ -26,7 +26,7 @@ ContinuityModel::ContinuityModel(
     //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
     std::sort(continuity_water_sources.begin(), continuity_water_sources.end(), WaterSource::compare);
 #ifdef _WIN32
-    sort(continuity_utilities.begin(), continuity_utilities.end(), std::greater<>());
+    sort(continuity_utilities.begin(), continuity_utilities.end(), Utility::compById);
 #else
     std::sort(continuity_utilities.begin(), continuity_utilities.end(), Utility::compById);
 #endif
@@ -64,7 +64,7 @@ ContinuityModel::ContinuityModel(
     for (int u = 0; u < utilities.size(); ++u) {
         for (int ws = 0; ws < water_sources_to_utilities[u].size(); ++ws) {
             WaterSource *water_source =
-                    water_sources[water_sources_to_utilities[u][ws]];
+                    continuity_water_sources[water_sources_to_utilities[u][ws]];
             this->continuity_utilities[u]->addWaterSource(water_source);
         }
     }

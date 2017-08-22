@@ -381,7 +381,6 @@ void AllocatedReservoir::addWater(int utility_id, double volume) {
 
     available_allocated_volumes[allocation_id] += volume;
     available_volume += volume;
-    total_demand -= volume;
 }
 
 double AllocatedReservoir::getAllocatedCapacity(int utility_id) {

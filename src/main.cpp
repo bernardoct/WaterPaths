@@ -19,6 +19,7 @@
 #include "SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
 #include "SystemComponents/WaterSources/Relocation.h"
 #include "DroughtMitigationInstruments/InsuranceStorageToROF.h"
+#include "DroughtMitigationInstruments/RawWaterReleases.h"
 
 int regionOneUtilitiesTwoReservoirsContinuityTest();
 
@@ -1161,6 +1162,11 @@ void triangleTest(
     double raleigh_inf_buffer = x_real[55];
     double cary_inf_buffer = x_real[56];
 
+    double durham_raw_water_transfer_trigger = 0.04;
+    double raleigh_raw_water_transfer_trigger = 0.04;
+    double cary_raw_water_transfer_trigger = 2;
+    double owasa_raw_water_transfer_trigger = 2;
+
     vector<infraRank> durham_infra_order_raw = {
             infraRank(9,
                       Teer_quarry_expansion_ranking),
@@ -1354,84 +1360,161 @@ void triangleTest(
     int max_lines = n_realizations;
 
     cout << "Reading inflows." << endl;
-    vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/durham_inflows.csv",
+//    vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/durham_inflows.csv",
+//                                                                      max_lines);
+//    vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/falls_lake_inflows.csv",
+//                                                                    max_lines);
+//    vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/lake_wb_inflows.csv",
+//                                                                     max_lines);
+//    vector<vector<double>> streamflows_llr = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/little_river_raleigh_inflows.csv",
+//                                                                   max_lines);
+//    vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/crabtree_inflows.csv",
+//                                                                        max_lines);
+//
+//    vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/stone_quarry_inflows.csv",
+//                                                                     max_lines);
+//    vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/cane_creek_inflows.csv",
+//                                                                    max_lines);
+//    vector<vector<double>> streamflows_morgan = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/university_lake_inflows.csv",
+//                                                                      max_lines);
+//    vector<vector<double>> streamflows_haw = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/jordan_lake_inflows.csv",
+//                                                                   max_lines);
+//    vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/clayton_inflows.csv",
+//                                                                       max_lines);
+//
+//    vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/lillington_inflows.csv",
+//                                                                          max_lines);
+//
+//    cout << "Reading demands." << endl;
+//    vector<vector<double>> demand_cary = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/demands/cary_demand.csv",
+//                                                               max_lines);
+//    vector<vector<double>> demand_durham = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/demands/durham_demand.csv",
+//                                                                 max_lines);
+//    vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/demands/raleigh_demand.csv",
+//                                                                  max_lines);
+//    vector<vector<double>> demand_owasa = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/demands/owasa_demand.csv",
+//                                                                max_lines);
+//
+//    cout << "Reading evaporations." << endl;
+//    vector<vector<double>> evap_durham = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/durham_evap.csv",
+//                                                               max_lines);
+//    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/falls_lake_evap.csv",
+//                                                                   max_lines);
+//    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/owasa_evap.csv",
+//                                                              max_lines);
+//    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/little_river_raleigh_evap.csv",
+//                                                                     max_lines);
+//    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/wb_evap.csv",
+//                                                                       max_lines);
+//    vector<vector<double>> evap_jordan_lake = evap_owasa;
+//// /home/fs02/pmr82_0001/bct52/Shared
+//    cout << "Reading others." << endl;
+//    vector<vector<double>> demand_to_wastewater_fraction_owasa_raleigh =
+//            Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
+//    vector<vector<double>> demand_to_wastewater_fraction_durham =
+//            Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/demand_to_wastewater_fraction_durham.csv");
+////
+//    vector<vector<double>> caryDemandClassesFractions = Utils::parse2DCsvFile
+//            ("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/caryDemandClassesFractions.csv");
+//    vector<vector<double>> durhamDemandClassesFractions = Utils::parse2DCsvFile
+//            ("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/durhamDemandClassesFractions.csv");
+//    vector<vector<double>> raleighDemandClassesFractions = Utils::parse2DCsvFile
+//            ("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/raleighDemandClassesFractions.csv");
+//    vector<vector<double>> owasaDemandClassesFractions = Utils::parse2DCsvFile
+//            ("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/owasaDemandClassesFractions.csv");
+//
+//    vector<vector<double>> caryUserClassesWaterPrices = Utils::parse2DCsvFile
+//            ("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/caryUserClassesWaterPrices.csv");
+//    vector<vector<double>> durhamUserClassesWaterPrices = Utils::parse2DCsvFile
+//            ("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/durhamUserClassesWaterPrices.csv");
+//    vector<vector<double>> raleighUserClassesWaterPrices = Utils::parse2DCsvFile
+//            ("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/raleighUserClassesWaterPrices.csv");
+//    vector<vector<double>> owasaUserClassesWaterPrices = Utils::parse2DCsvFile
+//            ("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/owasaUserClassesWaterPrices.csv");
+//
+//    vector<vector<double>> owasaPriceSurcharges = Utils::parse2DCsvFile
+//            ("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/owasaPriceRestMultipliers.csv");
+
+
+    vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/inflows/durham_inflows.csv",
                                                                       max_lines);
-    vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/falls_lake_inflows.csv",
+    vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/inflows/falls_lake_inflows.csv",
                                                                     max_lines);
-    vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/lake_wb_inflows.csv",
+    vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/inflows/lake_wb_inflows.csv",
                                                                      max_lines);
-    vector<vector<double>> streamflows_llr = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/little_river_raleigh_inflows.csv",
+    vector<vector<double>> streamflows_llr = Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/inflows/little_river_raleigh_inflows.csv",
                                                                    max_lines);
-    vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/crabtree_inflows.csv",
+    vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/inflows/crabtree_inflows.csv",
                                                                         max_lines);
 
-    vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/stone_quarry_inflows.csv",
+    vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/inflows/stone_quarry_inflows.csv",
                                                                      max_lines);
-    vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/cane_creek_inflows.csv",
+    vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/inflows/cane_creek_inflows.csv",
                                                                     max_lines);
-    vector<vector<double>> streamflows_morgan = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/university_lake_inflows.csv",
+    vector<vector<double>> streamflows_morgan = Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/inflows/university_lake_inflows.csv",
                                                                       max_lines);
-    vector<vector<double>> streamflows_haw = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/jordan_lake_inflows.csv",
+    vector<vector<double>> streamflows_haw = Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/inflows/jordan_lake_inflows.csv",
                                                                    max_lines);
-    vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/clayton_inflows.csv",
+    vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/inflows/clayton_inflows.csv",
                                                                        max_lines);
 
-    vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/inflows/lillington_inflows.csv",
+    vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/inflows/lillington_inflows.csv",
                                                                           max_lines);
 
     cout << "Reading demands." << endl;
-    vector<vector<double>> demand_cary = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/demands/cary_demand.csv",
+    vector<vector<double>> demand_cary = Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/demands/cary_demand.csv",
                                                                max_lines);
-    vector<vector<double>> demand_durham = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/demands/durham_demand.csv",
+    vector<vector<double>> demand_durham = Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/demands/durham_demand.csv",
                                                                  max_lines);
-    vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/demands/raleigh_demand.csv",
+    vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/demands/raleigh_demand.csv",
                                                                   max_lines);
-    vector<vector<double>> demand_owasa = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/demands/owasa_demand.csv",
+    vector<vector<double>> demand_owasa = Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/demands/owasa_demand.csv",
                                                                 max_lines);
 
     cout << "Reading evaporations." << endl;
-    vector<vector<double>> evap_durham = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/durham_evap.csv",
+    vector<vector<double>> evap_durham = Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/evaporation/durham_evap.csv",
                                                                max_lines);
-    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/falls_lake_evap.csv",
+    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/evaporation/falls_lake_evap.csv",
                                                                    max_lines);
-    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/owasa_evap.csv",
+    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/evaporation/owasa_evap.csv",
                                                               max_lines);
-    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/little_river_raleigh_evap.csv",
+    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/evaporation/little_river_raleigh_evap.csv",
                                                                      max_lines);
-    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/wb_evap.csv",
+    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/evaporation/wb_evap.csv",
                                                                        max_lines);
     vector<vector<double>> evap_jordan_lake = evap_owasa;
 
     cout << "Reading others." << endl;
     vector<vector<double>> demand_to_wastewater_fraction_owasa_raleigh =
-            Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
+            Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
     vector<vector<double>> demand_to_wastewater_fraction_durham =
-            Utils::parse2DCsvFile("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/demand_to_wastewater_fraction_durham.csv");
-//
+            Utils::parse2DCsvFile(base_directory + "/RevampedTriangleModel/TestFiles/demand_to_wastewater_fraction_durham.csv");
+
     vector<vector<double>> caryDemandClassesFractions = Utils::parse2DCsvFile
-            ("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/caryDemandClassesFractions.csv");
+            (base_directory + "/RevampedTriangleModel/TestFiles/caryDemandClassesFractions.csv");
     vector<vector<double>> durhamDemandClassesFractions = Utils::parse2DCsvFile
-            ("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/durhamDemandClassesFractions.csv");
+            (base_directory + "/RevampedTriangleModel/TestFiles/durhamDemandClassesFractions.csv");
     vector<vector<double>> raleighDemandClassesFractions = Utils::parse2DCsvFile
-            ("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/raleighDemandClassesFractions.csv");
+            (base_directory + "/RevampedTriangleModel/TestFiles/raleighDemandClassesFractions.csv");
     vector<vector<double>> owasaDemandClassesFractions = Utils::parse2DCsvFile
-            ("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/owasaDemandClassesFractions.csv");
+            (base_directory + "/RevampedTriangleModel/TestFiles/owasaDemandClassesFractions.csv");
 
     vector<vector<double>> caryUserClassesWaterPrices = Utils::parse2DCsvFile
-            ("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/caryUserClassesWaterPrices.csv");
+            (base_directory + "/RevampedTriangleModel/TestFiles/caryUserClassesWaterPrices.csv");
     vector<vector<double>> durhamUserClassesWaterPrices = Utils::parse2DCsvFile
-            ("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/durhamUserClassesWaterPrices.csv");
+            (base_directory + "/RevampedTriangleModel/TestFiles/durhamUserClassesWaterPrices.csv");
     vector<vector<double>> raleighUserClassesWaterPrices = Utils::parse2DCsvFile
-            ("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/raleighUserClassesWaterPrices.csv");
+            (base_directory + "/RevampedTriangleModel/TestFiles/raleighUserClassesWaterPrices.csv");
     vector<vector<double>> owasaUserClassesWaterPrices = Utils::parse2DCsvFile
-            ("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/owasaUserClassesWaterPrices.csv");
+            (base_directory + "/RevampedTriangleModel/TestFiles/owasaUserClassesWaterPrices.csv");
 
     vector<vector<double>> owasaPriceSurcharges = Utils::parse2DCsvFile
-            ("/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/owasaPriceRestMultipliers.csv");
+            (base_directory + "/RevampedTriangleModel/TestFiles/owasaPriceRestMultipliers.csv");
 
 //    vector<double> sewageFractions = Utils::parse1DCsvFile(
 //            "/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/sewageFractions.csv");
 
+    cout << "Assigning evaporation timeseries." << endl;
     EvaporationSeries evaporation_durham(&evap_durham, streamflow_n_weeks);
     EvaporationSeries evaporation_jordan_lake(
             &evap_jordan_lake,
@@ -1448,6 +1531,7 @@ void triangleTest(
             streamflow_n_weeks);
 
     /// Create catchments and corresponding vectors
+    cout << "Creating catchments." << endl;
     //  Durham (Upper Neuse River Basin)
     Catchment durham_inflows(&streamflows_durham, streamflow_n_weeks);
 
@@ -1513,6 +1597,7 @@ void triangleTest(
     vector<double> little_river_res_storage = {0, 3700};
     vector<double> little_river_res_area = {0, 0.3675 * 3700};
 
+    cout << "Assigning storage vs. area curves to reservoirs." << endl;
     DataSeries falls_lake_storage_area(&falls_lake_storage, &falls_lake_area);
     DataSeries wheeler_benson_storage_area(&wheeler_benson_storage,
                                            &wheeler_benson_area);
@@ -1534,6 +1619,7 @@ void triangleTest(
     double falls_base_releases[2] = {64.64 * 7, 38.78 * 7};
     double falls_min_gage[2] = {180 * 7, 130 * 7};
 
+    cout << "Setting minimum environmental flow rules." << endl;
     SeasonalMinEnvFlowControl durham_min_env_control(0, &dlr_weeks,
                                                      &dlr_releases);
 //    FixedMinEnvFlowControl falls_min_env_control(1, 38.78 * 7);
@@ -1583,6 +1669,8 @@ void triangleTest(
     min_env_flow_controls.push_back(&neuse_intake_min_env_control);
 
     /// Create reservoirs and corresponding vector
+    cout << "Creating reservoirs." << endl;
+
     vector<double> construction_time_interval = {3.0, 5.0};
     vector<double> city_infrastructure_rof_triggers = {owasa_inftrigger,
                                                        durham_inftrigger,
@@ -1983,6 +2071,8 @@ void triangleTest(
 
     vector<vector<int>> wjlwtp_remove_from_to_build_list;// = {{21, 20}};
 
+    cout << "Define utilities." << endl;
+
     Utility cary((char *) "Cary",
                  2,
                  &demand_cary,
@@ -2056,6 +2146,9 @@ void triangleTest(
 
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
     /// Restriction policies
+
+    cout << "Assign restriction policies." << endl;
+
     vector<double> initial_restriction_triggers = {OWASA_restriction_trigger,
                                                    Durham_restriction_trigger,
                                                    cary_restriction_trigger,
@@ -2101,6 +2194,7 @@ void triangleTest(
                                    &restrictions_o, &restrictions_r};
 
     /// Transfer policy
+    cout << "Assign treated water transfer policies." << endl;
     /*
      *      2
      *     / \
@@ -2132,7 +2226,41 @@ void triangleTest(
 
     drought_mitigation_policies.push_back(&t);
 
+    /// Raw Water Transfer policy
+    ///     utility ids: 0 OWASA, 1 Durham, 2 Cary, 3 Raleigh
+    ///     reservoir ids (in parentheses)
+    cout << "Assign raw water transfer/release policies." << endl;
+    /*
+     *      1(0)-->-->--3(1)
+     *
+     *      0(x)        2(y)
+     */
 
+    /// Utility IDs for party's of each raw water transfer agreement (only 2 party's per agreement)
+    int upstream_party_id0 = 1;
+    int downstream_party_id0 = 3;
+    int upstream_reservoir_id0 = 0;
+    int downstream_reservoir_id0 = 1;
+
+    /// other necessary arguments
+    double raw_water_transfer_weekly_volume_cap = 500;
+    double raw_water_transfer_downstream_allocation_ratio = 0.423;
+
+    /// raw water transfer triggers for ALL regional utilities (in order of their ids)
+    vector<double> party_raw_water_transfer_triggers = {owasa_raw_water_transfer_trigger,
+                                                        durham_raw_water_transfer_trigger,
+                                                        cary_raw_water_transfer_trigger,
+                                                        raleigh_raw_water_transfer_trigger};
+
+    RawWaterReleases flat_river_raw_water_transfer(0, upstream_party_id0, downstream_party_id0,
+                                               upstream_reservoir_id0, downstream_reservoir_id0,
+                                               raw_water_transfer_weekly_volume_cap,
+                                               party_raw_water_transfer_triggers,
+                                               raw_water_transfer_downstream_allocation_ratio);
+
+    drought_mitigation_policies.push_back(&flat_river_raw_water_transfer);
+
+    cout << "Set insurance policy." << endl;
     double insurance_triggers[4] = {owasa_insurance_use,
                                     durham_insurance_use, cary_insurance_use,
                                     raleigh_insurance_use}; //FIXME: Change
@@ -2151,6 +2279,7 @@ void triangleTest(
     DataCollector *data_collector = nullptr;
 
     /// Creates simulation object
+    cout << "Begin simulation." << endl;
     Simulation s(water_sources,
                  g,
                  reservoir_utility_connectivity_matrix,

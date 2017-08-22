@@ -434,6 +434,9 @@ void WaterSource::removeWater(int allocation_id, double volume) {
     available_volume -= volume;
     total_demand += volume;
 }
+void WaterSource::addWater(int allocation_id, double volume) {
+    available_volume += volume;
+}
 
 void WaterSource::addCapacity(double capacity) {
     WaterSource::capacity += capacity;

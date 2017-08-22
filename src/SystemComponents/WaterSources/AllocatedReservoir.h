@@ -89,7 +89,7 @@ public:
     double getAllocatedTreatmentCapacity(int utility_id) const override;
 
 
-    void addWater(int utility_id, double volume);
+    void addWater(int utility_id, double volume) override;
 };
 
 

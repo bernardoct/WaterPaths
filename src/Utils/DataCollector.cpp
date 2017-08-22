@@ -12,6 +12,7 @@
 #include "DataCollector.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
 #include "Utils.h"
+#include "../DroughtMitigationInstruments/RawWaterReleases.h"
 
 
 DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<WaterSource *> &water_sources,
@@ -24,7 +25,7 @@ DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<Wa
              &sb) == 0 && S_ISDIR(sb.st_mode))
         cout << "Output will be printed to folder " << output_directory << endl;
     else {
-        cout << Utils::getexepath() << output_directory << endl;
+//        cout << Utils::getexepath() << output_directory << endl;
         __throw_invalid_argument("Output folder does not exist.");
     }
 
@@ -49,6 +50,10 @@ DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<Wa
             transfers_policies_t.emplace_back(
                     dmp->id,
                     dynamic_cast<Transfers *>(dmp)->getUtilities_ids());
+        else if (dmp->type == RAW_WATER_TRANSFERS)
+            raw_water_transfer_policies_t.emplace_back(
+                    dmp->id,
+                    dynamic_cast<RawWaterReleases *>(dmp)->getUtilities_ids());
     }
 
     /// Create vectors to store weekly information.
@@ -86,6 +91,11 @@ DataCollector::DataCollector(const vector<Utility *> &utilities, const vector<Wa
         for (TransfersPolicy_t &tp : transfers_policies_t)
             tp.demand_offsets.emplace_back();
 
+        for (RawWaterTransferPolicy_t &rwtp : raw_water_transfer_policies_t) {
+            rwtp.raw_water_transfer_total.emplace_back();
+            rwtp.utility_target_storage_ratio.emplace_back();
+        }
+
         pathways.emplace_back();
     }
 }
@@ -100,6 +110,7 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
     WaterSource *ws;
     Restrictions *rp;
     Transfers *tp;
+    RawWaterReleases *rwtp;
     DroughtMitigationPolicy *dmp;
     int r = continuity_model_realization->realization_id;
     vector<int> infra_build;
@@ -133,8 +144,7 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
         water_sources_t[i].total_upstream_sources_inflows[r].push_back(ws->getUpstream_source_inflow());
         water_sources_t[i].outflows[r].push_back(ws->getTotal_outflow());
         water_sources_t[i].total_catchments_inflow[r].push_back(ws->getUpstreamCatchmentInflow());
-        water_sources_t[i].evaporated_volume[r]
-                .push_back(ws->getEvaporated_volume());
+        water_sources_t[i].evaporated_volume[r].push_back(ws->getEvaporated_volume());
     }
 
     /// Get drought mitigation policy data.
@@ -154,6 +164,17 @@ void DataCollector::collectData(ContinuityModelRealization *continuity_model_rea
         if (dmp->type == TRANSFERS) {
             tp = (Transfers *) continuity_model_realization->getDrought_mitigation_policies()[i];
             transfers_policies_t[p].demand_offsets[r].push_back(tp->getAllocations());
+            p++;
+        }
+    }
+
+    p = 0;
+    for (int i = 0; i < continuity_model_realization->getDrought_mitigation_policies().size(); ++i) {
+        dmp = continuity_model_realization->getDrought_mitigation_policies()[i];
+        if (dmp->type == RAW_WATER_TRANSFERS) {
+            rwtp = (RawWaterReleases *) continuity_model_realization->getDrought_mitigation_policies()[i];
+            raw_water_transfer_policies_t[p].raw_water_transfer_total[r].push_back(rwtp->getRawWaterTransferVolume());
+            raw_water_transfer_policies_t[p].utility_target_storage_ratio[r].push_back(rwtp->getUtilityTargetStorageLevels());
             p++;
         }
     }
@@ -426,6 +447,8 @@ void DataCollector::printPoliciesOutput(string file_name) {
                 outStream << endl;
                 outStream << "Realization " << r << endl;
                 outStream << setw(COLUMN_WIDTH) << " ";
+
+                /// Print realization head line 1.
                 for (auto &rp : restriction_policies_t) {
                     outStream << setw(COLUMN_WIDTH - 1) << "Restr. "
                               << rp.utility_id;
@@ -435,8 +458,16 @@ void DataCollector::printPoliciesOutput(string file_name) {
                         outStream << setw(COLUMN_WIDTH - 1) << "Transf. "
                                   << rp.transfer_policy_id;
                 }
+                for (auto &rwp : raw_water_transfer_policies_t) {
+                    outStream << setw(COLUMN_WIDTH - 1) << "RWT. "
+                              << rwp.raw_water_transfer_policy_id;
+                    for (int id = 0; id < rwp.utilities_ids.size(); ++id) {
+                        outStream << setw(COLUMN_WIDTH - 1) << "RWT. "
+                                  << rwp.raw_water_transfer_policy_id;
+                    }
+                }
 
-                /// Print realization header.
+                /// Print realization header line 2.
                 outStream << endl << setw(COLUMN_WIDTH) << "Week";
                 for (int i = 0; i < restriction_policies_t.size(); ++i) {
                     outStream << setw(COLUMN_WIDTH) << "Multip.";
@@ -444,6 +475,13 @@ void DataCollector::printPoliciesOutput(string file_name) {
                 for (auto &tp : transfers_policies_t) {
                     for (int buyer_id : tp.utilities_ids)
                         outStream << setw(COLUMN_WIDTH - 1) << "Alloc. " << buyer_id;
+                }
+                // Raw Wat. T. Vol. ID     Raw Wat. T. Rat. Up    Raw Wat. T. Rat. Down
+                for (auto &rwp : raw_water_transfer_policies_t) {
+                    outStream << setw(COLUMN_WIDTH - 1) << "Vol.";
+                    for (int party_id : rwp.utilities_ids) {
+                        outStream << setw(COLUMN_WIDTH - 1) << " Rat. " << party_id;
+                    }
                 }
                 outStream << endl;
 
@@ -457,6 +495,14 @@ void DataCollector::printPoliciesOutput(string file_name) {
                     for (auto &tp : transfers_policies_t) {
                         for (double &a : tp.demand_offsets[r].at(w))
                             outStream << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION) << a;
+                    }
+                    for (auto &rwp : raw_water_transfer_policies_t) {
+                        outStream << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+                                  << rwp.raw_water_transfer_total[r].at(w);
+                        outStream << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+                                  << rwp.utility_target_storage_ratio[r].at(w)[0];
+                        outStream << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+                                  << rwp.utility_target_storage_ratio[r].at(w)[1];
                     }
                     outStream << endl;
                 }
@@ -497,6 +543,14 @@ void DataCollector::printPoliciesOutputCompact(string file_name) {
                         outStream << setw(COLUMN_WIDTH - 1) << "Transf. "
                                   << tp.transfer_policy_id;
                 }
+                for (auto &rwp : raw_water_transfer_policies_t) {
+                    outStream << setw(COLUMN_WIDTH - 1) << "RWT. "
+                              << rwp.raw_water_transfer_policy_id;
+                    for (int id = 0; id < rwp.utilities_ids.size(); ++id) {
+                        outStream << setw(COLUMN_WIDTH - 1) << "RWT. "
+                                  << rwp.raw_water_transfer_policy_id;
+                    }
+                }
 
                 /// Print realization header.
                 outStream << endl << "#";
@@ -508,6 +562,12 @@ void DataCollector::printPoliciesOutputCompact(string file_name) {
                         outStream << setw(COLUMN_WIDTH - 1) << "Alloc. "
                                   << buyer_id;
                 }
+                for (auto &rwp : raw_water_transfer_policies_t) {
+                    outStream << setw(COLUMN_WIDTH - 1) << "Vol.";
+                    for (int party_id : rwp.utilities_ids) {
+                        outStream << setw(COLUMN_WIDTH - 1) << " Rat. " << party_id;
+                    }
+                }
                 outStream << endl;
 
                 /// Print numbers.
@@ -518,9 +578,7 @@ void DataCollector::printPoliciesOutputCompact(string file_name) {
                                   << rp.restriction_multiplier[r].at(w)
                                   << ",";
                     }
-                    unsigned long transfer_size = transfers_policies_t[0]
-                            .demand_offsets[r].at(w)
-                            .size();
+                    unsigned long transfer_size = transfers_policies_t[0].demand_offsets[r].at(w).size();
                     for (auto &rp : transfers_policies_t) {
                         for (int j = 0; j < transfer_size; ++j) {
                             outStream << setprecision(COLUMN_PRECISION)
@@ -528,6 +586,14 @@ void DataCollector::printPoliciesOutputCompact(string file_name) {
                             if (j < transfer_size - 1)
                                 outStream << ",";
                         }
+                    }
+                    for (auto &rwp : raw_water_transfer_policies_t) {
+                        outStream << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+                                  << rwp.raw_water_transfer_total[r].at(w);
+                        outStream << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+                                  << rwp.utility_target_storage_ratio[r].at(w)[0];
+                        outStream << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+                                  << rwp.utility_target_storage_ratio[r].at(w)[1];
                     }
                     outStream << endl;
                 }

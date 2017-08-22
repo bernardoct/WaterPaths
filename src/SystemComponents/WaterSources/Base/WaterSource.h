@@ -114,6 +114,8 @@ public:
 
     virtual void removeWater(int allocation_id, double volume);
 
+    virtual void addWater(int utility_id, double volume);
+
     virtual void addCapacity(double capacity);
 
     virtual void setOnline();

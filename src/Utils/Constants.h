@@ -49,6 +49,7 @@ namespace Constants {
     const int RESTRICTIONS = 1;
     const int INSURANCE_PSEUDO_ROF = 2;
     const int INSURANCE_STORAGE_ROF = 3;
+    const int RAW_WATER_TRANSFERS = 4;
 
     const int FIXED_FLOW_CONTROLS = 0;
     const int INFLOW_CONTROLS = 1;
@@ -66,6 +67,11 @@ namespace Constants {
     const int NO_OF_INSURANCE_STORAGE_TIERS = (int) std::round(1. / INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD);
 
     const int WATER_QUALITY_ALLOCATION = -1;
+
+    const std::string base_directory = "C:/Users/David/OneDrive/UNC/Research/WSC/Coding/RevampedTriangle";
+
+    // FIXME: SEE ABOUT HOW TO UP THIS TO 50 INSTEAD OF 20
+    const int NO_OF_RAW_WATER_TRANSFER_STORAGE_TIERS = NO_OF_INSURANCE_STORAGE_TIERS;
 };
 
 

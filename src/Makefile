@@ -2,7 +2,7 @@ CC=g++
 PCC=mpiCC
 
 #the following is for normal use:
-CFLAGS=-std=c++14 -O3 -openmp
+CFLAGS=-std=c++14 -O0 -openmp
 
 #the following is for using gprof:
 #CFLAGS=-g -c -O0 -Wall
@@ -24,7 +24,7 @@ parallel: LIBS += -lborgms
 parallel: CFLAGS += -DPARALLEL -ipo
 parallel: all
 
-debug: CFLAGS=-O3
+debug: CFLAGS=-O0
 debug: CFLAGS += -g
 debug: all
 

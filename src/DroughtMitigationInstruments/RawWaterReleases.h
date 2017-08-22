@@ -9,12 +9,12 @@
 #include "Base/DroughtMitigationPolicy.h"
 #include "../SystemComponents/WaterSources/AllocatedReservoir.h"
 
-class RawWaterReleases : DroughtMitigationPolicy {
+class RawWaterReleases : public DroughtMitigationPolicy {
 private:
     Utility *upstream_utility;
     Utility *downstream_utility;
-    AllocatedReservoir *upstream_reservoir;
-    AllocatedReservoir *downstream_reservoir;
+    Reservoir *upstream_reservoir;
+    Reservoir *downstream_reservoir;
     MinEnvironFlowControl *upstream_min_env_flow_control;
 
     const int upstream_utility_id;
@@ -22,12 +22,11 @@ private:
     const int upstream_reservoir_id;
     const int downstream_reservoir_id;
     const double max_releases;
-    const double *rof_triggers;
+    const vector<double> rof_triggers;
     const double raw_water_transfer_downstream_allocation_ratio;
 
-    double downstream_storage_target;
-    double upstream_storage_target;
     double raw_water_transfer_volume;
+    vector<double> storage_targets;
 
 public:
     RawWaterReleases(const int id,
@@ -36,7 +35,7 @@ public:
                      const int upstream_reservoir_id,
                      const int downstream_reservoir_id,
                      const double max_releases,
-                     double *rof_triggers,
+                     const vector<double> rof_triggers,
                      const double raw_water_transfer_downstream_allocation_ratio);
 
     void applyPolicy(int week) override;
@@ -48,7 +47,12 @@ public:
     void setRealization(unsigned int realization_id) override;
 
     void getUtilityStorageFromROF(int week, const Matrix3D<double> *storage_to_rof_table);
+    const double getUtilityStorageFromROF(int week, const Matrix3D<double> *storage_to_rof_table,
+                                          const int u_id);
 
+    const double &getRawWaterTransferVolume() const;
+
+    const vector<double> &getUtilityTargetStorageLevels() const;
 };
 
 

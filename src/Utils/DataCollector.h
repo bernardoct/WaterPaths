@@ -70,6 +70,17 @@ struct TransfersPolicy_t {
     vector<vector<vector<double>>> demand_offsets;
 };
 
+struct RawWaterTransferPolicy_t {
+    RawWaterTransferPolicy_t(int raw_water_transfer_policy_id, vector<int> utilities_ids) :
+            utilities_ids(utilities_ids), raw_water_transfer_policy_id(raw_water_transfer_policy_id) {};
+
+    int raw_water_transfer_policy_id = NON_INITIALIZED;
+
+    vector<int> utilities_ids;
+    vector<vector<double>> raw_water_transfer_total;
+    vector<vector<vector<double>>> utility_target_storage_ratio;
+};
+
 class DataCollector {
 
 private:
@@ -77,8 +88,9 @@ private:
     vector<WaterSource_t> water_sources_t;
     vector<RestrictionPolicy_t> restriction_policies_t;
     vector<TransfersPolicy_t> transfers_policies_t;
+    vector<RawWaterTransferPolicy_t> raw_water_transfer_policies_t;
     string output_directory =
-            "/home/bct52/CLionProjects/RevampedTriangleModel/TestFiles/output/";
+            base_directory + "/RevampedTriangleModel/TestFiles/output/";
 //    string output_directory = "..\\TestFiles\\";
     vector<vector<vector<int>>> pathways;
 

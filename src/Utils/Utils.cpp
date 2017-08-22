@@ -11,6 +11,7 @@
 #include "../SystemComponents/WaterSources/AllocatedReservoir.h"
 #include "../SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
 #include "../SystemComponents/WaterSources/Relocation.h"
+#include "../DroughtMitigationInstruments/RawWaterReleases.h"
 #include <fstream>
 #include <algorithm>
 #include <climits>
@@ -61,6 +62,86 @@ vector<vector<double>> Utils::parse2DCsvFile(
     }
 
     if (!infile.eof() && l < max_lines) {
+        cout << "Could not read file " << file_name << "\n";
+        __throw_invalid_argument("Could not read file.");
+    }
+
+    return data;
+}
+
+vector<vector<double>> Utils::parse2DCsvFile(
+        string file_name,
+        int max_lines) {
+
+    vector<vector<double> > data;
+    ifstream infile(file_name);
+    int l = 0;
+
+    while (infile && l < max_lines) {
+        l++;
+        string s;
+        if (!getline(infile, s)) break;
+        if (s[0] != '#') {
+            istringstream ss(s);
+            vector<double> record;
+
+            while (ss) {
+                string sl;
+                if (!getline(ss,
+                             sl,
+                             ','))
+                    break;
+                try {
+                    record.push_back(stof(sl));
+                }
+                catch (const std::invalid_argument e) {
+                    cout << "NaN found in file " << file_name << " line " << l
+                         << endl;
+                    e.what();
+                }
+            }
+
+            data.push_back(record);
+        }
+    }
+
+    if (!infile.eof() && l < max_lines) {
+        cout << "Could not read file " << file_name << "\n";
+        __throw_invalid_argument("Could not read file.");
+    }
+
+    return data;
+}
+
+
+vector<double> Utils::parse1DCsvFile(
+        char const *file_name,
+        int max_lines) {
+
+    vector<double> data;
+    ifstream infile(file_name);
+    int l = 0;
+
+    while (infile && l < max_lines) {
+        l++;
+        string s;
+        if (!getline(infile,
+                     s))
+            break;
+
+        istringstream ss(s);
+        double record;
+
+        try {
+            record = stof(ss.str());
+            data.push_back(record);
+        } catch (const std::invalid_argument e) {
+            cout << "NaN found in file " << file_name << " line " << l << endl;
+            e.what();
+        }
+    }
+
+    if (!infile.eof() && l < max_lines) {
         cerr << "Could not read file " << file_name << "\n";
     }
 
@@ -68,7 +149,7 @@ vector<vector<double>> Utils::parse2DCsvFile(
 }
 
 vector<double> Utils::parse1DCsvFile(
-        char const *file_name,
+        string file_name,
         int max_lines) {
 
     vector<double> data;
@@ -179,6 +260,10 @@ Utils::copyDroughtMitigationPolicyVector(
             drought_mitigation_policy_new.push_back(
                     new InsuranceStorageToROF(
                             *dynamic_cast<InsuranceStorageToROF *>(dmp)));
+        else if (dmp->type == RAW_WATER_TRANSFERS)
+            drought_mitigation_policy_new.push_back(
+                    new RawWaterReleases(
+                            *dynamic_cast<RawWaterReleases *>(dmp)));
     }
 
     return drought_mitigation_policy_new;
@@ -245,11 +330,11 @@ vector<vector<double>> Utils::calculateDistances(vector<vector<double>> data_poi
 }
 
 
-std::string Utils::getexepath() {
-    char result[PATH_MAX];
-    ssize_t count = readlink("/proc/self/exe",
-                             result,
-                             PATH_MAX);
-    return std::string(result,
-                       (unsigned long) ((count > 0) ? count : 0));
-}
+//std::string Utils::getexepath() {
+//    char result[PATH_MAX];
+//    ssize_t count = readlink("/proc/self/exe",
+//                             result,
+//                             PATH_MAX);
+//    return std::string(result,
+//                       (unsigned long) ((count > 0) ? count : 0));
+//}

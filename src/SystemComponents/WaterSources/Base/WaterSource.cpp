@@ -439,6 +439,7 @@ const {
 void WaterSource::removeWater(int allocation_id, double volume) {
     available_volume -= volume;
     total_demand += volume;
+    policy_added_demand += volume;
 }
 
 void WaterSource::addCapacity(double capacity) {

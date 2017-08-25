@@ -1994,8 +1994,7 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
      */
 
     Graph g(12);
-    g.addEdge(0,
-              9);
+    g.addEdge(0, 9);
     g.addEdge(9, 1);
     g.addEdge(1, 8);
     g.addEdge(8, 10);
@@ -2240,15 +2239,15 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
                                                 + std::to_string(sol_number));
     data_collector->printPoliciesOutputCompact(fp + "_s"
                                                + std::to_string(sol_number));
-    data_collector->printUtilityOutput(fu + "_s"
-                                       + std::to_string(sol_number)
-                                       + "_Tabular.out");
-    data_collector->printReservoirOutput(fws + "_s"
-                                         + std::to_string(sol_number)
-                                         +"_Tabular.out");
-    data_collector->printPoliciesOutput(fp + "_s"
-                                        + std::to_string(sol_number)
-                                        + "_Tabular.out");
+//    data_collector->printUtilityOutput(fu + "_s"
+//                                       + std::to_string(sol_number)
+//                                       + "_Tabular.out");
+//    data_collector->printReservoirOutput(fws + "_s"
+//                                         + std::to_string(sol_number)
+//                                         +"_Tabular.out");
+//    data_collector->printPoliciesOutput(fp + "_s"
+//                                        + std::to_string(sol_number)
+//                                        + "_Tabular.out");
     data_collector->printObjectives(fo + "_s"
                                     + std::to_string(sol_number));
     data_collector->printPathways(fpw + "_s"

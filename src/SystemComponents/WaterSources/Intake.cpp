@@ -116,7 +116,8 @@ void Intake::applyContinuity(
                            min_environmental_outflow);
 
     /// Records for the sake of output.
-    this->total_demand = total_demand;
+    this->total_demand = total_demand + policy_added_demand;
+    policy_added_demand = 0;
     this->upstream_source_inflow = upstream_source_inflow;
     total_outflow = upstream_source_inflow + upstream_catchment_inflow -
                     total_demand;

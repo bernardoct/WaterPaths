@@ -164,9 +164,13 @@ void AllocatedReservoir::applyContinuity(
         int week, double upstream_source_inflow,
         vector<double> *demand_outflow) {
 
-    total_demand = std::accumulate(demand_outflow->begin(),
-                                   demand_outflow->end(),
-                                   0.);
+    double available_volume_old = available_volume;
+
+    double direct_demand = std::accumulate(demand_outflow->begin(),
+                                           demand_outflow->end(),
+                                           0.);
+
+    total_demand = direct_demand;
 
     /// Calculate total runoff inflow reaching reservoir from its watershed.
     upstream_catchment_inflow = 0;
@@ -186,7 +190,8 @@ void AllocatedReservoir::applyContinuity(
                                   - total_demand - min_environmental_outflow
                                   - evaporated_volume;
     double outflow_new = min_environmental_outflow;
-
+    total_outflow = outflow_new;
+    this->upstream_source_inflow = upstream_source_inflow;
 
     /// Check if spillage is needed and, if so, correct stored volume and
     /// calculate spillage and set all allocations to full. Otherwise,
@@ -197,7 +202,6 @@ void AllocatedReservoir::applyContinuity(
                                              allocated_fractions[u];
         total_outflow = outflow_new + available_volume_new - capacity;
         available_volume = capacity;
-        this->upstream_source_inflow = upstream_source_inflow;
     } else {
 
         available_volume = available_volume_new;
@@ -300,6 +304,9 @@ void AllocatedReservoir::applyContinuity(
         }
     }
 
+    total_demand += policy_added_demand;
+    policy_added_demand = 0;
+
     /// Sanity checking from now on.
     for (int u : *utilities_with_allocations) {
         if (available_allocated_volumes[u] > allocated_capacities[u])
@@ -322,6 +329,16 @@ void AllocatedReservoir::applyContinuity(
         __throw_runtime_error("Sum of allocated volumes in a reservoir must "
                                     "total current storage minus unallocated "
                                     "volume");
+
+    if (abs(available_volume_old - direct_demand + upstream_source_inflow +
+                    upstream_catchment_inflow - evaporated_volume -
+                    total_outflow - available_volume) >  abs(available_volume) * 1e-4) {
+		    cerr << "Source " << name << endl;
+		    cerr << "Week " << week << endl;
+        __throw_runtime_error("Continuity error in allocated water source. "
+                                      "If you cannot find the problem, please "
+                                      "report this to bct52@cornell.edu");
+	    }
 }
 
 void AllocatedReservoir::addCapacity(double capacity) {
@@ -371,6 +388,7 @@ void AllocatedReservoir::removeWater(int allocation_id, double volume) {
     available_allocated_volumes[allocation_id] -= volume;
     available_volume -= volume;
     total_demand += volume;
+    policy_added_demand += volume;
 }
 
 double AllocatedReservoir::getAllocatedCapacity(int utility_id) {

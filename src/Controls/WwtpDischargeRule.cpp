@@ -23,6 +23,12 @@ WwtpDischargeRule::WwtpDischargeRule(
                     (unsigned long) i)] = i;
     }
 
+    for (auto f : *year_series_fraction_discharge) {
+        if (f.size() != Constants::WEEKS_IN_YEAR)
+            __throw_invalid_argument("Wastewater discharge rules but contain "
+                                             "exactly 53 (for years with "
+                                             "extra week) values.");
+    }
     if (year_series_fraction_discharge->size() != discharge_to_source_ids->size())
         __throw_invalid_argument("Number of wwtp discharge time series must be "
                                          "the same as number of sources ids.");

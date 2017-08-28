@@ -24,7 +24,7 @@ WwtpDischargeRule::WwtpDischargeRule(
     }
 
     for (auto f : *year_series_fraction_discharge) {
-        if (f.size() != Constants::WEEKS_IN_YEAR)
+        if (f.size() != (int) Constants::WEEKS_IN_YEAR + 1)
             __throw_invalid_argument("Wastewater discharge rules but contain "
                                              "exactly 53 (for years with "
                                              "extra week) values.");

@@ -23,7 +23,7 @@ Intake::Intake(
 //    }
 //
 //    total_demand = 0;
-//    available_volume = upstream_catchment_inflow - min_environmental_outflow;
+//    stored_volume = upstream_catchment_inflow - min_environmental_outflow;
 }
 
 Intake::Intake(
@@ -53,7 +53,7 @@ Intake::Intake(
 //    }
 //
 //    total_demand = 0;
-//    available_volume = this->upstream_catchment_inflow - min_environmental_outflow;
+//    stored_volume = this->upstream_catchment_inflow - min_environmental_outflow;
 }
 
 /**

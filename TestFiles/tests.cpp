@@ -6,7 +6,7 @@
 #include "../src/SystemComponents/WaterSources/Reservoir.h"
 #include "../src/Utils/Utils.h"
 #include "catch-main.h"
-#include "../src/Utils/DataCollector.h"
+#include "../src/Utils/DataCollectorDeprecated.h"
 //#include "../src/DroughtMitigationInstruments/InsurancePseudoROF.h"
 #include "../src/DroughtMitigationInstruments/InsuranceStorageToROF.h"
 //#include "../src/Utils/Matrix3D.h"
@@ -104,7 +104,7 @@ TEST_CASE("Test reliability objective calculation", "[Reliability Objective]") {
 
     double result = 0.4; // from second row.
 
-    DataCollector dc;
+    DataCollectorDeprecated dc;
 
     REQUIRE(dc.calculateReliabilityObjective(ut) == result);
 }
@@ -139,7 +139,7 @@ TEST_CASE("Test restriction frequency objective calculation", "[Restriction Freq
 
     double result = 0.3;
 
-    DataCollector dc;
+    DataCollectorDeprecated dc;
 
     REQUIRE(dc.calculateRestrictionFrequencyObjective(rp) == result);
 }
@@ -382,7 +382,7 @@ TEST_CASE("Test peak financial cost objective calculation", "[Peak financial cos
     ut.insurance_contract_cost.push_back(cc3);
     ut.gross_revenues.push_back(tr3);
 
-    DataCollector dc;
+    DataCollectorDeprecated dc;
 
     double peak_financial_costs = dc.calculatePeakFinancialCostsObjective(ut);
 
@@ -633,7 +633,7 @@ TEST_CASE("Test worse case cost objective calculation", "[Worse case cost object
     ut.contingency_fund_size.push_back(cf3);
     ut.gross_revenues.push_back(tr3);
 
-    DataCollector dc;
+    DataCollectorDeprecated dc;
 
     double peak_financial_costs = dc.calculateWorseCaseCostsObjective(ut);
 

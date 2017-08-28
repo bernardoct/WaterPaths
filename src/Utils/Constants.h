@@ -36,6 +36,8 @@ namespace Constants {
 
     const int NONE = 0;
     const int NON_INITIALIZED = -1;
+
+    const int UTILITY = 100;
     
     const int INTAKE = 0;
     const int RESERVOIR = 1;

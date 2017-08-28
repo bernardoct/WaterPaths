@@ -3,6 +3,7 @@
 //
 
 
+#include <numeric>
 #include "WaterReuse.h"
 
 WaterReuse::WaterReuse(const char *name, const int id, const double capacity)
@@ -39,11 +40,23 @@ WaterReuse::WaterReuse(
 
 void WaterReuse::applyContinuity(
         int week, double upstream_source_inflow,
-        vector<double> *demand_outflow) {}
+        vector<double> *demand_outflow) {
+
+    double total_demand = std::accumulate(demand_outflow->begin(),
+                                          demand_outflow->end(),
+                                          0.);
+
+    treated_volume = min(total_demand,
+                         capacity);
+}
 
 
 WaterReuse &WaterReuse::operator=(const WaterReuse &water_reuse) {
     WaterSource::operator=(water_reuse);
     available_volume = water_reuse.capacity;
     return *this;
+}
+
+double WaterReuse::getReused_volume() const {
+    return treated_volume;
 }

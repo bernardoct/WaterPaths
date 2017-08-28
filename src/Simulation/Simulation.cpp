@@ -7,7 +7,6 @@
 #include <ctime>
 #include <algorithm>
 
-
 Simulation::Simulation(
         vector<WaterSource *> &water_sources, Graph &water_sources_graph,
         const vector<vector<int>> &water_sources_to_utilities,
@@ -93,12 +92,14 @@ Simulation::Simulation(
     }
 
     /// Creates the data collector for the simulation.
-    data_collector = new DataCollector(
-            utilities,
-            water_sources,
-            drought_mitigation_policies,
-            number_of_realizations,
-            water_sources_graph);
+//    data_collector = new DataCollectorDeprecated(
+//            utilities,
+//            water_sources,
+//            drought_mitigation_policies,
+//            number_of_realizations,
+//            water_sources_graph);
+
+    master_data_collector = new MasterDataCollector();
 
     /// Create the realization and ROF models.
     for (unsigned int r = 0; r < number_of_realizations; ++r) {
@@ -110,6 +111,12 @@ Simulation::Simulation(
                         drought_mitigation_policies);
         vector<Utility *> utilities_realization =
                 Utils::copyUtilityVector(utilities);
+
+        master_data_collector->addRealization(
+                water_sources_realization,
+                drought_mitigation_policies_realization,
+                utilities_realization,
+                r);
 
         /// Store realization models in vector
         realization_models.push_back(new ContinuityModelRealization(
@@ -159,7 +166,7 @@ Simulation &Simulation::operator=(const Simulation &simulation) {
     return *this;
 }
 
-DataCollector *Simulation::runFullSimulation(int num_threads) {
+MasterDataCollector *Simulation::runFullSimulation(int num_threads) {
 
     int n_utilities = (int) realization_models[0]->getUtilities().size();
     vector<double> risks_of_failure_week((unsigned long) n_utilities, 0.0);
@@ -175,7 +182,7 @@ DataCollector *Simulation::runFullSimulation(int num_threads) {
     std::cout << "Beginning realizations loop." << endl;
 #pragma omp parallel for num_threads(num_threads)
     for (int r = 0; r < number_of_realizations; ++r) {
-//        try {
+        try {
             count++;
             time_t timer_ir, timer_fr;
             time(&timer_ir);
@@ -187,15 +194,16 @@ DataCollector *Simulation::runFullSimulation(int num_threads) {
                 realization_models[r]->setShortTermROFs(rof_models[r]->calculateROF(w, SHORT_TERM_ROF));
                 realization_models[r]->applyDroughtMitigationPolicies(w);
                 realization_models[r]->continuityStep(w);
-                data_collector->collectData(realization_models[r]);
+                master_data_collector->collectData(r);
             }
             time(&timer_fr);
-            std::cout << "Realization " << r << ": "
+            std::cout << "Realization " << count << ": "
                       << difftime(timer_fr, timer_ir) << std::endl;
-//        } catch (const std::exception& e) {
-//            cout << "Error in realization " << r << endl;
-//            e.what();
-//        }
+
+        } catch (const std::exception &e) {
+            cout << "Error in realization " << r << endl;
+            e.what();
+        }
     }
     time(&timer_f);
     seconds = difftime(timer_f, timer_i);
@@ -206,5 +214,5 @@ DataCollector *Simulation::runFullSimulation(int num_threads) {
                        timer_i);
     std::cout << "Total: " << seconds << "s" << std::endl;
 
-    return data_collector;
+    return master_data_collector;
 }

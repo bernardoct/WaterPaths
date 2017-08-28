@@ -186,11 +186,14 @@ void WaterSource::setAllocations(
     /// Populate vectors.
     for (unsigned long i = 0; i < utilities_with_allocations->size(); ++i) {
         int u = utilities_with_allocations->at(i);
+
+        /// Replace the -1 in the utilities_with_allocations vector with the
+        /// ID assigned to the water quality pool.
         u = (u == WATER_QUALITY_ALLOCATION ? wq_pool_id : u);
+
         this->allocated_fractions[u] = (*allocated_fractions)[i];
         this->allocated_treatment_fractions[u] =
                 (*allocated_treatment_fractions)[u];
-
         (*this->utilities_with_allocations)[i] = u;
 
         allocated_capacities[u] = this->capacity * (*allocated_fractions)[i];
@@ -577,6 +580,10 @@ void WaterSource::setAvailableAllocatedVolumes(
 
 double *WaterSource::getAvailable_allocated_volumes() const {
     return available_allocated_volumes;
+}
+
+vector<int> *WaterSource::getUtilities_with_allocations() const {
+    return utilities_with_allocations;
 }
 
 

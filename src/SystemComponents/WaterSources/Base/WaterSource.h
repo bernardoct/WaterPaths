@@ -170,6 +170,8 @@ public:
             double *available_allocated_volumes, double available_volume);
 
     double *getAvailable_allocated_volumes() const;
+
+    vector<int> *getUtilities_with_allocations() const;
 };
 
 

@@ -225,6 +225,8 @@ public:
     const vector<WaterSource *> &getWater_sources() const;
 
     void removeRelatedSourcesFromQueue(int next_construction);
+
+    double getWaste_water_discharge() const;
 };
 
 

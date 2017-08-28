@@ -3,8 +3,8 @@
 //
 
 #include <iostream>
-#include <algorithm>
 #include <numeric>
+#include <algorithm>
 #include "Utility.h"
 #include "../Utils/Utils.h"
 #include "WaterSources/ReservoirExpansion.h"
@@ -179,6 +179,7 @@ Utility::Utility(
 
 Utility::Utility(Utility &utility) :
         id(utility.id),
+        name(utility.name),
         number_of_week_demands(utility.number_of_week_demands),
         total_storage_capacity(utility.total_storage_capacity),
         total_stored_volume(utility.total_stored_volume),
@@ -411,7 +412,7 @@ void Utility::splitDemands(
                               week);
 
     //FIXME: IMPROVE CONTINUITY ERROR CHECKING HERE TO DETECT POORLY SPLIT DEMANDS WITHOUT CAPTURING UNFULFILLED DEMAND DUE TO LACK OF STORED WATER.
-//    if (unallocated_reservoirs_demand > 1e-4)
+//    if (abs(unallocated_reservoirs_demand) > 1e-4)
 //        __throw_logic_error("There is demand not being allocated to a water "
 //                                    "source when the demand is being split "
 //                                    "among water sources.");
@@ -1037,4 +1038,8 @@ double Utility::getLong_term_risk_of_failure() const {
 
 const vector<WaterSource *> &Utility::getWater_sources() const {
     return water_sources;
+}
+
+double Utility::getWaste_water_discharge() const {
+    return waste_water_discharge;
 }

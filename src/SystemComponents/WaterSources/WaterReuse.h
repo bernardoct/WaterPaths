@@ -9,6 +9,8 @@
 #include "Base/WaterSource.h"
 
 class WaterReuse : public WaterSource {
+private:
+    double treated_volume;
 public:
     WaterReuse(const char *name, const int id, const double capacity);
 
@@ -25,6 +27,8 @@ public:
             vector<double> *demand_outflow) override;
 
     WaterReuse &operator=(const WaterReuse &water_reuse);
+
+    double getReused_volume() const;
 
 };
 

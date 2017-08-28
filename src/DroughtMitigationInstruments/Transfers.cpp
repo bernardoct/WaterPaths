@@ -282,8 +282,7 @@ void Transfers::applyPolicy(int week) {
                 int id = u.first;
                 realization_utilities[u.second]->setDemand_offset
                         (allocations[id],
-                         source_utility->waterPrice
-                                 (price_week));
+                         source_utility->waterPrice(price_week));
                 sum_allocations += allocations[id];
                 transfer_water_source->removeWater(id,
                                                    allocations[id]);

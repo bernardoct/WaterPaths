@@ -6,7 +6,6 @@
 #define TRIANGLEMODEL_SIMULATION_H
 
 #include "../Utils/Constants.h"
-#include "../Utils/DataCollector.h"
 #include "../SystemComponents/WaterSources/Base/WaterSource.h"
 #include "../SystemComponents/Utility.h"
 #include "../DroughtMitigationInstruments/Restrictions.h"
@@ -14,6 +13,7 @@
 #include "../ContinuityModels/ContinuityModelRealization.h"
 #include "../ContinuityModels/ContinuityModelROF.h"
 #include "../Controls/Base/MinEnvironFlowControl.h"
+#include "../DataCollector/MasterDataCollector.h"
 #include <vector>
 
 using namespace Constants;
@@ -32,9 +32,9 @@ public:
 
     Simulation &operator=(const Simulation &simulation);
 
-    DataCollector *runFullSimulation(int num_threads = 2);
-
     virtual ~Simulation();
+
+    MasterDataCollector *runFullSimulation(int num_threads);
 
 private:
 
@@ -42,7 +42,7 @@ private:
     int number_of_realizations;
     vector<ContinuityModelRealization *> realization_models;
     vector<ContinuityModelROF *> rof_models;
-    DataCollector *data_collector;
+    MasterDataCollector *master_data_collector;
 
 };
 

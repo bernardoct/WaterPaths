@@ -2,6 +2,7 @@
 // Created by bernardoct on 8/25/17.
 //
 
+#include <numeric>
 #include <algorithm>
 #include "ObjectivesCalculator.h"
 #include "Utils.h"

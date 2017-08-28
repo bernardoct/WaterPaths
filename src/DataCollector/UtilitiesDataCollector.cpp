@@ -30,6 +30,8 @@ string UtilitiesDataCollector::printTabularString(int week) {
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << unrestricted_demand[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+              << waste_water_discharge[week]
+              << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << contingency_fund_size[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << insurance_payout[week]
@@ -55,6 +57,8 @@ string UtilitiesDataCollector::printCompactString(int week) {
               << ","
               << unrestricted_demand[week]
               << ","
+              << waste_water_discharge[week]
+              << ","
               << contingency_fund_size[week]
               << ","
               << insurance_payout[week]
@@ -74,6 +78,7 @@ string UtilitiesDataCollector::printTabularStringHeaderLine1() {
               << setw(COLUMN_WIDTH) << " "
               << setw(COLUMN_WIDTH) << "Rest."
               << setw(COLUMN_WIDTH) << "Unrest."
+              << setw(COLUMN_WIDTH) << "W. Water"
               << setw(COLUMN_WIDTH) << "Conting."
               << setw(COLUMN_WIDTH) << "Insurance"
               << setw(COLUMN_WIDTH) << "Insurance";
@@ -91,6 +96,7 @@ string UtilitiesDataCollector::printTabularStringHeaderLine2() {
               << setw(COLUMN_WIDTH) << "LT-ROF"
               << setw(COLUMN_WIDTH) << "Demand"
               << setw(COLUMN_WIDTH) << "Demand"
+              << setw(COLUMN_WIDTH) << "Discharge"
               << setw(COLUMN_WIDTH) << "Fund"
               << setw(COLUMN_WIDTH) << "Payout"
               << setw(COLUMN_WIDTH) << "Price";

@@ -845,6 +845,7 @@ void Utility::beginConstruction(int week, int infra_id) {
 void Utility::calculateWastewater_releases(int week, double *discharges) {
 
     double discharge;
+    waste_water_discharge = 0;
 
     for (int id : *wwtp_discharge_rule.discharge_to_source_ids) {
         discharge = restricted_demand * wwtp_discharge_rule

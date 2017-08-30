@@ -24,7 +24,7 @@ string RestrictionsDataCollector::printTabularString(int week) {
 
 string RestrictionsDataCollector::printCompactString(int week) {
 
-    return to_string(restriction_multipliers.at((unsigned long) week));
+    return to_string(restriction_multipliers.at((unsigned long) week)) + ",";
 }
 
 string RestrictionsDataCollector::printTabularStringHeaderLine1() {

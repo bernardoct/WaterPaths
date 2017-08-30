@@ -35,9 +35,11 @@ void MasterDataCollector::printPoliciesOutputCompact(
                             + std::to_string(r) + ".out");
 
             for (int w = week_i; w < week_f; ++w) {
+                string line = "";
                 for (vector<DataCollector *> p : drought_mitigation_policy_collectors)
-                    out_stream << p[r]->printCompactString(w);
-                out_stream << endl;
+                    line += p[r]->printCompactString(w);
+                line.pop_back();
+                out_stream << line << endl;
             }
 
             out_stream.close();
@@ -55,7 +57,7 @@ void MasterDataCollector::printPoliciesOutputTabular(
              ++r) {
             std::ofstream out_stream;
             out_stream.open(output_directory + "/" + file_name + "_r"
-                            + std::to_string(r) + "Tabular.out");
+                            + std::to_string(r) + ".tab");
 
             out_stream << "    ";
             for (vector<DataCollector *> p : drought_mitigation_policy_collectors)
@@ -88,10 +90,19 @@ void MasterDataCollector::printUtilitiesOutputCompact(
         out_stream.open(output_directory + "/" + file_name + "_r"
                         + std::to_string(r) + ".out");
 
+        out_stream << "#";
+        string line = "";
+        for (vector<UtilitiesDataCollector *> p : utility_collectors)
+            line += p[r]->printCompactStringHeader();
+        line.pop_back();
+        out_stream << line << endl;
+
         for (int w = week_i; w < week_f; ++w) {
+            string line = "";
             for (vector<UtilitiesDataCollector *> p : utility_collectors)
-                out_stream << p[r]->printCompactString(w);
-            out_stream << endl;
+                line += p[r]->printCompactString(w);
+            line.pop_back();
+            out_stream << line << endl;
         }
 
         out_stream.close();
@@ -106,7 +117,7 @@ void MasterDataCollector::printUtilitesOutputTabular(
     for (int r = 0; r < utility_collectors[0].size(); ++r) {
         std::ofstream out_stream;
         out_stream.open(output_directory + "/" + file_name + "_r"
-                        + std::to_string(r) + "Tabular.out");
+                        + std::to_string(r) + ".tab");
 
         stringstream names;
         names << "    ";
@@ -146,10 +157,19 @@ void MasterDataCollector::printWaterSourcesOutputCompact(
         out_stream.open(output_directory + "/" + file_name + "_r"
                         + std::to_string(r) + ".out");
 
+        out_stream << "#";
+        string line = "";
+        for (vector<DataCollector *> p : water_source_collectors)
+            line += p[r]->printCompactStringHeader();
+        line.pop_back();
+        out_stream << line << endl;
+
         for (int w = week_i; w < week_f; ++w) {
+            string line = "";
             for (vector<DataCollector *> p : water_source_collectors)
-                out_stream << p[r]->printCompactString(w);
-            out_stream << endl;
+                line += p[r]->printCompactString(w);
+            line.pop_back();
+            out_stream << line << endl;
         }
 
         out_stream.close();
@@ -164,7 +184,7 @@ void MasterDataCollector::printWaterSourcesOutputTabular(
     for (int r = 0; r < water_source_collectors[0].size(); ++r) {
         std::ofstream out_stream;
         out_stream.open(output_directory + "/" + file_name + "_r"
-                        + std::to_string(r) + "Tabular.out");
+                        + std::to_string(r) + ".tab");
 
         stringstream names;
         names << "    ";

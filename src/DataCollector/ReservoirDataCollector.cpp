@@ -82,6 +82,17 @@ string ReservoirDataCollector::printTabularStringHeaderLine2() {
 }
 
 string ReservoirDataCollector::printCompactStringHeader() {
+    stringstream outStream;
+
+    outStream
+            << id << "volume" << ","
+            << id << "demand" << ","
+            << id << "up_spill" << ","
+            << id << "catch_inflow" << ","
+            << id << "evap" << ","
+            << id << "ds_spill" << ",";
+
+    return outStream.str();
     return nullptr;
 }
 

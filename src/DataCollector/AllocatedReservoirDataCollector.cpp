@@ -70,7 +70,13 @@ string AllocatedReservoirDataCollector::printTabularStringHeaderLine2() {
 }
 
 string AllocatedReservoirDataCollector::printCompactStringHeader() {
-    return ReservoirDataCollector::printCompactStringHeader();
+
+    stringstream out_stream;
+
+    for (int u : *(allocated_reservoir->getUtilities_with_allocations()))
+        out_stream << id << "alloc_" + to_string(u) << ",";
+
+    return ReservoirDataCollector::printCompactStringHeader() + out_stream.str();
 }
 
 void AllocatedReservoirDataCollector::collect_data() {

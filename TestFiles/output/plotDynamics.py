@@ -32,8 +32,8 @@ p = Pool(8)
 folder = '' 
 # folder = '../HB model results/'
 
-realizations_utilities_all = np.array(p.map(read_append_file, glob.glob(folder + 'Utilities_s1_r*')))
-policies_all = np.array(p.map(read_append_file, glob.glob(folder + 'Policies_s1_r*')))
+realizations_utilities_all = np.array(p.map(read_append_file, glob.glob(folder + 'Utilities_s0_r*.out')))
+policies_all = np.array(p.map(read_append_file, glob.glob(folder + 'Policies_s0_r*.out')))
 
 to_plot = np.random.uniform(-1, 1, len(realizations_utilities_all)) > 0.
 realizations_utilities = realizations_utilities_all[to_plot]
@@ -53,9 +53,9 @@ fig.suptitle('Combined Storage [MG] and ROF (red), Restriction Multiplier (blue)
 ax00_2 = axes[0, 0].twinx()
 ax00_2.set_ylim([0, 1])
 for u in realizations_utilities:
-    axes[0, 0].fill_between(range(u[:, 18].size), 0, u[:, 18], facecolor='red', color="none",
+    axes[0, 0].fill_between(range(u[:, 20].size), 0, u[:, 20], facecolor='red', color="none",
                             alpha=alpha)
-    ax00_2.fill_between(range(u[:, 21].size), 0, u[:, 21], facecolor='blue', color="none",
+    ax00_2.fill_between(range(u[:, 23].size), 0, u[:, 23], facecolor='blue', color="none",
                         alpha=alpha)  # ROF
 axes[0, 0].set_ylabel('Cary')
 axes[0, 0].set_ylim(bottom=0)
@@ -63,9 +63,9 @@ axes[0, 0].set_ylim(bottom=0)
 ax10_2 = axes[1, 0].twinx()
 ax10_2.set_ylim([0, 1])
 for u in realizations_utilities:
-    axes[1, 0].fill_between(range(u[:, 9].size), 0, u[:, 9], facecolor='red', color="none",
+    axes[1, 0].fill_between(range(u[:, 10].size), 0, u[:, 10], facecolor='red', color="none",
                             alpha=alpha)
-    ax10_2.fill_between(range(u[:, 12].size), 0, u[:, 12], facecolor='blue', color="none",
+    ax10_2.fill_between(range(u[:, 13].size), 0, u[:, 13], facecolor='blue', color="none",
                         alpha=alpha)  # ROF
 axes[1, 0].set_ylabel('Durham')
 axes[1, 0].set_ylim(bottom=0)
@@ -83,9 +83,9 @@ axes[2, 0].set_ylim(bottom=0)
 ax30_2 = axes[3, 0].twinx()
 ax30_2.set_ylim([0, 1])
 for u in realizations_utilities:
-    axes[3, 0].fill_between(range(u[:, 27].size), 0, u[:, 27], facecolor='red', color="none",
+    axes[3, 0].fill_between(range(u[:, 30].size), 0, u[:, 30], facecolor='red', color="none",
                             alpha=alpha)
-    ax30_2.fill_between(range(u[:, 30].size), 0, u[:, 30], facecolor='blue', color="none",
+    ax30_2.fill_between(range(u[:, 33].size), 0, u[:, 33], facecolor='blue', color="none",
                         alpha=alpha)  # ROF
 axes[3, 0].set_ylabel('Raleigh')
 axes[3, 0].set_ylim(bottom=0)
@@ -102,7 +102,7 @@ axes[3, 0].set_xlabel('Time [weeks]')
 # fig2, (axo2, axd2, axc2, axr2) = plt.subplots(4, 1, sharex=True)
 # fig2.suptitle('ROF (red), Restriction Multiplier (blue) and Transfers (green)')
 for u, p in zip(realizations_utilities, policies):
-    axes[0, 1].fill_between(range(u[:, 20].size), 0, u[:, 20], facecolor='red', color="none",
+    axes[0, 1].fill_between(range(u[:, 22].size), 0, u[:, 22], facecolor='red', color="none",
                             alpha=alpha)  # ROF
     axes[0, 1].fill_between(range(p[:, 2].size), p[:, 2], 1, facecolor='blue', color="none",
                       alpha=alpha)  # Restrictions
@@ -112,7 +112,7 @@ axes[0, 1].set_ylabel('Cary')
 axes[0, 1].set_ylim([0, 1])
 
 for u, p in zip(realizations_utilities, policies):
-    axes[1, 1].fill_between(range(u[:, 11].size), 0, u[:, 11], facecolor='red', color="none",
+    axes[1, 1].fill_between(range(u[:, 12].size), 0, u[:, 12], facecolor='red', color="none",
                             alpha=alpha)
     axes[1, 1].fill_between(range(p[:, 1].size), p[:, 1], 1, facecolor='blue', color="none",
                       alpha=alpha)
@@ -132,7 +132,7 @@ axes[2, 1].set_ylabel('OWASA')
 axes[2, 1].set_ylim([0, 1])
 
 for u, p in zip(realizations_utilities, policies):
-    axes[3, 1].fill_between(range(u[:, 29].size), 0, u[:, 29], facecolor='red', color="none",
+    axes[3, 1].fill_between(range(u[:, 32].size), 0, u[:, 32], facecolor='red', color="none",
                             alpha=alpha)
     axes[3, 1].fill_between(range(p[:, 3].size), p[:, 3], 1, facecolor='blue', color="none",
                       alpha=alpha)

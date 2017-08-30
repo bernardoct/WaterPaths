@@ -49,7 +49,7 @@ string WaterReuseDataCollector::printTabularStringHeaderLine2() {
 }
 
 string WaterReuseDataCollector::printCompactStringHeader() {
-    return nullptr;
+    return to_string(id) + "demand,";
 }
 
 void WaterReuseDataCollector::collect_data() {

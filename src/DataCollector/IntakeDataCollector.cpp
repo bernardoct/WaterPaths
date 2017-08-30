@@ -64,7 +64,16 @@ string IntakeDataCollector::printTabularStringHeaderLine2() {
 }
 
 string IntakeDataCollector::printCompactStringHeader() {
-    return nullptr;
+
+    stringstream outStream;
+
+    outStream
+            << id << "demand" << ","
+            << id << "up_spill" << ","
+            << id << "catch_inflow" << ","
+            << id << "ds_spill" << ",";
+
+    return outStream.str();
 }
 
 void IntakeDataCollector::collect_data() {

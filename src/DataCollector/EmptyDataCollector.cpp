@@ -32,7 +32,7 @@ string EmptyDataCollector::printTabularStringHeaderLine2() {
 }
 
 string EmptyDataCollector::printCompactStringHeader() {
-    return nullptr;
+    return string("");
 }
 
 void EmptyDataCollector::collect_data() {

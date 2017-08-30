@@ -63,7 +63,8 @@ string UtilitiesDataCollector::printCompactString(int week) {
               << ","
               << insurance_payout[week]
               << ","
-              << insurance_contract_cost[week];
+              << insurance_contract_cost[week]
+              << ",";
 
     return outStream.str();
 }
@@ -107,7 +108,16 @@ string UtilitiesDataCollector::printTabularStringHeaderLine2() {
 string UtilitiesDataCollector::printCompactStringHeader() {
     stringstream outStream;
 
-    outStream << "";
+    outStream << id << "st_vol" << ","
+              << id << "capacity" << ","
+              << id << "st_rof" << ","
+              << id << "lt_rof" << ","
+              << id << "rest_demand" << ","
+              << id << "unrest_demand" << ","
+              << id << "wastewater" << ","
+              << id << "cont_fund" << ","
+              << id << "ins_pout" << ","
+              << id << "ins_price" << ",";
 
     return outStream.str();
 }

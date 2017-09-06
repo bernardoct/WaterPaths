@@ -10,7 +10,7 @@ RestrictionsDataCollector::RestrictionsDataCollector(
         : DataCollector(restriction_policy->id,
                         nullptr,
                         RESTRICTIONS,
-                        NON_INITIALIZED),
+                        N_COLUMNS * COLUMN_WIDTH),
           restriction_policy(restriction_policy) {}
 
 string RestrictionsDataCollector::printTabularString(int week) {

@@ -15,6 +15,7 @@ private:
     vector<int> utilities_ids;
     vector<vector<double>> demand_offsets;
     Transfers *transfer_policy;
+    int N_COLUMNS = 1;
 
 public:
     TransfersDataCollector(Transfers *transfer_policy);

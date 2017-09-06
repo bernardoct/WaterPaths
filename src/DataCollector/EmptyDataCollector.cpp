@@ -9,7 +9,7 @@ EmptyDataCollector::EmptyDataCollector() : DataCollector
                                                    (Constants::NON_INITIALIZED,
                                                     nullptr,
                                                     Constants::NON_INITIALIZED,
-                                                    0) {}
+                                                    N_COLUMNS) {}
 
 string EmptyDataCollector::printTabularString(int week) {
     string output = "";

@@ -418,20 +418,20 @@ void Utility::splitDemands(
 //                                    "among water sources.");
 }
 
-void Utility::resetDataColletionVariables() {
-    /// Reset demand multiplier, offset from transfers and insurance payout and
-    /// price.
-        demand_multiplier = 1;
-        demand_offset = 0;
-        insurance_payout = 0;
-        insurance_purchase = 0;
-        drought_mitigation_cost = 0;
-        infra_built_last_week = {};
-        fund_contribution = 0;
-//        gross_revenue = 0;
-        current_debt_payment = 0;
-        waste_water_discharge = 0;
-}
+//void Utility::resetDataColletionVariables() {
+//    /// Reset demand multiplier, offset from transfers and insurance payout and
+//    /// price.
+//        demand_multiplier = 1;
+//        demand_offset = 0;
+//        insurance_payout = 0;
+//        insurance_purchase = 0;
+//        drought_mitigation_cost = 0;
+//        infra_built_last_week = {};
+//        fund_contribution = 0;
+////        gross_revenue = 0;
+//        current_debt_payment = 0;
+//        waste_water_discharge = 0;
+//}
 
 /**
  * Update contingency fund based on regular contribution, restrictions, and
@@ -901,9 +901,8 @@ vector<double> Utility::calculateWeeklyPeakingFactor(vector<double> *demands) {
         year_average_demand = accumulate(
                 demands->begin() + y * WEEKS_IN_YEAR,
                 demands->begin() + (y + 1) * WEEKS_IN_YEAR,
-                0.) /
-                              ((int) ((y + 1) * WEEKS_IN_YEAR) -
-                               (int) (y * WEEKS_IN_YEAR));
+                0.) / ((int) ((y + 1) * WEEKS_IN_YEAR) -
+                       (int) (y * WEEKS_IN_YEAR));
         for (int w = 0; w < n_weeks; ++w) {
             year_averages[w] += (*demands)[y * WEEKS_IN_YEAR + w] /
                                 year_average_demand / n_years;
@@ -1017,8 +1016,10 @@ const vector<int> &Utility::getDemand_infra_construction_order() const {
     return demand_infra_construction_order;
 }
 
-const vector<int> Utility::getInfrastructure_built() const {
-    return infra_built_last_week;
+vector<int> Utility::getInfrastructure_built() {
+    vector<int> infra_built_last_week_aux = infra_built_last_week;
+    infra_built_last_week.clear();
+    return infra_built_last_week_aux;
 }
 
 const double Utility::waterPrice(int week) {

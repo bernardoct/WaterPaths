@@ -10,7 +10,7 @@ ReservoirDataCollector::ReservoirDataCollector(Reservoir *reservoir)
         : DataCollector(reservoir->id,
                         reservoir->name,
                         RESERVOIR,
-                        7 * COLUMN_WIDTH), reservoir(reservoir) {}
+                        N_COLUMNS * COLUMN_WIDTH), reservoir(reservoir) {}
 
 ReservoirDataCollector::ReservoirDataCollector(
         Reservoir *reservoir, int type, int table_width)

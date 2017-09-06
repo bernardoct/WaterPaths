@@ -16,6 +16,7 @@ class IntakeDataCollector : public DataCollector {
     vector<double> demands;
     vector<double> outflows;
     vector<double> total_catchments_inflow;
+    int N_COLUMNS = 5;
 
 public:
     IntakeDataCollector(Intake *intake);

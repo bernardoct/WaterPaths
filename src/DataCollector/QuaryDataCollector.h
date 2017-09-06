@@ -9,6 +9,8 @@
 #include "ReservoirDataCollector.h"
 
 class QuaryDataCollector : public ReservoirDataCollector {
+private:
+    int N_COLUMNS = 7;
 public:
     QuaryDataCollector(Reservoir *reservoir);
 

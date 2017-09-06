@@ -9,7 +9,7 @@ IntakeDataCollector::IntakeDataCollector(Intake *intake)
         : DataCollector(intake->id,
                         intake->name,
                         INTAKE,
-                        5 * COLUMN_WIDTH), intake(intake) {}
+                        N_COLUMNS * COLUMN_WIDTH), intake(intake) {}
 
 string IntakeDataCollector::printTabularString(int week) {
     stringstream outStream;

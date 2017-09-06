@@ -1,11 +1,25 @@
+import fnmatch
 import numpy as np
 import pandas as pd
-import fnmatch
 
 folder = 'TestFiles/output/'
+O = 3
+s = 0
+r = 3
 
-utilities = pd.read_csv(folder + 'Utilities_s0_r4.out', sep=',')
-water_sources = pd.read_csv(folder + 'WaterSources_s0_r4.out', sep=',')
+utils_file = folder + 'Utilities_s' + str(s) + '_r' + str(r) + '.out'
+sources_file = folder + 'WaterSources_s' + str(s) + '_r' + str(r) + '.out'
+
+print utils_file
+print sources_file
+
+utilities = pd.read_csv(utils_file, sep=',')
+print utils_file + ' - read!'
+
+water_sources = pd.read_csv(sources_file, sep=',')
+print sources_file + ' - read!'
+
+print utilities
 
 # for h in water_sources.columns.values:
 # 	print h
@@ -38,10 +52,10 @@ result = catch - evap - demands + wwater - vol - output
 
 # print water_sources[catch_headers]
 for i in range(2, len(output)):
-	print str(catch[i]) + '\t\t' + \
-		str(demands[i]) + '\t\t' + \
-		str(evap[i]) + '\t\t' + \
-		str(output[i]) + '\t\t' + \
-		str(vol[i]) + '\t\t' + \
-		str(result[i]) + '\t\t'
+    print str(i) + '\t\t' + str(catch[i]) + '\t\t' + \
+          str(demands[i]) + '\t\t' + \
+          str(evap[i]) + '\t\t' + \
+          str(output[i]) + '\t\t' + \
+          str(vol[i]) + '\t\t' + \
+          str(result[i]) + '\t\t'
 

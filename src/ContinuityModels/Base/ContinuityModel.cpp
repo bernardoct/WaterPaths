@@ -21,7 +21,11 @@ ContinuityModel::ContinuityModel(
         min_env_flow_controls(min_env_flow_controls),
         water_sources_graph(water_sources_graph),
         water_sources_to_utilities(water_sources_to_utilities),
-        realization_id(realization_id) {
+        realization_id(realization_id),
+        n_utilities((int) utilities.size()),
+        n_sources((int) water_sources.size()),
+        sources_topological_order(water_sources_graph.getTopological_order()) /// Get topological order so that mass balance is ran from up to downstream.
+        {
 
     //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
     std::sort(continuity_water_sources.begin(), continuity_water_sources.end(), WaterSource::compare);
@@ -81,9 +85,6 @@ ContinuityModel::ContinuityModel(
         }
     }
 
-    /// Get topological order so that mass balance is ran from up to downstream.
-    sources_continuity_order = water_sources_graph.getTopological_order();
-
     /// The variables below are to make the storage-ROF table calculation
     /// faster by limiting the storage curve shifting to online water sources.
     for (auto water_source : water_sources) {
@@ -97,7 +98,7 @@ ContinuityModel::ContinuityModel(
             water_sources_capacities.push_back(
                     water_source->getCapacity());
         else
-            water_sources_capacities.push_back((double &&) NONE);
+            water_sources_capacities.push_back((double) NONE);
     }
 
     for (Utility *u : continuity_utilities)
@@ -109,8 +110,6 @@ ContinuityModel::ContinuityModel(
         else
             downstream_sources.push_back(ds[0]);
 
-    sources_topological_order = water_sources_graph.getTopological_order();
-
     /// Set realization id on utilities and water sources, so that they use the
     /// right streamflow and demand data.
     setRealization(realization_id);
@@ -120,10 +119,9 @@ ContinuityModel::ContinuityModel(
     for (MinEnvironFlowControl *mef : this->min_env_flow_controls)
         mef->addComponents(water_sources, utilities);
 
-    demands = std::vector<vector<double>>(continuity_water_sources.size(),
-                                          vector<double>(continuity_utilities
-                                                                 .size(),
-                                                         0.));
+    demands = std::vector<vector<double>>(
+            continuity_water_sources.size(), vector<double>(continuity_utilities
+                                                                 .size(), 0.));
 }
 
 ContinuityModel::~ContinuityModel() = default;
@@ -131,7 +129,9 @@ ContinuityModel::~ContinuityModel() = default;
 ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) :
         realization_id(continuity_model.realization_id),
         water_sources_online_to_utilities(
-                continuity_model.water_sources_online_to_utilities) {}
+                continuity_model.water_sources_online_to_utilities),
+        n_utilities(continuity_model.n_utilities),
+        n_sources(continuity_model.n_sources) {}
 
 /**
  * Calculates continuity for one week time step for streamflows of id_rof years
@@ -141,8 +141,12 @@ ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) :
  */
 void ContinuityModel::continuityStep(
         int week, int rof_realization, bool apply_demand_buffer) {
-    double upstream_spillage[continuity_water_sources.size()] = {};
-    double wastewater_discharges[continuity_water_sources.size()] = {};
+//    double upstream_spillage[n_sources] = {};
+//    double wastewater_discharges[n_sources] = {};
+    double upstream_spillage[n_sources];
+    fill_n(upstream_spillage, n_sources, 0.);
+    double wastewater_discharges[n_sources];
+    fill_n(wastewater_discharges, n_sources, 0.);
 
     /**
      * Get wastewater discharges based on previous week's demand.
@@ -154,7 +158,7 @@ void ContinuityModel::continuityStep(
      */
     for (Utility *u : continuity_utilities) {
         u->calculateWastewater_releases(week, wastewater_discharges);
-        u->splitDemands(week, &demands, apply_demand_buffer);
+        u->splitDemands(week, demands, apply_demand_buffer);
     }
 
     /**
@@ -174,7 +178,7 @@ void ContinuityModel::continuityStep(
      * rof calculation but an actual simulation instead, rof_realization will
      * be equal to -1 (see header file) so that there is no week shift.
      */
-    for (int &i : sources_continuity_order) {
+    for (int i : sources_topological_order) {
         /// Sum spillage from all sources upstream source i.
         for (int &ws : water_sources_graph.getUpstream_sources(i))
             upstream_spillage[i] +=
@@ -184,7 +188,7 @@ void ContinuityModel::continuityStep(
         continuity_water_sources[i]->continuityWaterSource(
                 week - (int) std::round((rof_realization + 1) * WEEKS_IN_YEAR),
                 upstream_spillage[i] + wastewater_discharges[i],
-                &(demands[i]));
+                demands[i]);
     }
 
     /// updates combined storage for utilities.
@@ -198,7 +202,7 @@ const vector<Utility *> &ContinuityModel::getUtilities() const {
 }
 
 void ContinuityModel::setRealization(unsigned int realization) {
-    if (realization != NON_INITIALIZED) {
+    if (realization != (unsigned) NON_INITIALIZED) {
         for (Utility *u : continuity_utilities)
             u->setRealization(realization);
         for (WaterSource *ws : continuity_water_sources)

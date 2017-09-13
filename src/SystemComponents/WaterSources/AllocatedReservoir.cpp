@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <numeric>
+#include <zconf.h>
 #include "AllocatedReservoir.h"
 
 
@@ -113,14 +114,13 @@ AllocatedReservoir::AllocatedReservoir(
  * @param allocated_reservoir
  * @return
  */
-AllocatedReservoir &
-AllocatedReservoir::operator=(
+AllocatedReservoir &AllocatedReservoir::operator=(
         const AllocatedReservoir &allocated_reservoir) {
 
     wq_pool_id = allocated_reservoir.wq_pool_id;
 
-    this->allocated_fractions = new double[wq_pool_id + 1]();
-    this->allocated_treatment_fractions = new double[wq_pool_id + 1]();
+    allocated_fractions = new double[wq_pool_id + 1]();
+    allocated_treatment_fractions = new double[wq_pool_id + 1]();
     available_allocated_volumes = new double[wq_pool_id + 1]();
     allocated_capacities = new double[wq_pool_id + 1]();
     allocated_treatment_capacities = new double[wq_pool_id + 1]();
@@ -129,25 +129,25 @@ AllocatedReservoir::operator=(
 //            (utilities_with_allocations->begin(),
 //                                   utilities_with_allocations->end()) + 1;
 
-    std::copy(allocated_fractions,
-              allocated_fractions + length,
-              allocated_reservoir.allocated_fractions);
+    std::copy(allocated_reservoir.allocated_fractions,
+              allocated_reservoir.allocated_fractions + length,
+              allocated_fractions);
 
-    std::copy(allocated_treatment_fractions,
-              allocated_treatment_fractions + length,
-              allocated_reservoir.allocated_treatment_fractions);
+    std::copy(allocated_reservoir.allocated_treatment_fractions,
+              allocated_reservoir.allocated_treatment_fractions + length,
+              allocated_treatment_fractions);
 
-    std::copy(available_allocated_volumes,
-              available_allocated_volumes + length,
-              allocated_reservoir.available_allocated_volumes);
+    std::copy(allocated_reservoir.available_allocated_volumes,
+              allocated_reservoir.available_allocated_volumes + length,
+              available_allocated_volumes);
 
-    std::copy(allocated_capacities,
-              allocated_capacities + length,
-              allocated_reservoir.allocated_capacities);
+    std::copy(allocated_reservoir.allocated_capacities,
+              allocated_reservoir.allocated_capacities + length,
+              allocated_capacities);
 
-    std::copy(allocated_treatment_capacities,
-              allocated_treatment_capacities + length,
-              allocated_reservoir.allocated_treatment_capacities);
+    std::copy(allocated_reservoir.allocated_treatment_capacities,
+              allocated_reservoir.allocated_treatment_capacities + length,
+              allocated_treatment_capacities);
 
     return *this;
 };
@@ -162,12 +162,12 @@ AllocatedReservoir::~AllocatedReservoir() {
 
 void AllocatedReservoir::applyContinuity(
         int week, double upstream_source_inflow,
-        vector<double> *demand_outflow) {
+        vector<double> &demand_outflow) {
 
     double available_volume_old = available_volume;
 
-    double direct_demand = std::accumulate(demand_outflow->begin(),
-                                           demand_outflow->end(),
+    double direct_demand = std::accumulate(demand_outflow.begin(),
+                                           demand_outflow.end(),
                                            0.);
 
     total_demand = direct_demand;
@@ -221,7 +221,7 @@ void AllocatedReservoir::applyContinuity(
                 /// subtract demands.
                 available_allocated_volumes[u] +=
                         net_inflow * allocated_fractions[u] -
-                        (*demand_outflow)[u];
+                        demand_outflow[u];
             } else {
                 /// the water quality pool has no demand and provided the
                 /// minimum environmental flows.
@@ -308,27 +308,31 @@ void AllocatedReservoir::applyContinuity(
     policy_added_demand = 0;
 
     /// Sanity checking from now on.
-    for (int u : *utilities_with_allocations) {
-        if (available_allocated_volumes[u] > allocated_capacities[u])
-            __throw_runtime_error("Available allocated volume for utility is "
-                                          "greater than capacity. Please "
-                                        "report this error to  bct52@cornell"
-                                        ".edu.");
-        if (isnan(available_allocated_volumes[u]))
-            __throw_runtime_error("Available allocated volume for utility is "
-                                          "nan. Please report this error to "
-                                          "bct52@cornell.edu.");
-    }
-
     double sum_allocations = accumulate(available_allocated_volumes,
                                         available_allocated_volumes +
                                         wq_pool_id + 1,
                                         0.);
     if ((int) std::round(sum_allocations / 10) !=
-            (int) std::round(available_volume / 10))
+            (int) std::round(available_volume / 10)) {
+        cout << endl;
+        cout << "week: " << week << endl;
+        cout << "sum_allocations " << sum_allocations << endl;
+        cout << "available volume old: " << available_volume_old << endl;
+        cout << "available_volume " << available_volume << endl << endl;
+        cout << "upstream_source_inflow: " << upstream_source_inflow << endl;
+        cout << "upstream_catchment_inflow: " << upstream_catchment_inflow << endl;
+        cout << "evaporation: " << evaporated_volume << endl;
+        cout << "total_demand: " << total_demand << endl;
+        cout << "policy_added_demand: " << policy_added_demand << endl;
+        cout << "total_outflow: " << total_outflow << endl;
+        cout << "continuity error: " << available_volume_old +
+                upstream_source_inflow + upstream_catchment_inflow -
+                evaporated_volume - total_demand - total_outflow << endl;
         __throw_runtime_error("Sum of allocated volumes in a reservoir must "
-                                    "total current storage minus unallocated "
-                                    "volume");
+                                      "total current storage minus unallocated "
+                                      "volume.Please report this error to "
+                                      "bct52@cornell.edu.");
+    }
 
     if (abs(available_volume_old - direct_demand + upstream_source_inflow +
                     upstream_catchment_inflow - evaporated_volume -

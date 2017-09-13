@@ -46,7 +46,7 @@ ReservoirExpansion &ReservoirExpansion::operator=(const ReservoirExpansion &rese
 
 void ReservoirExpansion::applyContinuity(
         int week, double upstream_source_inflow,
-        vector<double> *demand_outflow) {
+        vector<double> &demand_outflow) {
     __throw_logic_error("Reservoir expansion only add storage volume to the "
                                 "reservoir they're assigned to.  Continuity "
                                 "cannot be called on it, but only on the "

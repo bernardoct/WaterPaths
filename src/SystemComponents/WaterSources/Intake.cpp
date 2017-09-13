@@ -91,10 +91,10 @@ Intake::~Intake() {
  * @param demand current demand
  */
 void Intake::applyContinuity(
-        int week, double upstream_source_inflow, vector<double> *demand) {
+        int week, double upstream_source_inflow, vector<double> &demand) {
 
-    double total_demand = std::accumulate(demand->begin(),
-                                          demand->end(),
+    double total_demand = std::accumulate(demand.begin(),
+                                          demand.end(),
                                           0.);
 
     /// Get all upstream catchment inflow.

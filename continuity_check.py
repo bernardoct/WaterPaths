@@ -4,7 +4,7 @@ import pandas as pd
 
 folder = 'TestFiles/output/'
 O = 3
-s = 0
+s = 1
 r = 3
 
 utils_file = folder + 'Utilities_s' + str(s) + '_r' + str(r) + '.out'

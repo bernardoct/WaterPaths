@@ -191,15 +191,17 @@ void WaterSource::setAllocations(
         /// ID assigned to the water quality pool.
         u = (u == WATER_QUALITY_ALLOCATION ? wq_pool_id : u);
 
+        if (u != wq_pool_id) {
+            this->allocated_treatment_fractions[u] =
+                    allocated_treatment_fractions->at(u);
+            this->allocated_treatment_capacities[u] = total_treatment_capacity *
+                    this->allocated_treatment_fractions[u];
+        } else
+            (*this->utilities_with_allocations)[i] = u;
+
         this->allocated_fractions[u] = (*allocated_fractions)[i];
-        this->allocated_treatment_fractions[u] =
-                (*allocated_treatment_fractions)[u];
         (*this->utilities_with_allocations)[i] = u;
-
         allocated_capacities[u] = this->capacity * (*allocated_fractions)[i];
-        allocated_treatment_capacities[u] = total_treatment_capacity *
-                                            this->allocated_treatment_fractions[u];
-
         available_allocated_volumes[u] = allocated_capacities[u];
     }
 }
@@ -212,28 +214,29 @@ void WaterSource::setAllocations(
 WaterSource::WaterSource(const WaterSource &water_source) :
         capacity(water_source.capacity), name(water_source.name),
         min_environmental_outflow(water_source.min_environmental_outflow),
-        id(water_source.id), available_volume(water_source.available_volume),
-        total_outflow(water_source.total_outflow), online(water_source.online),
+        id(water_source.id),
+        available_volume(water_source.available_volume),
+        total_outflow(water_source.total_outflow),
+        online(water_source.online),
         source_type(water_source.source_type),
         upstream_min_env_inflow(water_source.upstream_min_env_inflow),
         upstream_catchment_inflow(water_source.upstream_catchment_inflow),
+        upstream_source_inflow(water_source.upstream_source_inflow),
         total_treatment_capacity(water_source.total_treatment_capacity),
         construction_rof_or_demand(water_source.construction_rof_or_demand),
         construction_time(water_source.construction_time),
         construction_cost_of_capital(water_source.construction_cost_of_capital),
         bond_term(water_source.bond_term),
         bond_interest_rate(water_source.bond_interest_rate),
-        utilities_with_allocations(water_source
-                                           .utilities_with_allocations),
-        allocated_fractions(water_source.allocated_fractions),
+        utilities_with_allocations(water_source.utilities_with_allocations),
         permitting_period(water_source.permitting_period),
         highest_alloc_id(water_source.highest_alloc_id) {
 
     if (water_source.wq_pool_id != NON_INITIALIZED) {
         wq_pool_id = water_source.wq_pool_id;
 
-        this->allocated_fractions = new double[wq_pool_id + 1]();
-        this->allocated_treatment_fractions = new double[wq_pool_id + 1]();
+        allocated_fractions = new double[wq_pool_id + 1]();
+        allocated_treatment_fractions = new double[wq_pool_id + 1]();
         available_allocated_volumes = new double[wq_pool_id + 1]();
         allocated_capacities = new double[wq_pool_id + 1]();
         allocated_treatment_capacities = new double[wq_pool_id + 1]();
@@ -286,8 +289,8 @@ WaterSource &WaterSource::operator=(const WaterSource &water_source) {
     if (wq_pool_id != NON_INITIALIZED) {
         wq_pool_id = water_source.wq_pool_id;
 
-        this->allocated_fractions = new double[wq_pool_id + 1]();
-        this->allocated_treatment_fractions = new double[wq_pool_id + 1]();
+        allocated_fractions = new double[wq_pool_id + 1]();
+        allocated_treatment_fractions = new double[wq_pool_id + 1]();
         available_allocated_volumes = new double[wq_pool_id + 1]();
         allocated_capacities = new double[wq_pool_id + 1]();
         allocated_treatment_capacities = new double[wq_pool_id + 1]();
@@ -366,7 +369,7 @@ bool WaterSource::compare(WaterSource *lhs, WaterSource *rhs) {
  */
 void WaterSource::continuityWaterSource(
         int week, double upstream_source_inflow,
-        vector<double> *demand_outflow) {
+        vector<double> &demand_outflow) {
     if (online)
         applyContinuity(week,
                         upstream_source_inflow,
@@ -570,7 +573,8 @@ void WaterSource::resetAllocations(
 void WaterSource::setAvailableAllocatedVolumes(
         double *available_allocated_volumes, double available_volume) {
 
-    std::copy(available_allocated_volumes,
+    if (utilities_with_allocations)
+        std::copy(available_allocated_volumes,
               available_allocated_volumes + highest_alloc_id + 1,
               this->available_allocated_volumes);
     this->available_volume = available_volume;

@@ -48,7 +48,7 @@ public:
 
     void applyContinuity(
             int week, double upstream_source_inflow,
-            vector<double> *demand_outflow) override;
+            vector<double> &demand_outflow) override;
 
     const unsigned int parent_reservoir_ID;
     const vector<double> *added_treatment_capacity_fractions;

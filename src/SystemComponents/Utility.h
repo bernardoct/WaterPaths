@@ -44,6 +44,7 @@ private:
     double insurance_purchase = 0;
     double restricted_demand = 0;
     double unrestricted_demand = 0;
+    int n_sources = 0;
 
     /// Infrastructure cost
     double current_debt_payment = 0;
@@ -124,14 +125,14 @@ public:
     void addWaterSource(WaterSource *water_source);
 
     void splitDemands(
-            int week, vector<vector<double>> *demands, bool
+            int week, vector<vector<double>> &demands, bool
     apply_demand_buffer = false);
 
     void calculateWeeklyAverageWaterPrices(
             const vector<vector<double>> *typesMonthlyDemandFraction,
             const vector<vector<double>> *typesMonthlyWaterPrice);
 
-    const double waterPrice(int week);
+    double waterPrice(int week);
 
     void addWaterSourceToOnlineLists(int source_id);
 

@@ -23,7 +23,7 @@ InsuranceStorageToROF::InsuranceStorageToROF(
                              water_sources_to_utilities,
                              Utils::copyUtilityVector(utilities, true),
                              min_env_flow_controls,
-                             NON_INITIALIZED),
+                             (unsigned int) NON_INITIALIZED),
           insurance_premium(insurance_premium), fixed_payouts(fixed_payouts),
           rof_triggers(rof_triggers),
           utilities_revenue_last_year(new double[utilities.size()]()),
@@ -85,8 +85,11 @@ void InsuranceStorageToROF::applyPolicy(int week) {
     if (week > WEEKS_IN_YEAR) {
 
         /// Get ROFs from table.
-        double utilities_rof[realization_utilities.size()] = {};
-        double utilities_storage_capa_ratio[realization_utilities.size()] = {};
+        double utilities_rof[realization_utilities.size()];
+        fill_n(utilities_rof, n_utilities, 0.);
+        double utilities_storage_capa_ratio[realization_utilities.size()];
+        fill_n(utilities_storage_capa_ratio, n_utilities, 0.);
+
         for (int u = 0; u < realization_utilities.size(); ++u) {
             utilities_storage_capa_ratio[u] =
                     realization_utilities[u]->getStorageToCapacityRatio();

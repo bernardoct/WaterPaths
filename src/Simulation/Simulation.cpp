@@ -102,6 +102,7 @@ Simulation::Simulation(
     master_data_collector = new MasterDataCollector();
 
     /// Create the realization and ROF models.
+
     for (unsigned int r = 0; r < number_of_realizations; ++r) {
         /// Create realization models by copying the water sources and utilities.
         vector<WaterSource *> water_sources_realization =
@@ -180,10 +181,9 @@ MasterDataCollector *Simulation::runFullSimulation(int num_threads) {
     std::cout << "Simulated time: " << total_simulation_time << endl;
     std::cout << "Number of realizations: " << number_of_realizations << endl;
     std::cout << "Beginning realizations loop." << endl;
-#pragma omp parallel for num_threads(num_threads)
+#pragma omp parallel for ordered num_threads(num_threads)
     for (int r = 0; r < number_of_realizations; ++r) {
-        try {
-            count++;
+//        try {
             time_t timer_ir, timer_fr;
             time(&timer_ir);
             for (int w = 0; w < total_simulation_time; ++w) {
@@ -197,13 +197,13 @@ MasterDataCollector *Simulation::runFullSimulation(int num_threads) {
                 master_data_collector->collectData(r);
             }
             time(&timer_fr);
-            std::cout << "Realization " << count << ": "
+            std::cout << "Realization " << r << ": "
                       << difftime(timer_fr, timer_ir) << std::endl;
 
-        } catch (const std::exception &e) {
-            cout << "Error in realization " << r << endl;
-            e.what();
-        }
+//        } catch (const std::exception &e) {
+//            cout << "Error in realization " << r << endl;
+//            e.what();
+//        }
     }
     time(&timer_f);
     seconds = difftime(timer_f, timer_i);

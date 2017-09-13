@@ -15,6 +15,7 @@ File $Id: QuadProg++.cc 232 2007-06-21 12:29:00Z digasper $
 #include <iostream>
 #include <algorithm>
 #include <sstream>
+#include <limits>
 #include "QuadProg++.h"
 
 // Utility functions for updating some data needed by the solution method 
@@ -722,7 +723,7 @@ void cholesky_decomposition(Matrix<double> &A) {
 
 void cholesky_solve(const Matrix<double> &L, Vector<double> &x, const Vector<double> &b) {
     int n = L.nrows();
-    Vector<double> y((const unsigned int) n);
+    Vector<double> y((unsigned int) n);
 
     /* Solve L * y = b */
     forward_elimination(L, y, b);

@@ -309,6 +309,8 @@ void Utility::addWaterSource(WaterSource *water_source) {
     if (water_source->isOnline() &&
         water_source->getAllocatedTreatmentCapacity(id) > 0)
         addWaterSourceToOnlineLists(water_source->id);
+
+    n_sources++;
 }
 
 void Utility::addWaterSourceToOnlineLists(int source_id) {
@@ -335,14 +337,15 @@ void Utility::addWaterSourceToOnlineLists(int source_id) {
  * @param week
  */
 void Utility::splitDemands(
-        int week, vector<vector<double>> *demands,
+        int week, vector<vector<double>> &demands,
         bool apply_demand_buffer) {
     unrestricted_demand = demand_series[week] +
                           apply_demand_buffer * demand_buffer *
                           weekly_peaking_factor[Utils::weekOfTheYear(week)];
     restricted_demand = unrestricted_demand * demand_multiplier - demand_offset;
     double unallocated_reservoirs_demand = restricted_demand;
-    bool over_allocation_ws[water_sources.size()] = {};
+    bool over_allocation_ws[n_sources];
+    memset(over_allocation_ws, false, (size_t) n_sources);
 
     /// Allocates demand to intakes and reuse based on allocated volume to
     /// this utility.
@@ -350,7 +353,7 @@ void Utility::splitDemands(
         double source_demand =
                 min(restricted_demand,
                     water_sources[ws]->getAvailableAllocatedVolume(id));
-        (*demands)[ws][this->id] = source_demand;
+        demands[ws][this->id] = source_demand;
     }
 
     /// Allocates remaining demand to reservoirs based on allocated available
@@ -366,7 +369,7 @@ void Utility::splitDemands(
 
         /// Calculate demand allocated to a given source.
         double source_demand = restricted_demand * demand_fraction;
-        (*demands)[ws][id] = source_demand;
+        demands[ws][id] = source_demand;
 
         /// Check if allocated demand was greater than treatment capacity.
         double over_allocated_demand_ws =
@@ -380,7 +383,7 @@ void Utility::splitDemands(
             over_allocation_ws[ws] = true;
             remaining_stored_volume -=
                     water_sources[ws]->getAvailableAllocatedVolume(id);
-            (*demands)[ws][id] = source_demand - over_allocated_demand_ws;
+            demands[ws][id] = source_demand - over_allocated_demand_ws;
         }
 
         unallocated_reservoirs_demand -=
@@ -399,7 +402,7 @@ void Utility::splitDemands(
                             remaining_stored_volume);
                 double extra_demand_share = demand_fraction *
                                             unallocated_reservoirs_demand_aux;
-                (*demands)[ws][id] += extra_demand_share;
+                demands[ws][id] += extra_demand_share;
                 unallocated_reservoirs_demand -= extra_demand_share;
             }
 
@@ -1022,7 +1025,7 @@ vector<int> Utility::getInfrastructure_built() {
     return infra_built_last_week_aux;
 }
 
-const double Utility::waterPrice(int week) {
+double Utility::waterPrice(int week) {
     return weekly_average_volumetric_price[week];
 }
 

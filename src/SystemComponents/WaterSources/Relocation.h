@@ -28,7 +28,7 @@ public:
 
     void applyContinuity(
             int week, double upstream_source_inflow,
-            vector<double> *demand_outflow) override;
+            vector<double> &demand_outflow) override;
 
     unsigned long getParent_reservoir_ID() const;
 };

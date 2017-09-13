@@ -41,7 +41,7 @@ Relocation::Relocation(const Relocation &relocation) :
 
 void Relocation::applyContinuity(
         int week, double upstream_source_inflow,
-        vector<double> *demand_outflow) {
+        vector<double> &demand_outflow) {
 
     __throw_logic_error("Source relocations just changes allocated fractions "
                                 "in the source they're assigned to. Continuity "

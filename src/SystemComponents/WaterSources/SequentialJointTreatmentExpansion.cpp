@@ -24,7 +24,7 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
                       construction_cost,
                       bond_term,
                       bond_interest_rate),
-          parent_reservoir_ID((const unsigned int) parent_reservoir_ID),
+          parent_reservoir_ID((unsigned int) parent_reservoir_ID),
           added_treatment_capacity_fractions
                   (added_treatment_capacity_fractions),
           total_treatment_capacity(total_treatment_capacity),
@@ -54,7 +54,7 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
                       construction_cost,
                       bond_term,
                       bond_interest_rate),
-          parent_reservoir_ID((const unsigned int) parent_reservoir_ID),
+          parent_reservoir_ID((unsigned int) parent_reservoir_ID),
           added_treatment_capacity_fractions
                   (added_treatment_capacity_fractions),
           total_treatment_capacity(total_treatment_capacity),
@@ -138,7 +138,7 @@ SequentialJointTreatmentExpansion &SequentialJointTreatmentExpansion::operator=(
 
 void SequentialJointTreatmentExpansion::applyContinuity(
         int week, double upstream_source_inflow,
-        vector<double> *demand_outflow) {
+        vector<double> &demand_outflow) {
     __throw_logic_error("Reservoir expansion only add storage volume to the "
                                 "reservoir they're assigned to.  Continuity "
                                 "cannot be called on it, but only on the "

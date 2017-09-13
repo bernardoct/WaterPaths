@@ -337,10 +337,10 @@ Reservoir::~Reservoir() {
  */
 void Reservoir::applyContinuity(
         int week, double upstream_source_inflow,
-        vector<double> *demand_outflow) {
+        vector<double> &demand_outflow) {
 
-    double total_demand = std::accumulate(demand_outflow->begin(),
-                                          demand_outflow->end(),
+    double total_demand = std::accumulate(demand_outflow.begin(),
+                                          demand_outflow.end(),
                                           0.);
 
     /// Calculate total runoff inflow reaching reservoir from its watershed.

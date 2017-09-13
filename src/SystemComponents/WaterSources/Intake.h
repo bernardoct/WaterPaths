@@ -38,7 +38,7 @@ public:
 
     void applyContinuity(
             int week, double upstream_source_min_env_flow,
-            vector<double> *demand) override;
+            vector<double> &demand) override;
 
     void setRealization(unsigned long r) override;
 

@@ -38,7 +38,7 @@ namespace Constants {
     const int NON_INITIALIZED = -1;
 
     const int UTILITY = 100;
-    
+
     const int INTAKE = 0;
     const int RESERVOIR = 1;
     const int RESERVOIR_EXPANSION = 2;
@@ -52,6 +52,7 @@ namespace Constants {
     const int RESTRICTIONS = 1;
     const int INSURANCE_PSEUDO_ROF = 2;
     const int INSURANCE_STORAGE_ROF = 3;
+    const int RAW_WATER_TRANSFERS = 4;
 
     const int FIXED_FLOW_CONTROLS = 0;
     const int INFLOW_CONTROLS = 1;
@@ -65,8 +66,8 @@ namespace Constants {
 
     const double WORSE_CASE_COST_PERCENTILE = 0.99;
 
-    const double INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD = 0.05;
-    const int NO_OF_INSURANCE_STORAGE_TIERS = (int) std::round(1. / INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD);
+    const double INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD = 0.02;
+    const int NO_OF_STORAGE_TO_ROF_TABLE_TIERS = (int) std::round(1. / INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD);
 
     const int WATER_QUALITY_ALLOCATION = -1;
 };

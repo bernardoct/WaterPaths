@@ -44,6 +44,8 @@ public:
 
     void shiftStorages(double *storages, const double *deltas);
 
+    void shiftStorages(double *storages);
+
     const Matrix3D<double> *getStorage_to_rof_table() const;
 };
 

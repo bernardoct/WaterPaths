@@ -21,7 +21,8 @@ Simulation::Simulation(
     //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
     std::sort(water_sources.begin(), water_sources.end(), WaterSource::compare);
 #ifdef _WIN32
-    sort(continuity_utilities.begin(), continuity_utilities.end(), std::greater<>());
+    //sort(utilities.begin(), utilities.end(), std::greater<>());
+    sort(utilities.begin(), utilities.end(), Utility::compById);
 #else
     std::sort(utilities.begin(),
               utilities.end(),
@@ -204,15 +205,15 @@ MasterDataCollector *Simulation::runFullSimulation(int num_threads) {
             cout << "Error in realization " << r << endl;
             e.what();
         }
-    }
-    time(&timer_f);
-    seconds = difftime(timer_f, timer_i);
-    std::cout << "Calculations: " << seconds << "s" << std::endl;
+}
+time(&timer_f);
+seconds = difftime(timer_f, timer_i);
+std::cout << "Calculations: " << seconds << "s" << std::endl;
 
-    time(&timer_f);
-    seconds = difftime(timer_f,
-                       timer_i);
-    std::cout << "Total: " << seconds << "s" << std::endl;
+time(&timer_f);
+seconds = difftime(timer_f,
+                   timer_i);
+std::cout << "Total: " << seconds << "s" << std::endl;
 
-    return master_data_collector;
+return master_data_collector;
 }

@@ -26,7 +26,8 @@ ContinuityModel::ContinuityModel(
     //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
     std::sort(continuity_water_sources.begin(), continuity_water_sources.end(), WaterSource::compare);
 #ifdef _WIN32
-    sort(continuity_utilities.begin(), continuity_utilities.end(), std::greater<>());
+    sort(continuity_utilities.begin(), continuity_utilities.end(), Utility::compById);
+    //sort(continuity_utilities.begin(), continuity_utilities.end(), std::greater<>());
 #else
     std::sort(continuity_utilities.begin(), continuity_utilities.end(), Utility::compById);
 #endif
@@ -141,6 +142,10 @@ ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) :
  */
 void ContinuityModel::continuityStep(
         int week, int rof_realization, bool apply_demand_buffer) {
+<<<<<<<<< Temporary merge branch 1
+=========
+
+>>>>>>>>> Temporary merge branch 2
     double upstream_spillage[continuity_water_sources.size()] = {};
     double wastewater_discharges[continuity_water_sources.size()] = {};
 

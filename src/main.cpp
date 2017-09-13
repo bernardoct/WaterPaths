@@ -19,7 +19,7 @@
 #include "SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
 #include "SystemComponents/WaterSources/Relocation.h"
 #include "DroughtMitigationInstruments/InsuranceStorageToROF.h"
-
+#include "DroughtMitigationInstruments/RawWaterReleases.h"
 
 int regionOneUtilitiesTwoReservoirsContinuityTest();
 
@@ -1163,6 +1163,11 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
     double raleigh_inf_buffer = x_real[55];
     double cary_inf_buffer = x_real[56];
 
+    double durham_raw_water_transfer_trigger = 0.04;
+    double raleigh_raw_water_transfer_trigger = 0.04;
+    double cary_raw_water_transfer_trigger = 2;
+    double owasa_raw_water_transfer_trigger = 2;
+
     vector<infraRank> durham_infra_order_raw = {
             infraRank(9,
                       Teer_quarry_expansion_ranking),
@@ -1354,6 +1359,9 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
 //    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile(output_directory + "/TestFiles/evapLongWB.csv");
 
     int max_lines = n_realizations;
+
+    /// FYI: the output_directory doesn't actually become the directory for outputs until after it is used
+    ///      to read in inputs...
 
     cout << "Reading inflows." << endl;
     vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/durham_inflows.csv",
@@ -2033,6 +2041,8 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
 
     vector<vector<int>> wjlwtp_remove_from_to_build_list;// = {{21, 20}};
 
+    cout << "Define utilities." << endl;
+
     Utility cary((char *) "Cary",
                  2,
                  &demand_cary,
@@ -2106,6 +2116,9 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
 
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
     /// Restriction policies
+
+    cout << "Assign restriction policies." << endl;
+
     vector<double> initial_restriction_triggers = {OWASA_restriction_trigger,
                                                    Durham_restriction_trigger,
                                                    cary_restriction_trigger,
@@ -2189,7 +2202,43 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
                 vector<int>());
     drought_mitigation_policies.push_back(&t);
 
+    /// Raw Water Transfer policy
+    ///     utility ids: 0 OWASA, 1 Durham, 2 Cary, 3 Raleigh
+    ///     reservoir ids (in parentheses)
+    cout << "Assign raw water transfer/release policies." << endl;
+    /*
+     *      1(0)-->-->--3(1)
+     *
+     *      0(x)        2(y)
+     */
 
+    /// Utility IDs for party's of each raw water transfer agreement (only 2 party's per agreement)
+    int upstream_party_id0 = 1;
+    int downstream_party_id0 = 3;
+    int upstream_reservoir_id0 = 0;
+    int downstream_reservoir_id0 = 1;
+
+    /// other necessary arguments
+    double raw_water_transfer_weekly_volume_cap = 500; // cap in MG
+    double raw_water_transfer_downstream_allocation_ratio = 0.423;
+    double raw_water_transfer_cost_per_MG = 0.0035; // cost in millions of dollars per MG
+
+    /// raw water transfer triggers for ALL regional utilities (in order of their ids)
+    vector<double> party_raw_water_transfer_triggers = {owasa_raw_water_transfer_trigger,
+                                                        durham_raw_water_transfer_trigger,
+                                                        cary_raw_water_transfer_trigger,
+                                                        raleigh_raw_water_transfer_trigger};
+
+    RawWaterReleases flat_river_raw_water_transfer(0, upstream_party_id0, downstream_party_id0,
+                                                   upstream_reservoir_id0, downstream_reservoir_id0,
+                                                   raw_water_transfer_weekly_volume_cap,
+                                                   party_raw_water_transfer_triggers,
+                                                   raw_water_transfer_downstream_allocation_ratio,
+                                                   raw_water_transfer_cost_per_MG);
+
+    drought_mitigation_policies.push_back(&flat_river_raw_water_transfer);
+
+    cout << "Set insurance policy." << endl;
     double insurance_triggers[4] = {owasa_insurance_use,
                                     durham_insurance_use, cary_insurance_use,
                                     raleigh_insurance_use}; //FIXME: Change per solution
@@ -2211,6 +2260,7 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
     MasterDataCollector *data_collector = nullptr;
 
     /// Creates simulation object
+    cout << "Begin simulation." << endl;
     Simulation s(water_sources,
                  g,
                  reservoir_utility_connectivity_matrix,
@@ -2348,6 +2398,15 @@ int main(int argc, char *argv[]) {
 //                                        {0.964084, 0.957237,  0.3402,    0.508516,   0.0886362,  0.271732,  0.380416,  0.116606, 0.0720546,   0.0511521, 0.521052, 0.0583203,  0.00112482,  0.00707201,  0.0993984,  0.845939,  0.843715,   0.405772,  0.692136,   0.0102958,   0.00623187,  0.0164233,   0.0196851,   0.974996,  0.660625,   0.0518138, 0.445297,  0.596673,   0.509064,   0.469549,  0.653757,  0.00433695, 0.822447,  0.61638,    0.355138,   0.845227,  0.236853,  0.641729,  0.755669,    0,          0.529056,    0.529334,  0.651159,   0.506703,  0.813917,    0.804946,   36.1739, 3.7736,     43.326,  0.0621908,  0.168455,  0.198017,  9098.5,  11.8163,  15.9788,  8.2912,    15.968,  0.061, 0.850997,   0,         0.102845,   0.002, 4806.45, 0,     0.808397,  0.0865315, 0.00138925, 0,     1122.87,  0.022, 3.87098,     0.0433573,   0.0305339,   0.043, 2649.63, 0, 1.40953,    0, 0.0993984,  0, 0, 0.002, 21.1709,  7.81594,     136.9,   48.05},
 //                                        {0.94907,  0.987128,  0.32142,   0.164361,   0.0631331,  0.517248,  0.315407,  0.257379, 0.0918029,   0.0509198, 0.521006, 0.0178659,  0.0374205,   0.0272608,   0.0714269,  0.0582526, 0.97904,    0.992166,  0.404572,   5.34E-05,    0.0138762,   0.00136882,  0.00351665,  0.476592,  0.397933,   0.358438,  0.220057,  0.433845,   0.0213737,  0.0369478, 0.702728,  0.862642,   0.832649,  0.00531276, 0.6222,     0.748522,  0.774214,  0.119259,  0.96785,     0.969568,   0.434788,    0.943323,  0.988651,   0.966413,  0.301413,    0.127815,   67.1893, 75.2889,    19.6886, 0.0176694,  0.367224,  0.219651,  133.503, 11.3229,  7.00285,  6.66865,   8.5734,  0.217, 0.709567,   0.0301964, 0.0198414,  0.216, 2225.69, 0.002, 0.14981,   0,         0.0375377,  0,     168.256,  0.132, 0.346115,    0,           0.0291458,   0.371, 2073.83, 0, 0.0714269,  0, 0.0714269,  0, 0, 0.002, 15.1114,  0.962563,    9.01851, 0}
     };
+
+    /// information on inputs to triangleTest
+    ///     atoi(argv[1]) = number of cores/processors
+    ///     atoi(argv[2]) = number of realizations
+    ///     atoi(argv[3]) = number of weeks per realization
+    ///     atoi(argv[4]) = which solutions to start with
+    ///     atoi(argv[5]) = which solution to end with
+    ///     atoi(argv[6]) = <output_folder>
+    ///     argc          = formulation?
 
     int first_sol = (argc < 6 ? 0 : atoi(argv[4]));
     int last_sol = (argc < 6 ? (int) solutions.size() : atoi(argv[5]));

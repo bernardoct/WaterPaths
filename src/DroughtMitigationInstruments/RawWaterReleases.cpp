@@ -122,6 +122,10 @@ const double RawWaterReleases::getUtilityStorageFromROF(
         const Matrix3D<double> *storage_to_rof_table,
         const int u_id) {
 
+//    cout << "Week " << week << endl;
+//    storage_to_rof_table->print(week);
+//    cout << endl;
+
     /// Determine the storage associated with an ROF level
     for (int s = NO_OF_STORAGE_TO_ROF_TABLE_TIERS - 1; s > -1; --s) {
         if ((*storage_to_rof_table)(u_id, s, week) > rof_triggers[u_id]) {

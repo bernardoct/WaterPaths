@@ -22,9 +22,8 @@ Simulation::Simulation(
     //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
     std::sort(water_sources.begin(), water_sources.end(), WaterSource::compare);
 #ifdef _WIN32
-    std::sort(utilities.begin(),
-              utilities.end(),
-              Utility::compById);
+    //sort(utilities.begin(), utilities.end(), std::greater<>());
+    sort(utilities.begin(), utilities.end(), Utility::compById);
 #else
     std::sort(utilities.begin(),
               utilities.end(),
@@ -185,10 +184,20 @@ DataCollector *Simulation::runFullSimulation(int num_threads) {
             for (int w = 0; w < total_simulation_time; ++w) {
                 // DO NOT change the order of the steps. This would mess up
                 // important dependencies.
+                cout << w << endl;
                 if (Utils::isFirstWeekOfTheYear(w))
                     realization_models[r]->setLongTermROFs(rof_models[r]->calculateROF(w, LONG_TERM_ROF), w);
+                if (w == 231) {
+                    cout << "check 1" << endl;
+                }
                 realization_models[r]->setShortTermROFs(rof_models[r]->calculateROF(w, SHORT_TERM_ROF));
+                if (w == 231) {
+                    cout << "check 2" << endl;
+                }
                 realization_models[r]->applyDroughtMitigationPolicies(w);
+                if (w == 231) {
+                    cout << "check 3" << endl;
+                }
                 realization_models[r]->continuityStep(w);
                 data_collector->collectData(realization_models[r]);
             }

@@ -245,11 +245,11 @@ vector<vector<double>> Utils::calculateDistances(vector<vector<double>> data_poi
 }
 
 
-std::string Utils::getexepath() {
-    char result[PATH_MAX];
-    ssize_t count = readlink("/proc/self/exe",
-                             result,
-                             PATH_MAX);
-    return std::string(result,
-                       (unsigned long) ((count > 0) ? count : 0));
-}
+//std::string Utils::getexepath() {
+//    char result[PATH_MAX];
+//    ssize_t count = readlink("/proc/self/exe",
+//                             result,
+//                             PATH_MAX);
+//    return std::string(result,
+//                       (unsigned long) ((count > 0) ? count : 0));
+//}

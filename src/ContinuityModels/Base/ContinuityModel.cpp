@@ -27,6 +27,7 @@ ContinuityModel::ContinuityModel(
     std::sort(continuity_water_sources.begin(), continuity_water_sources.end(), WaterSource::compare);
 #ifdef _WIN32
     sort(continuity_utilities.begin(), continuity_utilities.end(), Utility::compById);
+    //sort(continuity_utilities.begin(), continuity_utilities.end(), std::greater<>());
 #else
     std::sort(continuity_utilities.begin(), continuity_utilities.end(), Utility::compById);
 #endif

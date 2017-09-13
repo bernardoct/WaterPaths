@@ -19,7 +19,7 @@
 #include "SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
 #include "SystemComponents/WaterSources/Relocation.h"
 #include "DroughtMitigationInstruments/InsuranceStorageToROF.h"
-
+#include "DroughtMitigationInstruments/RawWaterReleases.h"
 
 int regionOneUtilitiesTwoReservoirsContinuityTest();
 
@@ -1359,84 +1359,87 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
 
     int max_lines = n_realizations;
 
+    /// FYI: the output_directory doesn't actually become the directory for outputs until after it is used
+    ///      to read in inputs...
+
     cout << "Reading inflows." << endl;
-    vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/durham_inflows.csv",
+    vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile(output_directory + "/inflows/durham_inflows.csv",
                                                                       max_lines);
-    vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/falls_lake_inflows.csv",
+    vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile(output_directory + "/inflows/falls_lake_inflows.csv",
                                                                     max_lines);
-    vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/lake_wb_inflows.csv",
+    vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile(output_directory + "/inflows/lake_wb_inflows.csv",
                                                                      max_lines);
-    vector<vector<double>> streamflows_llr = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/little_river_raleigh_inflows.csv",
+    vector<vector<double>> streamflows_llr = Utils::parse2DCsvFile(output_directory + "/inflows/little_river_raleigh_inflows.csv",
                                                                    max_lines);
-    vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/crabtree_inflows.csv",
+    vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile(output_directory + "/inflows/crabtree_inflows.csv",
                                                                         max_lines);
 
-    vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/stone_quarry_inflows.csv",
+    vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile(output_directory + "/inflows/stone_quarry_inflows.csv",
                                                                      max_lines);
-    vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/cane_creek_inflows.csv",
+    vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile(output_directory + "/inflows/cane_creek_inflows.csv",
                                                                     max_lines);
-    vector<vector<double>> streamflows_morgan = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/university_lake_inflows.csv",
+    vector<vector<double>> streamflows_morgan = Utils::parse2DCsvFile(output_directory + "/inflows/university_lake_inflows.csv",
                                                                       max_lines);
-    vector<vector<double>> streamflows_haw = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/jordan_lake_inflows.csv",
+    vector<vector<double>> streamflows_haw = Utils::parse2DCsvFile(output_directory + "/inflows/jordan_lake_inflows.csv",
                                                                    max_lines);
-    vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/clayton_inflows.csv",
+    vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile(output_directory + "/inflows/clayton_inflows.csv",
                                                                        max_lines);
 
-    vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/lillington_inflows.csv",
+    vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile(output_directory + "/inflows/lillington_inflows.csv",
                                                                           max_lines);
 
     cout << "Reading demands." << endl;
-    vector<vector<double>> demand_cary = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/cary_demand.csv",
+    vector<vector<double>> demand_cary = Utils::parse2DCsvFile(output_directory + "/demands/cary_demand.csv",
                                                                max_lines);
-    vector<vector<double>> demand_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/durham_demand.csv",
+    vector<vector<double>> demand_durham = Utils::parse2DCsvFile(output_directory + "/demands/durham_demand.csv",
                                                                  max_lines);
-    vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/raleigh_demand.csv",
+    vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile(output_directory + "/demands/raleigh_demand.csv",
                                                                   max_lines);
-    vector<vector<double>> demand_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/owasa_demand.csv",
+    vector<vector<double>> demand_owasa = Utils::parse2DCsvFile(output_directory + "/demands/owasa_demand.csv",
                                                                 max_lines);
 
     cout << "Reading evaporations." << endl;
-    vector<vector<double>> evap_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation/durham_evap.csv",
+    vector<vector<double>> evap_durham = Utils::parse2DCsvFile(output_directory + "/evaporation/durham_evap.csv",
                                                                max_lines);
-    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation/falls_lake_evap.csv",
+    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile(output_directory + "/evaporation/falls_lake_evap.csv",
                                                                    max_lines);
-    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation/owasa_evap.csv",
+    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile(output_directory + "/evaporation/owasa_evap.csv",
                                                               max_lines);
-    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation/little_river_raleigh_evap.csv",
+    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile(output_directory + "/evaporation/little_river_raleigh_evap.csv",
                                                                      max_lines);
-    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation/wb_evap.csv",
+    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile(output_directory + "/evaporation/wb_evap.csv",
                                                                        max_lines);
     vector<vector<double>> evap_jordan_lake = evap_owasa;
 
     cout << "Reading others." << endl;
     vector<vector<double>> demand_to_wastewater_fraction_owasa_raleigh =
-            Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
+            Utils::parse2DCsvFile(output_directory + "/demand_to_wastewater_fraction_owasa_raleigh.csv");
     vector<vector<double>> demand_to_wastewater_fraction_durham =
-            Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_durham.csv");
+            Utils::parse2DCsvFile(output_directory + "/demand_to_wastewater_fraction_durham.csv");
 //
     vector<vector<double>> caryDemandClassesFractions = Utils::parse2DCsvFile
-            (output_directory + "/TestFiles/caryDemandClassesFractions.csv");
+            (output_directory + "/caryDemandClassesFractions.csv");
     vector<vector<double>> durhamDemandClassesFractions = Utils::parse2DCsvFile
-            (output_directory + "/TestFiles/durhamDemandClassesFractions.csv");
+            (output_directory + "/durhamDemandClassesFractions.csv");
     vector<vector<double>> raleighDemandClassesFractions = Utils::parse2DCsvFile
-            (output_directory + "/TestFiles/raleighDemandClassesFractions.csv");
+            (output_directory + "/raleighDemandClassesFractions.csv");
     vector<vector<double>> owasaDemandClassesFractions = Utils::parse2DCsvFile
-            (output_directory + "/TestFiles/owasaDemandClassesFractions.csv");
+            (output_directory + "/owasaDemandClassesFractions.csv");
 
     vector<vector<double>> caryUserClassesWaterPrices = Utils::parse2DCsvFile
-            (output_directory + "/TestFiles/caryUserClassesWaterPrices.csv");
+            (output_directory + "/caryUserClassesWaterPrices.csv");
     vector<vector<double>> durhamUserClassesWaterPrices = Utils::parse2DCsvFile
-            (output_directory + "/TestFiles/durhamUserClassesWaterPrices.csv");
+            (output_directory + "/durhamUserClassesWaterPrices.csv");
     vector<vector<double>> raleighUserClassesWaterPrices = Utils::parse2DCsvFile
-            (output_directory + "/TestFiles/raleighUserClassesWaterPrices.csv");
+            (output_directory + "/raleighUserClassesWaterPrices.csv");
     vector<vector<double>> owasaUserClassesWaterPrices = Utils::parse2DCsvFile
-            (output_directory + "/TestFiles/owasaUserClassesWaterPrices.csv");
+            (output_directory + "/owasaUserClassesWaterPrices.csv");
 
     vector<vector<double>> owasaPriceSurcharges = Utils::parse2DCsvFile
-            (output_directory + "/TestFiles/owasaPriceRestMultipliers.csv");
+            (output_directory + "/owasaPriceRestMultipliers.csv");
 
 //    vector<double> sewageFractions = Utils::parse1DCsvFile(
-//            output_directory + "/TestFiles/sewageFractions.csv");
+//            output_directory + "/sewageFractions.csv");
 
     cout << "Assigning evaporation timeseries." << endl;
     EvaporationSeries evaporation_durham(&evap_durham, streamflow_n_weeks);
@@ -2282,11 +2285,11 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
     data_collector->calculateObjectives();
 
     /// Print output files.
-    string fu = "/TestFiles/output/Utilities";
-    string fws = "/TestFiles/output/WaterSources";
-    string fp = "/TestFiles/output/Policies";
-    string fo = "/TestFiles/output/Objectives";
-    string fpw = "/TestFiles/output/Pathways";
+    string fu = "/Utilities";
+    string fws = "/WaterSources";
+    string fp = "/Policies";
+    string fo = "/Objectives";
+    string fpw = "/Pathways";
 
     data_collector->printUtilityOutputCompact(fu + "_s"
                                               + std::to_string(sol_number));
@@ -2394,6 +2397,15 @@ int main(int argc, char *argv[]) {
                                         {0.964084, 0.957237,  0.3402,    0.508516,   0.0886362,  0.271732,  0.380416,  0.116606, 0.0720546,   0.0511521, 0.521052, 0.0583203,  0.00112482,  0.00707201,  0.0993984,  0.845939,  0.843715,   0.405772,  0.692136,   0.0102958,   0.00623187,  0.0164233,   0.0196851,   0.974996,  0.660625,   0.0518138, 0.445297,  0.596673,   0.509064,   0.469549,  0.653757,  0.00433695, 0.822447,  0.61638,    0.355138,   0.845227,  0.236853,  0.641729,  0.755669,    0,          0.529056,    0.529334,  0.651159,   0.506703,  0.813917,    0.804946,   36.1739, 3.7736,     43.326,  0.0621908,  0.168455,  0.198017,  9098.5,  11.8163,  15.9788,  8.2912,    15.968,  0.061, 0.850997,   0,         0.102845,   0.002, 4806.45, 0,     0.808397,  0.0865315, 0.00138925, 0,     1122.87,  0.022, 3.87098,     0.0433573,   0.0305339,   0.043, 2649.63, 0, 1.40953,    0, 0.0993984,  0, 0, 0.002, 21.1709,  7.81594,     136.9,   48.05},
                                         {0.94907,  0.987128,  0.32142,   0.164361,   0.0631331,  0.517248,  0.315407,  0.257379, 0.0918029,   0.0509198, 0.521006, 0.0178659,  0.0374205,   0.0272608,   0.0714269,  0.0582526, 0.97904,    0.992166,  0.404572,   5.34E-05,    0.0138762,   0.00136882,  0.00351665,  0.476592,  0.397933,   0.358438,  0.220057,  0.433845,   0.0213737,  0.0369478, 0.702728,  0.862642,   0.832649,  0.00531276, 0.6222,     0.748522,  0.774214,  0.119259,  0.96785,     0.969568,   0.434788,    0.943323,  0.988651,   0.966413,  0.301413,    0.127815,   67.1893, 75.2889,    19.6886, 0.0176694,  0.367224,  0.219651,  133.503, 11.3229,  7.00285,  6.66865,   8.5734,  0.217, 0.709567,   0.0301964, 0.0198414,  0.216, 2225.69, 0.002, 0.14981,   0,         0.0375377,  0,     168.256,  0.132, 0.346115,    0,           0.0291458,   0.371, 2073.83, 0, 0.0714269,  0, 0.0714269,  0, 0, 0.002, 15.1114,  0.962563,    9.01851, 0}
     };
+
+    /// information on inputs to triangleTest
+    ///     atoi(argv[1]) = number of cores/processors
+    ///     atoi(argv[2]) = number of realizations
+    ///     atoi(argv[3]) = number of weeks per realization
+    ///     atoi(argv[4]) = which solutions to start with
+    ///     atoi(argv[5]) = which solution to end with
+    ///     atoi(argv[6]) = <output_folder>
+    ///     argc          = formulation?
 
     int first_sol = (argc < 6 ? 0 : atoi(argv[4]));
     int last_sol = (argc < 6 ? (int) solutions.size() : atoi(argv[5]));

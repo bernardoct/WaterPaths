@@ -69,7 +69,7 @@ namespace Constants {
 
     const int WATER_QUALITY_ALLOCATION = -1;
 
-    const std::string base_directory = "C:/Users/David/OneDrive/UNC/Research/WSC/Coding/RevampedTriangle";
+    //const std::string base_directory = "C:/Users/David/OneDrive/UNC/Research/WSC/Coding/RevampedTriangle";
 };
 
 

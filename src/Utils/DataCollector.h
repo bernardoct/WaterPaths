@@ -94,11 +94,11 @@ private:
     vector<WaterSource_t> water_sources_t;
     vector<RestrictionPolicy_t> restriction_policies_t;
     vector<TransfersPolicy_t> transfers_policies_t;
-    string output_directory;
     vector<RawWaterTransferPolicy_t> raw_water_transfer_policies_t;
-    string output_directory =
-            base_directory + "/RevampedTriangleModel/TestFiles/output/";
-//    string output_directory = "..\\TestFiles\\";
+    string output_directory = "C:/Users/David/OneDrive/UNC/Research/WSC/Coding/RevampedTriangle/RevampedTriangleModel/TestFiles";
+//    string output_directory =
+//            base_directory + "/RevampedTriangleModel/TestFiles/output/";
+    string output_folder = "/output/";
     vector<vector<vector<int>>> pathways;
 
 

@@ -7,4 +7,4 @@
 QuaryDataCollector::QuaryDataCollector(Reservoir *reservoir)
         : ReservoirDataCollector(reservoir,
                                  QUARRY,
-                                 N_COLUMNS * COLUMN_WIDTH) {}
+                                 7 * COLUMN_WIDTH) {}

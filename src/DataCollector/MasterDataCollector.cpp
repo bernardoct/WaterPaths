@@ -386,7 +386,4 @@ void MasterDataCollector::collectData(int r) {
         dmp[r]->collect_data();
     for (vector<DataCollector *> ws : water_source_collectors)
         ws[r]->collect_data();
-//    for (vector<UtilitiesDataCollector *> vu : utility_collectors)
-//        for (UtilitiesDataCollector *u : vu)
-//            u->resetUtilityDataCollection();
 }

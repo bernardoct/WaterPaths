@@ -9,7 +9,7 @@ TransfersDataCollector::TransfersDataCollector(Transfers *transfer_policy)
         : DataCollector(transfer_policy->id,
                         nullptr,
                         TRANSFERS,
-                        N_COLUMNS * COLUMN_WIDTH),
+                        NON_INITIALIZED),
           utilities_ids(transfer_policy->getUtilities_ids()),
           transfer_policy(transfer_policy) {
 

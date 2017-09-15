@@ -75,8 +75,7 @@ double checkAndFixInfraExpansionHighLowOrder(
 
 void triangleTest(int n_threads, const double *x_real, int n_realizations,
                   int n_weeks, int sol_number, string output_directory) {
-//    srand((unsigned int) time(0));
-    srand(1);
+    srand((unsigned int) time(nullptr));
 
     // ===================== SET UP DECISION VARIABLES  =====================
 
@@ -1209,6 +1208,7 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
     string fo = "/TestFiles/output/Objectives";
     string fpw = "/TestFiles/output/Pathways";
 
+<<<<<<< HEAD
 //    data_collector->printUtilitiesOutputCompact(0,
 //                                                n_weeks,
 //                                                fu + "_s"
@@ -1236,6 +1236,34 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
 //                                               + std::to_string(sol_number));
 //    data_collector->printObjectives(fo + "_s" + std::to_string(sol_number));
 //    data_collector->printPathways(fpw + "_s" + std::to_string(sol_number));
+=======
+    data_collector->printUtilitiesOutputCompact(0,
+                                                n_weeks,
+                                                fu + "_s"
+                                                + std::to_string(sol_number));
+    data_collector->printWaterSourcesOutputCompact(0,
+                                                   n_weeks,
+                                                   fws + "_s"
+                                                   + std::to_string(sol_number));
+    data_collector->printPoliciesOutputCompact(0,
+                                               n_weeks,
+                                               fp + "_s"
+                                               + std::to_string(sol_number));
+    data_collector->printUtilitesOutputTabular(0,
+                                               n_weeks,
+                                               fu + "_s"
+                                               + std::to_string(sol_number));
+    data_collector->printWaterSourcesOutputTabular(0,
+                                                   n_weeks,
+                                                   fws + "_s"
+                                                   + std::to_string(sol_number));
+    data_collector->printPoliciesOutputTabular(0,
+                                               n_weeks,
+                                               fp + "_s"
+                                               + std::to_string(sol_number));
+    data_collector->printObjectives(fo + "_s" + std::to_string(sol_number));
+    data_collector->printPathways(fpw + "_s" + std::to_string(sol_number));
+>>>>>>> parent of a54ecb8... Bug fix: Pathways were not being printed
 }
 
 int main(int argc, char *argv[]) {

@@ -11,7 +11,7 @@
 #include "../SystemComponents/WaterSources/Reservoir.h"
 
 class ReservoirDataCollector : public DataCollector {
-private:
+
     Reservoir *reservoir;
     vector<double> stored_volume;
     vector<double> total_upstream_sources_inflows;
@@ -19,7 +19,6 @@ private:
     vector<double> outflows;
     vector<double> total_catchments_inflow;
     vector<double> evaporated_volume;
-    int N_COLUMNS = 7;
 
 public:
     explicit ReservoirDataCollector(Reservoir *reservoir);

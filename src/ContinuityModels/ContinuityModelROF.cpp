@@ -191,9 +191,9 @@ void ContinuityModelROF::updateStorageToROFTable(
                 utility_storage += available_volumes_shifted[ws] *
                                    continuity_water_sources[ws]->getAllocatedFraction(u);
             /// Register failure in the table for each utility meeting failure criteria.
-            double ADJUSTED_FAIL_THRESHOLD = STORAGE_CAPACITY_RATIO_FAIL +
+            double adjusted_fail_threshold = STORAGE_CAPACITY_RATIO_FAIL +
                     ((double)NO_OF_STORAGE_TO_ROF_TABLE_TIERS - (double) s) / (double)NO_OF_STORAGE_TO_ROF_TABLE_TIERS;
-            if ((utility_storage / utilities_capacities[u]) < ADJUSTED_FAIL_THRESHOLD) {
+            if ((utility_storage / utilities_capacities[u]) < adjusted_fail_threshold) {
                 for (int tier = s; tier > -1; --tier)
                     storage_to_rof_realization(u, tier, week_of_the_year) = FAILURE;
                 count_fails++;
@@ -202,24 +202,8 @@ void ContinuityModelROF::updateStorageToROFTable(
 
         /// If all utilities have failed, stop dropping level.
         if (count_fails == n_utilities) {
-            for (int ss = s; ss >= 0; --ss) {
-                for (unsigned int u = 0; u < n_utilities; ++u) {
-                    /// Calculate combined stored volume for each utility based on shifted storages.
-                    storage_to_rof_realization(u,
-                                               ss,
-                                               week_of_the_year) = FAILURE;
-                }
-            }
             break;
         }
-
-        /// Sets the beginning percent storage for the next realization two
-        /// levels above the first level in which at least one failure was
-        /// observed.
-        if (count_fails == 0)
-            beginning_res_level = s + 1;
-        else if (beginning_res_level < s + 1)
-            beginning_res_level = s + 1;
     }
 }
 

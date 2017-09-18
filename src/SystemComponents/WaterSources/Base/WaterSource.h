@@ -172,6 +172,8 @@ public:
     double *getAvailable_allocated_volumes() const;
 
     vector<int> *getUtilities_with_allocations() const;
+
+    void addWater(int allocation_id, double volume);
 };
 
 

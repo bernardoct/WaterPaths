@@ -11,10 +11,12 @@
 #include "../SystemComponents/WaterSources/AllocatedReservoir.h"
 #include "../SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
 #include "../SystemComponents/WaterSources/Relocation.h"
+#include "../DroughtMitigationInstruments/RawWaterReleases.h"
 #include <fstream>
 #include <algorithm>
 #include <climits>
 #include <unistd.h>
+#include <libloaderapi.h>
 
 /**
  * Reads csv file into table, exported as a vector of vector of doubles.
@@ -174,6 +176,9 @@ Utils::copyDroughtMitigationPolicyVector(
             drought_mitigation_policy_new.push_back(
                     new InsuranceStorageToROF(
                             *dynamic_cast<InsuranceStorageToROF *>(dmp)));
+        else if (dmp->type == RAW_WATER_TRANSFERS)
+            drought_mitigation_policy_new.push_back(
+                    new RawWaterReleases(*dynamic_cast<RawWaterReleases *>(dmp)));
     }
 
     return drought_mitigation_policy_new;
@@ -242,9 +247,11 @@ vector<vector<double>> Utils::calculateDistances(vector<vector<double>> data_poi
 
 std::string Utils::getexepath() {
     char result[PATH_MAX];
-    ssize_t count = readlink("/proc/self/exe",
-                             result,
-                             PATH_MAX);
-    return std::string(result,
-                       (unsigned long) ((count > 0) ? count : 0));
+    #ifdef _WIN32
+        ssize_t count = GetModuleFileName(NULL, result, PATH_MAX);
+    #else
+        ssize_t count = GetModuleFileName("/proc/self/exe", result, PATH_MAX);
+    #endif
+
+    return std::string(result, (unsigned long) ((count > 0) ? count : 0));
 }

@@ -1,5 +1,5 @@
 //
-// Created by bct52 on 7/27/17.
+// Created by David on 9/18/2017.
 //
 
 #include <algorithm>
@@ -51,7 +51,7 @@ void RawWaterReleases::applyPolicy(int week) {
     /// Raw water transfers are calculated if upstream ROF is above trigger level AND
     /// downstream ROF is below trigger level
     if ((downstream_utility->getRisk_of_failure() > rof_triggers[downstream_utility_id]) &
-            (upstream_utility->getRisk_of_failure() < rof_triggers[upstream_utility_id])) {
+        (upstream_utility->getRisk_of_failure() < rof_triggers[upstream_utility_id])) {
 
         /// Determine storage deficit for downstream utility and available capacity for
         /// upstream utility
@@ -97,10 +97,10 @@ void RawWaterReleases::applyPolicy(int week) {
         /// adjust storage (and water quality, when applicable) levels in each reservoir
         downstream_reservoir->addWater(WATER_QUALITY_ALLOCATION,
                                        raw_water_transfer_volume *
-                                               (1 - raw_water_transfer_downstream_allocation_ratio));
+                                       (1 - raw_water_transfer_downstream_allocation_ratio));
         downstream_reservoir->addWater(downstream_utility_id,
                                        raw_water_transfer_volume *
-                                               raw_water_transfer_downstream_allocation_ratio);
+                                       raw_water_transfer_downstream_allocation_ratio);
         upstream_reservoir->removeWater(upstream_utility_id, raw_water_transfer_volume);
 
         /// administer payments between utilities
@@ -129,7 +129,7 @@ const double RawWaterReleases::getUtilityStorageFromROF(
     /// Determine the storage associated with an ROF level
     for (int s = NO_OF_STORAGE_TO_ROF_TABLE_TIERS - 1; s > -1; --s) {
         if ((*storage_to_rof_table)(u_id, s, week) > rof_triggers[u_id]) {
-            return ((double)s + 1) / (double)NO_OF_STORAGE_TO_ROF_TABLE_TIERS;
+            return (((double)s + 1) / (double)NO_OF_STORAGE_TO_ROF_TABLE_TIERS);
         }
     }
 }

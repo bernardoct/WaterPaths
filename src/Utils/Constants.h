@@ -72,5 +72,4 @@ namespace Constants {
     const int WATER_QUALITY_ALLOCATION = -1;
 };
 
-
 #endif //TRIANGLEMODEL_CONSTANTS_H

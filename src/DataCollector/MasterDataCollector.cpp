@@ -19,6 +19,8 @@
 #include "WaterReuseDataCollector.h"
 #include "AllocatedReservoirDataCollector.h"
 #include "EmptyDataCollector.h"
+#include "../DroughtMitigationInstruments/RawWaterReleases.h"
+#include "RawWaterReleaseDataCollector.h"
 
 using namespace Constants;
 
@@ -333,6 +335,12 @@ void MasterDataCollector::addRealization(
                  == INSURANCE_STORAGE_ROF)
             drought_mitigation_policy_collectors[dmp].push_back(
                     new EmptyDataCollector());
+        else if (drought_mitigation_policies_realization[dmp]->type ==
+                 RAW_WATER_TRANSFERS)
+            drought_mitigation_policy_collectors[dmp].push_back(
+                    new RawWaterReleaseDataCollector
+                            (dynamic_cast<RawWaterReleases *>
+                             (drought_mitigation_policies_realization[dmp])));
         else
             __throw_invalid_argument("Drought mitigation policy not recognized. "
                                              "Did you forget to add it to the "

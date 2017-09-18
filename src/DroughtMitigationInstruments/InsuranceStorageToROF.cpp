@@ -142,7 +142,7 @@ void InsuranceStorageToROF::priceInsurance(int week) {
     updateOnlineInfrastructure(week);
 
     for (int r = 0; r < NUMBER_REALIZATIONS_ROF; ++r) {
-        beginning_res_level = NO_OF_INSURANCE_STORAGE_TIERS;
+        beginning_res_level = NO_OF_STORAGE_TO_ROF_TABLE_TIERS;
         /// reset reservoirs' and utilities' storage and combined storage, respectively, they currently
         /// have in the corresponding realization simulation.
         resetUtilitiesAndReservoirs(SHORT_TERM_ROF);
@@ -189,11 +189,11 @@ void InsuranceStorageToROF::getUtilitiesApproxROFs(
     for (int u = 0; u < n_utilities; ++u) {
         /// get storage index in the table corresponding to the utility's combined storage.
         int s = (int) floor(u_storage_capacity_ratio[u] *
-                            NO_OF_INSURANCE_STORAGE_TIERS);
-        s = min(s, NO_OF_INSURANCE_STORAGE_TIERS - 1);
+                                    NO_OF_STORAGE_TO_ROF_TABLE_TIERS);
+        s = min(s, NO_OF_STORAGE_TO_ROF_TABLE_TIERS - 1);
 
         /// get estimated rof value from the table.
-        if (s == NO_OF_INSURANCE_STORAGE_TIERS - 1)
+        if (s == NO_OF_STORAGE_TO_ROF_TABLE_TIERS - 1)
             utilities_approx_rof[u] = (*storage_to_rof_table)(u, s, week);
         else
             utilities_approx_rof[u] =

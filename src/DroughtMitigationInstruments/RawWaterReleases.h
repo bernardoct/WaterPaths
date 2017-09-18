@@ -1,5 +1,5 @@
 //
-// Created by bct52 on 7/27/17.
+// Created by David on 9/18/2017.
 //
 
 #ifndef TRIANGLEMODEL_RAWWATERRELEASES_H
@@ -55,6 +55,5 @@ public:
 
     const vector<double> &getUtilityTargetStorageLevels() const;
 };
-
 
 #endif //TRIANGLEMODEL_RAWWATERRELEASES_H

@@ -6,11 +6,11 @@
 #include "UtilitiesDataCollector.h"
 
 
-UtilitiesDataCollector::UtilitiesDataCollector(Utility *utility)
+UtilitiesDataCollector::UtilitiesDataCollector(const Utility *utility)
         : DataCollector(utility->id,
                         utility->name,
                         UTILITY,
-                        N_COLUMNS * COLUMN_WIDTH),
+                        10 * COLUMN_WIDTH),
           utility(utility) {}
 
 string UtilitiesDataCollector::printTabularString(int week) {
@@ -147,10 +147,6 @@ void UtilitiesDataCollector::collect_data() {
     infra_build = utility->getInfrastructure_built();
     if (!infra_build.empty()) pathways.push_back(infra_build);
 }
-
-//void UtilitiesDataCollector::resetUtilityDataCollection() {
-//    utility->resetDataColletionVariables();
-//}
 
 const vector<double> &UtilitiesDataCollector::getCombined_storage() const {
     return combined_storage;

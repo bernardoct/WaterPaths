@@ -1,8 +1,9 @@
-import fnmatch
 import numpy as np
 import pandas as pd
+import fnmatch
 
 folder = 'TestFiles/output/'
+<<<<<<< HEAD
 O = 3
 s = 1
 r = 3
@@ -18,8 +19,11 @@ print utils_file + ' - read!'
 
 water_sources = pd.read_csv(sources_file, sep=',')
 print sources_file + ' - read!'
+=======
+>>>>>>> parent of a54ecb8... Bug fix: Pathways were not being printed
 
-print utilities
+utilities = pd.read_csv(folder + 'Utilities_s0_r4.out', sep=',')
+water_sources = pd.read_csv(folder + 'WaterSources_s0_r4.out', sep=',')
 
 # for h in water_sources.columns.values:
 # 	print h
@@ -52,10 +56,10 @@ result = catch - evap - demands + wwater - vol - output
 
 # print water_sources[catch_headers]
 for i in range(2, len(output)):
-    print str(i) + '\t\t' + str(catch[i]) + '\t\t' + \
-          str(demands[i]) + '\t\t' + \
-          str(evap[i]) + '\t\t' + \
-          str(output[i]) + '\t\t' + \
-          str(vol[i]) + '\t\t' + \
-          str(result[i]) + '\t\t'
+	print str(catch[i]) + '\t\t' + \
+		str(demands[i]) + '\t\t' + \
+		str(evap[i]) + '\t\t' + \
+		str(output[i]) + '\t\t' + \
+		str(vol[i]) + '\t\t' + \
+		str(result[i]) + '\t\t'
 

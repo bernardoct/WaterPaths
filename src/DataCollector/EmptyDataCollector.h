@@ -9,8 +9,6 @@
 #include "Base/DataCollector.h"
 
 class EmptyDataCollector : public DataCollector {
-private:
-    int N_COLUMNS = 0;
 public:
     EmptyDataCollector();
 

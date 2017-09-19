@@ -10,8 +10,6 @@
 #include "../SystemComponents/WaterSources/AllocatedReservoir.h"
 
 class AllocatedReservoirDataCollector : public ReservoirDataCollector {
-private:
-    int N_COLUMNS = 7;
     AllocatedReservoir *allocated_reservoir;
     vector<vector<double>> allocated_stored_volumes;
 

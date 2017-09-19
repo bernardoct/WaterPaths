@@ -110,6 +110,8 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
                         week_of_the_year);
         }
 
+        //FIXME: INSTEAD OF ADDING THE 3D MATRIX EVERY WEEK (WHICH MEANS ADDING THE WHOLE YEAR TABLE EVERY WEEK),
+        //FIXME: REPLACE THIS BY A MATRIX 2D SUMMATION FOR THE SAKE OF PERFORMANCE.
         /// update storage-rof table
         if (rof_type == SHORT_TERM_ROF) {
             *storage_to_rof_table += storage_to_rof_realization /

@@ -211,7 +211,7 @@ public:
 
     void setRealization(unsigned long r);
 
-    vector<int> getInfrastructure_built();
+    const vector<int> getInfrastructure_built() const;
 
     void setNoFinaicalCalculations();
 

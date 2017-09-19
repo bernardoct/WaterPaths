@@ -14,9 +14,11 @@ Catchment::Catchment(vector<vector<double>> *streamflows_all, int series_length)
         Constants::WEEKS_IN_YEAR * Constants::NUMBER_REALIZATIONS_ROF)
         throw std::length_error("Series shorter than required for ROF "
                                         "calculations. The streamflow series"
-                                        "must be greater the number of ROF "
-                                        "realizations times the number of "
-                                        "weeks in a year (52).");
+                                        "must be greater the number of ROF ("
+                                + to_string(Constants::NUMBER_REALIZATIONS_ROF)
+                                + ") realizations times the number of "
+                                        "weeks in a year ("
+                                + to_string(Constants::WEEKS_IN_YEAR) + ").");
 }
 
 /**

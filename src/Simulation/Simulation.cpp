@@ -197,8 +197,8 @@ MasterDataCollector *Simulation::runFullSimulation(int num_threads) {
                 master_data_collector->collectData(r);
             }
             time(&timer_fr);
-            std::cout << "Realization " << r << ": "
-                      << difftime(timer_fr, timer_ir) << std::endl;
+//            std::cout << "Realization " << r << ": "
+//                      << difftime(timer_fr, timer_ir) << std::endl;
 
 //        } catch (const std::exception &e) {
 //            cout << "Error in realization " << r << endl;

@@ -35,3 +35,4 @@ $(TARGET): $(OBJECTS)
 
 clean:
 	rm -rf $(shell find . -name "*.o") $(EXECUTABLE)
+	rm -rf $(shell find . -name "*.optrpt") $(EXECUTABLE)

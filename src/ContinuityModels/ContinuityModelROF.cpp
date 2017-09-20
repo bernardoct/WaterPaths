@@ -86,11 +86,8 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
     }
 
     /// perform a continuity simulation for NUMBER_REALIZATIONS_ROF (50) yearly realization.
-    // FIXME: INDEXING ERROR IN THIS LOOP
     for (int yr = 0; yr < NUMBER_REALIZATIONS_ROF; ++yr) {
-        beginning_res_level = NO_OF_STORAGE_TO_ROF_TABLE_TIERS;
-
-        /// RESET REALIZATION-LEVEL FAILURE COUNTER???
+        /// RESET REALIZATION-LEVEL FAILURE COUNTER
         storage_to_rof_realization.reset(NON_FAILURE);
 
         /// reset current reservoirs' and utilities' storage and combined storage, respectively,
@@ -98,7 +95,6 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
         resetUtilitiesAndReservoirs(rof_type);
 
         for (int w = week; w < week + n_weeks_rof; ++w) {
-
             /// one week continuity time-step.
             continuityStep(w, yr, apply_demand_buffer);
 
@@ -113,7 +109,7 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
             if (rof_type == SHORT_TERM_ROF)
                 updateStorageToROFTable(
                         INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD,
-                        week_of_the_year);
+                        week_of_the_year, week, yr);
         }
 
         /// update storage-rof table
@@ -127,11 +123,13 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
             risk_of_failure[uu] += year_failure[uu];
             year_failure[uu] = NON_FAILURE;
         }
+
     }
 
-    cout << "Week " << week_of_the_year << endl;
-    storage_to_rof_table->print(week_of_the_year);
-    cout << endl;
+//    cout << "Week " << week_of_the_year << endl;
+//    storage_to_rof_table->print(week_of_the_year);
+//    cout << endl;
+    cout << "Week " << week << endl;
 
     /// Finish ROF calculations
     for (int i = 0; i < n_utilities; ++i) {
@@ -142,7 +140,7 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
 }
 
 void ContinuityModelROF::updateStorageToROFTable(
-        double storage_percent_decrement, int week_of_the_year) {
+        double storage_percent_decrement, int week_of_the_year, int week, int year) {
 
     int n_water_sources = (int) continuity_water_sources.size();
     int n_utilities = (int) continuity_utilities.size();
@@ -179,22 +177,29 @@ void ContinuityModelROF::updateStorageToROFTable(
                                available_volumes[k];
 
         /// Shift storages.
-//        shiftStorages(available_volumes_shifted, delta_storage);
         shiftStorages(available_volumes_shifted);
+
+        if (week == 310) {
+            if (year == 9) {
+                cout << "CHECK 1.2.1.3.2.2" << endl;
+            }
+        }
 
         /// Checks for utilities failures.
         int count_fails = 0;
         for (unsigned int u = 0; u < n_utilities; ++u) {
             double utility_storage = 0;
+
             /// Calculate combined stored volume for each utility based on shifted storages.
             for (int ws : water_sources_online_to_utilities[u])
                 utility_storage += available_volumes_shifted[ws] *
                                    continuity_water_sources[ws]->getAllocatedFraction(u);
+
             /// Register failure in the table for each utility meeting failure criteria.
             double adjusted_fail_threshold = STORAGE_CAPACITY_RATIO_FAIL +
                     ((double)NO_OF_STORAGE_TO_ROF_TABLE_TIERS - (double) s) / (double)NO_OF_STORAGE_TO_ROF_TABLE_TIERS;
             if ((utility_storage / utilities_capacities[u]) < adjusted_fail_threshold) {
-                for (int tier = s; tier > -1; --tier)
+                for (int tier = (s-1); tier > -1; --tier)
                     storage_to_rof_realization(u, tier, week_of_the_year) = FAILURE;
                 count_fails++;
             }

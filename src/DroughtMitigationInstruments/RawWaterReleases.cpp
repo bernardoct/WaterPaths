@@ -23,7 +23,10 @@ RawWaterReleases::RawWaterReleases(const int id,
           max_releases(max_releases),
           rof_triggers(rof_triggers),
           raw_water_transfer_downstream_allocation_ratio(raw_water_transfer_downstream_allocation_ratio),
-          rate_per_volume(rate_per_volume) {}
+          rate_per_volume(rate_per_volume) {
+
+    utilities_ids = vector<int> {upstream_utility_id, downstream_utility_id};
+}
 
 void RawWaterReleases::addSystemComponents(vector<Utility *> utilities,
                                            vector<WaterSource *> water_sources,

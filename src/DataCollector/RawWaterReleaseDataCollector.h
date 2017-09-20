@@ -12,7 +12,7 @@
 class RawWaterReleaseDataCollector : public DataCollector {
 private:
     vector<int> utilities_ids;
-    vector<vector<double>> storage_targets;
+    vector<vector<double>> utility_storage_targets;
     double raw_water_volume_released;
     RawWaterReleases *raw_water_releases_policy;
     int N_COLUMNS = 1;

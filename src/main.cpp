@@ -2296,19 +2296,19 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
                                                n_weeks,
                                                fp + "_s"
                                                + std::to_string(sol_number));
-//    data_collector->printUtilitesOutputTabular(0,
-//                                               n_weeks,
-//                                               fu + "_s"
-//                                               + std::to_string(sol_number));
-//    data_collector->printWaterSourcesOutputTabular(0,
-//                                                   n_weeks,
-//                                                   fws + "_s"
-//                                                   + std::to_string(sol_number));
+    data_collector->printUtilitesOutputTabular(0,
+                                               n_weeks,
+                                               fu + "_s"
+                                               + std::to_string(sol_number));
+    data_collector->printWaterSourcesOutputTabular(0,
+                                                   n_weeks,
+                                                   fws + "_s"
+                                                   + std::to_string(sol_number));
     //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
-//    data_collector->printPoliciesOutputTabular(0,
-//                                               n_weeks,
-//                                               fp + "_s"
-//                                               + std::to_string(sol_number));
+    data_collector->printPoliciesOutputTabular(0,
+                                               n_weeks,
+                                               fp + "_s"
+                                               + std::to_string(sol_number));
     data_collector->printObjectives(fo + "_s" + std::to_string(sol_number));
     data_collector->printPathways(fpw + "_s" + std::to_string(sol_number));
 }

@@ -40,7 +40,7 @@ public:
 
     virtual ~ContinuityModelROF();
 
-    void updateStorageToROFTable(double storage_percent_decrement, int week_of_the_year);
+    void updateStorageToROFTable(double storage_percent_decrement, int week_of_the_year, int week, int year);
 
     void shiftStorages(double *storages, const double *deltas);
 

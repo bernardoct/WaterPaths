@@ -64,9 +64,9 @@ public:
 
     ~AllocatedReservoir();
 
-    void applyContinuity(
-            int week, double upstream_source_inflow,
-            vector<double> &demand_outflow) override;
+    void applyContinuity(int week, double upstream_source_inflow,
+                             double wastewater_inflow,
+                             vector<double> &demand_outflow) override;
 
     double getAvailableAllocatedVolume(int utility_id) override;
 

@@ -22,7 +22,6 @@
 #include "Utils/Solutions.h"
 
 
-
 using namespace std;
 using namespace Constants;
 using namespace Solutions;
@@ -253,81 +252,6 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
 
     /// Read streamflows
     int streamflow_n_weeks = 52 * (70 + 50);
-    /*
-    vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile("../TestFiles/durhamInflowsLong.csv");
-    vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile("../TestFiles/flatInflowsLong.csv");
-    vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile("../TestFiles/swiftInflowsLong.csv");
-    vector<vector<double>> streamflows_llr = Utils::parse2DCsvFile("../TestFiles/littleriverraleighInflowsLong.csv");
-    vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile("../TestFiles/crabtreeInflowsLong.csv");
-    vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile("../TestFiles/philsInflowsLong.csv");
-    vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile("../TestFiles/caneInflowsLong.csv");
-    vector<vector<double>> streamflows_morgan = Utils::parse2DCsvFile("../TestFiles/morganInflowsLong.csv");
-    vector<vector<double>> streamflows_haw = Utils::parse2DCsvFile("../TestFiles/hawInflowsLong.csv");
-    vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile("../TestFiles/claytonInflowsLong.csv");
-    vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile("../TestFiles/lillingtonInflowsLong.csv");
-
-    vector<vector<double>> demand_cary = Utils::parse2DCsvFile("../TestFiles/demandsLongCary.csv");
-    vector<vector<double>> demand_durham = Utils::parse2DCsvFile("../TestFiles/demandsLongDurham.csv");
-    vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile("../TestFiles/demandsLongRaleigh.csv");
-    vector<vector<double>> demand_owasa = Utils::parse2DCsvFile("../TestFiles/demandsLongOWASA.csv");
-
-    vector<vector<double>> evap_durham = Utils::parse2DCsvFile("../TestFiles/evapLongDurham.csv");
-    vector<vector<double>> evap_jordan_lake = Utils::parse2DCsvFile("../TestFiles/evapLongCary.csv");
-    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile("../TestFiles/evapLongFalls.csv");
-    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile("../TestFiles/evapLongOWASA.csv");
-    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile("../TestFiles/evapLongRaleighOther.csv");
-    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile("../TestFiles/evapLongWB.csv");
-
-    vector<vector<double>> demand_to_wastewater_fraction_owasa_raleigh =
-            Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
-    vector<vector<double>> demand_to_wastewater_fraction_durham =
-            Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_durham.csv");
-
-    vector<vector<double>> caryDemandClassesFractions = Utils::parse2DCsvFile
-            ("../TestFiles/caryDemandClassesFractions.csv");
-    vector<vector<double>> durhamDemandClassesFractions = Utils::parse2DCsvFile
-            ("../TestFiles/durhamDemandClassesFractions.csv");
-    vector<vector<double>> raleighDemandClassesFractions = Utils::parse2DCsvFile
-            ("../TestFiles/raleighDemandClassesFractions.csv");
-    vector<vector<double>> owasaDemandClassesFractions = Utils::parse2DCsvFile
-            ("../TestFiles/owasaDemandClassesFractions.csv");
-
-    vector<vector<double>> caryUserClassesWaterPrices = Utils::parse2DCsvFile
-            ("../TestFiles/caryUserClassesWaterPrices.csv");
-    vector<vector<double>> durhamUserClassesWaterPrices = Utils::parse2DCsvFile
-            ("../TestFiles/durhamUserClassesWaterPrices.csv");
-    vector<vector<double>> raleighUserClassesWaterPrices = Utils::parse2DCsvFile
-            ("../TestFiles/raleighUserClassesWaterPrices.csv");
-    vector<vector<double>> owasaUserClassesWaterPrices = Utils::parse2DCsvFile
-            ("../TestFiles/owasaUserClassesWaterPrices.csv");
-
-    vector<double> sewageFractions = Utils::parse1DCsvFile(
-            "../TestFiles/sewageFractions.csv");
-    */
-
-//    vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/durhamInflowsLong.csv");
-//    vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile(output_directory + "/TestFiles/flatInflowsLong.csv");
-//    vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile(output_directory + "/TestFiles/swiftInflowsLong.csv");
-//    vector<vector<double>> streamflows_llr = Utils::parse2DCsvFile(output_directory + "/TestFiles/littleriverraleighInflowsLong.csv");
-//    vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile(output_directory + "/TestFiles/crabtreeInflowsLong.csv");
-//    vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile(output_directory + "/TestFiles/philsInflowsLong.csv");
-//    vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile(output_directory + "/TestFiles/caneInflowsLong.csv");
-//    vector<vector<double>> streamflows_morgan = Utils::parse2DCsvFile(output_directory + "/TestFiles/morganInflowsLong.csv");
-//    vector<vector<double>> streamflows_haw = Utils::parse2DCsvFile(output_directory + "/TestFiles/hawInflowsLong.csv");
-//    vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile(output_directory + "/TestFiles/claytonInflowsLong.csv");
-//    vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile(output_directory + "/TestFiles/lillingtonInflowsLong.csv");
-//
-//    vector<vector<double>> demand_cary = Utils::parse2DCsvFile(output_directory + "/TestFiles/demandsLongCary.csv");
-//    vector<vector<double>> demand_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demandsLongDurham.csv");
-//    vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demandsLongRaleigh.csv");
-//    vector<vector<double>> demand_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/demandsLongOWASA.csv");
-//
-//    vector<vector<double>> evap_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/evapLongDurham.csv");
-//    vector<vector<double>> evap_jordan_lake = Utils::parse2DCsvFile(output_directory + "/TestFiles/evapLongCary.csv");
-//    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile(output_directory + "/TestFiles/evapLongFalls.csv");
-//    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/evapLongOWASA.csv");
-//    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile(output_directory + "/TestFiles/evapLongRaleighOther.csv");
-//    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile(output_directory + "/TestFiles/evapLongWB.csv");
 
     int max_lines = n_realizations;
 
@@ -342,7 +266,6 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
                                                                    max_lines);
     vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/crabtree_inflows.csv",
                                                                         max_lines);
-
     vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/stone_quarry_inflows.csv",
                                                                      max_lines);
     vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/cane_creek_inflows.csv",
@@ -353,7 +276,6 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
                                                                    max_lines);
     vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/clayton_inflows.csv",
                                                                        max_lines);
-
     vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/lillington_inflows.csv",
                                                                           max_lines);
 
@@ -1210,35 +1132,9 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
     string fo = "/TestFiles/output/Objectives";
     string fpw = "/TestFiles/output/Pathways";
 
-<<<<<<< HEAD
-//    data_collector->printUtilitiesOutputCompact(0,
-//                                                n_weeks,
-//                                                fu + "_s"
-//                                                + std::to_string(sol_number));
-//    data_collector->printWaterSourcesOutputCompact(0,
-//                                                   n_weeks,
-//                                                   fws + "_s"
-//                                                   + std::to_string(sol_number));
-//    data_collector->printPoliciesOutputCompact(0,
-//                                               n_weeks,
-//                                               fp + "_s"
-//                                               + std::to_string(sol_number));
-//    data_collector->printUtilitesOutputTabular(0,
-//                                               n_weeks,
-//                                               fu + "_s"
-//                                               + std::to_string(sol_number));
-//    data_collector->printWaterSourcesOutputTabular(0,
-//                                                   n_weeks,
-//                                                   fws + "_s"
-//                                                   + std::to_string(sol_number));
     //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
-//    data_collector->printPoliciesOutputTabular(0,
-//                                               n_weeks,
-//                                               fp + "_s"
-//                                               + std::to_string(sol_number));
 //    data_collector->printObjectives(fo + "_s" + std::to_string(sol_number));
 //    data_collector->printPathways(fpw + "_s" + std::to_string(sol_number));
-=======
     data_collector->printUtilitiesOutputCompact(0,
                                                 n_weeks,
                                                 fu + "_s"
@@ -1251,90 +1147,23 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
                                                n_weeks,
                                                fp + "_s"
                                                + std::to_string(sol_number));
-    data_collector->printUtilitesOutputTabular(0,
-                                               n_weeks,
-                                               fu + "_s"
-                                               + std::to_string(sol_number));
-    data_collector->printWaterSourcesOutputTabular(0,
-                                                   n_weeks,
-                                                   fws + "_s"
-                                                   + std::to_string(sol_number));
-    data_collector->printPoliciesOutputTabular(0,
-                                               n_weeks,
-                                               fp + "_s"
-                                               + std::to_string(sol_number));
+//    data_collector->printUtilitesOutputTabular(0,
+//                                               n_weeks,
+//                                               fu + "_s"
+//                                               + std::to_string(sol_number));
+//    data_collector->printWaterSourcesOutputTabular(0,
+//                                                   n_weeks,
+//                                                   fws + "_s"
+//                                                   + std::to_string(sol_number));
+//    data_collector->printPoliciesOutputTabular(0,
+//                                               n_weeks,
+//                                               fp + "_s"
+//                                               + std::to_string(sol_number));
     data_collector->printObjectives(fo + "_s" + std::to_string(sol_number));
     data_collector->printPathways(fpw + "_s" + std::to_string(sol_number));
->>>>>>> parent of a54ecb8... Bug fix: Pathways were not being printed
 }
 
 int main(int argc, char *argv[]) {
-
-//    double x_real[57] = {0.963126, //Durham restriction trigger
-//                         0.001, //OWASA restriction trigger
-//                         0.0165026, //raleigh restriction trigger
-//                         0.0158446, //cary restriction trigger
-//                         0.00203824, //durham transfer trigger
-//                         0.991772, //owasa transfer trigger
-//                         0.0759845, //raleigh transfer trigger
-//                         0.109251, //OWASA JLA
-//                         0.0456465, //Raleigh JLA
-//                         0.0503415, //Durham JLA
-//                         0.527226, //Cary JLA
-//                         0.0768186, //durham annual payment
-//                         0.00101558, //owasa annual payment
-//                         0.0209892, //raleigh annual payment
-//                         0.0997788, //cary annual payment
-//                         0.422693, //durham insurance use
-//                         0.981162, //owasa insurance use
-//                         0.687073, //raleigh insurance use
-//                         0.953765, //cary insurance use
-//                         0.00151499, //durham insurance payment
-//                         0.0189007, //owasa insurance payment
-//                         0.0166652, //raleigh insurance payment
-//                         0.017396, //cary insurance payment
-//                         0.001, //durham inftrigger
-//                         0.893212, //owasa inftrigger
-//                         0.0114582, //raleigh inftrigger
-//                         0.671276, //cary inftrigger
-//                         0.61143, //university lake expansion ranking
-//                         0.493596, //Cane creek expansion ranking
-//                         0.72242, //Quarry (stone?) reservoir expansion (Shallow) ranking
-//                         0.874358, //Quarry (stone?) reservoir expansion (deep) ranking
-//                         0.938602, //Teer quarry expansion ranking
-//                         0.995383, //reclaimed water ranking (low)
-//                         0.0152792, //reclaimed water (high)
-//                         0.235675, //lake michie expansion ranking (low)
-//                         0.993166, //lake michie expansion ranking (high)
-//                         0.960062, //little river reservoir ranking
-//                         0.467553, //richland creek quarry rank
-//                         0.000729602, //neuse river intake rank
-//                         1, //reallocate falls lake rank
-//                         0.405893, //western wake treatment plant rank OWASA low
-//                         0.942959, //western wake treatment plant rank OWASA high
-//                         0.00085049, //western wake treatment plant rank durham low
-//                         0.0321197, //western wake treatment plant rank durham high
-//                         0.000928368, //western wake treatment plant rank raleigh low
-//                         0.999997, //western wake treatment plant rank raleigh high
-//                         64.0285, //caryupgrades 1
-//                         2.0556, //caryugrades 2
-//                         5.84962, //caryugrades 3
-//                         0.0212207, //western wake treatment plant owasa frac
-//                         0.324296, //western wake treatment frac durham
-//                         0.169109, //western wake treatment plant raleigh frac
-//                         6198.43, //falls lake reallocation
-//                         19.7202, //durham inf buffer
-//                         19.2861, //owasa inf buffer
-//                         17.6756, //raleigh inf buffer
-//                         19.7285, //cary inf buffer
-//    };
-//
-//    triangleTest(atoi(argv[1]),
-//                 x_real,
-//                 atoi(argv[2]),
-//                 atoi(argv[3]),
-//                 0);
-
 
     if (argc == 5)
         for (int i = 0; i < solutions_16.size(); ++i) {

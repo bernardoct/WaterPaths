@@ -42,7 +42,11 @@ string RestrictionsDataCollector::printTabularStringHeaderLine2() {
 }
 
 string RestrictionsDataCollector::printCompactStringHeader() {
-    return nullptr;
+    stringstream outStream;
+
+    outStream << id << "rest_m" << ",";
+
+    return outStream.str();
 }
 
 void RestrictionsDataCollector::collect_data() {

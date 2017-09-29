@@ -38,9 +38,9 @@ WaterReuse::WaterReuse(
     available_volume = capacity;
 }
 
-void WaterReuse::applyContinuity(
-        int week, double upstream_source_inflow,
-        vector<double> &demand_outflow) {
+void WaterReuse::applyContinuity(int week, double upstream_source_inflow,
+                                 double wastewater_discharge,
+                                 vector<double> &demand_outflow) {
 
     double total_demand = std::accumulate(demand_outflow.begin(),
                                           demand_outflow.end(),

@@ -19,6 +19,7 @@ protected:
     double available_volume = 0;
     double total_outflow = 0;
     double upstream_source_inflow = 0;
+    double wastewater_inflow = 0;
     double upstream_catchment_inflow = 0;
     double total_demand = 0;
     double policy_added_demand = 0;
@@ -39,11 +40,11 @@ protected:
     double total_treatment_capacity;
     int highest_alloc_id = NON_INITIALIZED;
 
-    virtual void applyContinuity(
-            int week, double upstream_source_inflow,
-            vector<double> &demand_outflow) = 0;
+    virtual void applyContinuity(int week, double upstream_source_inflow,
+                                     double wastewater_inflow,
+                                     vector<double> &demand_outflow) = 0;
 
-    void bypass(int week, double upstream_source_inflow);
+    void bypass(int week, double total_upstream_inflow);
 
 public:
     const int id;
@@ -102,9 +103,9 @@ public:
 
     bool operator==(const WaterSource *other);
 
-    void continuityWaterSource(
-            int week, double upstream_source_inflow,
-            vector<double> &demand_outflow);
+    void continuityWaterSource(int week, double upstream_source_inflow,
+                                   double wastewater_inflow,
+                                   vector<double> &demand_outflow);
 
     virtual void addTreatmentCapacity(
             const double added_treatment_capacity,
@@ -172,6 +173,8 @@ public:
     double *getAvailable_allocated_volumes() const;
 
     vector<int> *getUtilities_with_allocations() const;
+
+    double getWastewater_inflow() const;
 };
 
 

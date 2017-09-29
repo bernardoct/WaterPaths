@@ -30,7 +30,7 @@ public:
 
     ContinuityModelROF(ContinuityModelROF &continuity_model_rof);
 
-    vector<double> calculateROF(int week, int rof_type);
+    vector<double> calculateShortTermROF(int week);
 
     void resetUtilitiesAndReservoirs(int rof_type);
 
@@ -45,6 +45,8 @@ public:
     void shiftStorages(double *storages, const double *deltas);
 
     const Matrix3D<double> *getStorage_to_rof_table() const;
+
+    vector<double> calculateLongTermROF(int week);
 };
 
 

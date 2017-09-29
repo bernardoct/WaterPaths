@@ -58,7 +58,12 @@ string TransfersDataCollector::printTabularStringHeaderLine2() {
 }
 
 string TransfersDataCollector::printCompactStringHeader() {
-    return nullptr;
+    stringstream outStream;
+
+    for (int &a : utilities_ids)
+        outStream << a << "transf" << ",";
+
+    return outStream.str();
 }
 
 void TransfersDataCollector::collect_data() {

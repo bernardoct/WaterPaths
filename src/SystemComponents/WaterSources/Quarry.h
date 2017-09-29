@@ -59,7 +59,7 @@ public:
     ~Quarry();
 
     void applyContinuity(
-            int week, double upstream_source_inflow,
+            int week, double upstream_source_inflow, double wastewater_inflow,
             vector<double> &demand_outflow) override;
 
     void setOnline() override;

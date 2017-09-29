@@ -108,9 +108,14 @@ Quarry::~Quarry() {}
  * @param upstream_source_inflow
  * @param demand_outflow
  */
-void Quarry::applyContinuity(
-        int week, double upstream_source_inflow,
-        vector<double> &demand_outflow) {
+void Quarry::applyContinuity(int week, double upstream_source_inflow,
+                             double wastewater_inflow,
+                             vector<double> &demand_outflow) {
+
+    double total_upstream_inflow = upstream_source_inflow +
+                                   wastewater_inflow;
+    this->upstream_source_inflow = upstream_source_inflow;
+    this->wastewater_inflow = wastewater_inflow;
 
     double total_demand = std::accumulate(demand_outflow.begin(),
                                           demand_outflow.end(),
@@ -121,7 +126,7 @@ void Quarry::applyContinuity(
         catchment_inflow += c->getStreamflow((week));
     }
 
-    double total_inflow = upstream_source_inflow + catchment_inflow;
+    double total_inflow = total_upstream_inflow + catchment_inflow;
     total_outflow = total_demand + min_environmental_outflow;
 
     diverted_flow = min(max_diversion,
@@ -143,12 +148,13 @@ void Quarry::applyContinuity(
         outflow_new = upstream_source_inflow + catchment_inflow;
     }
 
-    total_demand = total_demand;
+    this->total_demand = total_demand;
     available_volume = max(stored_volume_new, 0.0);
     total_outflow = outflow_new + policy_added_demand;
     policy_added_demand = 0;
-    this->upstream_source_inflow = upstream_source_inflow;
     upstream_catchment_inflow = catchment_inflow;
+    this->upstream_source_inflow = upstream_source_inflow;
+    this->wastewater_inflow = wastewater_inflow;
 }
 
 void Quarry::setOnline() {

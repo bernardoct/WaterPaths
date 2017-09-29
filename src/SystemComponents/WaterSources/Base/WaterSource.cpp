@@ -367,26 +367,25 @@ bool WaterSource::compare(WaterSource *lhs, WaterSource *rhs) {
  * water source, excluding water for the catchment between both water sources.
  * @param demand_outflow demand from utility.
  */
-void WaterSource::continuityWaterSource(
-        int week, double upstream_source_inflow,
-        vector<double> &demand_outflow) {
+void WaterSource::continuityWaterSource(int week, double upstream_source_inflow,
+                                        double wastewater_inflow,
+                                        vector<double> &demand_outflow) {
     if (online)
-        applyContinuity(week,
-                        upstream_source_inflow,
+        applyContinuity(week, upstream_source_inflow, wastewater_inflow,
                         demand_outflow);
     else
-        bypass(week, upstream_source_inflow);
+        bypass(week, upstream_source_inflow + wastewater_inflow);
 }
 
 /**
  * Does not apply continuity to the water source, by instead just treats it as
  * non existing, i.e. outflow = inflow + catchment_flow
  * @param week
- * @param upstream_source_inflow Total inflow released from the upstream water
+ * @param total_upstream_inflow Total inflow released from the upstream water
  * source, excluding water for the
  * catchment between both water sources.
  */
-void WaterSource::bypass(int week, double upstream_source_inflow) {
+void WaterSource::bypass(int week, double total_upstream_inflow) {
 
     upstream_catchment_inflow = 0;
     for (Catchment *c : catchments) {
@@ -395,8 +394,8 @@ void WaterSource::bypass(int week, double upstream_source_inflow) {
 
     total_demand = NONE;
     available_volume = NONE;
-    total_outflow = upstream_catchment_inflow + upstream_source_inflow;
-    this->upstream_source_inflow = upstream_source_inflow;
+    total_outflow = upstream_catchment_inflow + total_upstream_inflow;
+    this->upstream_source_inflow = total_upstream_inflow;
 }
 
 /**
@@ -588,6 +587,10 @@ double *WaterSource::getAvailable_allocated_volumes() const {
 
 vector<int> *WaterSource::getUtilities_with_allocations() const {
     return utilities_with_allocations;
+}
+
+double WaterSource::getWastewater_inflow() const {
+    return wastewater_inflow;
 }
 
 

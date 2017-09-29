@@ -53,8 +53,9 @@ Catchment::~Catchment() {
  * @return
  */
 double Catchment::getStreamflow(int week) {
-    return streamflows_realization[week + (int) std::round(
-            Constants::WEEKS_IN_YEAR * Constants::NUMBER_REALIZATIONS_ROF)];
+    int adjusted_week = week + (int) std::round(
+            Constants::WEEKS_IN_YEAR * Constants::NUMBER_REALIZATIONS_ROF);
+    return streamflows_realization[adjusted_week];
 }
 
 /**

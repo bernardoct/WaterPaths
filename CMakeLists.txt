@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.6)
 project(TriangleModel)
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -march=native")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -O3 -march=native")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -march=native")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -O3 -march=native")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native")
 
 set(SOURCE_FILES
@@ -89,8 +89,8 @@ set(SOURCE_FILES
         src/Utils/Constants.h
         src/Utils/DataSeries.cpp
         src/Utils/DataSeries.h
-        src/Utils/EvaporationSeries.cpp
-        src/Utils/EvaporationSeries.h
+        src/Controls/EvaporationSeries.cpp
+        src/Controls/EvaporationSeries.h
         src/Utils/Graph/Graph.cpp
         src/Utils/Graph/Graph.h
         src/Utils/ObjectivesCalculator.cpp

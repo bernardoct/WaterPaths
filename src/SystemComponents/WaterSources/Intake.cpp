@@ -90,8 +90,11 @@ Intake::~Intake() {
  * @param upstream_source_inflow upstream sources current outflow.
  * @param demand current demand
  */
-void Intake::applyContinuity(
-        int week, double upstream_source_inflow, vector<double> &demand) {
+void Intake::applyContinuity(int week, double upstream_source_inflow,
+                             double wastewater_inflow, vector<double> &demand) {
+
+    double total_upstream_inflow = upstream_source_inflow +
+                                   wastewater_inflow;
 
     double total_demand = std::accumulate(demand.begin(),
                                           demand.end(),
@@ -118,9 +121,10 @@ void Intake::applyContinuity(
     /// Records for the sake of output.
     this->total_demand = total_demand + policy_added_demand;
     policy_added_demand = 0;
-    this->upstream_source_inflow = upstream_source_inflow;
-    total_outflow = upstream_source_inflow + upstream_catchment_inflow -
+    total_outflow = total_upstream_inflow + upstream_catchment_inflow -
                     total_demand;
+    this->upstream_source_inflow = upstream_source_inflow;
+    this->wastewater_inflow = wastewater_inflow;
 }
 
 void Intake::setRealization(unsigned long r) {

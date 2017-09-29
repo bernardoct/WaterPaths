@@ -6,6 +6,7 @@
 #include <algorithm>
 #include "ContinuityModelROF.h"
 #include "../Utils/Utils.h"
+#define ALIGN 64
 
 ContinuityModelROF::ContinuityModelROF(
         vector<WaterSource *> water_sources,
@@ -56,16 +57,11 @@ ContinuityModelROF::~ContinuityModelROF() = default;
  * Runs one the full rof calculations for realization #realization_id for a given week.
  * @param week for which rof is to be calculated.
  */
-vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
+vector<double> ContinuityModelROF::calculateShortTermROF(int week) {
 
     // vector where risks of failure will be stored.
-    vector<double> risk_of_failure(n_utilities, 0.0);
-    vector<double> year_failure(n_utilities, 0.0);
-    bool apply_demand_buffer;
-
-    /// If this is the first week of the year, reset storage-rof table.
-    if (rof_type == LONG_TERM_ROF)
-        storage_to_rof_table->reset(NON_FAILURE);
+    vector<double> risk_of_failure((unsigned long) n_utilities, 0.0);
+    vector<double> year_failure((unsigned long) n_utilities, 0.0);
 
     int week_of_the_year = Utils::weekOfTheYear(week);
 
@@ -73,28 +69,17 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
     /// infrastructure online.
     updateOnlineInfrastructure(week);
 
-    int n_weeks_rof;
-    /// short-term rof calculations.
-    if (rof_type == SHORT_TERM_ROF) {
-        n_weeks_rof = WEEKS_ROF_SHORT_TERM;
-        apply_demand_buffer = !APPLY_DEMAND_BUFFER;
-        /// long-term rof calculations.
-    } else {
-        n_weeks_rof = WEEKS_ROF_LONG_TERM;
-        apply_demand_buffer = APPLY_DEMAND_BUFFER;
-    }
-
     /// perform a continuity simulation for NUMBER_REALIZATIONS_ROF (50) yearly realization.
     for (int yr = 0; yr < NUMBER_REALIZATIONS_ROF; ++yr) {
         beginning_res_level = NO_OF_INSURANCE_STORAGE_TIERS;
         /// reset current reservoirs' and utilities' storage and combined storage, respectively,
         /// in the corresponding realization simulation.
-        resetUtilitiesAndReservoirs(rof_type);
+        resetUtilitiesAndReservoirs(SHORT_TERM_ROF);
 
-        for (int w = week; w < week + n_weeks_rof; ++w) {
+        for (int w = 0; w < WEEKS_ROF_SHORT_TERM; ++w) {
 
             /// one week continuity time-step.
-            continuityStep(w, yr, apply_demand_buffer);
+            continuityStep(w + week, yr, !APPLY_DEMAND_BUFFER);
 
             /// check total available storage for each utility and, if smaller than the fail ration,
             /// increase the number of failed years of that utility by 1 (FAILURE).
@@ -104,18 +89,70 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
                     year_failure[u] = FAILURE;
 
             /// calculated week of storage-rof table
-            if (rof_type == SHORT_TERM_ROF)
-                updateStorageToROFTable(
-                        INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD,
-                        week_of_the_year);
+            updateStorageToROFTable(
+                    INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD,
+                    week_of_the_year);
         }
 
         //FIXME: INSTEAD OF ADDING THE 3D MATRIX EVERY WEEK (WHICH MEANS ADDING THE WHOLE YEAR TABLE EVERY WEEK),
         //FIXME: REPLACE THIS BY A MATRIX 2D SUMMATION FOR THE SAKE OF PERFORMANCE.
         /// update storage-rof table
-        if (rof_type == SHORT_TERM_ROF) {
-            *storage_to_rof_table += storage_to_rof_realization /
-                                     NUMBER_REALIZATIONS_ROF;
+        *storage_to_rof_table += storage_to_rof_realization /
+                                 NUMBER_REALIZATIONS_ROF;
+
+
+        /// Count failures and reset failures counter.
+        for (int uu = 0; uu < n_utilities; ++uu) {
+            risk_of_failure[uu] += year_failure[uu];
+            year_failure[uu] = NON_FAILURE;
+        }
+    }
+
+//    cout << "Week " << week_of_the_year << endl;
+//    storage_to_rof_table->print(week_of_the_year);
+//    cout << endl;
+
+    /// Finish ROF calculations
+    for (int i = 0; i < n_utilities; ++i) {
+        risk_of_failure[i] /= NUMBER_REALIZATIONS_ROF;
+    }
+
+    return risk_of_failure;
+}
+/**
+ * Runs one the full rof calculations for realization #realization_id for a given week.
+ * @param week for which rof is to be calculated.
+ */
+vector<double> ContinuityModelROF::calculateLongTermROF(int week) {
+
+    // vector where risks of failure will be stored.
+    vector<double> risk_of_failure((unsigned long) n_utilities, 0.0);
+    vector<double> year_failure((unsigned long) n_utilities, 0.0);
+
+    storage_to_rof_table->reset(NON_FAILURE);
+
+    /// checks if new infrastructure became available and, if so, set the corresponding realization
+    /// infrastructure online.
+    updateOnlineInfrastructure(week);
+
+
+    /// perform a continuity simulation for NUMBER_REALIZATIONS_ROF (50) yearly realization.
+    for (int yr = 0; yr < NUMBER_REALIZATIONS_ROF; ++yr) {
+        beginning_res_level = NO_OF_INSURANCE_STORAGE_TIERS;
+        /// reset current reservoirs' and utilities' storage and combined storage, respectively,
+        /// in the corresponding realization simulation.
+        resetUtilitiesAndReservoirs(LONG_TERM_ROF);
+
+        for (int w = 0; w < WEEKS_ROF_LONG_TERM; ++w) {
+            /// one week continuity time-step.
+            continuityStep(w + week, yr, APPLY_DEMAND_BUFFER);
+
+            /// check total available storage for each utility and, if smaller than the fail ration,
+            /// increase the number of failed years of that utility by 1 (FAILURE).
+            for (int u = 0; u < n_utilities; ++u)
+                if (continuity_utilities[u]->getStorageToCapacityRatio() <=
+                    STORAGE_CAPACITY_RATIO_FAIL)
+                    year_failure[u] = FAILURE;
         }
 
         /// Count failures and reset failures counter.
@@ -140,8 +177,7 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
 void ContinuityModelROF::updateStorageToROFTable(
         double storage_percent_decrement, int week_of_the_year) {
 
-
-    double available_volumes[n_sources];
+    double available_volumes[n_sources] __attribute__((aligned(64)));;
     for (int ws = 0; ws < n_sources; ++ws)
         available_volumes[ws] =
                 continuity_water_sources[ws]->getAvailable_volume();
@@ -153,11 +189,11 @@ void ContinuityModelROF::updateStorageToROFTable(
         /// calculate delta storage for all reservoirs and array that will receive the shifted storage curves.
         double percent_percent_storage_level = (double) s *
                                                storage_percent_decrement;
-        double delta_storage[n_sources];
+        double delta_storage[n_sources] __attribute__((aligned(64)));
         std::copy(available_volumes,
                   available_volumes + n_sources,
                   delta_storage);
-        double available_volumes_shifted[n_sources];
+        double available_volumes_shifted[n_sources] __attribute__((aligned(64)));
         std::copy(available_volumes,
                   available_volumes + n_sources,
                   available_volumes_shifted);
@@ -215,12 +251,11 @@ void ContinuityModelROF::updateStorageToROFTable(
 
 //FIXME: MAKE THIS MORE EFFICIENT. THIS METHOD IS THE MOST EXPENSIVE ONE IN THE CODE.
 void ContinuityModelROF::shiftStorages(
-        double *available_volumes_shifted,
-        const double *delta_storage) {
+        double *__restrict__ available_volumes_shifted,
+        const double *__restrict__ delta_storage) {
 
     /// Add deltas to all sources following the topological order, so that
     /// upstream is calculated before downstream.
-//#pragma omp simd
     for (int ws : sources_topological_order) {
 
         /// calculate initial estimate for shifted

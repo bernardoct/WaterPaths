@@ -160,9 +160,14 @@ AllocatedReservoir::~AllocatedReservoir() {
     delete[] allocated_treatment_capacities;
 }
 
-void AllocatedReservoir::applyContinuity(
-        int week, double upstream_source_inflow,
-        vector<double> &demand_outflow) {
+void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow,
+                                         double wastewater_inflow,
+                                         vector<double> &demand_outflow) {
+
+    double total_upstream_inflow = upstream_source_inflow +
+            wastewater_inflow;
+    this->upstream_source_inflow = upstream_source_inflow;
+    this->wastewater_inflow = wastewater_inflow;
 
     double available_volume_old = available_volume;
 
@@ -185,13 +190,12 @@ void AllocatedReservoir::applyContinuity(
 
     /// Calculate new stored volume and outflow based on continuity.
     double available_volume_new = available_volume
-                                  + upstream_source_inflow +
+                                  + total_upstream_inflow +
                                   upstream_catchment_inflow
                                   - total_demand - min_environmental_outflow
                                   - evaporated_volume;
     double outflow_new = min_environmental_outflow;
     total_outflow = outflow_new;
-    this->upstream_source_inflow = upstream_source_inflow;
 
     /// Check if spillage is needed and, if so, correct stored volume and
     /// calculate spillage and set all allocations to full. Otherwise,
@@ -213,7 +217,7 @@ void AllocatedReservoir::applyContinuity(
         /// Volume of water that entered the reservoir and stayed until being
         /// used or released.
         double net_inflow = upstream_catchment_inflow +
-                            upstream_source_inflow - evaporated_volume;
+                            total_upstream_inflow - evaporated_volume;
 
         for (int u : *utilities_with_allocations) {
             if (u != wq_pool_id) {
@@ -319,14 +323,14 @@ void AllocatedReservoir::applyContinuity(
         cout << "sum_allocations " << sum_allocations << endl;
         cout << "available volume old: " << available_volume_old << endl;
         cout << "available_volume " << available_volume << endl << endl;
-        cout << "upstream_source_inflow: " << upstream_source_inflow << endl;
+        cout << "total_upstream_inflow: " << total_upstream_inflow << endl;
         cout << "upstream_catchment_inflow: " << upstream_catchment_inflow << endl;
         cout << "evaporation: " << evaporated_volume << endl;
         cout << "total_demand: " << total_demand << endl;
         cout << "policy_added_demand: " << policy_added_demand << endl;
         cout << "total_outflow: " << total_outflow << endl;
         cout << "continuity error: " << available_volume_old +
-                upstream_source_inflow + upstream_catchment_inflow -
+                total_upstream_inflow + upstream_catchment_inflow -
                 evaporated_volume - total_demand - total_outflow << endl;
         __throw_runtime_error("Sum of allocated volumes in a reservoir must "
                                       "total current storage minus unallocated "
@@ -334,7 +338,7 @@ void AllocatedReservoir::applyContinuity(
                                       "bct52@cornell.edu.");
     }
 
-    if (abs(available_volume_old - direct_demand + upstream_source_inflow +
+    if (abs(available_volume_old - direct_demand + total_upstream_inflow +
                     upstream_catchment_inflow - evaporated_volume -
                     total_outflow - available_volume) >  abs(available_volume) * 1e-4) {
 		    cerr << "Source " << name << endl;

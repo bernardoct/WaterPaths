@@ -1,8 +1,8 @@
-CC=icc
+CC=g++
 PCC=mpiCC
 
 #the following is for normal use:
-CFLAGS=-std=c++14 -O0 -march=native -Wall -Wextra -g -check-pointers=rw
+CFLAGS=-std=c++14 -O3 -march=native -Wall -Wextra #-g -check-pointers=rw
 
 #the following is for using gprof:
 #CFLAGS=-g -c -O0 -Wall

@@ -34,6 +34,12 @@ void MasterDataCollector::printPoliciesOutputCompact(
             out_stream.open(output_directory + "/" + file_name + "_r"
                             + std::to_string(r) + ".out");
 
+            string line = "";
+            for (vector<DataCollector *> & p : drought_mitigation_policy_collectors)
+                line += p[r]->printCompactStringHeader();
+            line.pop_back();
+            out_stream << line << endl;
+
             for (int w = week_i; w < week_f; ++w) {
                 string line = "";
                 for (vector<DataCollector *> p : drought_mitigation_policy_collectors)
@@ -90,7 +96,6 @@ void MasterDataCollector::printUtilitiesOutputCompact(
         out_stream.open(output_directory + "/" + file_name + "_r"
                         + std::to_string(r) + ".out");
 
-        out_stream << "#";
         string line = "";
         for (vector<UtilitiesDataCollector *> p : utility_collectors)
             line += p[r]->printCompactStringHeader();
@@ -157,7 +162,6 @@ void MasterDataCollector::printWaterSourcesOutputCompact(
         out_stream.open(output_directory + "/" + file_name + "_r"
                         + std::to_string(r) + ".out");
 
-        out_stream << "#";
         string line = "";
         for (vector<DataCollector *> p : water_source_collectors)
             line += p[r]->printCompactStringHeader();

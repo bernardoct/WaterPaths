@@ -73,7 +73,18 @@ double checkAndFixInfraExpansionHighLowOrder(
     return capacity_high;
 }
 
-
+/**
+ * Runs carolina problem.
+ * @param n_threads
+ * @param x_real
+ * @param n_realizations
+ * @param n_weeks
+ * @param sol_number
+ * @param output_directory
+ * @todo check for solutions in which a utility does not have an allocation
+ * on Jordan Lake (or any generic lake) but still pay for joint treatment
+ * infrastructure).
+ */
 void triangleTest(int n_threads, const double *x_real, int n_realizations,
                   int n_weeks, int sol_number, string output_directory) {
     srand((unsigned int) time(nullptr));
@@ -203,10 +214,16 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
     /// Create catchments and corresponding vector
     vector<int> rof_triggered_infra_order_durham =
             vecInfraRankToVecInt(durham_infra_order_raw);
+    vector<double> rofs_infra_durham = vector<double>
+            (rof_triggered_infra_order_durham.size(), durham_inftrigger);
     vector<int> rof_triggered_infra_order_owasa =
             vecInfraRankToVecInt(owasa_infra_order_raw);
+    vector<double> rofs_infra_owasa = vector<double>
+            (rof_triggered_infra_order_owasa.size(), owasa_inftrigger);
     vector<int> rof_triggered_infra_order_raleigh =
             vecInfraRankToVecInt(raleigh_infra_order_raw);
+    vector<double> rofs_infra_raleigh = vector<double>
+            (rof_triggered_infra_order_raleigh.size(), raleigh_inftrigger);
 
     added_storage_michie_expansion_high =
             checkAndFixInfraExpansionHighLowOrder(
@@ -731,8 +748,8 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
     vector<double> cary_upgrades_treatment_capacity_fractions = {0., 0., 1.,
                                                                  0., 0.};
 
-    vector<double> *shared_added_wjlwtp_treatment_pool = new vector<double>();
-    vector<double> *shared_added_wjlwtp_price = new vector<double>();
+    auto *shared_added_wjlwtp_treatment_pool = new vector<double>();
+    auto *shared_added_wjlwtp_price = new vector<double>();
     SequentialJointTreatmentExpansion low_wjlwtp("Low WJLWTP",
                                                  20,
                                                  6,
@@ -906,12 +923,10 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
     g.addEdge(5, 6);
     g.addEdge(6, 11);
 
-    vector<int> demand_triggered_infra_order_cary = {22, 23};
-
-    int demand_n_weeks = (int) round(46 * WEEKS_IN_YEAR);
+    auto demand_n_weeks = (int) round(46 * WEEKS_IN_YEAR);
 
     vector<int> cary_ws_return_id = {};
-    vector<vector<double>> *cary_discharge_fraction_series =
+    auto *cary_discharge_fraction_series =
             new vector<vector<double>>();
     WwtpDischargeRule wwtp_discharge_cary(
             cary_discharge_fraction_series,
@@ -931,56 +946,34 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
 
     vector<vector<int>> wjlwtp_remove_from_to_build_list;// = {{21, 20}};
 
-    Utility cary((char *) "Cary",
-                 2,
-                 &demand_cary,
-                 demand_n_weeks,
-                 cary_annual_payment,
-                 &caryDemandClassesFractions,
+
+    vector<int> demand_triggered_infra_order_cary = {22, 23};
+    vector<double> demand_infra_cary = {caryupgrades_2 * 7, caryupgrades_3 * 7};
+    Utility cary((char *) "Cary", 2, &demand_cary, demand_n_weeks,
+                 cary_annual_payment, &caryDemandClassesFractions,
                  &caryUserClassesWaterPrices,
-                 wwtp_discharge_cary,
-                 cary_inf_buffer,
-                 vector<int>(),
-                 demand_triggered_infra_order_cary,
-                 0.05);
-    Utility durham((char *) "Durham",
-                   1,
-                   &demand_durham,
-                   demand_n_weeks,
-                   durham_annual_payment,
-                   &durhamDemandClassesFractions,
+                 wwtp_discharge_cary, cary_inf_buffer, vector<int>(),
+                 demand_triggered_infra_order_cary, demand_infra_cary, 0.05);
+    Utility durham((char *) "Durham", 1, &demand_durham, demand_n_weeks,
+                   durham_annual_payment, &durhamDemandClassesFractions,
                    &durhamUserClassesWaterPrices,
-                   wwtp_discharge_durham,
-                   durham_inf_buffer,
+                   wwtp_discharge_durham, durham_inf_buffer,
                    rof_triggered_infra_order_durham,
-                   vector<int>(),
-                   0.05,
+                   vector<int>(), rofs_infra_durham, 0.05,
                    &wjlwtp_remove_from_to_build_list);
-    Utility owasa((char *) "OWASA",
-                  0,
-                  &demand_owasa,
-                  demand_n_weeks,
-                  owasa_annual_payment,
-                  &owasaDemandClassesFractions,
+    Utility owasa((char *) "OWASA", 0, &demand_owasa, demand_n_weeks,
+                  owasa_annual_payment, &owasaDemandClassesFractions,
                   &owasaUserClassesWaterPrices,
-                  wwtp_discharge_owasa,
-                  owasa_inf_buffer,
+                  wwtp_discharge_owasa, owasa_inf_buffer,
                   rof_triggered_infra_order_owasa,
-                  vector<int>(),
-                  0.05,
+                  vector<int>(), rofs_infra_owasa, 0.05,
                   &wjlwtp_remove_from_to_build_list);
-    Utility raleigh((char *) "Raleigh",
-                    3,
-                    &demand_raleigh,
-                    demand_n_weeks,
-                    raleigh_annual_payment,
-                    &raleighDemandClassesFractions,
+    Utility raleigh((char *) "Raleigh", 3, &demand_raleigh, demand_n_weeks,
+                    raleigh_annual_payment, &raleighDemandClassesFractions,
                     &raleighUserClassesWaterPrices,
-                    wwtp_discharge_raleigh,
-                    raleigh_inf_buffer,
+                    wwtp_discharge_raleigh, raleigh_inf_buffer,
                     rof_triggered_infra_order_raleigh,
-                    vector<int>(),
-                    0.05,
+                    vector<int>(), rofs_infra_raleigh, 0.05,
                     &wjlwtp_remove_from_to_build_list);
 
     vector<Utility *> utilities;
@@ -1067,13 +1060,10 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
                                                raleigh_transfer_trigger};
 
     Graph ug(4);
-    ug.addEdge(2,
-               1);
-    ug.addEdge(2,
-               3);
+    ug.addEdge(2, 1);
+    ug.addEdge(2, 3);
     ug.addEdge(1, 3);
-    ug.addEdge(1,
-               0);
+    ug.addEdge(1, 0);
 
     Transfers t(4,
                 2,

@@ -85,18 +85,9 @@ Reservoir::Reservoir(
         const vector<double> &construction_time_range, double permitting_period,
         double construction_cost, double bond_term,
         double bond_interest_rate, int source_type) :
-        WaterSource(name,
-                    id,
-                    catchments,
-                    capacity,
-                    max_treatment_capacity,
-                    source_type,
-                    construction_rof_or_demand,
-                    construction_time_range,
-                    permitting_period,
-                    construction_cost,
-                    bond_term,
-                    bond_interest_rate),
+        WaterSource(name, id, catchments, capacity, max_treatment_capacity,
+                    source_type, construction_time_range, permitting_period,
+                    construction_cost, bond_term, bond_interest_rate),
         evaporation_series(evaporation_series),
         storage_area_curve(storage_area_curve), fixed_area(false) {
 
@@ -126,18 +117,9 @@ Reservoir::Reservoir(
         const vector<double> &construction_time_range, double permitting_period,
         double construction_cost, double bond_term,
         double bond_interest_rate, int source_type) :
-        WaterSource(name,
-                    id,
-                    catchments,
-                    capacity,
-                    max_treatment_capacity,
-                    source_type,
-                    construction_rof_or_demand,
-                    construction_time_range,
-                    permitting_period,
-                    construction_cost,
-                    bond_term,
-                    bond_interest_rate),
+        WaterSource(name, id, catchments, capacity, max_treatment_capacity,
+                    source_type, construction_time_range, permitting_period,
+                    construction_cost, bond_term, bond_interest_rate),
         evaporation_series(evaporation_series),
         storage_area_curve(nullptr), fixed_area(true), area(storage_area) {}
 
@@ -233,21 +215,11 @@ Reservoir::Reservoir(
         const vector<double> &construction_time_range, double permitting_period,
         double construction_cost, double bond_term,
         double bond_interest_rate, int source_type) :
-        WaterSource(name,
-                    id,
-                    catchments,
-                    capacity,
-                    max_treatment_capacity,
-                    source_type,
-                    allocated_treatment_fractions,
-                    allocated_fractions,
-                    utilities_with_allocations,
-                    construction_rof_or_demand,
-                    construction_time_range,
-                    permitting_period,
-                    construction_cost,
-                    bond_term,
-                    bond_interest_rate),
+        WaterSource(name, id, catchments, capacity, max_treatment_capacity,
+                    source_type, allocated_treatment_fractions,
+                    allocated_fractions, utilities_with_allocations,
+                    construction_time_range, permitting_period,
+                    construction_cost, bond_term, bond_interest_rate),
         evaporation_series(evaporation_series),
         storage_area_curve(storage_area_curve), fixed_area(false) {
 
@@ -281,21 +253,11 @@ Reservoir::Reservoir(
         const vector<double> &construction_time_range, double permitting_period,
         double construction_cost, double bond_term,
         double bond_interest_rate, int source_type) :
-        WaterSource(name,
-                    id,
-                    catchments,
-                    capacity,
-                    max_treatment_capacity,
-                    source_type,
-                    allocated_treatment_fractions,
-                    allocated_fractions,
-                    utilities_with_allocations,
-                    construction_rof_or_demand,
-                    construction_time_range,
-                    permitting_period,
-                    construction_cost,
-                    bond_term,
-                    bond_interest_rate),
+        WaterSource(name, id, catchments, capacity, max_treatment_capacity,
+                    source_type, allocated_treatment_fractions,
+                    allocated_fractions, utilities_with_allocations,
+                    construction_time_range, permitting_period,
+                    construction_cost, bond_term, bond_interest_rate),
         evaporation_series(evaporation_series),
         storage_area_curve(nullptr), fixed_area(true), area(storage_area) {}
 
@@ -307,7 +269,9 @@ Reservoir::Reservoir(const Reservoir &reservoir) : WaterSource(reservoir),
                                                    evaporation_series(
                                                            reservoir.evaporation_series),
                                                    storage_area_curve(reservoir.storage_area_curve),
-                                                   fixed_area(reservoir.fixed_area), area(reservoir.area) {}
+                                                   fixed_area(reservoir.fixed_area), area(reservoir.area) {
+    evaporation_series = new EvaporationSeries(*evaporation_series);
+}
 
 /**
  * Copy assignment operator
@@ -315,7 +279,7 @@ Reservoir::Reservoir(const Reservoir &reservoir) : WaterSource(reservoir),
  * @return
  */
 Reservoir &Reservoir::operator=(const Reservoir &reservoir) {
-    evaporation_series = reservoir.evaporation_series;
+    evaporation_series = new EvaporationSeries(*evaporation_series);
     storage_area_curve = reservoir.storage_area_curve;
     WaterSource::operator=(reservoir);
     return *this;

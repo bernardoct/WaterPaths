@@ -73,31 +73,36 @@ Utility::Utility(
  * @param infra_if_built_remove if infra option in position 0 of a row is
  * built, remove infra options of IDs in remaining positions of the same row.
  */
-Utility::Utility(
-        const char *name, int id,
-        vector<vector<double>> *demands_all_realizations,
-        int number_of_week_demands,
-        const double percent_contingency_fund_contribution,
-        const vector<vector<double>> *typesMonthlyDemandFraction,
-        const vector<vector<double>> *typesMonthlyWaterPrice,
-        WwtpDischargeRule wwtp_discharge_rule,
-        double demand_buffer,
-        const vector<int> &rof_infra_construction_order,
-        const vector<int> &demand_infra_construction_order,
-        double infra_discount_rate, const vector<vector<int>>
-        *infra_if_built_remove) :
+Utility::Utility(const char *name, int id,
+                 vector<vector<double>> *demands_all_realizations,
+                 int number_of_week_demands,
+                 const double percent_contingency_fund_contribution,
+                 const vector<vector<double>> *typesMonthlyDemandFraction,
+                 const vector<vector<double>> *typesMonthlyWaterPrice,
+                 WwtpDischargeRule wwtp_discharge_rule,
+                 double demand_buffer,
+                 const vector<int> &rof_infra_construction_order,
+                 const vector<int> &demand_infra_construction_order,
+                 const vector<double> &infra_construction_triggers,
+                 double infra_discount_rate,
+                 const vector<vector<int>> *infra_if_built_remove) :
         name(name), id(id), demands_all_realizations(demands_all_realizations),
         number_of_week_demands(number_of_week_demands),
         percent_contingency_fund_contribution
                 (percent_contingency_fund_contribution),
         rof_infra_construction_order(rof_infra_construction_order),
         demand_infra_construction_order(demand_infra_construction_order),
+        infra_construction_triggers(infra_construction_triggers),
         infra_discount_rate(infra_discount_rate),
         wwtp_discharge_rule(wwtp_discharge_rule),
         demand_buffer(demand_buffer),
         total_stored_volume(NONE),
         total_storage_capacity(NONE),
         infra_if_built_remove(infra_if_built_remove) {
+
+    this->infra_construction_triggers = rearrangeInfraRofVector
+            (infra_construction_triggers, rof_infra_construction_order,
+             demand_infra_construction_order);
 
     if (rof_infra_construction_order.empty() &&
         demand_infra_construction_order.empty())
@@ -136,18 +141,18 @@ Utility::Utility(
  * @param rof_infra_construction_order
  * @param infra_discount_rate
  */
-Utility::Utility(
-        const char *name, int id,
-        vector<vector<double>> *demands_all_realizations,
-        int number_of_week_demands,
-        const double percent_contingency_fund_contribution,
-        const vector<vector<double>> *typesMonthlyDemandFraction,
-        const vector<vector<double>> *typesMonthlyWaterPrice,
-        WwtpDischargeRule wwtp_discharge_rule,
-        double demand_buffer,
-        const vector<int> &rof_infra_construction_order,
-        const vector<int> &demand_infra_construction_order,
-        double infra_discount_rate) :
+Utility::Utility(const char *name, int id,
+                 vector<vector<double>> *demands_all_realizations,
+                 int number_of_week_demands,
+                 const double percent_contingency_fund_contribution,
+                 const vector<vector<double>> *typesMonthlyDemandFraction,
+                 const vector<vector<double>> *typesMonthlyWaterPrice,
+                 WwtpDischargeRule wwtp_discharge_rule,
+                 double demand_buffer,
+                 const vector<int> &rof_infra_construction_order,
+                 const vector<int> &demand_infra_construction_order,
+                 const vector<double> &infra_construction_triggers,
+                 double infra_discount_rate) :
         name(name), id(id), demands_all_realizations(demands_all_realizations),
         number_of_week_demands(number_of_week_demands),
         percent_contingency_fund_contribution
@@ -160,6 +165,10 @@ Utility::Utility(
         total_stored_volume(NONE),
         total_storage_capacity(NONE),
         infra_if_built_remove(new vector<vector<int>>()) {
+
+    this->infra_construction_triggers = rearrangeInfraRofVector
+            (infra_construction_triggers, rof_infra_construction_order,
+             demand_infra_construction_order);
 
     if (rof_infra_construction_order.empty() &&
             demand_infra_construction_order.empty())
@@ -188,6 +197,7 @@ Utility::Utility(Utility &utility) :
         weekly_average_volumetric_price(utility.weekly_average_volumetric_price),
         rof_infra_construction_order(utility.rof_infra_construction_order),
         demand_infra_construction_order(utility.demand_infra_construction_order),
+        infra_construction_triggers(utility.infra_construction_triggers),
         infra_discount_rate(utility.infra_discount_rate),
         demands_all_realizations(utility.demands_all_realizations),
         wwtp_discharge_rule(utility.wwtp_discharge_rule),
@@ -223,6 +233,46 @@ bool Utility::operator>(const Utility *other) {
 
 bool Utility::compById(Utility *a, Utility *b) {
     return a->id < b->id;
+}
+
+/**
+ * Converts the rof and demand triggers vectors into a vector in which rof
+ * and demand values are stored in the idex corresponding to the
+ * pertaining source.
+ * @param infra_construction_triggers
+ * @param rof_infra_construction_order
+ * @param demand_infra_construction_order
+ * @return
+ */
+vector<double> Utility::rearrangeInfraRofVector(
+        const vector<double>& infra_construction_triggers,
+        const vector<int>& rof_infra_construction_order,
+        const vector<int>& demand_infra_construction_order) {
+
+    int size_rof = (rof_infra_construction_order.empty() ? 0 :
+                    *max_element(rof_infra_construction_order.begin(),
+                                     rof_infra_construction_order.end()));
+    int size_demand = (demand_infra_construction_order.empty() ? 0 :
+                       *max_element(demand_infra_construction_order.begin(),
+                                   demand_infra_construction_order.end()));
+    int size = max(size_rof, size_demand) + 1;
+
+    vector<double> infra_construction_triggers_new((unsigned long) size, 1e10);
+    for (int i = 0; i < rof_infra_construction_order.size(); ++i) {
+        int ws = rof_infra_construction_order[i];
+        infra_construction_triggers_new[ws] = infra_construction_triggers[i];
+    }
+
+    for (int i = 0; i < demand_infra_construction_order.size(); ++i) {
+        int ws = demand_infra_construction_order[i];
+        if (infra_construction_triggers_new[ws] != 1e10)
+            __throw_invalid_argument("A source can be triggered only by "
+                                             "either rof or by demand.");
+        infra_construction_triggers_new[demand_infra_construction_order[i]] =
+                infra_construction_triggers[i];
+    }
+
+    return infra_construction_triggers_new;
 }
 
 /**
@@ -421,21 +471,6 @@ void Utility::splitDemands(
 //                                    "among water sources.");
 }
 
-void Utility::resetDataColletionVariables() {
-    /// Reset demand multiplier, offset from transfers and insurance payout and
-    /// price.
-        demand_multiplier = 1;
-        demand_offset = 0;
-        insurance_payout = 0;
-        insurance_purchase = 0;
-        drought_mitigation_cost = 0;
-        infra_built_last_week = {};
-        fund_contribution = 0;
-//        gross_revenue = 0;
-        current_debt_payment = 0;
-        waste_water_discharge = 0;
-}
-
 /**
  * Update contingency fund based on regular contribution, restrictions, and
  * transfers. This function works for both sources and receivers of
@@ -536,8 +571,6 @@ void Utility::setWaterSourceOnline(unsigned int source_id) {
             total_treatment_capacity += ws->getAllocatedTreatmentCapacity(id);
             total_stored_volume += ws->getAvailableAllocatedVolume(id);
         }
-
-    return;
 }
 
 void Utility::waterTreatmentPlantConstructionHandler(unsigned int source_id) {
@@ -659,9 +692,8 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
 
         /// Checks if ROF threshold for next infrastructure in line has been
         /// reached and if there is already infrastructure being built.
-        if (next_construction != NON_INITIALIZED && long_term_rof >
-                    water_sources[(unsigned long) next_construction]
-                    ->construction_rof_or_demand) {
+        if (next_construction != NON_INITIALIZED &&
+                long_term_rof > infra_construction_triggers[next_construction]) {
             new_infra_triggered = next_construction;
 
             /// Checks is piece of infrastructure to be built next prevents
@@ -697,8 +729,8 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
             }
         /// Checks if demand threshold for next infrastructure in line has been
         /// reached and if there is already infrastructure being built.
-        if (next_construction != NON_INITIALIZED && average_demand >
-                water_sources[next_construction]->construction_rof_or_demand) {
+        if (next_construction != NON_INITIALIZED &&
+                average_demand >infra_construction_triggers[next_construction]) {
             new_infra_triggered = next_construction;
 
             /// Checks is piece of infrastructure to be built next prevents
@@ -730,18 +762,10 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
                 /// Erase infrastructure option from both vectors of
                 /// infrastructure to be built.
                 if (!rof_infra_construction_order.empty())
-                    rof_infra_construction_order.erase(
-                            std::remove(rof_infra_construction_order.begin(),
-                                        rof_infra_construction_order.end(),
-                                        ws),
-                            rof_infra_construction_order.end());
+                    Utils::removeIntFromVector(rof_infra_construction_order, ws);
 
                 else if (!demand_infra_construction_order.empty())
-                    demand_infra_construction_order.erase(
-                            std::remove(demand_infra_construction_order.begin(),
-                                        demand_infra_construction_order.end(),
-                                        ws),
-                            demand_infra_construction_order.end());
+                    Utils::removeIntFromVector(demand_infra_construction_order, ws);
                 else
                     __throw_logic_error("Infrastructure option whose construction was"
                                                 " complete is not in the demand or "
@@ -768,19 +792,8 @@ void Utility::removeRelatedSourcesFromQueue(int next_construction) {
         for (auto v : *infra_if_built_remove)
             if (v[0] == next_construction)
                 for (int i : v) {
-                    rof_infra_construction_order.erase(
-                            std::remove(
-                                    rof_infra_construction_order.begin(),
-                                    rof_infra_construction_order.end(),
-                                    i),
-                            rof_infra_construction_order.end());
-
-                    demand_infra_construction_order.erase(
-                            std::remove(
-                                    demand_infra_construction_order.begin(),
-                                    demand_infra_construction_order.end(),
-                                    i),
-                            demand_infra_construction_order.end());
+                    Utils::removeIntFromVector(rof_infra_construction_order, i);
+                    Utils::removeIntFromVector(demand_infra_construction_order, i);
                 }
 }
 

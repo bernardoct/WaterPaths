@@ -23,18 +23,14 @@ WaterReuse::WaterReuse(
         const vector<double> &construction_time_range, double permitting_period,
         double construction_cost_of_capital,
         double bond_term,
-        double bond_interest_rate) : WaterSource(name,
-                                                 id,
+        double bond_interest_rate) : WaterSource(name, id,
                                                  vector<Catchment *>(),
-                                                 capacity,
-                                                 capacity,
+                                                 capacity, capacity,
                                                  WATER_REUSE,
-                                                 construction_rof_or_demand,
                                                  construction_time_range,
                                                  permitting_period,
                                                  construction_cost_of_capital,
-                                                 bond_term,
-                                                 bond_interest_rate) {
+                                                 bond_term, bond_interest_rate) {
     available_volume = capacity;
 }
 

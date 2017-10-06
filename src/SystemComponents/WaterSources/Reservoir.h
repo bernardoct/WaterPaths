@@ -16,12 +16,12 @@ using namespace std;
 
 class Reservoir : public WaterSource {
 protected:
-    EvaporationSeries *evaporation_series;
     DataSeries *storage_area_curve;
     double area = NON_INITIALIZED;
 
 public:
     const bool fixed_area;
+    EvaporationSeries *evaporation_series;
 
     Reservoir(
             const char *name, const int id,

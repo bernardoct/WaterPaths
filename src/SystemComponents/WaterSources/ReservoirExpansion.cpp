@@ -12,18 +12,10 @@ ReservoirExpansion::ReservoirExpansion(
         const vector<double> &construction_time_range, double permitting_period,
         double construction_cost, double bond_term,
         double bond_interest_rate)
-        : WaterSource(name,
-                      id,
-                      vector<Catchment *>(),
-                      capacity,
-                      NON_INITIALIZED,
-                      RESERVOIR_EXPANSION,
-                      construction_rof_or_demand,
-                      construction_time_range,
-                      permitting_period,
-                      construction_cost,
-                      bond_term,
-                      bond_interest_rate),
+        : WaterSource(name, id, vector<Catchment *>(), capacity,
+                      NON_INITIALIZED, RESERVOIR_EXPANSION,
+                      construction_time_range, permitting_period,
+                      construction_cost, bond_term, bond_interest_rate),
           parent_reservoir_ID(parent_reservoir_ID) {}
 
 /**

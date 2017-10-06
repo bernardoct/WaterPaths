@@ -27,7 +27,7 @@ WaterSource::WaterSource(
         : name(name), capacity(capacity), catchments(catchments),
           online(ONLINE), available_volume(capacity), id(id),
           total_treatment_capacity(treatment_capacity),
-          source_type(source_type), construction_rof_or_demand(NON_INITIALIZED),
+          source_type(source_type),
           construction_time(NON_INITIALIZED),
           construction_cost_of_capital(NON_INITIALIZED),
           bond_term(NON_INITIALIZED), bond_interest_rate(NON_INITIALIZED),
@@ -46,19 +46,16 @@ WaterSource::WaterSource(
  * @param construction_time_range
  * @param construction_cost_of_capital
  */
-WaterSource::WaterSource(
-        const char *name, const int id,
-        const vector<Catchment *> &catchments, const double capacity,
-        double treatment_capacity, const int source_type,
-        const double construction_rof_or_demand,
-        const vector<double> construction_time_range,
-        double permitting_period, double construction_cost_of_capital,
-        double bond_term, double bond_interest_rate)
+WaterSource::WaterSource(const char *name, const int id,
+                         const vector<Catchment *> &catchments, const double capacity,
+                         double treatment_capacity, const int source_type,
+                         const vector<double> construction_time_range,
+                         double permitting_period, double construction_cost_of_capital,
+                         double bond_term, double bond_interest_rate)
         : name(name), capacity(capacity), catchments(catchments),
           online(OFFLINE), available_volume(capacity), id(id),
           total_treatment_capacity(treatment_capacity),
           source_type(source_type),
-          construction_rof_or_demand(construction_rof_or_demand),
           construction_time(
                   construction_time_range[0] * WEEKS_IN_YEAR +
                   (construction_time_range[1] -
@@ -88,8 +85,8 @@ WaterSource::WaterSource(
         vector<int> *utilities_with_allocations)
         : name(name), capacity(capacity), catchments(catchments),
           online(ONLINE), available_volume(capacity), id(id),
+          source_type(source_type),
           total_treatment_capacity(treatment_capacity),
-          source_type(source_type), construction_rof_or_demand(NON_INITIALIZED),
           construction_time(NON_INITIALIZED),
           construction_cost_of_capital(NON_INITIALIZED),
           bond_term(NON_INITIALIZED), bond_interest_rate(NON_INITIALIZED),
@@ -114,17 +111,15 @@ WaterSource::WaterSource(
  * @param construction_time_range
  * @param construction_cost_of_capital
  */
-WaterSource::WaterSource(
-        const char *name, const int id,
-        const vector<Catchment *> &catchments, const double capacity,
-        double treatment_capacity, const int source_type,
-        vector<double> *allocated_treatment_fractions,
-        vector<double> *allocated_fractions,
-        vector<int> *utilities_with_allocations,
-        const double construction_rof_or_demand,
-        const vector<double> construction_time_range,
-        double permitting_period, double construction_cost_of_capital,
-        double bond_term, double bond_interest_rate)
+WaterSource::WaterSource(const char *name, const int id,
+                         const vector<Catchment *> &catchments, const double capacity,
+                         double treatment_capacity, const int source_type,
+                         vector<double> *allocated_treatment_fractions,
+                         vector<double> *allocated_fractions,
+                         vector<int> *utilities_with_allocations,
+                         const vector<double> construction_time_range,
+                         double permitting_period, double construction_cost_of_capital,
+                         double bond_term, double bond_interest_rate)
         : name(name), capacity(capacity), catchments(catchments),
           online(OFFLINE), available_volume(capacity), id(id),
           total_treatment_capacity(treatment_capacity),
@@ -132,7 +127,6 @@ WaterSource::WaterSource(
           available_allocated_volumes(nullptr),
           utilities_with_allocations(utilities_with_allocations),
           wq_pool_id(NON_INITIALIZED),
-          construction_rof_or_demand(construction_rof_or_demand),
           construction_time(construction_time_range[0] * WEEKS_IN_YEAR +
                             (construction_time_range[1] -
                              construction_time_range[0]) *
@@ -223,7 +217,6 @@ WaterSource::WaterSource(const WaterSource &water_source) :
         upstream_catchment_inflow(water_source.upstream_catchment_inflow),
         upstream_source_inflow(water_source.upstream_source_inflow),
         total_treatment_capacity(water_source.total_treatment_capacity),
-        construction_rof_or_demand(water_source.construction_rof_or_demand),
         construction_time(water_source.construction_time),
         construction_cost_of_capital(water_source.construction_cost_of_capital),
         bond_term(water_source.bond_term),

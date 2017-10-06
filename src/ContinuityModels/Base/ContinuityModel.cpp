@@ -111,7 +111,7 @@ ContinuityModel::ContinuityModel(
             downstream_sources.push_back(ds[0]);
 
     /// Set realization id on utilities and water sources, so that they use the
-    /// right streamflow and demand data.
+    /// right streamflow, evaporation and demand data.
     setRealization(realization_id);
 
     /// Add reference to water sources and utilities so that controls can

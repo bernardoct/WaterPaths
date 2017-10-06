@@ -20,6 +20,8 @@ string IntakeDataCollector::printTabularString(int week) {
             << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
             << total_upstream_sources_inflows[week]
             << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+            << wastewater_inflows[week]
+            << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
             << total_catchments_inflow[week]
             << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
             << outflows[week];
@@ -33,6 +35,7 @@ string IntakeDataCollector::printCompactString(int week) {
     outStream
             << demands[week] << ","
             << total_upstream_sources_inflows[week] << ","
+            << wastewater_inflows[week] << ","
             << total_catchments_inflow[week] << ","
             << outflows[week] << ",";
 

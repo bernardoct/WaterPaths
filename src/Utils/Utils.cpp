@@ -248,3 +248,10 @@ std::string Utils::getexepath() {
     return std::string(result,
                        (unsigned long) ((count > 0) ? count : 0));
 }
+
+void Utils::removeIntFromVector(vector<int>& vec, int el) {
+
+    auto vbeg = vec.begin();
+    auto vend = vec.end();
+    vec.erase(std::remove(vbeg, vend, el), vend);
+}

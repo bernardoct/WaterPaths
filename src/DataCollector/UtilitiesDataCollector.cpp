@@ -123,7 +123,7 @@ string UtilitiesDataCollector::printCompactStringHeader() {
 }
 
 void UtilitiesDataCollector::collect_data() {
-    vector<int> infra_build;
+    vector<int> infra_built;
 
     combined_storage.push_back(utility->getStorageToCapacityRatio() *
                                utility->getTotal_storage_capacity());
@@ -144,8 +144,12 @@ void UtilitiesDataCollector::collect_data() {
     capacity.push_back(utility->getTotal_storage_capacity());
     waste_water_discharge.push_back(utility->getWaste_water_discharge());
 
-    infra_build = utility->getInfrastructure_built();
-    if (!infra_build.empty()) pathways.push_back(infra_build);
+    infra_built = utility->getInfrastructure_built();
+    if (pathways.empty() && !infra_built.empty())
+        pathways.push_back(infra_built);
+    else
+        if (!infra_built.empty() && infra_built[2] != pathways.back()[2])
+            pathways.push_back(infra_built);
 }
 
 const vector<double> &UtilitiesDataCollector::getCombined_storage() const {

@@ -105,13 +105,12 @@ void InsuranceStorageToROF::applyPolicy(int week) {
 //        cout << endl;
 
         /// Make payouts, if needed.
-        for (int u = 0; u < continuity_utilities.size(); ++u) {
-            if (utilities_rof[u] >
-                rof_triggers[u]) {
+        for (int u = 0; u < continuity_utilities.size(); ++u)
+            if (utilities_rof[u] > rof_triggers[u])
                 realization_utilities[u]->addInsurancePayout(
                         fixed_payouts[u] * utilities_revenue_last_year[u]);
-            }
-        }
+            else
+                realization_utilities[u]->addInsurancePayout(NONE);
     }
 }
 

@@ -42,7 +42,7 @@ Catchment &Catchment::operator=(const Catchment &catchment) = default;
  * Destructor.
  */
 Catchment::~Catchment() {
-    streamflows_all = nullptr;
+//    streamflows_all = nullptr;
 }
 
 /**
@@ -69,5 +69,7 @@ void Catchment::setRealization(unsigned long r) {
     std::copy(streamflows_all->at(r).begin(),
               streamflows_all->at(r).end(),
               streamflows_realization);
+
+    return;
 }
 

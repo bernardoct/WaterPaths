@@ -33,17 +33,9 @@ Intake::Intake(
         const vector<double> construction_time_range, double permitting_period,
         double construction_npv_cost_of_capital, double bond_term,
         double bond_interest_rate) :
-        WaterSource(name,
-                    id,
-                    catchments,
-                    NONE,
-                    raw_water_main_capacity,
-                    INTAKE,
-                    construction_rof_or_demand,
-                    construction_time_range,
-                    permitting_period,
-                    construction_npv_cost_of_capital,
-                    bond_term,
+        WaterSource(name, id, catchments, NONE, raw_water_main_capacity, INTAKE,
+                    construction_time_range, permitting_period,
+                    construction_npv_cost_of_capital, bond_term,
                     bond_interest_rate) {
 
 //    /// Update total catchment inflow, total_demand, and available water volume for week 0;

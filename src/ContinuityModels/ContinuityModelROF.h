@@ -16,7 +16,7 @@ private:
     bool *storage_wout_downstream;
 
 protected:
-    int beginning_res_level;
+    int beginning_tier = 0;
     vector<WaterSource *> realization_water_sources;
 
 public:
@@ -32,6 +32,8 @@ public:
 
     vector<double> calculateShortTermROF(int week);
 
+    vector<double> calculateLongTermROF(int week);
+
     void resetUtilitiesAndReservoirs(int rof_type);
 
     void setRealization_water_sources(const vector<WaterSource *> &water_sources_realization);
@@ -40,13 +42,12 @@ public:
 
     virtual ~ContinuityModelROF();
 
-    void updateStorageToROFTable(double storage_percent_decrement, int week_of_the_year);
+    void updateStorageToROFTable(double storage_percent_decrement, int week_of_the_year,
+                                     const double *to_full);
 
     void shiftStorages(double *storages, const double *deltas);
 
     const Matrix3D<double> *getStorage_to_rof_table() const;
-
-    vector<double> calculateLongTermROF(int week);
 };
 
 

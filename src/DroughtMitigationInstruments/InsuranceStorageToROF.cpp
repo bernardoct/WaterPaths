@@ -144,7 +144,7 @@ void InsuranceStorageToROF::priceInsurance(int week) {
     updateOnlineInfrastructure(week);
 
     for (int r = 0; r < NUMBER_REALIZATIONS_ROF; ++r) {
-        beginning_res_level = NO_OF_INSURANCE_STORAGE_TIERS;
+        beginning_tier = NO_OF_INSURANCE_STORAGE_TIERS;
         /// reset reservoirs' and utilities' storage and combined storage, respectively, they currently
         /// have in the corresponding realization simulation.
         resetUtilitiesAndReservoirs(SHORT_TERM_ROF);

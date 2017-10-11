@@ -1164,7 +1164,7 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
     double cary_inf_buffer = x_real[56];
 
     double durham_raw_water_transfer_trigger = 0.04;
-    double raleigh_raw_water_transfer_trigger = 0.04;
+    double raleigh_raw_water_transfer_trigger = 0.02;
     double cary_raw_water_transfer_trigger = 2;
     double owasa_raw_water_transfer_trigger = 2;
 
@@ -1614,7 +1614,7 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
             jl_wq_capacity / jl_storage_capacity};
     vector<double> jl_treatment_allocation_fractions = {0.0, 0.0, 1.0, 0.0};
 
-    /// Jordan Lake parameters
+    /// Falls Lake parameters
     double fl_supply_capacity = 14700.0;
     double fl_wq_capacity = 20000.0;
     double fl_storage_capacity = fl_wq_capacity + fl_supply_capacity;
@@ -2296,15 +2296,15 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
                                                n_weeks,
                                                fp + "_s"
                                                + std::to_string(sol_number));
-    data_collector->printUtilitesOutputTabular(0,
-                                               n_weeks,
-                                               fu + "_s"
-                                               + std::to_string(sol_number));
-    data_collector->printWaterSourcesOutputTabular(0,
-                                                   n_weeks,
-                                                   fws + "_s"
-                                                   + std::to_string(sol_number));
-    //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
+//    data_collector->printUtilitesOutputTabular(0,
+//                                               n_weeks,
+//                                               fu + "_s"
+//                                               + std::to_string(sol_number));
+//    data_collector->printWaterSourcesOutputTabular(0,
+//                                                   n_weeks,
+//                                                   fws + "_s"
+//                                                   + std::to_string(sol_number));
+//    //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
     data_collector->printPoliciesOutputTabular(0,
                                                n_weeks,
                                                fp + "_s"

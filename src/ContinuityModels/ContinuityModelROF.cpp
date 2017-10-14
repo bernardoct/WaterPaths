@@ -127,9 +127,9 @@ vector<double> ContinuityModelROF::calculateShortTermROF(int week) {
             break;
     }
 
-    cout << "Week " << week_of_the_year << " B. Tier " << beginning_tier << endl;
-    storage_to_rof_table->print(week_of_the_year);
-    cout << endl;
+//    cout << "Week " << week_of_the_year << " B. Tier " << beginning_tier << endl;
+//    storage_to_rof_table->print(week_of_the_year);
+//    cout << endl;
 
     /// Finish ROF calculations
     for (int i = 0; i < n_utilities; ++i) {
@@ -289,6 +289,7 @@ void ContinuityModelROF::shiftStorages(
 
             available_volumes_shifted[ws] += spillage_retrieved;
 
+            //FIXME: THIS IF CAN BE REMOVED WHEN THE DOWNSTREAM RESERVOIR IS JUST A GHOST RESERVOIR USED TO CONNECT TWO BASINS AND DON'T ACTUALLY MATTER FOR THE ANALYSIS.
 //            if (storage_wout_downstream[ws])
 //                available_volumes_shifted[downstream_sources[ws]] -=
 //                        spillage_retrieved;

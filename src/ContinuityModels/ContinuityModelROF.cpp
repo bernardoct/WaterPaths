@@ -289,6 +289,7 @@ void ContinuityModelROF::shiftStorages(
 
             available_volumes_shifted[ws] += spillage_retrieved;
 
+            //FIXME: THIS IF CAN BE REMOVED WHEN THE DOWNSTREAM RESERVOIR IS JUST A GHOST RESERVOIR USED TO CONNECT TWO BASINS AND DON'T ACTUALLY MATTER FOR THE ANALYSIS.
 //            if (storage_wout_downstream[ws])
 //                available_volumes_shifted[downstream_sources[ws]] -=
 //                        spillage_retrieved;

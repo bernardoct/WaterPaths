@@ -6,7 +6,6 @@
 #include <algorithm>
 #include "ContinuityModelROF.h"
 #include "../Utils/Utils.h"
-#define ALIGN 64
 
 ContinuityModelROF::ContinuityModelROF(
         vector<WaterSource *> water_sources,
@@ -128,9 +127,9 @@ vector<double> ContinuityModelROF::calculateShortTermROF(int week) {
             break;
     }
 
-//    cout << "Week " << week_of_the_year << " B. Tier " << beginning_tier << endl;
-//    storage_to_rof_table->print(week_of_the_year);
-//    cout << endl;
+    cout << "Week " << week_of_the_year << " B. Tier " << beginning_tier << endl;
+    storage_to_rof_table->print(week_of_the_year);
+    cout << endl;
 
     /// Finish ROF calculations
     for (int i = 0; i < n_utilities; ++i) {
@@ -195,6 +194,7 @@ vector<double> ContinuityModelROF::calculateLongTermROF(int week) {
 void ContinuityModelROF::updateStorageToROFTable(double storage_percent_decrement,
                                                  int week_of_the_year,
                                                  const double *to_full) {
+    int n_utilities = this->n_utilities;
 
     double available_volumes[n_sources];
     for (int ws = 0; ws < n_sources; ++ws)
@@ -216,8 +216,9 @@ void ContinuityModelROF::updateStorageToROFTable(double storage_percent_decremen
         /// the one for the table calculated above based on the percent
         /// decrement.
         for (int k = 0; k < n_sources; ++k)
-            delta_storage[k] = to_full[k] - water_sources_capacities[k] *
-                               percent_decrement_storage_level;
+            delta_storage[k] = (to_full[k] -
+                    water_sources_capacities[k] *
+                               percent_decrement_storage_level);
 
         /// Shift storages.
         shiftStorages(available_volumes_shifted, delta_storage);
@@ -259,8 +260,8 @@ void ContinuityModelROF::updateStorageToROFTable(double storage_percent_decremen
 
 //FIXME: MAKE THIS MORE EFFICIENT. THIS METHOD IS THE MOST EXPENSIVE ONE IN THE CODE.
 void ContinuityModelROF::shiftStorages(
-        double * available_volumes_shifted,
-        const double * delta_storage) {
+        double* restrict available_volumes_shifted,
+        const double* restrict delta_storage) {
 
     /// Add deltas to all sources following the topological order, so that
     /// upstream is calculated before downstream.
@@ -284,13 +285,13 @@ void ContinuityModelROF::shiftStorages(
                             ->getMin_environmental_outflow();
 
             double spillage_retrieved = min(available_volume_to_full,
-                                            spillage);
+                                            spillage) * available_volume_to_full > 0;
 
             available_volumes_shifted[ws] += spillage_retrieved;
 
-            if (storage_wout_downstream[ws])
-                available_volumes_shifted[downstream_sources[ws]] -=
-                        spillage_retrieved;
+//            if (storage_wout_downstream[ws])
+//                available_volumes_shifted[downstream_sources[ws]] -=
+//                        spillage_retrieved;
         }
     }
 }
@@ -321,7 +322,7 @@ void ContinuityModelROF::resetUtilitiesAndReservoirs(int rof_type) {
         }
 
     /// update utilities combined storage.
-    for (Utility *u : this->continuity_utilities) {
+    for (Utility *u : continuity_utilities) {
         u->updateTotalStoredVolume();
     }
 }

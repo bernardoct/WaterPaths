@@ -14,6 +14,7 @@ private:
     Matrix3D<double> *storage_to_rof_table;
     Matrix3D<double> storage_to_rof_realization;
     bool *storage_wout_downstream;
+    int downstreammost_source = NON_INITIALIZED;
 
 protected:
     int beginning_tier = 0;

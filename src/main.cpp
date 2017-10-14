@@ -150,50 +150,31 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
     double cary_inf_buffer = x_real[56];
 
     vector<infraRank> durham_infra_order_raw = {
-            infraRank(9,
-                      Teer_quarry_expansion_ranking),
-            infraRank(15,
-                      lake_michie_expansion_ranking_low),
-            infraRank(16,
-                      lake_michie_expansion_ranking_high),
-            infraRank(18,
-                      reclaimed_water_ranking_low),
-            infraRank(19,
-                      reclaimed_water_high),
-            infraRank(20,
-                      western_wake_treatment_plant_rank_durham_low),
-            infraRank(21,
-                      western_wake_treatment_plant_rank_durham_high)
+            infraRank(9, Teer_quarry_expansion_ranking),
+            infraRank(15, lake_michie_expansion_ranking_low),
+            infraRank(16, lake_michie_expansion_ranking_high),
+            infraRank(18, reclaimed_water_ranking_low),
+            infraRank(19, reclaimed_water_high),
+            infraRank(20, western_wake_treatment_plant_rank_durham_low),
+            infraRank(21, western_wake_treatment_plant_rank_durham_high)
     };
 
     vector<infraRank> owasa_infra_order_raw = {
-            infraRank(12,
-                      Stone_quarry_reservoir_expansion_shallow_ranking),
-            infraRank(13,
-                      Stone_quarry_reservoir_expansion_deep_ranking),
-            infraRank(14,
-                      university_lake_expansion_ranking),
-            infraRank(24,
-                      Cane_creek_expansion_ranking),
-            infraRank(20,
-                      western_wake_treatment_plant_rank_OWASA_low),
-            infraRank(21,
-                      western_wake_treatment_plant_rank_OWASA_high)
+            infraRank(12, Stone_quarry_reservoir_expansion_shallow_ranking),
+            infraRank(13, Stone_quarry_reservoir_expansion_deep_ranking),
+            infraRank(14, university_lake_expansion_ranking),
+            infraRank(24, Cane_creek_expansion_ranking),
+            infraRank(20, western_wake_treatment_plant_rank_OWASA_low),
+            infraRank(21, western_wake_treatment_plant_rank_OWASA_high)
     };
 
     vector<infraRank> raleigh_infra_order_raw = {
-            infraRank(7,
-                      little_river_reservoir_ranking),
-            infraRank(8,
-                      richland_creek_quarry_rank),
-            infraRank(10,
-                      neuse_river_intake_rank),
-            infraRank(17,
-                      reallocate_falls_lake_rank),
-            infraRank(20,
-                      western_wake_treatment_plant_rank_raleigh_low),
-            infraRank(21,
-                      western_wake_treatment_plant_rank_raleigh_high)
+            infraRank(7, little_river_reservoir_ranking),
+            infraRank(8, richland_creek_quarry_rank),
+            infraRank(10, neuse_river_intake_rank),
+            infraRank(17, reallocate_falls_lake_rank),
+            infraRank(20, western_wake_treatment_plant_rank_raleigh_low),
+            infraRank(21, western_wake_treatment_plant_rank_raleigh_high)
     };
 
     double added_storage_michie_expansion_low = 2500;
@@ -462,8 +443,7 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
                                                      crabtree_creek);
 
     StorageMinEnvFlowControl wheeler_benson_min_env_control(2,
-                                                            vector<int>(1,
-                                                                        2),
+                                                            vector<int>(1, 2),
                                                             &wb_storage,
                                                             &wb_releases);
     FixedMinEnvFlowControl sq_min_env_control(3, 0);

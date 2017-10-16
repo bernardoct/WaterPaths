@@ -13,8 +13,10 @@ class ContinuityModelROF : public ContinuityModel {
 private:
     Matrix3D<double> *storage_to_rof_table;
     Matrix3D<double> storage_to_rof_realization;
-    bool *storage_wout_downstream;
-    int downstreammost_source = NON_INITIALIZED;
+    __declspec(aligned(64)) double *capacities_toposorted;
+    int *downstream_sources_toposort;
+    int *topo_sorted_to_all_sources;
+    const int n_topo_sources;
 
 protected:
     int beginning_tier = 0;
@@ -27,7 +29,7 @@ public:
             const vector<vector<int>> &water_sources_to_utilities,
             vector<Utility *> utilities,
             vector<MinEnvironFlowControl *> &min_env_flow_controls,
-            const unsigned int realization_id);
+            unsigned int realization_id);
 
     ContinuityModelROF(ContinuityModelROF &continuity_model_rof);
 
@@ -44,9 +46,9 @@ public:
     virtual ~ContinuityModelROF();
 
     void updateStorageToROFTable(double storage_percent_decrement, int week_of_the_year,
-                                     const double *to_full);
+                                 const double *to_full_toposort);
 
-    void shiftStorages(double *storages, const double *deltas);
+    void shiftStorages(double *storages, const double *deltas, const double *spillage);
 
     const Matrix3D<double> *getStorage_to_rof_table() const;
 };

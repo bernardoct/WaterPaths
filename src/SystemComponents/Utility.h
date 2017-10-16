@@ -233,6 +233,8 @@ public:
     double getWaste_water_discharge() const;
 
     void sellRawWaterTransfer(double payment_per_volume, double raw_water_transferred);
+
+    vector<int> getNon_Priority_Utility_Water_Sources();
 };
 
 

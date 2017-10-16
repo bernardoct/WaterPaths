@@ -573,11 +573,9 @@ void Utility::waterTreatmentPlantConstructionHandler(unsigned int source_id) {
     if (is_priority_source && is_not_in_priority_list) {
         priority_draw_water_source.push_back((int) wtp->parent_reservoir_ID);
         total_storage_capacity +=
-                water_sources.at(wtp->parent_reservoir_ID)
-                        ->getAllocatedCapacity(id);
+                water_sources.at(wtp->parent_reservoir_ID)->getAllocatedCapacity(id);
     } else if (is_not_in_non_priority_list) {
-        non_priority_draw_water_source
-                .push_back((int) wtp->parent_reservoir_ID);
+        non_priority_draw_water_source.push_back((int) wtp->parent_reservoir_ID);
     }
     water_sources.at(source_id)->setOnline();
 }
@@ -1054,4 +1052,8 @@ const vector<WaterSource *> &Utility::getWater_sources() const {
 
 double Utility::getWaste_water_discharge() const {
     return waste_water_discharge;
+}
+
+vector<int> Utility::getNon_Priority_Utility_Water_Sources() {
+    return non_priority_draw_water_source;
 }

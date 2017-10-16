@@ -250,7 +250,8 @@ std::string Utils::getexepath() {
     #ifdef _WIN32
         ssize_t count = GetModuleFileName(NULL, result, PATH_MAX);
     #else
-        ssize_t count = GetModuleFileName("/proc/self/exe", result, PATH_MAX);
+        //ssize_t count = GetModuleFileName("/proc/self/exe", result, PATH_MAX);
+        ssize_t count = GetModuleFileName(NULL, result, PATH_MAX);
     #endif
 
     return std::string(result, (unsigned long) ((count > 0) ? count : 0));

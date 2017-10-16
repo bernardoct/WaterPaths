@@ -72,13 +72,19 @@ ContinuityModel::ContinuityModel(
 
     /// Create table showing which utilities draw water from each water source.
     utilities_to_water_sources.assign(water_sources.size(), vector<int>(0));
-    water_sources_online_to_utilities.assign(water_sources.size(),
-                                             vector<int>(0));
+    water_sources_online_to_utilities.assign(water_sources.size(), vector<int>(0));
+    non_priority_water_sources_online_to_utilities.assign(water_sources.size(), vector<int>(0));
+
     for (int u = 0; u < utilities.size(); ++u) {
         for (const int &ws : water_sources_to_utilities[u]) {
             utilities_to_water_sources[ws].push_back(u);
             if (water_sources[ws]->isOnline())
                 water_sources_online_to_utilities[u].push_back(ws);
+            if (water_sources[ws]->isOnline() &&
+                    water_sources[ws]->source_type != INTAKE &&
+                    water_sources[ws]->source_type != WATER_REUSE &&
+                    water_sources[ws]->getAllocatedTreatmentCapacity(u) > 0.0)
+                non_priority_water_sources_online_to_utilities[u].push_back(ws);
         }
     }
 

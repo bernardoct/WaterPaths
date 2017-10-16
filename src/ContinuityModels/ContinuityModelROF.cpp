@@ -102,33 +102,24 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
                 double utility_storage_base_rof = 0;
                 double utility_capacity_base_rof = 0;
 
-                for (int ws : water_sources_online_to_utilities[u]) {
-//                    if (yr == 1 & w == week & u == 3)
+                for (int ws : non_priority_water_sources_online_to_utilities[u]) {
+//                    if (yr == 1 & w == week)
 //                        cout << continuity_water_sources[ws]->name << ", "
 //                             << continuity_water_sources[ws]->getAllocatedTreatmentCapacity(u)
 //                             << "," << continuity_water_sources[ws]->getAvailableAllocatedVolume(u)
 //                             << ", " << continuity_water_sources[ws]->getAllocatedCapacity(u) << endl;
 
-                    /// temporary solution to account for Jordan Lake allocations - they count toward storage and
-                    /// capacity totals even if not accessible by a utility
-                    if (continuity_water_sources[ws]->getAllocatedTreatmentCapacity(u) != 0.0) {
-                        utility_storage_base_rof += continuity_water_sources[ws]->getAvailableAllocatedVolume(u);
-                        utility_capacity_base_rof += continuity_water_sources[ws]->getAllocatedCapacity(u);
-                    } else {
-                        utility_storage_base_rof += continuity_water_sources[ws]->getAvailableAllocatedVolume(u) *
-                                continuity_water_sources[ws]->getAllocatedTreatmentCapacity(u);
-                        utility_capacity_base_rof += continuity_water_sources[ws]->getAllocatedCapacity(u) *
-                                continuity_water_sources[ws]->getAllocatedTreatmentCapacity(u);
-                    }
+                    utility_storage_base_rof += continuity_water_sources[ws]->getAvailableAllocatedVolume(u);
+                    utility_capacity_base_rof += continuity_water_sources[ws]->getAllocatedCapacity(u);
                 }
 
                 if (utility_storage_base_rof / utility_capacity_base_rof <= STORAGE_CAPACITY_RATIO_FAIL) {
                     year_failure[u] = FAILURE;
-                    if (u == 1) {
-                        cout << "Utility = " << u << ", Realization Week = " << w << ", Real Week = " << week
-                             << ", Realization Year = " << yr
-                             << ", Ratio = " << utility_storage_base_rof / utility_capacity_base_rof << endl;
-                    }
+//                    if (u == 1) {
+//                        cout << "Utility = " << u << ", Realization Week = " << w << ", Real Week = " << week
+//                             << ", Realization Year = " << yr
+//                             << ", Ratio = " << utility_storage_base_rof / utility_capacity_base_rof << endl;
+//                    }
                 }
             }
         }
@@ -157,7 +148,7 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
                 continuityStep(w, yr, apply_demand_buffer);
 
                 /// calculated week of storage-rof table
-                updateStorageToROFTable(INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD, week_of_the_year, week, yr);
+                updateStorageToROFTable(week_of_the_year, week, yr);
             }
 
             /// update storage-rof table
@@ -172,14 +163,13 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
     /// Finish ROF calculations
     for (int i = 0; i < n_utilities; ++i) {
         risk_of_failure[i] /= NUMBER_REALIZATIONS_ROF;
-        cout << "Utility = " << i << ", Week = " << week << ", ROF = " << risk_of_failure[i] << endl;
+//        cout << "Utility = " << i << ", Week = " << week << ", ROF = " << risk_of_failure[i] << endl;
     }
 
     return risk_of_failure;
 }
 
-void ContinuityModelROF::updateStorageToROFTable(
-        double storage_percent_decrement, int week_of_the_year, int week, int year) {
+void ContinuityModelROF::updateStorageToROFTable(int week_of_the_year, int week, int year) {
 
     int n_water_sources = (int) continuity_water_sources.size();
     int n_utilities = (int) continuity_utilities.size();
@@ -195,25 +185,10 @@ void ContinuityModelROF::updateStorageToROFTable(
 //    for (int s = beginning_res_level; s >= 0; --s) {
     for (int s = NO_OF_STORAGE_TO_ROF_TABLE_TIERS; s > -1; --s) {
 
-        /// calculate delta storage for all reservoirs and array that will receive the shifted storage curves.
-        double percent_percent_storage_level = (double) s *
-                                               storage_percent_decrement;
-        double delta_storage[n_water_sources];
-        std::copy(available_volumes,
-                  available_volumes + n_water_sources,
-                  delta_storage);
         double available_volumes_shifted[n_water_sources];
         std::copy(available_volumes,
                   available_volumes + n_water_sources,
                   available_volumes_shifted);
-
-        /// calculate the difference between the simulated available water and
-        /// the one for the table calculated above based on the percent
-        /// decrement.
-        for (int k = 0; k < n_water_sources; ++k)
-            delta_storage[k] = water_sources_capacities[k] *
-                               percent_percent_storage_level -
-                               available_volumes[k];
 
         /// Shift storages.
         shiftStorages(available_volumes_shifted);
@@ -225,12 +200,12 @@ void ContinuityModelROF::updateStorageToROFTable(
             double utility_capacity = 0;
 
             /// Calculate combined stored volume for each utility based on shifted storages.
-            for (int ws : water_sources_online_to_utilities[u]) {
+            for (int ws : non_priority_water_sources_online_to_utilities[u]) {
                 utility_storage += available_volumes_shifted[ws] *
                         continuity_water_sources[ws]->getAllocatedFraction(u);
                 utility_capacity += continuity_water_sources[ws]->getAllocatedCapacity(u);
 
-//                if (week == 51 & year == 1 & s == 10 & u == 2)
+//                if (week == 51 & year == 1 & s == 10 & u == 1)
 //                    cout << continuity_water_sources[ws]->name << ", "
 //                         << available_volumes_shifted[ws] * continuity_water_sources[ws]->getAllocatedFraction(u)
 //                         << ", " << continuity_water_sources[ws]->getAllocatedCapacity(u) << endl;
@@ -257,44 +232,7 @@ void ContinuityModelROF::updateStorageToROFTable(
     }
 }
 
-void ContinuityModelROF::shiftStorages(
-        double *available_volumes_shifted,
-        const double *delta_storage) {
-
-    /// Add deltas to all sources following the topological order, so that
-    /// upstream is calculated before downstream.
-    for (int ws : sources_topological_order) {
-
-        /// calculate initial estimate for shifted
-        available_volumes_shifted[ws] += delta_storage[ws];
-
-        double available_volume_to_full = water_sources_capacities[ws] -
-                                          available_volumes_shifted[ws];
-
-        /// if not full, retrieve spill to downstream source.
-        if (available_volume_to_full > 0) {
-            /// Calculate spilled water. Since the curves are shifted as the
-            /// weeks of the rof realizations are calculated, the minimum
-            /// environmental outflows below will be the ones at the time when
-            /// the storage is being shifted.
-            double spillage =
-                    continuity_water_sources[ws]->getTotal_outflow() -
-                    continuity_water_sources[ws]
-                            ->getMin_environmental_outflow();
-
-            double spillage_retrieved = min(available_volume_to_full,
-                                            spillage);
-
-            available_volumes_shifted[ws] += spillage_retrieved;
-
-            if (storage_wout_downstream[ws])
-                available_volumes_shifted[downstream_sources[ws]] -=
-                        spillage_retrieved;
-        }
-    }
-}
-
-/// Overloaded shiftStorages function that accepts one parameter
+/// shiftStorages function that accepts one parameter
 /// and calculates estimated week volume plus potential spillage
 void ContinuityModelROF::shiftStorages(double *available_volumes_shifted) {
     for (int ws : sources_topological_order) {

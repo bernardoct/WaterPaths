@@ -40,7 +40,8 @@ public:
 
     void priceInsurance(int week);
 
-    void getUtilitiesApproxROFs(double *u_storage_capacity_ratio, const Matrix3D<double> *storage_to_rof_table,
+    void getUtilitiesApproxROFs(const double *u_storage_capacity_ratio,
+                                const Matrix3D<double> *storage_to_rof_table,
                                 int week, double *utilities_approx_rof);
 
     double *UtilitiesStorageCapacityRatio();

@@ -10,7 +10,7 @@ UtilitiesDataCollector::UtilitiesDataCollector(const Utility *utility)
         : DataCollector(utility->id,
                         utility->name,
                         UTILITY,
-                        10 * COLUMN_WIDTH),
+                        11 * COLUMN_WIDTH),
           utility(utility) {}
 
 string UtilitiesDataCollector::printTabularString(int week) {
@@ -57,6 +57,8 @@ string UtilitiesDataCollector::printCompactString(int week) {
               << ","
               << unrestricted_demand[week]
               << ","
+              << unfulfilled_demand[week]
+              << ","
               << waste_water_discharge[week]
               << ","
               << contingency_fund_size[week]
@@ -79,6 +81,7 @@ string UtilitiesDataCollector::printTabularStringHeaderLine1() {
               << setw(COLUMN_WIDTH) << " "
               << setw(COLUMN_WIDTH) << "Rest."
               << setw(COLUMN_WIDTH) << "Unrest."
+              << setw(COLUMN_WIDTH) << "Unfulf."
               << setw(COLUMN_WIDTH) << "W. Water"
               << setw(COLUMN_WIDTH) << "Conting."
               << setw(COLUMN_WIDTH) << "Insurance"
@@ -95,6 +98,7 @@ string UtilitiesDataCollector::printTabularStringHeaderLine2() {
               << setw(COLUMN_WIDTH) << "Capacity"
               << setw(COLUMN_WIDTH) << "ST-ROF"
               << setw(COLUMN_WIDTH) << "LT-ROF"
+              << setw(COLUMN_WIDTH) << "Demand"
               << setw(COLUMN_WIDTH) << "Demand"
               << setw(COLUMN_WIDTH) << "Demand"
               << setw(COLUMN_WIDTH) << "Discharge"
@@ -114,6 +118,7 @@ string UtilitiesDataCollector::printCompactStringHeader() {
               << id << "lt_rof" << ","
               << id << "rest_demand" << ","
               << id << "unrest_demand" << ","
+              << id << "unfulf_demand" << ","
               << id << "wastewater" << ","
               << id << "cont_fund" << ","
               << id << "ins_pout" << ","
@@ -125,8 +130,7 @@ string UtilitiesDataCollector::printCompactStringHeader() {
 void UtilitiesDataCollector::collect_data() {
     vector<int> infra_built;
 
-    combined_storage.push_back(utility->getStorageToCapacityRatio() *
-                               utility->getTotal_storage_capacity());
+    combined_storage.push_back(utility->getTotal_stored_volume());
     lt_rof.push_back(utility->getLong_term_risk_of_failure());
     st_rof.push_back(utility->getRisk_of_failure());
     unrestricted_demand.push_back(utility->getUnrestrictedDemand());
@@ -143,6 +147,7 @@ void UtilitiesDataCollector::collect_data() {
     insurance_payout.push_back(utility->getInsurance_payout());
     capacity.push_back(utility->getTotal_storage_capacity());
     waste_water_discharge.push_back(utility->getWaste_water_discharge());
+    unfulfilled_demand.push_back(utility->getUnfulfilled_demand());
 
     infra_built = utility->getInfrastructure_built();
     if (pathways.empty() && !infra_built.empty())

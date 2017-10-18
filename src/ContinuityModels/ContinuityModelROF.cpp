@@ -7,6 +7,9 @@
 #include "ContinuityModelROF.h"
 #include "../Utils/Utils.h"
 
+#define restrict __restrict__
+#define __assume_aligned __builtin_assume_aligned
+
 ContinuityModelROF::ContinuityModelROF(
         vector<WaterSource *> water_sources,
         const Graph &water_sources_graph,
@@ -214,7 +217,8 @@ void ContinuityModelROF::updateStorageToROFTable(double storage_percent_decremen
                                                  const double *to_full_toposort) {
     double available_volumes[n_topo_sources];
     double to_full[n_topo_sources];
-    __declspec(align(64)) double spillage[n_topo_sources];
+//    __declspec(align(64)) double spillage[n_topo_sources];
+    double spillage[n_topo_sources] __attribute__ ((aligned(64)));
     for (int ws = 0; ws < n_topo_sources; ++ws) {
         available_volumes[ws] = continuity_water_sources[sources_topological_order[ws]]->getAvailable_volume();
         to_full[ws] = to_full_toposort[sources_topological_order[ws]];
@@ -225,8 +229,10 @@ void ContinuityModelROF::updateStorageToROFTable(double storage_percent_decremen
     /// loops over the percent storage levels to populate table. The loop
     /// begins from one level above the level  where at least one failure was
     /// observed in the last iteration. This saves a lot of computational time.
-    __declspec(align(64)) double delta_storage[n_topo_sources];
-    __declspec(align(64)) double available_volumes_shifted[n_topo_sources];
+//    __declspec(align(64)) double delta_storage[n_topo_sources];
+//    __declspec(align(64)) double available_volumes_shifted[n_topo_sources];
+    double delta_storage[n_topo_sources] __attribute__ ((aligned(64)));
+    double available_volumes_shifted[n_topo_sources] __attribute__ ((aligned(64)));
     for (int s = beginning_tier; s <= NO_OF_INSURANCE_STORAGE_TIERS; ++s) {
         /// calculate delta storage for all reservoirs and array that will
         /// receive the shifted storage curves.
@@ -288,7 +294,8 @@ void ContinuityModelROF::shiftStorages(double* restrict available_volumes_shifte
                                        const double* restrict delta_storage,
                                        const double* spillage) {
 
-    __declspec(align(64)) double available_volume_to_full[n_topo_sources];
+//    __declspec(align(64)) double available_volume_to_full[n_topo_sources];
+    double available_volume_to_full[n_topo_sources] __attribute__ ((aligned(64)));
 
     /// Add deltas to all sources following the topological order, so that
     /// upstream is calculated before downstream.

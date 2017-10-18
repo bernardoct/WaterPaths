@@ -65,8 +65,7 @@ Transfers::Transfers(
     /// determining payments.
     for (int i = 0; i < buyers_ids.size(); ++i) {
         util_id_to_vertex_id->insert(
-                pair<int, int>(buyers_ids.at((unsigned long) i),
-                               i));
+                pair<int, int>(buyers_ids.at((unsigned long) i), i));
     }
 
     /// Create QP matrices and vectors.
@@ -229,17 +228,12 @@ void Transfers::applyPolicy(int week) {
                                          / (utilities_requesting_transfers + 1);
 
             /// Split up total volume available among the utilities
-            /// proportionally to their ROFs. Requests are scaled with the
-            /// summation of the pipe capacities so to scale them down in case
-            /// there is much more water available than the pipes can convey,
-            /// so to avaid the utility with the highest request from getting
-            /// all the water. Other scaling factors can be used as well.
-            //FIXME: FIGURE OUT WHAT SCALING FACTOR THAT BEST APPROXIMATES CURRENT NC TRIANGLE RULES IN HB'S MODEL.
+            /// proportionally to their ROFs.
+            //FIXME: FIGURE OUT SCALING FACTOR, MAYBE BASED ON TOTAL DEMAND TO PREVENT BIGGEST UTILITY WITH HIGH RISK FROM GETTING ALL WATER.
             for (int i = 0; i < n_allocations; ++i) {
                 transfer_requests[i] =
                         available_transfer_volume * requesting_utilities_rofs[i]
-                        / sum_rofs * average_pipe_capacity
-                        / available_transfer_volume;
+                        / sum_rofs;
             }
 
             /// Calculate allocations and flow rates through inter-utility
@@ -264,19 +258,6 @@ void Transfers::applyPolicy(int week) {
             /// Mitigate demands.
             double sum_allocations = 0;
             int price_week = Utils::weekOfTheYear(week);
-//            for (int i = 0; i < allocations.size(); ++i) {
-//                if (i != source_utility_id) {
-//                    int id = util_id_to_vertex_id->at(i);
-//                    realization_utilities[id]->setDemand_offset
-//                            (allocations[i], source_utility->waterPrice
-//                                    (price_week));
-//                    sum_allocations += allocations[i];
-//                }
-//
-//                /// Remove transferred water from source of transfer
-//                if (i != source_utility_id)
-//                    transfer_water_source->removeWater(i, allocations[i]);
-//            }
 
             for (auto u : *util_id_to_vertex_id) {
                 int id = u.first;
@@ -287,6 +268,10 @@ void Transfers::applyPolicy(int week) {
                 transfer_water_source->removeWater(id,
                                                    allocations[id]);
             }
+
+            source_utility->setDemand_offset(allocations[source_utility_id],
+                                             2. * source_utility->waterPrice
+                                                     (price_week));
         }
     }
 }

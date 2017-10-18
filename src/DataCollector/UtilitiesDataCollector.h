@@ -27,6 +27,7 @@ private:
     vector<vector<int>> pathways;
     vector<double> net_present_infrastructure_cost;
     vector<double> waste_water_discharge;
+    vector<double> unfulfilled_demand;
     const Utility *utility;
 
 public:

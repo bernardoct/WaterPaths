@@ -87,7 +87,7 @@ double checkAndFixInfraExpansionHighLowOrder(
  */
 void triangleTest(int n_threads, const double *x_real, int n_realizations,
                   int n_weeks, int sol_number, string output_directory) {
-    srand((unsigned int) time(nullptr));
+    srand(0);//(unsigned int) time(nullptr));
 
     // ===================== SET UP DECISION VARIABLES  =====================
 
@@ -182,6 +182,7 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
     double reclaimed_capacity_low = 2.2 * 7;
     double reclaimed_capacity_high = 9.1 * 7;
 
+    /// get infrastructure construction order based on decision variables
     sort(durham_infra_order_raw.begin(),
          durham_infra_order_raw.end(),
          by_xreal());
@@ -192,7 +193,6 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
          raleigh_infra_order_raw.end(),
          by_xreal());
 
-    /// Create catchments and corresponding vector
     vector<int> rof_triggered_infra_order_durham =
             vecInfraRankToVecInt(durham_infra_order_raw);
     vector<double> rofs_infra_durham = vector<double>
@@ -206,6 +206,8 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
     vector<double> rofs_infra_raleigh = vector<double>
             (rof_triggered_infra_order_raleigh.size(), raleigh_inftrigger);
 
+    /// Remove small expansions being built after big expansions that would
+    /// encompass the smal expansions.
     added_storage_michie_expansion_high =
             checkAndFixInfraExpansionHighLowOrder(
                     &rof_triggered_infra_order_durham,
@@ -555,9 +557,6 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
                               ILLIMITED_TREATMENT_CAPACITY,
                               &evaporation_owasa,
                               212);
-//    Reservoir jordan_lake("Jordan Lake", 6, catchment_haw,
-//                          jl_supply_capacity, 448,
-//                          &evaporation_jordan_lake, 13940);
     AllocatedReservoir jordan_lake("Jordan Lake",
                                    6,
                                    catchment_haw,
@@ -965,10 +964,6 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
     /// Water-source-utility connectivity matrix (each row corresponds to a utility and numbers are water
     /// sources IDs.
     vector<vector<int>> reservoir_utility_connectivity_matrix = {
-//            {6},
-//            {0, 9, 15, 16, 18, 19, 20, 21},
-//            {3, 4, 5,  26, 12, 13, 14, 22, 23, 20, 21},
-//            {1, 2, 7,  8,  17, 10, 24, 25, 20, 21}
             {3, 4,  5, 6,  12, 13, 14, 20, 21, 24}, //OWASA
             {0, 6,  9, 15, 16, 18, 19, 20, 21}, //Durham
             {6, 22, 23},                    //Cary
@@ -1086,7 +1081,7 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
                  drought_mitigation_policies,
                  min_env_flow_controls,
                  n_weeks,
-                 max_lines); //2385
+                 max_lines);
     cout << "Beginning simulation." << endl;
 //    s.runFullSimulation(n_threads);
     data_collector = s.runFullSimulation(n_threads);

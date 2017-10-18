@@ -9,11 +9,13 @@
 #include "Base/ContinuityModel.h"
 #include "../Utils/Matrices.h"
 
+
 class ContinuityModelROF : public ContinuityModel {
 private:
     Matrix3D<double> *storage_to_rof_table;
     Matrix3D<double> storage_to_rof_realization;
-    __declspec(aligned(64)) double *capacities_toposorted;
+//    __declspec(aligned(64)) double *capacities_toposorted;
+    double *capacities_toposorted __attribute__ ((aligned(64)));
     int *downstream_sources_toposort;
     int *topo_sorted_to_all_sources;
     const int n_topo_sources;

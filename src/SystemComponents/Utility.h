@@ -12,6 +12,7 @@
 #include "../Controls/WwtpDischargeRule.h"
 //#include "../Utils/Matrix3D.h"
 
+//#define DOLLARS_PER_GAL_TO_DOLLARS_PER_MMGAL 1e-6
 
 class Utility {
 private:
@@ -28,6 +29,7 @@ private:
     double total_treatment_capacity = 0;
     double waste_water_discharge = 0;
     double gross_revenue = 0;
+    double unfulfilled_demand = 0;
     bool used_for_realization = true;
     vector<WaterSource *> water_sources;
     vector<vector<double>> *demands_all_realizations;
@@ -233,6 +235,12 @@ public:
     rearrangeInfraRofVector(const vector<double> &infra_construction_triggers,
                             const vector<int> &rof_infra_construction_order,
                             const vector<int> &demand_infra_construction_order);
+
+    double getTotal_stored_volume() const;
+
+    void resetTotal_storage_capacity();
+
+    double getUnfulfilled_demand() const;
 };
 
 

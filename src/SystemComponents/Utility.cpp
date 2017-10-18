@@ -349,6 +349,8 @@ void Utility::clearWaterSources() {
 void Utility::addWaterSource(WaterSource *water_source) {
     checkErrorsAddWaterSourceOnline(water_source);
 
+    /// Add water sources with their IDs matching the water sources vector
+    /// indexes.
     if (water_source->id > (int) water_sources.size() - 1) {
         water_sources.resize((unsigned int) water_source->id + 1);
         under_construction.resize(water_sources.size(), false);
@@ -356,6 +358,8 @@ void Utility::addWaterSource(WaterSource *water_source) {
     }
     water_sources[water_source->id] = water_source;
 
+    /// If watersource is online and the utility owns some of its installed
+    /// treatment capacity, make it online.
     if (water_source->isOnline() &&
         water_source->getAllocatedTreatmentCapacity(id) > 0)
         addWaterSourceToOnlineLists(water_source->id);
@@ -457,12 +461,17 @@ void Utility::splitDemands(
             }
 
     /// Update contingency fund
-    if (used_for_realization)
+    if (used_for_realization) {
         updateContingencyFund(unrestricted_demand,
                               demand_multiplier,
                               demand_offset,
                               unallocated_reservoirs_demand,
                               week);
+        if (unallocated_reservoirs_demand / unrestricted_demand > 0.01)
+            unfulfilled_demand = unallocated_reservoirs_demand;
+        else
+            unfulfilled_demand = 0;
+    }
 
     //FIXME: IMPROVE CONTINUITY ERROR CHECKING HERE TO DETECT POORLY SPLIT DEMANDS WITHOUT CAPTURING UNFULFILLED DEMAND DUE TO LACK OF STORED WATER.
 //    if (abs(unallocated_reservoirs_demand) > 1e-4)
@@ -470,7 +479,6 @@ void Utility::splitDemands(
 //                                    "source when the demand is being split "
 //                                    "among water sources.");
 }
-
 /**
  * Update contingency fund based on regular contribution, restrictions, and
  * transfers. This function works for both sources and receivers of
@@ -535,6 +543,8 @@ void Utility::updateContingencyFund(
             recouped_loss_price_surcharge;
 
     restricted_price = NON_INITIALIZED;
+    offset_rate_per_volume = NONE;
+    this->demand_offset = NONE;
 }
 
 void Utility::setWaterSourceOnline(unsigned int source_id) {
@@ -722,7 +732,7 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
 
         /// Selects next water source whose permitting period is passed.
         int next_construction = NON_INITIALIZED;
-        for (int id : rof_infra_construction_order)
+        for (int id : demand_infra_construction_order)
             if (week > water_sources[id]->permitting_period) {
                 next_construction = id;
                 break;
@@ -884,8 +894,8 @@ void Utility::purchaseInsurance(double insurance_price) {
 
 void
 Utility::setDemand_offset(double demand_offset, double offset_rate_per_volume) {
-    Utility::demand_offset = demand_offset;
-    Utility::offset_rate_per_volume = offset_rate_per_volume;
+    this->demand_offset = demand_offset;
+    this->offset_rate_per_volume = offset_rate_per_volume;
 }
 
 /**
@@ -1060,3 +1070,16 @@ const vector<WaterSource *> &Utility::getWater_sources() const {
 double Utility::getWaste_water_discharge() const {
     return waste_water_discharge;
 }
+
+double Utility::getTotal_stored_volume() const {
+    return total_stored_volume;
+}
+
+void Utility::resetTotal_storage_capacity() {
+    Utility::total_storage_capacity = 0;
+}
+
+double Utility::getUnfulfilled_demand() const {
+    return unfulfilled_demand;
+}
+

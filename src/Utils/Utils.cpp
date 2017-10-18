@@ -168,8 +168,6 @@ Utils::copyDroughtMitigationPolicyVector(
         else if (dmp->type == TRANSFERS)
             drought_mitigation_policy_new.push_back(
                     new Transfers(*dynamic_cast<Transfers *>(dmp)));
-//        else if (dmp->type == INSURANCE_PSEUDO_ROF)
-//            drought_mitigation_policy_new.push_back(new InsurancePseudoROF(*dynamic_cast<InsurancePseudoROF *>(dmp)));
         else if (dmp->type == INSURANCE_STORAGE_ROF)
             drought_mitigation_policy_new.push_back(
                     new InsuranceStorageToROF(

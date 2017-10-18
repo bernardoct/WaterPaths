@@ -159,7 +159,7 @@ Simulation &Simulation::operator=(const Simulation &simulation) {
     return *this;
 }
 
-MasterDataCollector *Simulation::runFullSimulation(int num_threads) {
+MasterDataCollector *Simulation::runFullSimulation() {
 
     int n_utilities = (int) realization_models[0]->getUtilities().size();
     vector<double> risks_of_failure_week((unsigned long) n_utilities, 0.0);

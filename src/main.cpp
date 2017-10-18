@@ -1,5 +1,3 @@
-#include <iostream>
-#include <algorithm>
 #include "SystemComponents/WaterSources/Reservoir.h"
 #include "SystemComponents/Utility.h"
 #include "Utils/Utils.h"
@@ -20,6 +18,10 @@
 #include "SystemComponents/WaterSources/Relocation.h"
 #include "DroughtMitigationInstruments/InsuranceStorageToROF.h"
 #include "Utils/Solutions.h"
+
+#include <getopt.h>
+#include <algorithm>
+#include <omp.h>
 
 
 using namespace std;
@@ -75,7 +77,6 @@ double checkAndFixInfraExpansionHighLowOrder(
 
 /**
  * Runs carolina problem.
- * @param n_threads
  * @param x_real
  * @param n_realizations
  * @param n_weeks
@@ -85,8 +86,8 @@ double checkAndFixInfraExpansionHighLowOrder(
  * on Jordan Lake (or any generic lake) but still pay for joint treatment
  * infrastructure).
  */
-void triangleTest(int n_threads, const double *x_real, int n_realizations,
-                  int n_weeks, int sol_number, string output_directory) {
+void triangleTest(const double *x_real, int n_realizations, int n_weeks,
+                  int sol_number, string output_directory) {
     srand(0);//(unsigned int) time(nullptr));
 
     // ===================== SET UP DECISION VARIABLES  =====================
@@ -247,7 +248,7 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
     // ===================== SET UP PROBLEM COMPONENTS =====================
 
     cout << "BEGINNING TRIANGLE TEST" << endl << endl;
-    cout << "Using " << n_threads << " cores." << endl;
+    cout << "Using " << omp_get_num_threads() << " cores." << endl;
 //    cout << getexepath() << endl;
 
     /// Read streamflows
@@ -1084,7 +1085,7 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
                  max_lines);
     cout << "Beginning simulation." << endl;
 //    s.runFullSimulation(n_threads);
-    data_collector = s.runFullSimulation(n_threads);
+    data_collector = s.runFullSimulation();
     cout << "Ending simulation" << endl;
 
     /// Calculate objective values.
@@ -1130,28 +1131,111 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
 
 int main(int argc, char *argv[]) {
 
-    if (argc == 5)
-        for (int i = 0; i < solutions_16.size(); ++i) {
-            cout << endl << endl << endl << "Running solution " << i << endl;
-            triangleTest(atoi(argv[1]), solutions_16[i].data(), atoi(argv[2]),
-                         atoi(argv[3]), i, argv[4]);
+//    if (argc == 5)
+//        for (int i = 0; i < solutions_16.size(); ++i) {
+//            cout << endl << endl << endl << "Running solution " << i << endl;
+//            triangleTest(solutions_16[i].data(), atoi(argv[2]),
+//                         atoi(argv[3]), i, argv[4]);
+//        }
+//    else if (argc == 6) {
+//        int i = atoi(argv[4]);
+//        cout << endl << endl << endl << "Running solution " << i << endl;
+//        triangleTest(solutions_16[i].data(), atoi(argv[2]),
+//                     atoi(argv[3]), i, argv[5]);
+//    }
+//    else if (argc == 7) {
+//        int first_sol = atoi(argv[4]);
+//        int last_sol = atoi(argv[5]);
+//
+//        cout << "Solutions " << first_sol << " to " << last_sol << endl;
+//
+//        for (int i = first_sol; i < last_sol; ++i) {
+//            cout << endl << endl << endl << "Running solution " << i << endl;
+//            triangleTest(solutions_16[i].data(), atoi(argv[2]),
+//                         atoi(argv[3]), i, argv[6]);
+//        }
+//    }
+
+    int n_realizations = 1000;
+    int n_weeks = 1565;
+    char* system_io = const_cast<char *>("./");
+    char* solution_file = const_cast<char *>("");
+    char* uncertainty_file = const_cast<char *>("");
+    int standard_solution = 0;
+    int first_solution = -1;
+    int last_solution = -1;
+    bool verbose = false;
+    bool tabular = false;
+    bool plotting = true;
+
+    int c;
+    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p")) != -1) {
+        switch (c) {
+            case '?':
+                fprintf(stdout,
+                        "%s\n"
+                        "\t-?: print this message\n"
+                        "\t-s: solutions file (hard coded solutions)\n"
+                        "\t-u: uncertain factors file (hard coded values)\n"
+                        "\t-T: number of threads (auto)\n"
+                        "\t-r: number of realizations (%d)\n"
+                        "\t-t: total simulated time in weeks (%d)\n"
+                        "\t-d: directory for system I/O (%s)\n"
+                        "\t-f: first solution number\n"
+                        "\t-l: last solution number\n"
+                        "\t-m: individual solution number\n"
+                        "\t-v: verbose mode (false)\n"
+                        "\t-c: tabular output (really big files, false)\n"
+                        "\t-p: plotting output (smaller csv files)\n",
+                        argv[0], n_realizations, n_weeks, system_io);
+                return -1;
+            case 's': solution_file = optarg; break;
+            case 'u': uncertainty_file = optarg; break;
+            case 'T': omp_set_num_threads(atoi(optarg)); break;
+//            case 'T': break;
+            case 'r': n_realizations = atoi(optarg); break;
+            case 't': n_weeks = atoi(optarg); break;
+            case 'd': system_io = optarg; break;
+            case 'f': first_solution = atoi(optarg); break;
+            case 'l': last_solution = atoi(optarg); break;
+            case 'm': standard_solution = atoi(optarg); break;
+            case 'v': verbose = static_cast<bool>(atoi(optarg)); break;
+            case 'c': tabular = static_cast<bool>(atoi(optarg)); break;
+            case 'p': plotting = static_cast<bool>(atoi(optarg)); break;
+            default:
+                fprintf(stderr, "Unknown option (-%c)\n", c);
+                return -1;
         }
-    else if (argc == 6) {
-        int i = atoi(argv[4]);
-        cout << endl << endl << endl << "Running solution " << i << endl;
-        triangleTest(atoi(argv[1]), solutions_16[i].data(), atoi(argv[2]),
-                     atoi(argv[3]), i, argv[5]);
     }
-    else if (argc == 7) {
-        int first_sol = atoi(argv[4]);
-        int last_sol = atoi(argv[5]);
 
-        cout << "Solutions " << first_sol << " to " << last_sol << endl;
 
-        for (int i = first_sol; i < last_sol; ++i) {
-            cout << endl << endl << endl << "Running solution " << i << endl;
-            triangleTest(atoi(argv[1]), solutions_16[i].data(), atoi(argv[2]),
-                         atoi(argv[3]), i, argv[6]);
+    vector<int> sol_range;
+    if ((first_solution == -1 && last_solution != -1) ||
+        (first_solution != -1 && last_solution == -1))
+        __throw_invalid_argument("If you set a first or last solution, you "
+                                         "must set the other as well.");
+
+    if (strlen(system_io) == 0) {
+        __throw_invalid_argument("You must specify an input output directory.");
+    }
+
+    vector<vector<double>> solutions;
+    if (strlen(solution_file) > 0)
+        solutions = Utils::parse2DCsvFile(solution_file);
+    else
+        solutions = solutions_16;
+
+    if (first_solution == -1) {
+        cout << endl << endl << endl << "Running solution "
+             << standard_solution << endl;
+        triangleTest(solutions[standard_solution].data(), n_realizations,
+                     n_weeks, standard_solution, string(system_io));
+    } else {
+        for (int s = first_solution; s < last_solution; ++s) {
+            cout << endl << endl << endl << "Running solution "
+                 << standard_solution << endl;
+            triangleTest(solutions[s].data(), n_realizations,
+                         n_weeks, s, string(system_io));
         }
     }
 

@@ -1163,8 +1163,8 @@ void triangleTest(int n_threads, const double *x_real, int n_realizations,
     double raleigh_inf_buffer = x_real[55];
     double cary_inf_buffer = x_real[56];
 
-    double durham_raw_water_transfer_trigger = 0.04;
-    double raleigh_raw_water_transfer_trigger = 0.02;
+    double durham_raw_water_transfer_trigger = 0.10;
+    double raleigh_raw_water_transfer_trigger = 0.01;
     double cary_raw_water_transfer_trigger = 2;
     double owasa_raw_water_transfer_trigger = 2;
 

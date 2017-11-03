@@ -35,8 +35,8 @@ void RawWaterReleases::addSystemComponents(vector<Utility *> utilities,
             dynamic_cast<Reservoir *>(water_sources[upstream_reservoir_id]);
     downstream_reservoir =
             dynamic_cast<Reservoir *>(water_sources[downstream_reservoir_id]);
-    upstream_utility = utilities[upstream_reservoir_id];
-    downstream_utility = utilities[downstream_reservoir_id];
+    upstream_utility = utilities[upstream_utility_id];
+    downstream_utility = utilities[downstream_utility_id];
 
     /// Gets the control rule that acts on reservoir of id reservoir_id.
     for (MinEnvironFlowControl *mefc : min_env_flow_controls) {
@@ -58,18 +58,18 @@ void RawWaterReleases::applyPolicy(int week) {
 
         /// Determine storage deficit for downstream utility and available capacity for
         /// upstream utility
-        storage_targets[0] = getUtilityStorageFromROF(Utils::weekOfTheYear(week), storage_to_rof_table_,
-                                                      upstream_utility_id);
-        storage_targets[1] = getUtilityStorageFromROF(Utils::weekOfTheYear(week), storage_to_rof_table_,
-                                                      downstream_utility_id);
+        storage_targets[UPSTREAM_UTILITY] = getUtilityStorageFromROF(Utils::weekOfTheYear(week),
+                                                                     storage_to_rof_table_, upstream_utility_id);
+        storage_targets[DOWNSTREAM_UTILITY] = getUtilityStorageFromROF(Utils::weekOfTheYear(week),
+                                                                       storage_to_rof_table_, downstream_utility_id);
 
         /// ensure that there is no incorrect assignment - it is possible because of the
         /// size of ROF-to-storage table increments that target and current storage levels
         /// will be the same or incorrect
-        if (storage_targets[0] > upstream_utility->getStorageToCapacityRatio())
-            storage_targets[0] = upstream_utility->getStorageToCapacityRatio();
-        if (storage_targets[1] < downstream_utility->getStorageToCapacityRatio())
-            storage_targets[1] = downstream_utility->getStorageToCapacityRatio();
+        if (storage_targets[UPSTREAM_UTILITY] > upstream_utility->getStorageToCapacityRatio())
+            storage_targets[UPSTREAM_UTILITY] = upstream_utility->getStorageToCapacityRatio();
+        if (storage_targets[DOWNSTREAM_UTILITY] < downstream_utility->getStorageToCapacityRatio())
+            storage_targets[DOWNSTREAM_UTILITY] = downstream_utility->getStorageToCapacityRatio();
 
         /// Set raw water transfer request after applying physical constraints:
         ///     1. initial downstream request (based on ROF deficit)
@@ -77,14 +77,17 @@ void RawWaterReleases::applyPolicy(int week) {
         ///     3. upstream available volume in donor reservoir
         ///     4. downstream available capacity in recipient reservoir
         ///     5. raw water release volume cap (proxy for watercourse flooding)
-        std::vector<double> temp_vec = {(storage_targets[1] - downstream_utility->getStorageToCapacityRatio()) *
-                                        downstream_utility->getTotal_storage_capacity(),
-                                        (upstream_utility->getStorageToCapacityRatio() - storage_targets[0]) *
-                                        upstream_utility->getTotal_storage_capacity(),
-                                        upstream_reservoir->getAvailableAllocatedVolume(upstream_utility_id),
-                                        (downstream_reservoir->getAllocatedCapacity(downstream_utility_id) -
-                                         downstream_reservoir->getAvailableAllocatedVolume(downstream_utility_id)),
-                                        max_releases};
+        double initial_request = (storage_targets[DOWNSTREAM_UTILITY] -
+                downstream_utility->getStorageToCapacityRatio()) * downstream_utility->getTotal_storage_capacity();
+        double initial_available_volume = (upstream_utility->getStorageToCapacityRatio() -
+                storage_targets[UPSTREAM_UTILITY]) * upstream_utility->getTotal_storage_capacity();
+        double available_source_volume = upstream_reservoir->getAvailableAllocatedVolume(upstream_utility_id);
+        double available_recipient_source_volume =
+                (downstream_reservoir->getAllocatedCapacity(downstream_utility_id) -
+                 downstream_reservoir->getAvailableAllocatedVolume(downstream_utility_id));
+
+        std::vector<double> temp_vec = {initial_request, initial_available_volume, available_source_volume,
+                                        available_recipient_source_volume, max_releases};
 
         raw_water_transfer_volume = *std::min_element(temp_vec.begin(), temp_vec.end());
 

@@ -47,7 +47,7 @@ string RawWaterReleaseDataCollector::printTabularStringHeaderLine1() {
 
     outStream << setw(COLUMN_WIDTH) << "RWT";
 
-    for (int id : utilities_ids)
+    for (int pid : utilities_ids)
         outStream << setw(COLUMN_WIDTH) << "RWT";
 
     return outStream.str();
@@ -59,8 +59,13 @@ string RawWaterReleaseDataCollector::printTabularStringHeaderLine2() {
 
     outStream << setw(COLUMN_WIDTH) << "Vol. ";
 
-    for (int id : utilities_ids)
-        outStream << setw(COLUMN_WIDTH) << "Targ. Rat. " + to_string(id);
+//    outStream << setw(COLUMN_WIDTH) << "Targ. Rat. " + to_string(1);
+//    outStream << setw(COLUMN_WIDTH) << "Targ. Rat. " + to_string(3);
+
+    // FIXME: unclear why these statements are not working
+
+    for (int pid : utilities_ids)
+        outStream << setw(COLUMN_WIDTH) << "Targ. Rat. " + to_string(pid);
 
     return outStream.str();
 }

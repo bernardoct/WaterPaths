@@ -29,6 +29,9 @@ private:
     double raw_water_transfer_volume;
     vector<double> storage_targets;
 
+    const int UPSTREAM_UTILITY = 0;
+    const int DOWNSTREAM_UTILITY = 1;
+
 public:
     RawWaterReleases(const int id,
                      const int upstream_utility_id,

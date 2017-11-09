@@ -12,7 +12,6 @@
 class WaterReuseDataCollector : public DataCollector {
 private:
     WaterReuse *water_reuse;
-    int N_COLUMNS = 2;
 
 public:
     WaterReuseDataCollector(WaterReuse *water_reuse);

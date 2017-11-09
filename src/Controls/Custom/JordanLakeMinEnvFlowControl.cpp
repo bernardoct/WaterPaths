@@ -67,6 +67,8 @@ double JordanLakeMinEnvFlowControl::getRelease(int week) {
         return min(rel06_up, min_rel_llt08 - lillington_flow_rate);
     else if (lillington_flow_rate < min_rel_llt08_up - rel06_up)
         return min(rel06_up, min_rel_llt08_up - lillington_flow_rate);
+    else
+        return rel06_up;
 }
 
 void JordanLakeMinEnvFlowControl::setRealization(unsigned int r) {

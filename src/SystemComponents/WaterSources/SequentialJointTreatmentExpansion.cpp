@@ -12,19 +12,11 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
         const vector<double> &construction_time_range, double permitting_period,
         double construction_cost, double bond_term,
         double bond_interest_rate)
-        : WaterSource(name,
-                      id,
-                      vector<Catchment *>(),
-                      NONE,
-                      NON_INITIALIZED,
-                      NEW_WATER_TREATMENT_PLANT,
-                      construction_rof_or_demand,
-                      construction_time_range,
-                      parent_reservoir_ID,
-                      construction_cost,
-                      bond_term,
+        : WaterSource(name, id, vector<Catchment *>(), NONE, NON_INITIALIZED,
+                      NEW_WATER_TREATMENT_PLANT, construction_time_range,
+                      parent_reservoir_ID, construction_cost, bond_term,
                       bond_interest_rate),
-          parent_reservoir_ID((const unsigned int) parent_reservoir_ID),
+          parent_reservoir_ID((unsigned int) parent_reservoir_ID),
           added_treatment_capacity_fractions
                   (added_treatment_capacity_fractions),
           total_treatment_capacity(total_treatment_capacity),
@@ -42,19 +34,11 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
         const vector<double> &construction_time_range, double permitting_period,
         double construction_cost, double bond_term,
         double bond_interest_rate)
-        : WaterSource(name,
-                      id,
-                      vector<Catchment *>(),
-                      NONE,
-                      NON_INITIALIZED,
-                      NEW_WATER_TREATMENT_PLANT,
-                      construction_rof_or_demand,
-                      construction_time_range,
-                      permitting_period,
-                      construction_cost,
-                      bond_term,
+        : WaterSource(name, id, vector<Catchment *>(), NONE, NON_INITIALIZED,
+                      NEW_WATER_TREATMENT_PLANT, construction_time_range,
+                      permitting_period, construction_cost, bond_term,
                       bond_interest_rate),
-          parent_reservoir_ID((const unsigned int) parent_reservoir_ID),
+          parent_reservoir_ID((unsigned int) parent_reservoir_ID),
           added_treatment_capacity_fractions
                   (added_treatment_capacity_fractions),
           total_treatment_capacity(total_treatment_capacity),
@@ -136,9 +120,9 @@ SequentialJointTreatmentExpansion &SequentialJointTreatmentExpansion::operator=(
     return *this;
 }
 
-void SequentialJointTreatmentExpansion::applyContinuity(
-        int week, double upstream_source_inflow,
-        vector<double> *demand_outflow) {
+void SequentialJointTreatmentExpansion::applyContinuity(int week, double upstream_source_inflow,
+                                                        double wastewater_discharge,
+                                                        vector<double> &demand_outflow) {
     __throw_logic_error("Reservoir expansion only add storage volume to the "
                                 "reservoir they're assigned to.  Continuity "
                                 "cannot be called on it, but only on the "

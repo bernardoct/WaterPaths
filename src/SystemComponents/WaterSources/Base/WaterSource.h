@@ -19,6 +19,7 @@ protected:
     double available_volume = 0;
     double total_outflow = 0;
     double upstream_source_inflow = 0;
+    double wastewater_inflow = 0;
     double upstream_catchment_inflow = 0;
     double total_demand = 0;
     double policy_added_demand = 0;
@@ -39,17 +40,16 @@ protected:
     double total_treatment_capacity;
     int highest_alloc_id = NON_INITIALIZED;
 
-    virtual void applyContinuity(
-            int week, double upstream_source_inflow,
-            vector<double> *demand_outflow) = 0;
+    virtual void applyContinuity(int week, double upstream_source_inflow,
+                                     double wastewater_inflow,
+                                     vector<double> &demand_outflow) = 0;
 
-    void bypass(int week, double upstream_source_inflow);
+    void bypass(int week, double total_upstream_inflow);
 
 public:
     const int id;
     const char *name;
     const int source_type;
-    const double construction_rof_or_demand;
     const double construction_cost_of_capital;
     const double construction_time;
     const double permitting_period;
@@ -61,26 +61,22 @@ public:
             const vector<Catchment *> &catchments, const double capacity,
             double treatment_capacity, const int source_type);
 
-    WaterSource(
-            const char *source_name, const int id,
-            const vector<Catchment *> &catchments, const double capacity,
-            double treatment_capacity, const int source_type,
-            const double construction_rof_or_demand,
-            const vector<double> construction_time_range,
-            double permitting_period, double construction_cost_of_capital,
-            double bond_term, double bond_interest_rate);
+    WaterSource(const char *source_name, const int id,
+                    const vector<Catchment *> &catchments, const double capacity,
+                    double treatment_capacity, const int source_type,
+                    const vector<double> construction_time_range,
+                    double permitting_period, double construction_cost_of_capital,
+                    double bond_term, double bond_interest_rate);
 
-    WaterSource(
-            const char *name, const int id,
-            const vector<Catchment *> &catchments, const double capacity,
-            double treatment_capacity, const int source_type,
-            vector<double> *allocated_treatment_fractions,
-            vector<double> *allocated_fractions,
-            vector<int> *utilities_with_allocations,
-            const double construction_rof_or_demand,
-            const vector<double> construction_time_range,
-            double permitting_period, double construction_cost_of_capital,
-            double bond_term, double bond_interest_rate);
+    WaterSource(const char *name, const int id,
+                    const vector<Catchment *> &catchments, const double capacity,
+                    double treatment_capacity, const int source_type,
+                    vector<double> *allocated_treatment_fractions,
+                    vector<double> *allocated_fractions,
+                    vector<int> *utilities_with_allocations,
+                    const vector<double> construction_time_range,
+                    double permitting_period, double construction_cost_of_capital,
+                    double bond_term, double bond_interest_rate);
 
     WaterSource(
             const char *name, const int id,
@@ -102,9 +98,9 @@ public:
 
     bool operator==(const WaterSource *other);
 
-    void continuityWaterSource(
-            int week, double upstream_source_inflow,
-            vector<double> *demand_outflow);
+    void continuityWaterSource(int week, double upstream_source_inflow,
+                                   double wastewater_inflow,
+                                   vector<double> &demand_outflow);
 
     virtual void addTreatmentCapacity(
             const double added_treatment_capacity,
@@ -172,6 +168,8 @@ public:
     double *getAvailable_allocated_volumes() const;
 
     vector<int> *getUtilities_with_allocations() const;
+
+    double getWastewater_inflow() const;
 
     void addWater(int allocation_id, double volume);
 };

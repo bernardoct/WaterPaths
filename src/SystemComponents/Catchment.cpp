@@ -14,9 +14,11 @@ Catchment::Catchment(vector<vector<double>> *streamflows_all, int series_length)
         Constants::WEEKS_IN_YEAR * Constants::NUMBER_REALIZATIONS_ROF)
         throw std::length_error("Series shorter than required for ROF "
                                         "calculations. The streamflow series"
-                                        "must be greater the number of ROF "
-                                        "realizations times the number of "
-                                        "weeks in a year (52).");
+                                        "must be greater the number of ROF ("
+                                + to_string(Constants::NUMBER_REALIZATIONS_ROF)
+                                + ") realizations times the number of "
+                                        "weeks in a year ("
+                                + to_string(Constants::WEEKS_IN_YEAR) + ").");
 }
 
 /**
@@ -40,7 +42,7 @@ Catchment &Catchment::operator=(const Catchment &catchment) = default;
  * Destructor.
  */
 Catchment::~Catchment() {
-    streamflows_all = nullptr;
+//    streamflows_all = nullptr;
 }
 
 /**
@@ -51,8 +53,9 @@ Catchment::~Catchment() {
  * @return
  */
 double Catchment::getStreamflow(int week) {
-    return streamflows_realization[week + (int) std::round(
-            Constants::WEEKS_IN_YEAR * Constants::NUMBER_REALIZATIONS_ROF)];
+    int adjusted_week = week + (int) std::round(
+            Constants::WEEKS_IN_YEAR * Constants::NUMBER_REALIZATIONS_ROF);
+    return streamflows_realization[adjusted_week];
 }
 
 /**
@@ -66,5 +69,7 @@ void Catchment::setRealization(unsigned long r) {
     std::copy(streamflows_all->at(r).begin(),
               streamflows_all->at(r).end(),
               streamflows_realization);
+
+    return;
 }
 

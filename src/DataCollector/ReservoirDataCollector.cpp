@@ -10,7 +10,7 @@ ReservoirDataCollector::ReservoirDataCollector(Reservoir *reservoir)
         : DataCollector(reservoir->id,
                         reservoir->name,
                         RESERVOIR,
-                        N_COLUMNS * COLUMN_WIDTH), reservoir(reservoir) {}
+                        7 * COLUMN_WIDTH), reservoir(reservoir) {}
 
 ReservoirDataCollector::ReservoirDataCollector(
         Reservoir *reservoir, int type, int table_width)
@@ -24,11 +24,18 @@ string ReservoirDataCollector::printTabularString(int week) {
 
     outStream
             << setw(2 * COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-            << stored_volume[week]
+            << stored_volume[week];
+
+    if (reservoir->fixed_area)
+        outStream << setw(COLUMN_WIDTH) << area[week];
+
+    outStream
             << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
             << demands[week]
             << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
             << total_upstream_sources_inflows[week]
+            << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+            << wastewater_inflows[week]
             << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
             << total_catchments_inflow[week]
             << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
@@ -43,9 +50,15 @@ string ReservoirDataCollector::printCompactString(int week) {
     stringstream outStream;
 
     outStream
-            << stored_volume[week] << ","
+            << stored_volume[week] << ",";
+
+    if (reservoir->fixed_area)
+        outStream << area[week] << ",";
+
+    outStream
             << demands[week] << ","
             << total_upstream_sources_inflows[week] << ","
+            << wastewater_inflows[week] << ","
             << total_catchments_inflow[week] << ","
             << evaporated_volume[week] << ","
             << outflows[week] << ",";
@@ -57,9 +70,15 @@ string ReservoirDataCollector::printTabularStringHeaderLine1() {
     stringstream outStream;
 
     outStream
-            << setw(2 * COLUMN_WIDTH) << "Stored"
+            << setw(2 * COLUMN_WIDTH) << "Stored";
+
+    if (reservoir->fixed_area)
+        outStream << setw(COLUMN_WIDTH) << "Surface";
+
+    outStream
             << setw(COLUMN_WIDTH) << " "
             << setw(COLUMN_WIDTH) << "Upstream"
+            << setw(COLUMN_WIDTH) << "Wastewat."
             << setw(COLUMN_WIDTH) << "Catchment"
             << setw(COLUMN_WIDTH) << "Evap."
             << setw(COLUMN_WIDTH) << " ";
@@ -71,9 +90,15 @@ string ReservoirDataCollector::printTabularStringHeaderLine2() {
     stringstream outStream;
 
     outStream
-            << setw(2 * COLUMN_WIDTH) << "Volume"
+            << setw(2 * COLUMN_WIDTH) << "Volume";
+
+    if (reservoir->fixed_area)
+        outStream << setw(COLUMN_WIDTH) << "Area";
+
+    outStream
             << setw(COLUMN_WIDTH) << "Demands"
             << setw(COLUMN_WIDTH) << "Spillage"
+            << setw(COLUMN_WIDTH) << "Inflows"
             << setw(COLUMN_WIDTH) << "Inflow"
             << setw(COLUMN_WIDTH) << "Volume"
             << setw(COLUMN_WIDTH) << "Spillage";
@@ -85,15 +110,20 @@ string ReservoirDataCollector::printCompactStringHeader() {
     stringstream outStream;
 
     outStream
-            << id << "volume" << ","
+            << id << "volume" << ",";
+
+    if (reservoir->fixed_area)
+        outStream << id << "s_area" << ",";
+
+    outStream
             << id << "demand" << ","
             << id << "up_spill" << ","
+            << id << "ww_inflow" << ","
             << id << "catch_inflow" << ","
             << id << "evap" << ","
             << id << "ds_spill" << ",";
 
     return outStream.str();
-    return nullptr;
 }
 
 void ReservoirDataCollector::collect_data() {
@@ -105,4 +135,6 @@ void ReservoirDataCollector::collect_data() {
     outflows.push_back(reservoir->getTotal_outflow());
     total_catchments_inflow.push_back(reservoir->getUpstreamCatchmentInflow());
     evaporated_volume.push_back(reservoir->getEvaporated_volume());
+    wastewater_inflows.push_back(reservoir->getWastewater_inflow());
+    if (reservoir->fixed_area) area.push_back(reservoir->getArea());
 }

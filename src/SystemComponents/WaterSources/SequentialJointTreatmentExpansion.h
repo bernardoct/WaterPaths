@@ -46,9 +46,9 @@ public:
     SequentialJointTreatmentExpansion &operator=(
             const SequentialJointTreatmentExpansion &joint_water_treatment_plant);
 
-    void applyContinuity(
-            int week, double upstream_source_inflow,
-            vector<double> *demand_outflow) override;
+    void applyContinuity(int week, double upstream_source_inflow,
+                             double wastewater_discharge,
+                             vector<double> &demand_outflow) override;
 
     const unsigned int parent_reservoir_ID;
     const vector<double> *added_treatment_capacity_fractions;

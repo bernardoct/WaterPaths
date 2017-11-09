@@ -12,6 +12,7 @@
 #include "../Controls/WwtpDischargeRule.h"
 //#include "../Utils/Matrix3D.h"
 
+//#define DOLLARS_PER_GAL_TO_DOLLARS_PER_MMGAL 1e-6
 
 class Utility {
 private:
@@ -20,6 +21,7 @@ private:
     vector<int> priority_draw_water_source;
     vector<int> non_priority_draw_water_source;
     vector<double> weekly_peaking_factor;
+    vector<double> infra_construction_triggers;
     double short_term_risk_of_failure = 0;
     double long_term_risk_of_failure = 0;
     double total_storage_capacity = 0;
@@ -27,6 +29,7 @@ private:
     double total_treatment_capacity = 0;
     double waste_water_discharge = 0;
     double gross_revenue = 0;
+    double unfulfilled_demand = 0;
     bool used_for_realization = true;
     vector<WaterSource *> water_sources;
     vector<vector<double>> *demands_all_realizations;
@@ -46,6 +49,7 @@ private:
     double raw_water_transfer_sale = 0;
     double restricted_demand = 0;
     double unrestricted_demand = 0;
+    int n_sources = 0;
 
     /// Infrastructure cost
     double current_debt_payment = 0;
@@ -79,31 +83,32 @@ public:
             WwtpDischargeRule wwtp_discharge_rule,
             double demand_buffer);
 
-    Utility(
-            const char *name, int id,
-            vector<vector<double>> *demands_all_realizations,
-            int number_of_week_demands,
-            const double percent_contingency_fund_contribution,
-            const vector<vector<double>> *typesMonthlyDemandFraction,
-            const vector<vector<double>> *typesMonthlyWaterPrice,
-            WwtpDischargeRule wwtp_discharge_rule,
-            double demand_buffer,
-            const vector<int> &rof_infra_construction_order,
-            const vector<int> &demand_infra_construction_order,
-            double infra_discount_rate, const vector<vector<int>>
-            *infra_if_built_remove);
+    Utility(const char *name, int id,
+                vector<vector<double>> *demands_all_realizations,
+                int number_of_week_demands,
+                const double percent_contingency_fund_contribution,
+                const vector<vector<double>> *typesMonthlyDemandFraction,
+                const vector<vector<double>> *typesMonthlyWaterPrice,
+                WwtpDischargeRule wwtp_discharge_rule,
+                double demand_buffer,
+                const vector<int> &rof_infra_construction_order,
+                const vector<int> &demand_infra_construction_order,
+                const vector<double> &infra_construction_triggers,
+                double infra_discount_rate,
+                const vector<vector<int>> *infra_if_built_remove);
 
-    Utility(
-            const char *name, int id,
-            vector<vector<double>> *demands_all_realizations,
-            int number_of_week_demands,
-            const double percent_contingency_fund_contribution,
-            const vector<vector<double>> *typesMonthlyDemandFraction,
-            const vector<vector<double>> *typesMonthlyWaterPrice,
-            WwtpDischargeRule wwtp_discharge_rule, double demand_buffer,
-            const vector<int> &rof_infra_construction_order,
-            const vector<int> &demand_infra_construction_order,
-            double infra_discount_rate);
+    Utility(const char *name, int id,
+                vector<vector<double>> *demands_all_realizations,
+                int number_of_week_demands,
+                const double percent_contingency_fund_contribution,
+                const vector<vector<double>> *typesMonthlyDemandFraction,
+                const vector<vector<double>> *typesMonthlyWaterPrice,
+                WwtpDischargeRule wwtp_discharge_rule,
+                double demand_buffer,
+                const vector<int> &rof_infra_construction_order,
+                const vector<int> &demand_infra_construction_order,
+                const vector<double> &infra_construction_triggers,
+                double infra_discount_rate);
 
     Utility(Utility &utility);
 
@@ -126,14 +131,14 @@ public:
     void addWaterSource(WaterSource *water_source);
 
     void splitDemands(
-            int week, vector<vector<double>> *demands, bool
+            int week, vector<vector<double>> &demands, bool
     apply_demand_buffer = false);
 
     void calculateWeeklyAverageWaterPrices(
             const vector<vector<double>> *typesMonthlyDemandFraction,
             const vector<vector<double>> *typesMonthlyWaterPrice);
 
-    const double waterPrice(int week);
+    double waterPrice(int week);
 
     void addWaterSourceToOnlineLists(int source_id);
 
@@ -206,13 +211,11 @@ public:
 
     double getInsurance_purchase() const;
 
-    void resetDataColletionVariables();
-
     const vector<int> &getRof_infrastructure_construction_order() const;
 
     void setRealization(unsigned long r);
 
-    vector<int> getInfrastructure_built();
+    const vector<int> getInfrastructure_built() const;
 
     void setNoFinaicalCalculations();
 
@@ -235,6 +238,17 @@ public:
     void sellRawWaterTransfer(double payment_per_volume, double raw_water_transferred);
 
     vector<int> getNon_Priority_Utility_Water_Sources();
+
+    vector<double>
+    rearrangeInfraRofVector(const vector<double> &infra_construction_triggers,
+                            const vector<int> &rof_infra_construction_order,
+                            const vector<int> &demand_infra_construction_order);
+
+    double getTotal_stored_volume() const;
+
+    void resetTotal_storage_capacity();
+
+    double getUnfulfilled_demand() const;
 };
 
 

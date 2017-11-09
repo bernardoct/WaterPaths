@@ -89,8 +89,8 @@ set(SOURCE_FILES
         src/Utils/Constants.h
         src/Utils/DataSeries.cpp
         src/Utils/DataSeries.h
-        src/Utils/EvaporationSeries.cpp
-        src/Utils/EvaporationSeries.h
+        src/Controls/EvaporationSeries.cpp
+        src/Controls/EvaporationSeries.h
         src/Utils/Graph/Graph.cpp
         src/Utils/Graph/Graph.h
         src/Utils/ObjectivesCalculator.cpp

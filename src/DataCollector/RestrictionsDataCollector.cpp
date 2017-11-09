@@ -10,7 +10,7 @@ RestrictionsDataCollector::RestrictionsDataCollector(
         : DataCollector(restriction_policy->id,
                         nullptr,
                         RESTRICTIONS,
-                        N_COLUMNS * COLUMN_WIDTH),
+                        NON_INITIALIZED),
           restriction_policy(restriction_policy) {}
 
 string RestrictionsDataCollector::printTabularString(int week) {
@@ -42,7 +42,11 @@ string RestrictionsDataCollector::printTabularStringHeaderLine2() {
 }
 
 string RestrictionsDataCollector::printCompactStringHeader() {
-    return nullptr;
+    stringstream outStream;
+
+    outStream << id << "rest_m" << ",";
+
+    return outStream.str();
 }
 
 void RestrictionsDataCollector::collect_data() {

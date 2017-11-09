@@ -9,14 +9,19 @@
 #include "Base/ContinuityModel.h"
 #include "../Utils/Matrices.h"
 
+
 class ContinuityModelROF : public ContinuityModel {
 private:
     Matrix3D<double> *storage_to_rof_table;
     Matrix3D<double> storage_to_rof_realization;
-    bool *storage_wout_downstream;
+//    __declspec(aligned(64)) double *capacities_toposorted;
+    double *capacities_toposorted __attribute__ ((aligned(64)));
+    int *downstream_sources_toposort;
+    int *topo_sorted_to_all_sources;
+    const int n_topo_sources;
 
 protected:
-    int beginning_res_level;
+    int beginning_tier = 0;
     vector<WaterSource *> realization_water_sources;
 
 public:
@@ -26,11 +31,13 @@ public:
             const vector<vector<int>> &water_sources_to_utilities,
             vector<Utility *> utilities,
             vector<MinEnvironFlowControl *> &min_env_flow_controls,
-            const unsigned int realization_id);
+            unsigned int realization_id);
 
     ContinuityModelROF(ContinuityModelROF &continuity_model_rof);
 
-    vector<double> calculateROF(int week, int rof_type);
+    vector<double> calculateShortTermROF(int week);
+
+    vector<double> calculateLongTermROF(int week);
 
     void resetUtilitiesAndReservoirs(int rof_type);
 

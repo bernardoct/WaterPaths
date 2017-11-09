@@ -26,9 +26,9 @@ public:
             double construction_cost_of_capital, double bond_term,
             double bond_interest_rate);
 
-    void applyContinuity(
-            int week, double upstream_source_inflow,
-            vector<double> *demand_outflow) override;
+    void applyContinuity(int week, double upstream_source_inflow,
+                             double wastewater_discharge,
+                             vector<double> &demand_outflow) override;
 
     unsigned long getParent_reservoir_ID() const;
 };

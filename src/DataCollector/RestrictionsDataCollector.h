@@ -14,7 +14,6 @@ class RestrictionsDataCollector : public DataCollector {
 private:
     Restrictions *restriction_policy;
     vector<double> restriction_multipliers;
-    int N_COLUMNS = 1;
 
 public:
     explicit RestrictionsDataCollector(

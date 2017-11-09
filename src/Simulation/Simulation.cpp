@@ -93,13 +93,6 @@ Simulation::Simulation(
     }
 
     /// Creates the data collector for the simulation.
-//    data_collector = new DataCollectorDeprecated(
-//            utilities,
-//            water_sources,
-//            drought_mitigation_policies,
-//            number_of_realizations,
-//            water_sources_graph);
-
     master_data_collector = new MasterDataCollector();
 
     /// Create the realization and ROF models.
@@ -167,7 +160,7 @@ Simulation &Simulation::operator=(const Simulation &simulation) {
     return *this;
 }
 
-MasterDataCollector *Simulation::runFullSimulation(int num_threads) {
+MasterDataCollector *Simulation::runFullSimulation() {
 
     int n_utilities = (int) realization_models[0]->getUtilities().size();
     vector<double> risks_of_failure_week((unsigned long) n_utilities, 0.0);
@@ -181,18 +174,20 @@ MasterDataCollector *Simulation::runFullSimulation(int num_threads) {
     std::cout << "Simulated time: " << total_simulation_time << endl;
     std::cout << "Number of realizations: " << number_of_realizations << endl;
     std::cout << "Beginning realizations loop." << endl;
-#pragma omp parallel for num_threads(num_threads)
+#pragma omp parallel for
     for (int r = 0; r < number_of_realizations; ++r) {
-        try {
+//        try {
+#pragma omp critical
             count++;
+
             time_t timer_ir, timer_fr;
             time(&timer_ir);
             for (int w = 0; w < total_simulation_time; ++w) {
                 // DO NOT change the order of the steps. This would mess up
                 // important dependencies.
                 if (Utils::isFirstWeekOfTheYear(w))
-                    realization_models[r]->setLongTermROFs(rof_models[r]->calculateROF(w, LONG_TERM_ROF), w);
-                realization_models[r]->setShortTermROFs(rof_models[r]->calculateROF(w, SHORT_TERM_ROF));
+                    realization_models[r]->setLongTermROFs(rof_models[r]->calculateLongTermROF(w), w);
+                realization_models[r]->setShortTermROFs(rof_models[r]->calculateShortTermROF(w));
                 realization_models[r]->applyDroughtMitigationPolicies(w);
                 realization_models[r]->continuityStep(w);
                 master_data_collector->collectData(r);
@@ -201,19 +196,19 @@ MasterDataCollector *Simulation::runFullSimulation(int num_threads) {
             std::cout << "Realization " << count << ": "
                       << difftime(timer_fr, timer_ir) << std::endl;
 
-        } catch (const std::exception &e) {
-            cout << "Error in realization " << r << endl;
-            e.what();
-        }
-}
-time(&timer_f);
-seconds = difftime(timer_f, timer_i);
-std::cout << "Calculations: " << seconds << "s" << std::endl;
+//        } catch (const std::exception &e) {
+//            cout << "Error in realization " << r << endl;
+//            e.what();
+//        }
+    }
+    time(&timer_f);
+    seconds = difftime(timer_f, timer_i);
+    std::cout << "Calculations: " << seconds << "s" << std::endl;
 
-time(&timer_f);
-seconds = difftime(timer_f,
+    time(&timer_f);
+    seconds = difftime(timer_f,
                    timer_i);
-std::cout << "Total: " << seconds << "s" << std::endl;
+    std::cout << "Total: " << seconds << "s" << std::endl;
 
-return master_data_collector;
+    return master_data_collector;
 }

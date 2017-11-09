@@ -6,9 +6,10 @@
 #define TRIANGLEMODEL_CATCHMENT_H
 
 #include <vector>
+#include "../Utils/Constants.h"
 
 using namespace std;
-
+using namespace Constants;
 
 class Catchment {
 protected:

@@ -27,12 +27,12 @@ private:
     vector<vector<int>> pathways;
     vector<double> net_present_infrastructure_cost;
     vector<double> waste_water_discharge;
-    Utility *utility;
-    const int N_COLUMNS = 10;
+    vector<double> unfulfilled_demand;
+    const Utility *utility;
 
 public:
 
-    explicit UtilitiesDataCollector(Utility *utility);
+    explicit UtilitiesDataCollector(const Utility *utility);
 
     string printTabularString(int week) override;
 
@@ -66,7 +66,6 @@ public:
 
     const vector<double> &getNet_present_infrastructure_cost() const;
 
-    void resetUtilityDataCollection();
 };
 
 

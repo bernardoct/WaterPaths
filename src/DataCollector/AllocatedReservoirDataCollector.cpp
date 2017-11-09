@@ -11,7 +11,7 @@ AllocatedReservoirDataCollector::AllocatedReservoirDataCollector(
         AllocatedReservoir *allocated_reservoir)
         : ReservoirDataCollector(allocated_reservoir,
                                  ALLOCATED_RESERVOIR,
-                                 (N_COLUMNS + (int) allocated_reservoir->
+                                 (7 + (int) allocated_reservoir->
                                          getUtilities_with_allocations()->
                                          size()) * COLUMN_WIDTH),
           allocated_reservoir(allocated_reservoir) {}

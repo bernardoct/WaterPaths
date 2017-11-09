@@ -42,6 +42,8 @@ public:
     static int weekOfTheYear(int week);
 
     static string getexepath();
+
+    static void removeIntFromVector(vector<int> &vec, int el);
 };
 
 

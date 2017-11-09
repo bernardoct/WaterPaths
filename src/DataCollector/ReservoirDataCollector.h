@@ -11,15 +11,16 @@
 #include "../SystemComponents/WaterSources/Reservoir.h"
 
 class ReservoirDataCollector : public DataCollector {
-private:
+
     Reservoir *reservoir;
     vector<double> stored_volume;
     vector<double> total_upstream_sources_inflows;
+    vector<double> wastewater_inflows;
     vector<double> demands;
     vector<double> outflows;
     vector<double> total_catchments_inflow;
     vector<double> evaporated_volume;
-    int N_COLUMNS = 7;
+    vector<double> area;
 
 public:
     explicit ReservoirDataCollector(Reservoir *reservoir);

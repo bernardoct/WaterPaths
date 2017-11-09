@@ -33,17 +33,9 @@ Intake::Intake(
         const vector<double> construction_time_range, double permitting_period,
         double construction_npv_cost_of_capital, double bond_term,
         double bond_interest_rate) :
-        WaterSource(name,
-                    id,
-                    catchments,
-                    NONE,
-                    raw_water_main_capacity,
-                    INTAKE,
-                    construction_rof_or_demand,
-                    construction_time_range,
-                    permitting_period,
-                    construction_npv_cost_of_capital,
-                    bond_term,
+        WaterSource(name, id, catchments, NONE, raw_water_main_capacity, INTAKE,
+                    construction_time_range, permitting_period,
+                    construction_npv_cost_of_capital, bond_term,
                     bond_interest_rate) {
 
 //    /// Update total catchment inflow, total_demand, and available water volume for week 0;
@@ -90,11 +82,14 @@ Intake::~Intake() {
  * @param upstream_source_inflow upstream sources current outflow.
  * @param demand current demand
  */
-void Intake::applyContinuity(
-        int week, double upstream_source_inflow, vector<double> *demand) {
+void Intake::applyContinuity(int week, double upstream_source_inflow,
+                             double wastewater_inflow, vector<double> &demand) {
 
-    double total_demand = std::accumulate(demand->begin(),
-                                          demand->end(),
+    double total_upstream_inflow = upstream_source_inflow +
+                                   wastewater_inflow;
+
+    double total_demand = std::accumulate(demand.begin(),
+                                          demand.end(),
                                           0.);
 
     /// Get all upstream catchment inflow.
@@ -118,9 +113,10 @@ void Intake::applyContinuity(
     /// Records for the sake of output.
     this->total_demand = total_demand + policy_added_demand;
     policy_added_demand = 0;
-    this->upstream_source_inflow = upstream_source_inflow;
-    total_outflow = upstream_source_inflow + upstream_catchment_inflow -
+    total_outflow = total_upstream_inflow + upstream_catchment_inflow -
                     total_demand;
+    this->upstream_source_inflow = upstream_source_inflow;
+    this->wastewater_inflow = wastewater_inflow;
 }
 
 void Intake::setRealization(unsigned long r) {

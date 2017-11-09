@@ -7,6 +7,9 @@
 #include "ContinuityModelROF.h"
 #include "../Utils/Utils.h"
 
+#define restrict __restrict__
+#define __assume_aligned __builtin_assume_aligned
+
 ContinuityModelROF::ContinuityModelROF(
         vector<WaterSource *> water_sources,
         const Graph &water_sources_graph,
@@ -18,7 +21,8 @@ ContinuityModelROF::ContinuityModelROF(
                                                              min_env_flow_controls,
                                                              water_sources_graph,
                                                              water_sources_to_utilities,
-                                                             realization_id) {
+                                                             realization_id),
+                                             n_topo_sources((int) sources_topological_order.size()) {
 
     /// update utilities' total stored volume
     for (Utility *u : this->continuity_utilities) {
@@ -36,9 +40,15 @@ ContinuityModelROF::ContinuityModelROF(
             (unsigned int) ceil(WEEKS_IN_YEAR));
 
     /// Record which sources have no downstream sources.
-    storage_wout_downstream = new bool[sources_topological_order.size()];
-    for (int ws : sources_topological_order)
-        storage_wout_downstream[ws] = downstream_sources[ws] != NON_INITIALIZED;
+    capacities_toposorted = new double[n_topo_sources];
+    downstream_sources_toposort = new int[n_topo_sources];
+    topo_sorted_to_all_sources = new int[n_sources];
+    memset(topo_sorted_to_all_sources, -1, sizeof(int) * n_sources);
+    for (int ws = 0; ws < n_topo_sources; ++ws) {
+        capacities_toposorted[ws] = water_sources[sources_topological_order[ws]]->getCapacity();
+        downstream_sources_toposort[ws] = downstream_sources[sources_topological_order[ws]];
+        topo_sorted_to_all_sources[sources_topological_order[ws]] = ws;
+    }
 }
 
 ContinuityModelROF::ContinuityModelROF(ContinuityModelROF &continuity_model_rof)
@@ -47,7 +57,18 @@ ContinuityModelROF::ContinuityModelROF(ContinuityModelROF &continuity_model_rof)
                           continuity_model_rof.min_env_flow_controls,
                           continuity_model_rof.water_sources_graph,
                           continuity_model_rof.water_sources_to_utilities,
-                          continuity_model_rof.realization_id) {
+                          continuity_model_rof.realization_id),
+          n_topo_sources(continuity_model_rof.n_topo_sources) {
+
+    std::copy(continuity_model_rof.capacities_toposorted,
+              continuity_model_rof.capacities_toposorted + n_topo_sources,
+              capacities_toposorted);
+    std::copy(continuity_model_rof.topo_sorted_to_all_sources,
+              continuity_model_rof.topo_sorted_to_all_sources + n_topo_sources,
+              topo_sorted_to_all_sources);
+    std::copy(continuity_model_rof.downstream_sources_toposort,
+              continuity_model_rof.downstream_sources_toposort + n_topo_sources,
+              downstream_sources_toposort);
 }
 
 ContinuityModelROF::~ContinuityModelROF() = default;
@@ -56,46 +77,44 @@ ContinuityModelROF::~ContinuityModelROF() = default;
  * Runs one the full rof calculations for realization #realization_id for a given week.
  * @param week for which rof is to be calculated.
  */
-vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
-    unsigned long n_utilities = continuity_utilities.size();
+vector<double> ContinuityModelROF::calculateShortTermROF(int week) {
 
     // vector where risks of failure will be stored.
-    vector<double> risk_of_failure(n_utilities, 0.0);
-    vector<double> year_failure(n_utilities, 0.0);
-    bool apply_demand_buffer;
+    vector<double> risk_of_failure((unsigned long) n_utilities, 0.0);
+    vector<double> year_failure((unsigned long) n_utilities, 0.0);
+    double to_full[n_sources];
 
-    /// If this is the first week of the year, reset storage-rof table.
-    if (rof_type == LONG_TERM_ROF)
-       storage_to_rof_table->reset(NON_FAILURE);
+    for (int ws = 0; ws < n_sources; ++ws) {
+        to_full[ws] = realization_water_sources[ws]->getCapacity() -
+                realization_water_sources[ws]->getAvailable_volume();
+    }
 
     int week_of_the_year = Utils::weekOfTheYear(week);
 
-    /// checks if new infrastructure became available and, if so, set the corresponding realization
-    /// infrastructure online.
+    /// checks if new infrastructure became available and, if so, set the
+    /// corresponding realization infrastructure online.
     updateOnlineInfrastructure(week);
 
-    int n_weeks_rof;
-    /// short-term rof calculations.
-    if (rof_type == SHORT_TERM_ROF) {
-        n_weeks_rof = WEEKS_ROF_SHORT_TERM;
-        apply_demand_buffer = !APPLY_DEMAND_BUFFER;
-        /// long-term rof calculations.
-    } else {
-        n_weeks_rof = WEEKS_ROF_LONG_TERM;
-        apply_demand_buffer = APPLY_DEMAND_BUFFER;
-    }
-
-    /// perform a continuity simulation for NUMBER_REALIZATIONS_ROF (50) yearly realization.
-    /// THIS LOOP ONLY CALCULATES BASE ROF - ROF OF CURRENT STORAGE
+    /// perform a continuity simulation for NUMBER_REALIZATIONS_ROF (50)
+    /// yearly realization.
     for (int yr = 0; yr < NUMBER_REALIZATIONS_ROF; ++yr) {
-        /// reset current reservoirs' and utilities' storage and combined storage, respectively,
-        /// in the corresponding realization simulation.
-        resetUtilitiesAndReservoirs(rof_type);
+        storage_to_rof_realization.reset(NON_FAILURE);
 
-        for (int w = week; w < week + n_weeks_rof; ++w) {
+        /// reset current reservoirs' and utilities' storage and combined
+        /// storage, respectively, in the corresponding realization simulation.
+        resetUtilitiesAndReservoirs(SHORT_TERM_ROF);
+
+        for (int w = 0; w < WEEKS_ROF_SHORT_TERM; ++w) {
+
             /// one week continuity time-step.
-            continuityStep(w, yr, apply_demand_buffer);
+            continuityStep(w + week, yr, !APPLY_DEMAND_BUFFER);
 
+            /// check total available storage for each utility and, if smaller
+            /// than the fail ration, increase the number of failed years of
+            /// that utility by 1 (FAILURE).
+            for (int u = 0; u < n_utilities; ++u)
+                if (continuity_utilities[u]->getStorageToCapacityRatio() <=
+                    STORAGE_CAPACITY_RATIO_FAIL)
             /// check total available storage for each utility and, if smaller than the fail ration,
             /// increase the number of failed years of that utility by 1 (FAILURE).
             for (int u = 0; u < n_utilities; ++u) {
@@ -115,6 +134,15 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
 
                 if (utility_storage_base_rof / utility_capacity_base_rof <= STORAGE_CAPACITY_RATIO_FAIL) {
                     year_failure[u] = FAILURE;
+
+            /// calculated week of storage-rof table
+            updateStorageToROFTable(INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD,
+                                    week_of_the_year, to_full);
+        }
+
+        /// update storage-rof table
+        *storage_to_rof_table += storage_to_rof_realization /
+                                 NUMBER_REALIZATIONS_ROF;
 //                    if (u == 1) {
 //                        cout << "Utility = " << u << ", Realization Week = " << w << ", Real Week = " << week
 //                             << ", Realization Year = " << yr
@@ -131,6 +159,22 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
         }
     }
 
+    /// Set first tier for ROF table calculation close to where the first
+    /// failure was observed for last week's table, so to save computations.
+    for (int s = 0; s < NO_OF_INSURANCE_STORAGE_TIERS; ++s) {
+        int count_failures = 0;
+        for (int u = 0; u < n_utilities; ++u) {
+            if ((*storage_to_rof_table)(u, NO_OF_INSURANCE_STORAGE_TIERS - s,
+                        week_of_the_year) > 0.)
+                ++count_failures;
+        }
+        if (count_failures == 0)
+            beginning_tier = max(0, s - 1);
+        else
+            break;
+    }
+
+//    cout << "Week " << week_of_the_year << " B. Tier " << beginning_tier << endl;
     /// perform a continuity simulation for NUMBER_REALIZATIONS_ROF (50) yearly realization.
     /// ONLY RUN THIS LOOP DURING SHORT-TERM ROF CALCULATIONS
     if (rof_type == SHORT_TERM_ROF) {
@@ -169,33 +213,117 @@ vector<double> ContinuityModelROF::calculateROF(int week, int rof_type) {
     return risk_of_failure;
 }
 
-void ContinuityModelROF::updateStorageToROFTable(int week_of_the_year, int week, int year) {
+/**
+ * Runs one the full rof calculations for realization #realization_id for a given week.
+ * @param week for which rof is to be calculated.
+ */
+vector<double> ContinuityModelROF::calculateLongTermROF(int week) {
 
-    int n_water_sources = (int) continuity_water_sources.size();
-    int n_utilities = (int) continuity_utilities.size();
+    // vector where risks of failure will be stored.
+    vector<double> risk_of_failure((unsigned long) n_utilities, 0.0);
+    vector<double> year_failure((unsigned long) n_utilities, 0.0);
 
-    double available_volumes[n_water_sources];
-    for (int ws = 0; ws < n_water_sources; ++ws)
-        available_volumes[ws] =
-                continuity_water_sources[ws]->getAvailable_volume();
+    storage_to_rof_table->reset(NON_FAILURE);
+
+    /// checks if new infrastructure became available and, if so, set the
+    /// corresponding realization
+    /// infrastructure online.
+    updateOnlineInfrastructure(week);
+
+    /// perform a continuity simulation for NUMBER_REALIZATIONS_ROF (50) yearly
+    /// realization.
+    for (int yr = 0; yr < NUMBER_REALIZATIONS_ROF; ++yr) {
+        /// reset current reservoirs' and utilities' storage and combined
+        /// storage, respectively, in the corresponding realization simulation.
+        resetUtilitiesAndReservoirs(LONG_TERM_ROF);
+
+        for (int w = 0; w < WEEKS_ROF_LONG_TERM; ++w) {
+            /// one week continuity time-step.
+            continuityStep(w + week, yr, APPLY_DEMAND_BUFFER);
+
+            /// check total available storage for each utility and, if smaller
+            /// than the fail ration, increase the number of failed years of
+            /// that utility by 1 (FAILURE).
+            for (int u = 0; u < n_utilities; ++u)
+                if (continuity_utilities[u]->getStorageToCapacityRatio() <=
+                    STORAGE_CAPACITY_RATIO_FAIL)
+                    year_failure[u] = FAILURE;
+        }
+
+        /// Count failures and reset failures counter.
+        for (int uu = 0; uu < n_utilities; ++uu) {
+            risk_of_failure[uu] += year_failure[uu];
+            year_failure[uu] = NON_FAILURE;
+        }
+    }
+
+    /// Finish ROF calculations
+    for (int i = 0; i < n_utilities; ++i) {
+        risk_of_failure[i] /= NUMBER_REALIZATIONS_ROF;
+    }
+
+    return risk_of_failure;
+}
+
+void ContinuityModelROF::updateStorageToROFTable(double storage_percent_decrement,
+                                                 int week_of_the_year,
+                                                 const double *to_full_toposort) {
+    double available_volumes[n_topo_sources];
+    double to_full[n_topo_sources];
+//    __declspec(align(64)) double spillage[n_topo_sources];
+    double spillage[n_topo_sources] __attribute__ ((aligned(64)));
+    for (int ws = 0; ws < n_topo_sources; ++ws) {
+        available_volumes[ws] = continuity_water_sources[sources_topological_order[ws]]->getAvailable_volume();
+        to_full[ws] = to_full_toposort[sources_topological_order[ws]];
+        spillage[ws] = continuity_water_sources[ws]->getTotal_outflow() -
+                continuity_water_sources[ws]->getMin_environmental_outflow();
+    }
 
     /// loops over the percent storage levels to populate table. The loop
     /// begins from one level above the level  where at least one failure was
     /// observed in the last iteration. This saves a lot of computational time.
-//    for (int s = beginning_res_level; s >= 0; --s) {
-    for (int s = NO_OF_STORAGE_TO_ROF_TABLE_TIERS; s > -1; --s) {
+//    __declspec(align(64)) double delta_storage[n_topo_sources];
+//    __declspec(align(64)) double available_volumes_shifted[n_topo_sources];
+    double delta_storage[n_topo_sources] __attribute__ ((aligned(64)));
+    double available_volumes_shifted[n_topo_sources] __attribute__ ((aligned(64)));
+    for (int s = beginning_tier; s <= NO_OF_INSURANCE_STORAGE_TIERS; ++s) {
+        /// calculate delta storage for all reservoirs and array that will
+        /// receive the shifted storage curves.
+        double percent_decrement_storage_level = (double) s * storage_percent_decrement;
+        std::copy(available_volumes, available_volumes + n_topo_sources, available_volumes_shifted);
 
-        double available_volumes_shifted[n_water_sources];
-        std::copy(available_volumes,
-                  available_volumes + n_water_sources,
-                  available_volumes_shifted);
+        /// calculate the difference between the simulated available water and
+        /// the one for the table calculated above based on the percent
+        /// decrement.
+        for (int k = 0; k < n_topo_sources; ++k)
+            delta_storage[k] = (to_full_toposort[k] -
+                    capacities_toposorted[k] *
+                               percent_decrement_storage_level);
 
         /// Shift storages.
+        shiftStorages(available_volumes_shifted, delta_storage, spillage);
         shiftStorages(available_volumes_shifted);
 
+        //FIXME: ADJUST FOR TOPOLOGICAL RE-SORTING
         /// Checks for utilities failures.
         int count_fails = 0;
+        double utilities_storages[n_utilities];
+        memset(utilities_storages, 0, sizeof(int) * n_utilities);
         for (unsigned int u = 0; u < n_utilities; ++u) {
+            /// Calculate combined stored volume for each utility based on
+            /// shifted storages.
+            for (int ws : water_sources_online_to_utilities[u])
+                utilities_storages[u] += available_volumes_shifted[topo_sorted_to_all_sources[ws]] *
+                        continuity_water_sources[ws]->getAllocatedFraction(u) *
+                        (continuity_water_sources[ws]->getAllocatedTreatmentCapacity(u) > 0);
+        }
+        for (unsigned int u = 0; u < n_utilities; ++u) {
+            /// Register failure in the table for each utility meeting
+            /// failure criteria.
+            if (utilities_storages[u] / utilities_capacities[u] <
+                STORAGE_CAPACITY_RATIO_FAIL) {
+                storage_to_rof_realization(u, NO_OF_INSURANCE_STORAGE_TIERS - s,
+                        week_of_the_year) = FAILURE;
             double utility_storage = 0;
             double utility_capacity = 0;
 
@@ -225,13 +353,51 @@ void ContinuityModelROF::updateStorageToROFTable(int week_of_the_year, int week,
             }
         }
 
-        /// If all utilities have failed, stop dropping level.
+        /// If all utilities have failed, stop dropping storage level and label
+        /// all storage levels below failures.
         if (count_fails == n_utilities) {
+            for (int ss = s; ss <= NO_OF_INSURANCE_STORAGE_TIERS; ++ss) {
+                for (unsigned int u = 0; u < n_utilities; ++u) {
+                    storage_to_rof_realization(u,
+                                               NO_OF_INSURANCE_STORAGE_TIERS - ss,
+                                               week_of_the_year) = FAILURE;
+                }
+            }
             break;
         }
     }
 }
 
+//FIXME: MAKE THIS MORE EFFICIENT. THIS METHOD IS THE MOST EXPENSIVE ONE IN THE CODE.
+void ContinuityModelROF::shiftStorages(double* restrict available_volumes_shifted,
+                                       const double* restrict delta_storage,
+                                       const double* spillage) {
+
+//    __declspec(align(64)) double available_volume_to_full[n_topo_sources];
+    double available_volume_to_full[n_topo_sources] __attribute__ ((aligned(64)));
+
+    /// Add deltas to all sources following the topological order, so that
+    /// upstream is calculated before downstream.
+    __assume_aligned(available_volumes_shifted, 64);
+    __assume_aligned(delta_storage, 64);
+    __assume_aligned(capacities_toposorted, 64);
+    for (int ws = 0; ws < n_topo_sources; ++ws) {
+        /// calculate initial estimate for shifted
+        available_volumes_shifted[ws] += delta_storage[ws];
+
+        available_volume_to_full[ws] = capacities_toposorted[ws] -
+                                       available_volumes_shifted[ws];
+    }
+
+    __assume_aligned(spillage, 64);
+//    __assume_aligned(available_volume_to_full, 64);
+    __assume_aligned(available_volumes_shifted, 64);
+    for (int ws = 0; ws < n_topo_sources - 1; ++ws) {
+        /// if not full, retrieve spill to downstream source.
+        double spillage_retrieved = min(available_volume_to_full[ws], spillage[ws])
+                                        * (available_volume_to_full[ws] > 0);
+        available_volumes_shifted[ws] += spillage_retrieved;
+        available_volumes_shifted[downstream_sources_toposort[ws]] -= spillage_retrieved;
 /// shiftStorages function that accepts one parameter
 /// and calculates estimated week volume plus potential spillage
 void ContinuityModelROF::shiftStorages(double *available_volumes_shifted) {
@@ -247,34 +413,38 @@ void ContinuityModelROF::shiftStorages(double *available_volumes_shifted) {
         if (available_volumes_shifted[ws] > water_sources_capacities[ws])
             available_volumes_shifted[ws] = water_sources_capacities[ws];
     }
+    /// if not full, retrieve spill to downstream source.
+    double spillage_retrieved = min(available_volume_to_full[n_topo_sources - 1], spillage[n_topo_sources - 1])
+                                * (available_volume_to_full[n_topo_sources - 1] > 0);
+    available_volumes_shifted[n_topo_sources - 1] += spillage_retrieved;
 }
 
 
 /**
- * reset reservoirs' and utilities' storage and last release, and combined storage, respectively, they
- * currently have in the corresponding realization simulation.
+ * reset reservoirs' and utilities' storage and last release, and combined
+ * storage, respectively, they currently have in the corresponding realization
+ * simulation.
  */
 void ContinuityModelROF::resetUtilitiesAndReservoirs(int rof_type) {
 
-    /// update water sources info. If short-term rof, return to current storage; if long-term, make them full.
+    /// update water sources info. If short-term rof, return to current storage;
+    /// if long-term, make them full.
     if (rof_type == SHORT_TERM_ROF)
-        for (int i = 0; i < continuity_water_sources.size();
-             ++i) {   // Current available volume
+        for (int i = 0; i < n_sources; ++i) {   // Current available volume
             continuity_water_sources[i]->setAvailableAllocatedVolumes
                     (realization_water_sources[i]->getAvailable_allocated_volumes(),
                      realization_water_sources[i]->getAvailable_volume());
             continuity_water_sources[i]->setOutflow_previous_week(realization_water_sources[i]->getTotal_outflow());
         }
     else
-        for (int i = 0; i < continuity_water_sources.size();
-             ++i) {   // Full capacity
+        for (int i = 0; i < n_sources; ++i) {   // Full capacity
             continuity_water_sources[i]->setFull();
             continuity_water_sources[i]->setOutflow_previous_week(
                     realization_water_sources[i]->getTotal_outflow());
         }
 
     /// update utilities combined storage.
-    for (Utility *u : this->continuity_utilities) {
+    for (Utility *u : continuity_utilities) {
         u->updateTotalStoredVolume();
     }
 }
@@ -294,8 +464,8 @@ void ContinuityModelROF::setRealization_water_sources(
  * Checks if new infrastructure became online.
  */
 void ContinuityModelROF::updateOnlineInfrastructure(int week) {
-    for (int i = 0; i < realization_water_sources.size(); ++i)
-        for (int u = 0; u < continuity_utilities.size(); ++u)
+    for (int i = 0; i < n_sources; ++i)
+        for (int u = 0; u < n_utilities; ++u)
             if (realization_water_sources[i]->isOnline() &&
                 !continuity_water_sources[i]->isOnline()) {
                 for (int u : utilities_to_water_sources[i]) {
@@ -305,9 +475,12 @@ void ContinuityModelROF::updateOnlineInfrastructure(int week) {
                 }
             }
 
+    for (int ws : sources_topological_order)
+        capacities_toposorted[ws] =
+                realization_water_sources[sources_topological_order[ws]]->getCapacity();
 
     if (Utils::isFirstWeekOfTheYear(week) || week == 0)
-        for (int u = 0; u < continuity_utilities.size(); ++u) {
+        for (int u = 0; u < n_utilities; ++u) {
             utilities_capacities[u] =
                     continuity_utilities[u]->getTotal_storage_capacity();
         }

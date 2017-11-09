@@ -11,7 +11,6 @@
 using namespace Constants;
 
 class Intake : public WaterSource {
-    double water_bank = 0;
 
 public:
 
@@ -36,9 +35,8 @@ public:
 
     ~Intake() override;
 
-    void applyContinuity(
-            int week, double upstream_source_min_env_flow,
-            vector<double> *demand) override;
+    void applyContinuity(int week, double upstream_source_min_env_flow,
+                             double wastewater_inflow, vector<double> &demand) override;
 
     void setRealization(unsigned long r) override;
 

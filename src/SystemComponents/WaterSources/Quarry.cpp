@@ -104,43 +104,39 @@ Quarry::~Quarry() {}
  * Reservoir mass balance. Gets releases from upstream reservoirs, demands from
  * connected utilities, and
  * combines them with its catchments inflows.
- * @todo add evaporation to quarries
  * @param week
  * @param upstream_source_inflow
  * @param demand_outflow
  */
-void Quarry::applyContinuity(
-        int week, double upstream_source_inflow,
-        vector<double> *demand_outflow) {
+void Quarry::applyContinuity(int week, double upstream_source_inflow,
+                             double wastewater_inflow,
+                             vector<double> &demand_outflow) {
 
-    double total_demand = std::accumulate(demand_outflow->begin(),
-                                          demand_outflow->end(),
+    double total_upstream_inflow = upstream_source_inflow +
+                                   wastewater_inflow;
+    this->upstream_source_inflow = upstream_source_inflow;
+    this->wastewater_inflow = wastewater_inflow;
+
+    double total_demand = std::accumulate(demand_outflow.begin(),
+                                          demand_outflow.end(),
                                           0.);
 
-    /// Sum gains from all catchments
     double catchment_inflow = 0;
     for (Catchment *c : catchments) {
         catchment_inflow += c->getStreamflow((week));
     }
 
-    /// Calculate sum of all inflows
-    double total_inflow = upstream_source_inflow + catchment_inflow;
-
-
-    /// Calculate sum of all outflows (evaporation to be added)
+    double total_inflow = total_upstream_inflow + catchment_inflow;
     total_outflow = total_demand + min_environmental_outflow;
 
-    /// calculate flow pumped into quarry from stream
     diverted_flow = min(max_diversion,
                         total_inflow -
                         min_environmental_outflow);
 
-    /// calculate storage and outflow assuming quarry will not fill up
     double stored_volume_new = available_volume + diverted_flow -
                                total_demand;
     double outflow_new = total_inflow - diverted_flow;
 
-    /// Correct storage and outflow in case quarry actually filled up
     if (online) {
         if (stored_volume_new > capacity) {
             outflow_new += stored_volume_new - capacity;
@@ -152,13 +148,13 @@ void Quarry::applyContinuity(
         outflow_new = upstream_source_inflow + catchment_inflow;
     }
 
-    /// Record quarry state
     this->total_demand = total_demand;
     available_volume = max(stored_volume_new, 0.0);
     total_outflow = outflow_new + policy_added_demand;
     policy_added_demand = 0;
-    this->upstream_source_inflow = upstream_source_inflow;
     upstream_catchment_inflow = catchment_inflow;
+    this->upstream_source_inflow = upstream_source_inflow;
+    this->wastewater_inflow = wastewater_inflow;
 }
 
 void Quarry::setOnline() {

@@ -9,7 +9,7 @@ TransfersDataCollector::TransfersDataCollector(Transfers *transfer_policy)
         : DataCollector(transfer_policy->id,
                         nullptr,
                         TRANSFERS,
-                        N_COLUMNS * COLUMN_WIDTH),
+                        NON_INITIALIZED),
           utilities_ids(transfer_policy->getUtilities_ids()),
           transfer_policy(transfer_policy) {
 
@@ -58,7 +58,12 @@ string TransfersDataCollector::printTabularStringHeaderLine2() {
 }
 
 string TransfersDataCollector::printCompactStringHeader() {
-    return nullptr;
+    stringstream outStream;
+
+    for (int &a : utilities_ids)
+        outStream << a << "transf" << ",";
+
+    return outStream.str();
 }
 
 void TransfersDataCollector::collect_data() {

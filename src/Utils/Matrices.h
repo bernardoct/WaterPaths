@@ -50,7 +50,7 @@ Matrix2D<T>::Matrix2D(int di, int dj) : di_(di), dj_(dj) {
     if (di == 0 || dj == 0)
         std::__throw_length_error("Matrix2D constructor has 0 size");
     data_ = new T[di * dj];
-    memset(data_, 0, sizeof(T) * di_ * dj_);
+    fill_n(data_, di_ * dj_, 0);
 }
 
 template<typename T>
@@ -116,7 +116,7 @@ T Matrix2D<T>::operator()(int i, int j) const {
 template<typename T>
 void Matrix2D<T>::reset(T value) {
     not_initialized = false;
-    memset(data_, value, sizeof(T) * di_ * dj_);
+    fill_n(data_, di_ * dj_, value);
 }
 
 template<typename T>
@@ -190,7 +190,7 @@ Matrix3D<T>::Matrix3D(int di, int dj, int dk) : di_(di), dj_(dj), dk_(dk)
     if (di == 0 || dj == 0 || dk == 0)
         std::__throw_length_error("Matrix3D dimensions has 0 size");
     data_ = new T[di * dj * dk];
-    memset(data_, 0, sizeof(T) * di_ * dj_ * dk_);
+    fill_n(data_, di_ * dj_ * dk_, 0);
 }
 
 template<typename T>
@@ -259,7 +259,7 @@ T Matrix3D<T>::operator()(int i, int j, int k) const {
 
 template<typename T>
 void Matrix3D<T>::reset(T value) {
-    memset(data_, value, sizeof(T) * di_ * dj_ * dk_);
+    fill_n(data_, di_ * dj_ * dk_, value);
 }
 
 template<typename T>

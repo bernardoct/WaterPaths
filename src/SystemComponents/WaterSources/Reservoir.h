@@ -9,19 +9,19 @@
 #include "../Catchment.h"
 #include "Base/WaterSource.h"
 #include "../../Utils/DataSeries.h"
-#include "../../Utils/EvaporationSeries.h"
+#include "../../Controls/EvaporationSeries.h"
 
 using namespace std;
 
 
 class Reservoir : public WaterSource {
 protected:
-    EvaporationSeries *evaporation_series;
     DataSeries *storage_area_curve;
-    const bool fixed_area;
     double area = NON_INITIALIZED;
 
 public:
+    const bool fixed_area;
+    EvaporationSeries *evaporation_series;
 
     Reservoir(
             const char *name, const int id,
@@ -117,13 +117,15 @@ public:
 
     ~Reservoir() override;
 
-    void applyContinuity(
-            int week, double upstream_source_inflow,
-            vector<double> *demand_outflow) override;
+    void applyContinuity(int week, double upstream_source_inflow,
+                             double wastewater_discharge,
+                             vector<double> &demand_outflow) override;
 
     void setOnline() override;
 
     void setRealization(unsigned long r) override;
+
+    double getArea() const;
 };
 
 

@@ -10,7 +10,7 @@ WaterReuseDataCollector::WaterReuseDataCollector(WaterReuse *water_reuse)
         : DataCollector(water_reuse->id,
                         water_reuse->name,
                         WATER_REUSE,
-                        N_COLUMNS * COLUMN_WIDTH),
+                        2 * COLUMN_WIDTH),
           water_reuse(water_reuse) {}
 
 string WaterReuseDataCollector::printTabularString(int week) {

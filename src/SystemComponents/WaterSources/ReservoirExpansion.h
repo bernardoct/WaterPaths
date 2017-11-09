@@ -27,9 +27,9 @@ public:
     ReservoirExpansion &operator=(
             const ReservoirExpansion &reservoir_expansion);
 
-    void applyContinuity(
-            int week, double upstream_source_inflow,
-            vector<double> *demand_outflow) override;
+    void applyContinuity(int week, double upstream_source_inflow,
+                             double wastewater_discharge,
+                             vector<double> &demand_outflow) override;
 
 };
 

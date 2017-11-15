@@ -171,7 +171,7 @@ public:
 
     double getWastewater_inflow() const;
 
-    void addWater(int allocation_id, double volume);
+    virtual void addWater(int allocation_id, double volume);
 };
 
 

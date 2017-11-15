@@ -47,9 +47,11 @@ public:
 
     virtual ~ContinuityModelROF();
 
-    void updateStorageToROFTable(int week_of_the_year, int week, int year);
+    void updateStorageToROFTable(int week_of_the_year);
 
     void shiftStorages(double *storages);
+
+    void shiftStorages(double* available_volumes, const double* spillage);
 
     const Matrix3D<double> *getStorage_to_rof_table() const;
 };

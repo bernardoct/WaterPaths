@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <numeric>
-#include <zconf.h>
+//#include <zconf.h>
 #include "AllocatedReservoir.h"
 
 
@@ -320,6 +320,7 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
             (int) std::round(available_volume / 10)) {
         cout << endl;
         cout << "week: " << week << endl;
+        cout << "source: " << name << endl;
         cout << "sum_allocations " << sum_allocations << endl;
         cout << "available volume old: " << available_volume_old << endl;
         cout << "available_volume " << available_volume << endl << endl;
@@ -397,6 +398,15 @@ void AllocatedReservoir::removeWater(int allocation_id, double volume) {
     available_volume -= volume;
     total_demand += volume;
     policy_added_demand += volume;
+}
+
+void AllocatedReservoir::addWater(int allocation_id, double volume) {
+    if (allocation_id == WATER_QUALITY_ALLOCATION) {
+        available_allocated_volumes[wq_pool_id] += volume;
+    } else {
+        available_allocated_volumes[allocation_id] += volume;
+    }
+    available_volume += volume;
 }
 
 double AllocatedReservoir::getAllocatedCapacity(int utility_id) {

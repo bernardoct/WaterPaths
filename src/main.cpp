@@ -937,13 +937,6 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
 
     cout << "Define utilities." << endl;
 
-    Utility cary((char *) "Cary",
-                 2,
-                 &demand_cary,
-                 demand_n_weeks,
-                 cary_annual_payment,
-                 &caryDemandClassesFractions,
-
     vector<int> demand_triggered_infra_order_cary = {22, 23};
     vector<double> demand_infra_cary = {caryupgrades_2 * 7, caryupgrades_3 * 7};
     Utility cary((char *) "Cary", 2, &demand_cary, demand_n_weeks,
@@ -1274,8 +1267,8 @@ int main(int argc, char *argv[]) {
     ///     atoi(argv[6]) = <output_folder>
     ///     argc          = formulation?
 
-    int first_sol = (argc < 6 ? 0 : atoi(argv[4]));
-    int last_sol = (argc < 6 ? (int) solutions.size() : atoi(argv[5]));
+//    int first_sol = (argc < 6 ? 0 : atoi(argv[4]));
+//    int last_sol = (argc < 6 ? (int) solutions.size() : atoi(argv[5]));
 
     vector<int> sol_range;
     if ((first_solution == -1 && last_solution != -1) ||

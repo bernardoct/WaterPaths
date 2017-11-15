@@ -49,19 +49,31 @@ void RawWaterReleases::addSystemComponents(vector<Utility *> utilities,
 void RawWaterReleases::applyPolicy(int week) {
 
     raw_water_transfer_volume = 0.0;
+    denied_requests = 0;
     storage_targets = {0.0, 0.0};
+
+    /// Determine storage deficit for downstream utility and available capacity for
+    /// upstream utility. Do this in EVERY week so that I can plot ROF guide curves
+    storage_targets[UPSTREAM_UTILITY] = getUtilityStorageFromROF(Utils::weekOfTheYear(week),
+                                                                 storage_to_rof_table_, upstream_utility_id);
+    storage_targets[DOWNSTREAM_UTILITY] = getUtilityStorageFromROF(Utils::weekOfTheYear(week),
+                                                                   storage_to_rof_table_, downstream_utility_id);
 
     /// Raw water transfers are calculated if upstream ROF is above trigger level AND
     /// downstream ROF is below trigger level
-    if ((downstream_utility->getRisk_of_failure() > rof_triggers[downstream_utility_id]) &
+    if ((downstream_utility->getRisk_of_failure() >= rof_triggers[downstream_utility_id]) &
         (upstream_utility->getRisk_of_failure() < rof_triggers[upstream_utility_id])) {
 
-        /// Determine storage deficit for downstream utility and available capacity for
-        /// upstream utility
-        storage_targets[UPSTREAM_UTILITY] = getUtilityStorageFromROF(Utils::weekOfTheYear(week),
-                                                                     storage_to_rof_table_, upstream_utility_id);
-        storage_targets[DOWNSTREAM_UTILITY] = getUtilityStorageFromROF(Utils::weekOfTheYear(week),
-                                                                       storage_to_rof_table_, downstream_utility_id);
+        /// optional: print detail in each instance of a transfer
+        if (LOUD) {
+            cout << "Raw water transfer initiated in week " << week << " between " << upstream_utility->name
+                 << " and " << downstream_utility->name << endl;
+            cout << "Recipient Reservoir Name: " << downstream_reservoir->name << endl;
+            cout << "Donor Reservoir Name: " << upstream_reservoir->name << endl;
+
+            cout << "Donor Initial Storage Target: " << storage_targets[UPSTREAM_UTILITY] << endl;
+            cout << "Recipient Initial Storage Target: " << storage_targets[DOWNSTREAM_UTILITY] << endl;
+        }
 
         /// ensure that there is no incorrect assignment - it is possible because of the
         /// size of ROF-to-storage table increments that target and current storage levels
@@ -70,6 +82,12 @@ void RawWaterReleases::applyPolicy(int week) {
             storage_targets[UPSTREAM_UTILITY] = upstream_utility->getStorageToCapacityRatio();
         if (storage_targets[DOWNSTREAM_UTILITY] < downstream_utility->getStorageToCapacityRatio())
             storage_targets[DOWNSTREAM_UTILITY] = downstream_utility->getStorageToCapacityRatio();
+
+        /// optional: print detail in each instance of a transfer
+        if (LOUD) {
+            cout << "Donor Adjusted Storage Target: " << storage_targets[UPSTREAM_UTILITY] << endl;
+            cout << "Recipient Adjusted Storage Target: " << storage_targets[DOWNSTREAM_UTILITY] << endl;
+        }
 
         /// Set raw water transfer request after applying physical constraints:
         ///     1. initial downstream request (based on ROF deficit)
@@ -91,6 +109,10 @@ void RawWaterReleases::applyPolicy(int week) {
 
         raw_water_transfer_volume = *std::min_element(temp_vec.begin(), temp_vec.end());
 
+        /// if a transfer is requested but cannot be, even partially, met, mark it as such.
+        if (raw_water_transfer_volume == 0)
+            denied_requests = 1;
+
         /// apply additional constraints:
         ///     1. remove required environmental releases from total
         ///     2. non-negativity
@@ -98,6 +120,14 @@ void RawWaterReleases::applyPolicy(int week) {
 
         if (raw_water_transfer_volume < 0) {
             raw_water_transfer_volume = 0.0;
+        }
+
+        /// optional: print detail in each instance of a transfer
+        if (LOUD) {
+            cout << "RWT Final Volume: " << raw_water_transfer_volume << endl;
+
+            cout << "Donor Initial Storage Ratio: " << upstream_utility->getStorageToCapacityRatio() << endl;
+            cout << "Recipient Initial Storage Ratio: " << downstream_utility->getStorageToCapacityRatio() << endl;
         }
 
         /// adjust storage (and water quality, when applicable) levels in each reservoir
@@ -113,6 +143,16 @@ void RawWaterReleases::applyPolicy(int week) {
         /// UNITS OF VOLUME ASSUMED TO BE MG, UNITS OF COST ASSUMED $MM/MG
         upstream_utility->sellRawWaterTransfer(rate_per_volume, raw_water_transfer_volume);
         downstream_utility->purchaseRawWaterTransfer(rate_per_volume, raw_water_transfer_volume);
+
+        /// optional: print detail in each instance of a transfer
+        if (LOUD) {
+            cout << "Recipient Allocation Final Volume: " << downstream_reservoir->
+                    getAvailableAllocatedVolume(downstream_utility_id) << endl;
+            cout << "Recipient Allocation Capacity: " << downstream_reservoir->
+                    getAllocatedCapacity(downstream_utility_id) << endl;
+            cout << "Recipient Reservoir Final Volume: " << downstream_reservoir->getAvailable_volume() << endl;
+            cout << "Recipient Reservoir Capacity: " << downstream_reservoir->getCapacity() << endl;
+        }
     }
 }
 
@@ -128,13 +168,9 @@ const double RawWaterReleases::getUtilityStorageFromROF(
         const Matrix3D<double> *storage_to_rof_table,
         const int u_id) {
 
-//    cout << "Week " << week << endl;
-//    storage_to_rof_table->print(week);
-//    cout << endl;
-
     /// Determine the storage associated with an ROF level
     for (int s = NO_OF_STORAGE_TO_ROF_TABLE_TIERS - 1; s > -1; --s) {
-        if ((*storage_to_rof_table)(u_id, s, week) > rof_triggers[u_id]) {
+        if ((*storage_to_rof_table)(u_id, s, week) >= rof_triggers[u_id]) {
             return (((double)s + 1) / (double)NO_OF_STORAGE_TO_ROF_TABLE_TIERS);
         }
     }
@@ -144,6 +180,10 @@ void RawWaterReleases::setRealization(unsigned int realization_id) {}
 
 const double &RawWaterReleases::getRawWaterTransferVolume() const {
     return raw_water_transfer_volume;
+}
+
+const int &RawWaterReleases::getRawWaterTransferDenials() const {
+    return denied_requests;
 }
 
 const vector<double> &RawWaterReleases::getUtilityTargetStorageLevels() const {

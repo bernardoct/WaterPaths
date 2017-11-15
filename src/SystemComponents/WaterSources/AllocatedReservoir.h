@@ -72,6 +72,8 @@ public:
 
     void removeWater(int allocation_id, double volume) override;
 
+    void addWater(int allocation_id, double volume) override;
+
     void setFull() override;
 
     double getAllocatedCapacity(int utility_id) override;

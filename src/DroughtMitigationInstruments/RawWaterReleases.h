@@ -26,11 +26,14 @@ private:
     const double raw_water_transfer_downstream_allocation_ratio;
     const double rate_per_volume;
 
+    int denied_requests;
     double raw_water_transfer_volume;
     vector<double> storage_targets;
 
     const int UPSTREAM_UTILITY = 0;
     const int DOWNSTREAM_UTILITY = 1;
+
+    const int LOUD = 0;
 
 public:
     RawWaterReleases(const int id,
@@ -57,6 +60,8 @@ public:
     const double &getRawWaterTransferVolume() const;
 
     const vector<double> &getUtilityTargetStorageLevels() const;
+
+    const int &getRawWaterTransferDenials() const;
 };
 
 #endif //TRIANGLEMODEL_RAWWATERRELEASES_H

@@ -4,7 +4,7 @@
 
 #include "DataSeries.h"
 
-DataSeries::DataSeries(vector<double> *series_x, vector<double> *series_y) : series_x(series_x),
+DataSeries::DataSeries(vector<float> *series_x, vector<float> *series_y) : series_x(series_x),
                                                                              series_y(series_y),
                                                                              length(series_x->size()) {
     if (series_x->size() != series_y->size())
@@ -12,8 +12,8 @@ DataSeries::DataSeries(vector<double> *series_x, vector<double> *series_y) : ser
                                          "must match.");
 
     /// Add a copy of the last element for interpolation purposes.
-    this->series_x->push_back((double &&) series_x->at(length - 1));
-    this->series_y->push_back((double &&) series_y->at(length - 1));
+    this->series_x->push_back((float &&) series_x->at(length - 1));
+    this->series_y->push_back((float &&) series_y->at(length - 1));
 }
 
 /**
@@ -21,7 +21,7 @@ DataSeries::DataSeries(vector<double> *series_x, vector<double> *series_y) : ser
  * @param x
  * @return
  */
-double DataSeries::get_dependent_variable(double x) {
+float DataSeries::get_dependent_variable(float x) {
 
     /// if the series has only one point, return that point; otherwise, interporlate.
     if (length > 1) {
@@ -36,19 +36,19 @@ double DataSeries::get_dependent_variable(double x) {
     }
 }
 
-const vector<double> &DataSeries::getSeries_x() const {
+const vector<float> &DataSeries::getSeries_x() const {
     return *series_x;
 }
 
-double DataSeries::get_dependent_variable(int x) {
+float DataSeries::get_dependent_variable(int x) {
     __throw_invalid_argument("Data series get_dependent_variable cannot be called with ints");
 }
 
-double DataSeries::get_dependent_variable(double x, int week) {
+float DataSeries::get_dependent_variable(float x, int week) {
     __throw_invalid_argument("Data series get_dependent_variable cannot be called two independent variables.");
 }
 
-double DataSeries::get_dependent_variable(int x, int week) {
+float DataSeries::get_dependent_variable(int x, int week) {
     __throw_invalid_argument("Data series get_dependent_variable cannot be called two independent variables.");
 }
 

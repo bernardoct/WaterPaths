@@ -23,8 +23,9 @@ Graph::Graph(int V) : V(V) {
     downstream_sources = vector<vector<int>>((unsigned long) V);
 }
 
-Graph::~Graph() {
-}
+Graph::~Graph() {}
+
+Graph::Graph() {}
 
 /**
  * Add connection (stream) between water sources.
@@ -55,7 +56,7 @@ void Graph::addEdge(int u, int v) {
         upstream_sources[i] = findUpstreamSources(i);
     }
 
-    vector<double> pipe_connectivity((unsigned long) V, 0);
+    vector<float> pipe_connectivity((unsigned long) V, 0);
     pipe_connectivity[u] = -1;
     pipe_connectivity[v] = 1;
 
@@ -146,13 +147,14 @@ vector<int> Graph::findUpstreamSources(int id) const {
     return upstream_sources;
 }
 
-vector<int> &Graph::getUpstream_sources(int i) {
-    return upstream_sources[i];
-}
-
 const vector<vector<int>> Graph::getDownSources() const {
     return downstream_sources;
 }
+
+const vector<vector<int>> &Graph::getUpstream_sources() const {
+    return upstream_sources;
+}
+
 
 const vector<int> Graph::getTopological_order() const {
     return topological_order;
@@ -163,9 +165,9 @@ const vector<int> Graph::getTopological_order() const {
  * the second set to flows in and out of vertexes.
  * @return Continuity Matrix
  */
-const vector<vector<double>> Graph::getContinuityMatrix() const {
-    vector<vector<double>> continuity_matrix(continuity_matrix_transpose[0].size(),
-                                             vector<double>(continuity_matrix_transpose.size(), 0));
+const vector<vector<float>> Graph::getContinuityMatrix() const {
+    vector<vector<float>> continuity_matrix(continuity_matrix_transpose[0].size(),
+                                             vector<float>(continuity_matrix_transpose.size(), 0));
 
     if (n_edges + 1 < V)
         __throw_invalid_argument("Are you sure your inputted graphs have all your edges or that you type the "
@@ -188,5 +190,3 @@ const vector<vector<double>> Graph::getContinuityMatrix() const {
 
     return continuity_matrix;
 }
-
-Graph::Graph() {}

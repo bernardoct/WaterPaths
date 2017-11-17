@@ -157,38 +157,38 @@ void UtilitiesDataCollector::collect_data() {
             pathways.push_back(infra_built);
 }
 
-const vector<double> &UtilitiesDataCollector::getCombined_storage() const {
+const vector<float> &UtilitiesDataCollector::getCombined_storage() const {
     return combined_storage;
 }
 
-const vector<double> &UtilitiesDataCollector::getCapacity() const {
+const vector<float> &UtilitiesDataCollector::getCapacity() const {
     return capacity;
 }
 
-const vector<double> &UtilitiesDataCollector::getGross_revenues() const {
+const vector<float> &UtilitiesDataCollector::getGross_revenues() const {
     return gross_revenues;
 }
 
-const vector<double> &
+const vector<float> &
 UtilitiesDataCollector::getContingency_fund_contribution() const {
     return contingency_fund_contribution;
 }
 
-const vector<double> &UtilitiesDataCollector::getDebt_service_payments() const {
+const vector<float> &UtilitiesDataCollector::getDebt_service_payments() const {
     return debt_service_payments;
 }
 
-const vector<double> &
+const vector<float> &
 UtilitiesDataCollector::getInsurance_contract_cost() const {
     return insurance_contract_cost;
 }
 
-const vector<double> &
+const vector<float> &
 UtilitiesDataCollector::getDrought_mitigation_cost() const {
     return drought_mitigation_cost;
 }
 
-const vector<double> &UtilitiesDataCollector::getContingency_fund_size() const {
+const vector<float> &UtilitiesDataCollector::getContingency_fund_size() const {
     return contingency_fund_size;
 }
 
@@ -196,7 +196,7 @@ const vector<vector<int>> &UtilitiesDataCollector::getPathways() const {
     return pathways;
 }
 
-const vector<double> &
+const vector<float> &
 UtilitiesDataCollector::getNet_present_infrastructure_cost() const {
     return net_present_infrastructure_cost;
 }

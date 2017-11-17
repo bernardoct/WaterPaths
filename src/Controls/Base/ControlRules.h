@@ -7,13 +7,13 @@
 
 
 class ControlRules {
-    virtual double get_dependent_variable(double x) = 0;
+    virtual float get_dependent_variable(float x) = 0;
 
-    virtual double get_dependent_variable(int x) = 0;
+    virtual float get_dependent_variable(int x) = 0;
 
-    virtual double get_dependent_variable(double x, int week) = 0;
+    virtual float get_dependent_variable(float x, int week) = 0;
 
-    virtual double get_dependent_variable(int x, int week) = 0;
+    virtual float get_dependent_variable(int x, int week) = 0;
 };
 
 

@@ -6,6 +6,7 @@
 #include "../Utils/Utils.h"
 #include <ctime>
 #include <algorithm>
+#include <omp.h>
 
 Simulation::Simulation(
         vector<WaterSource *> &water_sources, Graph &water_sources_graph,
@@ -162,52 +163,57 @@ Simulation &Simulation::operator=(const Simulation &simulation) {
 MasterDataCollector *Simulation::runFullSimulation() {
 
     int n_utilities = (int) realization_models[0]->getUtilities().size();
-    vector<double> risks_of_failure_week((unsigned long) n_utilities, 0.0);
+    vector<float> risks_of_failure_week((unsigned long) n_utilities, 0.0);
     time_t timer_i;
     time_t timer_f;
-    double seconds;
+    float seconds;
 
     /// Run realizations.
     time(&timer_i);
     int count = 0;
-    std::cout << "Simulated time: " << total_simulation_time << endl;
-    std::cout << "Number of realizations: " << number_of_realizations << endl;
-    std::cout << "Beginning realizations loop." << endl;
-#pragma omp parallel for
+//    std::cout << "Simulated time: " << total_simulation_time << endl;
+//    std::cout << "Number of realizations: " << number_of_realizations << endl;
+//    std::cout << "Beginning realizations loop." << endl;
+    MasterDataCollector* mdc = master_data_collector;
+    vector<ContinuityModelRealization*> rm = realization_models;
+#pragma omp parallel for shared(rm, mdc)
     for (int r = 0; r < number_of_realizations; ++r) {
 //        try {
-#pragma omp critical
+        time_t timer_ir, timer_fr;
+        time(&timer_ir);
+        for (int w = 0; w < total_simulation_time; ++w) {
+            // DO NOT change the order of the steps. This would mess up
+            // important dependencies.
+            ContinuityModelRealization* realizationModel = rm[r];
+            if (Utils::isFirstWeekOfTheYear(w))
+                realizationModel->setLongTermROFs(rof_models[r]->calculateLongTermROF
+                                                  (w), w);
+            realizationModel->setShortTermROFs(rof_models[r]->calculateShortTermROF(w));
+            realizationModel->applyDroughtMitigationPolicies(w);
+            realizationModel->continuityStep(w);
+            mdc->collectData(r);
+        }
+        time(&timer_fr);
+        #pragma omp atomic
             count++;
-
-            time_t timer_ir, timer_fr;
-            time(&timer_ir);
-            for (int w = 0; w < total_simulation_time; ++w) {
-                // DO NOT change the order of the steps. This would mess up
-                // important dependencies.
-                if (Utils::isFirstWeekOfTheYear(w))
-                    realization_models[r]->setLongTermROFs(rof_models[r]->calculateLongTermROF(w), w);
-                realization_models[r]->setShortTermROFs(rof_models[r]->calculateShortTermROF(w));
-                realization_models[r]->applyDroughtMitigationPolicies(w);
-                realization_models[r]->continuityStep(w);
-                master_data_collector->collectData(r);
-            }
-            time(&timer_fr);
-            std::cout << "Realization " << count << ": "
-                      << difftime(timer_fr, timer_ir) << std::endl;
+        std::cout << "Realization " << count << ": "
+                  << difftime(timer_fr, timer_ir) << std::endl;
+          
 
 //        } catch (const std::exception &e) {
 //            cout << "Error in realization " << r << endl;
 //            e.what();
 //        }
     }
+    master_data_collector = mdc;
     time(&timer_f);
     seconds = difftime(timer_f, timer_i);
-    std::cout << "Calculations: " << seconds << "s" << std::endl;
+//    std::cout << "Calculations: " << seconds << "s" << std::endl;
 
     time(&timer_f);
     seconds = difftime(timer_f,
                        timer_i);
-    std::cout << "Total: " << seconds << "s" << std::endl;
+//    std::cout << "Total: " << seconds << "s" << std::endl;
 
     return master_data_collector;
 }

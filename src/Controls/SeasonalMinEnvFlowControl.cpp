@@ -7,7 +7,7 @@
 
 SeasonalMinEnvFlowControl::SeasonalMinEnvFlowControl(
         int water_source_id, const vector<int> *week_thresholds,
-        const vector<double> *min_env_flows) :
+        const vector<float> *min_env_flows) :
         MinEnvironFlowControl(water_source_id, vector<int>(), vector<int>(),
                               SEASONAL_CONTROLS),
         week_thresholds(week_thresholds),
@@ -26,8 +26,8 @@ SeasonalMinEnvFlowControl::SeasonalMinEnvFlowControl(
 }
 
 
-double SeasonalMinEnvFlowControl::getRelease(int week) {
-    double release = (*min_env_flows)[0];
+float SeasonalMinEnvFlowControl::getRelease(int week) {
+    float release = (*min_env_flows)[0];
     for (int i = 0; i < min_env_flows->size(); ++i) {
         /// Done with ternary operator for improved performance.
         release = (Utils::weekOfTheYear(week) >= (*week_thresholds)[i] ?

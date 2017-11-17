@@ -6,12 +6,12 @@
 
 Relocation::Relocation(
         const char *name, const int id, unsigned long parent_reservoir_ID,
-        vector<double> *allocated_fractions,
+        vector<float> *allocated_fractions,
         vector<int> *utilities_with_allocations,
-        const double construction_rof_or_demand,
-        const vector<double> &construction_time_range, double permitting_period,
-        double construction_cost_of_capital, double bond_term,
-        double bond_interest_rate)
+        const float construction_rof_or_demand,
+        const vector<float> &construction_time_range, float permitting_period,
+        float construction_cost_of_capital, float bond_term,
+        float bond_interest_rate)
         : WaterSource(name, id, vector<Catchment *>(), NONE, NONE,
                       SOURCE_RELOCATION, construction_time_range,
                       permitting_period, construction_cost_of_capital,
@@ -31,9 +31,9 @@ Relocation::Relocation(const Relocation &relocation) :
         utilities_with_allocations(relocation.utilities_with_allocations) {}
 
 
-void Relocation::applyContinuity(int week, double upstream_source_inflow,
-                                 double wastewater_discharge,
-                                 vector<double> &demand_outflow) {
+void Relocation::applyContinuity(int week, float upstream_source_inflow,
+                                 float wastewater_discharge,
+                                 vector<float> &demand_outflow) {
 
     __throw_logic_error("Source relocations just changes allocated fractions "
                                 "in the source they're assigned to. Continuity "

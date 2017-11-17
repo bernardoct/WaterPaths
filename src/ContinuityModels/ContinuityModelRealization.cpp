@@ -45,13 +45,13 @@ vector<WaterSource *> ContinuityModelRealization::getWater_sources() {
     return continuity_water_sources;
 }
 
-void ContinuityModelRealization::setShortTermROFs(const vector<double> &risks_of_failure) {
+void ContinuityModelRealization::setShortTermROFs(const vector<float> &risks_of_failure) {
     for (unsigned long i = 0; i < continuity_utilities.size(); ++i) {
         continuity_utilities.at(i)->setRisk_of_failure(risks_of_failure.at(i));
     }
 }
 
-void ContinuityModelRealization::setLongTermROFs(const vector<double> &risks_of_failure, const int week) {
+void ContinuityModelRealization::setLongTermROFs(const vector<float> &risks_of_failure, const int week) {
     vector<int> new_infra_triggered;
     int nit; // new infrastruction triggered - id.
 

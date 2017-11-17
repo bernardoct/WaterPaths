@@ -14,8 +14,8 @@
  * @todo set lower ROF threshold for utilities to lift restrictions.
  * @todo implement drought surcharges.
  */
-Restrictions::Restrictions(const int id, const vector<double> &stage_multipliers,
-                           const vector<double> &stage_triggers)
+Restrictions::Restrictions(const int id, const vector<float> &stage_multipliers,
+                           const vector<float> &stage_triggers)
         : DroughtMitigationPolicy(id, RESTRICTIONS),
           stage_multipliers(stage_multipliers),
           stage_triggers(stage_triggers) {
@@ -23,11 +23,11 @@ Restrictions::Restrictions(const int id, const vector<double> &stage_multipliers
 }
 
 Restrictions::Restrictions(
-        const int id, const vector<double> &stage_multipliers,
-        const vector<double> &stage_triggers,
-        const vector<vector<double>> *typesMonthlyDemandFraction,
-        const vector<vector<double>> *typesMonthlyWaterPrice,
-        const vector<vector<double>> *priceMultipliers)
+        const int id, const vector<float> &stage_multipliers,
+        const vector<float> &stage_triggers,
+        const vector<vector<float>> *typesMonthlyDemandFraction,
+        const vector<vector<float>> *typesMonthlyWaterPrice,
+        const vector<vector<float>> *priceMultipliers)
         : DroughtMitigationPolicy(id,
                                   RESTRICTIONS),
           stage_multipliers(stage_multipliers),
@@ -73,7 +73,7 @@ void Restrictions::applyPolicy(int week) {
     }
 }
 
-double Restrictions::getCurrent_multiplier() const {
+float Restrictions::getCurrent_multiplier() const {
     return current_multiplier;
 }
 
@@ -99,19 +99,19 @@ void Restrictions::addSystemComponents(vector<Utility *> systems_utilities,
  * @param typesMonthlyWaterPrice
  */
 void Restrictions::calculateWeeklyAverageWaterPrices(
-        const vector<vector<double>> *typesMonthlyDemandFraction,
-        const vector<vector<double>> *typesMonthlyWaterPrice, const
-        vector<vector<double>> *priceMultipliers) {
+        const vector<vector<float>> *typesMonthlyDemandFraction,
+        const vector<vector<float>> *typesMonthlyWaterPrice, const
+        vector<vector<float>> *priceMultipliers) {
 
     if (priceMultipliers) {
         int n_tiers = static_cast<int>(typesMonthlyWaterPrice->at(0).size());
         restricted_weekly_average_volumetric_price = new
-                double *[priceMultipliers->size()];
+                float *[priceMultipliers->size()];
 
         for (int s = 0; s < priceMultipliers->size(); ++s) { // stages loop
             restricted_weekly_average_volumetric_price[s] =
-                    new double[(int) WEEKS_IN_YEAR + 1]();
-            double monthly_average_price[NUMBER_OF_MONTHS] = {};
+                    new float[(int) WEEKS_IN_YEAR + 1]();
+            float monthly_average_price[NUMBER_OF_MONTHS] = {};
 
             for (int m = 0; m < NUMBER_OF_MONTHS; ++m) // monthly loop
                 for (int t = 0; t < n_tiers;

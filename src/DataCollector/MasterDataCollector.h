@@ -21,7 +21,7 @@ private:
 
 public:
 
-    void printObjectives(string file_name);
+    vector<float> calculatePrintObjectives(string file_name, bool print);
 
     void printPoliciesOutputCompact(
             int week_i, int week_f, string file_name);

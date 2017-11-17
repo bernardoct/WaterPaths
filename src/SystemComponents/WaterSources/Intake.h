@@ -17,17 +17,17 @@ public:
     Intake(
             const char *name, const int id,
             const vector<Catchment *> &catchments,
-            const double max_treatment_capacity);
+            const float max_treatment_capacity);
 
     Intake(
             const char *name, const int id,
             const vector<Catchment *> &catchments,
-            const double raw_water_main_capacity,
-            const double construction_rof_or_demand,
-            const vector<double> construction_time_range,
-            double permitting_period,
-            double construction_npv_cost_of_capital, double bond_term,
-            double bond_interest_rate);
+            const float raw_water_main_capacity,
+            const float construction_rof_or_demand,
+            const vector<float> construction_time_range,
+            float permitting_period,
+            float construction_npv_cost_of_capital, float bond_term,
+            float bond_interest_rate);
 
     Intake(const Intake &intake);
 
@@ -35,8 +35,8 @@ public:
 
     ~Intake() override;
 
-    void applyContinuity(int week, double upstream_source_min_env_flow,
-                             double wastewater_inflow, vector<double> &demand) override;
+    void applyContinuity(int week, float upstream_source_min_env_flow,
+                             float wastewater_inflow, vector<float> &demand) override;
 
     void setRealization(unsigned long r) override;
 

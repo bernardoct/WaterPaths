@@ -7,11 +7,11 @@
 ReservoirExpansion::ReservoirExpansion(
         const char *name, const int id,
         const unsigned int parent_reservoir_ID,
-        const double capacity,
-        const double construction_rof_or_demand,
-        const vector<double> &construction_time_range, double permitting_period,
-        double construction_cost, double bond_term,
-        double bond_interest_rate)
+        const float capacity,
+        const float construction_rof_or_demand,
+        const vector<float> &construction_time_range, float permitting_period,
+        float construction_cost, float bond_term,
+        float bond_interest_rate)
         : WaterSource(name, id, vector<Catchment *>(), capacity,
                       NON_INITIALIZED, RESERVOIR_EXPANSION,
                       construction_time_range, permitting_period,
@@ -36,9 +36,9 @@ ReservoirExpansion &ReservoirExpansion::operator=(const ReservoirExpansion &rese
     return *this;
 }
 
-void ReservoirExpansion::applyContinuity(int week, double upstream_source_inflow,
-                                         double wastewater_discharge,
-                                         vector<double> &demand_outflow) {
+void ReservoirExpansion::applyContinuity(int week, float upstream_source_inflow,
+                                         float wastewater_discharge,
+                                         vector<float> &demand_outflow) {
     __throw_logic_error("Reservoir expansion only add storage volume to the "
                                 "reservoir they're assigned to.  Continuity "
                                 "cannot be called on it, but only on the "

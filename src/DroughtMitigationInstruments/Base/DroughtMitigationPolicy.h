@@ -19,7 +19,7 @@ protected:
     vector<Utility *> realization_utilities;
     vector<WaterSource *> realization_water_sources;
     vector<MinEnvironFlowControl *> realization_min_env_flow_controls;
-    const Matrix3D<double> *storage_to_rof_table_;
+    const Matrix3D<float> *storage_to_rof_table_;
 
 public:
     const int id;
@@ -41,7 +41,7 @@ public:
 
     virtual ~DroughtMitigationPolicy();
 
-    void setStorage_to_rof_table_(const Matrix3D<double> *storage_to_rof_table_);
+    void setStorage_to_rof_table_(const Matrix3D<float> *storage_to_rof_table_);
 
     virtual void setRealization(unsigned int realization_id)= 0;
 

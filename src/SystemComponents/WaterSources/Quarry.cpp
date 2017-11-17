@@ -7,10 +7,10 @@
 
 Quarry::Quarry(
         const char *name, const int id,
-        const vector<Catchment *> &catchments, const double capacity,
-        const double max_treatment_capacity,
+        const vector<Catchment *> &catchments, const float capacity,
+        const float max_treatment_capacity,
         EvaporationSeries *evaporation_series,
-        DataSeries *storage_area_curve, double max_diversion)
+        DataSeries *storage_area_curve, float max_diversion)
         : Reservoir(name,
                     id,
                     catchments,
@@ -23,13 +23,13 @@ Quarry::Quarry(
 
 Quarry::Quarry(
         const char *name, const int id,
-        const vector<Catchment *> &catchments, const double capacity,
-        const double max_treatment_capacity,
+        const vector<Catchment *> &catchments, const float capacity,
+        const float max_treatment_capacity,
         EvaporationSeries *evaporation_series,
-        DataSeries *storage_area_curve, const double construction_rof_or_demand,
-        const vector<double> &construction_time_range, double permitting_period,
-        double construction_cost, double bond_term,
-        double bond_interest_rate, double max_diversion)
+        DataSeries *storage_area_curve, const float construction_rof_or_demand,
+        const vector<float> &construction_time_range, float permitting_period,
+        float construction_cost, float bond_term,
+        float bond_interest_rate, float max_diversion)
         : Reservoir(name,
                     id,
                     catchments,
@@ -47,10 +47,10 @@ Quarry::Quarry(
 
 Quarry::Quarry(
         const char *name, const int id,
-        const vector<Catchment *> &catchments, const double capacity,
-        const double max_treatment_capacity,
-        EvaporationSeries *evaporation_series, double storage_area,
-        double max_diversion) : Reservoir(name,
+        const vector<Catchment *> &catchments, const float capacity,
+        const float max_treatment_capacity,
+        EvaporationSeries *evaporation_series, float storage_area,
+        float max_diversion) : Reservoir(name,
                                           id,
                                           catchments,
                                           capacity,
@@ -62,13 +62,13 @@ Quarry::Quarry(
 
 Quarry::Quarry(
         const char *name, const int id,
-        const vector<Catchment *> &catchments, const double capacity,
-        const double max_treatment_capacity,
-        EvaporationSeries *evaporation_series, double storage_area,
-        const double construction_rof_or_demand,
-        const vector<double> &construction_time_range, double permitting_period,
-        double construction_cost, double bond_term,
-        double bond_interest_rate, double max_diversion)
+        const vector<Catchment *> &catchments, const float capacity,
+        const float max_treatment_capacity,
+        EvaporationSeries *evaporation_series, float storage_area,
+        const float construction_rof_or_demand,
+        const vector<float> &construction_time_range, float permitting_period,
+        float construction_cost, float bond_term,
+        float bond_interest_rate, float max_diversion)
         : Reservoir(name,
                     id,
                     catchments,
@@ -84,7 +84,7 @@ Quarry::Quarry(
                     bond_interest_rate,
                     QUARRY), max_diversion(max_diversion) {}
 
-Quarry::Quarry(const Quarry &quarry, const double max_diversion) :
+Quarry::Quarry(const Quarry &quarry, const float max_diversion) :
         Reservoir(quarry), max_diversion(max_diversion) {}
 
 /**
@@ -108,34 +108,35 @@ Quarry::~Quarry() {}
  * @param upstream_source_inflow
  * @param demand_outflow
  */
-void Quarry::applyContinuity(int week, double upstream_source_inflow,
-                             double wastewater_inflow,
-                             vector<double> &demand_outflow) {
+void Quarry::applyContinuity(int week, float upstream_source_inflow,
+                             float wastewater_inflow,
+                             vector<float> &demand_outflow) {
 
-    double total_upstream_inflow = upstream_source_inflow +
+    float total_upstream_inflow = upstream_source_inflow +
                                    wastewater_inflow;
     this->upstream_source_inflow = upstream_source_inflow;
     this->wastewater_inflow = wastewater_inflow;
 
-    double total_demand = std::accumulate(demand_outflow.begin(),
-                                          demand_outflow.end(),
-                                          0.);
+    total_demand = 0;
+    for (int i = 0; i < demand_outflow.size(); ++i) {
+        total_demand += demand_outflow[i];
+    }
 
-    double catchment_inflow = 0;
+    float catchment_inflow = 0.0f;
     for (Catchment *c : catchments) {
         catchment_inflow += c->getStreamflow((week));
     }
 
-    double total_inflow = total_upstream_inflow + catchment_inflow;
+    float total_inflow = total_upstream_inflow + catchment_inflow;
     total_outflow = total_demand + min_environmental_outflow;
 
     diverted_flow = min(max_diversion,
                         total_inflow -
                         min_environmental_outflow);
 
-    double stored_volume_new = available_volume + diverted_flow -
+    float stored_volume_new = available_volume + diverted_flow -
                                total_demand;
-    double outflow_new = total_inflow - diverted_flow;
+    float outflow_new = total_inflow - diverted_flow;
 
     if (online) {
         if (stored_volume_new > capacity) {
@@ -149,9 +150,9 @@ void Quarry::applyContinuity(int week, double upstream_source_inflow,
     }
 
     this->total_demand = total_demand;
-    available_volume = max(stored_volume_new, 0.0);
+    available_volume = max(stored_volume_new, 0.0f);
     total_outflow = outflow_new + policy_added_demand;
-    policy_added_demand = 0;
+    policy_added_demand = 0.0f;
     upstream_catchment_inflow = catchment_inflow;
     this->upstream_source_inflow = upstream_source_inflow;
     this->wastewater_inflow = wastewater_inflow;

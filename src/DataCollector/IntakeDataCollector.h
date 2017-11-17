@@ -12,11 +12,11 @@
 class IntakeDataCollector : public DataCollector {
 
     Intake *intake;
-    vector<double> total_upstream_sources_inflows;
-    vector<double> demands;
-    vector<double> wastewater_inflows;
-    vector<double> outflows;
-    vector<double> total_catchments_inflow;
+    vector<float> total_upstream_sources_inflows;
+    vector<float> demands;
+    vector<float> wastewater_inflows;
+    vector<float> outflows;
+    vector<float> total_catchments_inflow;
 
 public:
     IntakeDataCollector(Intake *intake);

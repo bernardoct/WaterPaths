@@ -8,7 +8,7 @@
 
 Intake::Intake(
         const char *name, const int id, const vector<Catchment *> &catchments,
-        const double max_treatment_capacity)
+        const float max_treatment_capacity)
         : WaterSource(name,
                       id,
                       catchments,
@@ -28,11 +28,11 @@ Intake::Intake(
 
 Intake::Intake(
         const char *name, const int id, const vector<Catchment *> &catchments,
-        const double raw_water_main_capacity,
-        const double construction_rof_or_demand,
-        const vector<double> construction_time_range, double permitting_period,
-        double construction_npv_cost_of_capital, double bond_term,
-        double bond_interest_rate) :
+        const float raw_water_main_capacity,
+        const float construction_rof_or_demand,
+        const vector<float> construction_time_range, float permitting_period,
+        float construction_npv_cost_of_capital, float bond_term,
+        float bond_interest_rate) :
         WaterSource(name, id, catchments, NONE, raw_water_main_capacity, INTAKE,
                     construction_time_range, permitting_period,
                     construction_npv_cost_of_capital, bond_term,
@@ -82,15 +82,16 @@ Intake::~Intake() {
  * @param upstream_source_inflow upstream sources current outflow.
  * @param demand current demand
  */
-void Intake::applyContinuity(int week, double upstream_source_inflow,
-                             double wastewater_inflow, vector<double> &demand) {
+void Intake::applyContinuity(int week, float upstream_source_inflow,
+                             float wastewater_inflow, vector<float> &demand) {
 
-    double total_upstream_inflow = upstream_source_inflow +
+    float total_upstream_inflow = upstream_source_inflow +
                                    wastewater_inflow;
 
-    double total_demand = std::accumulate(demand.begin(),
-                                          demand.end(),
-                                          0.);
+    total_demand = 0;
+    for (int i = 0; i < demand.size(); ++i) {
+        total_demand += demand[i];
+    }
 
     /// Get all upstream catchment inflow.
     upstream_catchment_inflow = 0;
@@ -98,7 +99,7 @@ void Intake::applyContinuity(int week, double upstream_source_inflow,
         upstream_catchment_inflow += c->getStreamflow(week);
 
     /// Water availability for next ime step.
-    double next_upstream_catchment_inflow = 0;
+    float next_upstream_catchment_inflow = 0;
     for (Catchment *c : catchments)
         next_upstream_catchment_inflow += c->getStreamflow(week + 1);
 

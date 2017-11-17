@@ -27,7 +27,7 @@ public:
 
     MinEnvironFlowControl(const MinEnvironFlowControl &min_env_control);
 
-    virtual double getRelease(int week) = 0;
+    virtual float getRelease(int week) = 0;
 
     void addComponents(
             vector<WaterSource *> water_sources, vector<Utility *> utilities);

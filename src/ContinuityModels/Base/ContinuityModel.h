@@ -28,11 +28,12 @@ protected:
     vector<vector<int> > utilities_to_water_sources;
     vector<int> downstream_sources;
     const vector<int> sources_topological_order;
-    vector<double> water_sources_capacities;
-    vector<double> utilities_capacities;
-    vector<vector<double>> demands;
+    vector<float> water_sources_capacities;
+    vector<float> utilities_capacities;
+    vector<vector<float>> demands;
     const int n_utilities;
     const int n_sources;
+    int delta_realization_weeks[NUMBER_REALIZATIONS_ROF];
 
 public:
     const unsigned int realization_id;

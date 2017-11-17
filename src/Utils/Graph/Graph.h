@@ -21,7 +21,7 @@ protected:
     vector<vector<int>> upstream_sources;
     vector<vector<int>> downstream_sources;
     vector<int> topological_order;
-    vector<vector<double>> continuity_matrix_transpose;
+    vector<vector<float>> continuity_matrix_transpose;
 
     void addEdgeToEdgesList(int u, int v);
 
@@ -40,10 +40,9 @@ public:
     // function to add an edge to graph
     void addEdge(int u, int v);
 
-    vector<int> &getUpstream_sources(int i);
+    const vector<vector<int>> &getUpstream_sources() const;
 
-
-    const vector<vector<double>> getContinuityMatrix() const;
+    const vector<vector<float>> getContinuityMatrix() const;
 
     virtual ~Graph();
 

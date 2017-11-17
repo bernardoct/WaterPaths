@@ -7,7 +7,7 @@
 #include "../Utils/Constants.h"
 
 WwtpDischargeRule::WwtpDischargeRule(
-        const vector<vector<double>> *year_series_fraction_discharge,
+        const vector<vector<float>> *year_series_fraction_discharge,
         const vector<int> *discharge_to_source_ids) :
         year_series_fraction_discharge(year_series_fraction_discharge),
         discharge_to_source_ids(discharge_to_source_ids) {
@@ -29,9 +29,13 @@ WwtpDischargeRule::WwtpDischargeRule(
                                              "exactly 53 (for years with "
                                              "extra week) values.");
     }
-    if (year_series_fraction_discharge->size() != discharge_to_source_ids->size())
+    if (year_series_fraction_discharge->size() != discharge_to_source_ids->size()) {
+        printf("Number of series: %lu\nNumber of source IDs: %lu\n", 
+            year_series_fraction_discharge->size(), 
+            discharge_to_source_ids->size());
         __throw_invalid_argument("Number of wwtp discharge time series must be "
-                                         "the same as number of sources ids.");
+                                          "the same as number of sources ids.");
+    }
 }
 
 WwtpDischargeRule::WwtpDischargeRule(WwtpDischargeRule &wwtp_discharge_rule) :
@@ -54,25 +58,25 @@ WwtpDischargeRule &WwtpDischargeRule::operator=(
  * @param water_source_id ID of source receiving the effluent.
  * @return fraction of demand to be discharged.
  */
-double WwtpDischargeRule::get_dependent_variable(int water_source_id, int week) {
+float WwtpDischargeRule::get_dependent_variable(int water_source_id, int week) {
     return (*year_series_fraction_discharge)[source_id_to_vector_index[water_source_id]][week];
 }
 
-double WwtpDischargeRule::get_dependent_variable(double x, int week) {
+float WwtpDischargeRule::get_dependent_variable(float x, int week) {
     __throw_invalid_argument("WWTP discharge rules need a water source ID (int)"
                                      " and week number (int) to return the "
                                      "fraction of total_demand discharged to that "
                                      "source.");
 }
 
-double WwtpDischargeRule::get_dependent_variable(double x) {
+float WwtpDischargeRule::get_dependent_variable(float x) {
     __throw_invalid_argument("WWTP discharge rules need a water source ID (int)"
                                      " and week number (int) to return the "
                                      "fraction of total_demand discharged to that "
                                      "source.");
 }
 
-double WwtpDischargeRule::get_dependent_variable(int x) {
+float WwtpDischargeRule::get_dependent_variable(int x) {
     __throw_invalid_argument("WWTP discharge rules need a water source ID (int)"
                                      " and week number (int) to return the "
                                      "fraction of total_demand discharged to that "

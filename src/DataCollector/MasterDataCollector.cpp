@@ -1,4 +1,4 @@
-//
+//;;
 // Created by bernardoct on 8/26/17.
 //
 
@@ -21,7 +21,6 @@
 #include "EmptyDataCollector.h"
 
 using namespace Constants;
-
 
 void MasterDataCollector::printPoliciesOutputCompact(
         int week_i, int week_f, string file_name) {
@@ -219,52 +218,84 @@ void MasterDataCollector::printWaterSourcesOutputTabular(
     }
 }
 
-void MasterDataCollector::printObjectives(string file_name) {
+vector<float> MasterDataCollector::calculatePrintObjectives(string file_name,
+                                                             bool print) {
 
-    std::ofstream outStream;
-    outStream.open(output_directory + "/" + file_name + ".out");
+    vector<float> objectives;
 
-    outStream << setw(COLUMN_WIDTH) << "      " << setw((COLUMN_WIDTH * 2))
-              << "Reliability"
-              << setw(COLUMN_WIDTH * 2) << "Restriction Freq."
-              //              << setw(COLUMN_WIDTH * 2) << "Jordan Lake Alloc."
-              << setw(COLUMN_WIDTH * 2) << "Infrastructure NPC"
-              << setw(COLUMN_WIDTH * 2) << "Peak Financial Cost"
-              << setw(COLUMN_WIDTH * 2) << "Worse Case Costs" << endl;
+    if (print) {
+        std::ofstream outStream;
+        outStream.open(output_directory + "/" + file_name + ".out");
 
-    for (auto u : utility_collectors) {
-        /// Create vector with restriction policies pertaining only to the
-        /// utility whose objectives are being calculated.
-        vector<RestrictionsDataCollector *> utility_restrictions;
-        for (vector<DataCollector *> p : drought_mitigation_policy_collectors)
-            if (p[0]->type == RESTRICTIONS && p[0]->id == u[0]->id)
-                for (auto rp : p)
-                    utility_restrictions.push_back(
-                            dynamic_cast<RestrictionsDataCollector *>(rp));
+        outStream << setw(COLUMN_WIDTH) << "      " << setw((COLUMN_WIDTH * 2))
+                  << "Reliability"
+                  << setw(COLUMN_WIDTH * 2) << "Restriction Freq."
+                  //              << setw(COLUMN_WIDTH * 2) << "Jordan Lake Alloc."
+                  << setw(COLUMN_WIDTH * 2) << "Infrastructure NPC"
+                  << setw(COLUMN_WIDTH * 2) << "Peak Financial Cost"
+                  << setw(COLUMN_WIDTH * 2) << "Worse Case Costs" << endl;
 
-        outStream << setw(COLUMN_WIDTH) << u[0]->name
-                  /// Reliability
-                  << setw(COLUMN_WIDTH * 2) << setprecision(COLUMN_PRECISION)
-                  << ObjectivesCalculator::calculateReliabilityObjective(u)
-                  /// Restriction Frequency
-                  << setw(COLUMN_WIDTH * 2) << setprecision(COLUMN_PRECISION)
-                  << ObjectivesCalculator::
-                  calculateRestrictionFrequencyObjective(utility_restrictions)
-                  /// Infrastructure NPC
-                  << setw(COLUMN_WIDTH * 2) << setprecision(COLUMN_PRECISION)
-                  << ObjectivesCalculator::
-                  calculateNetPresentCostInfrastructureObjective(u)
-                  /// Peak Financial Cost
-                  << setw(COLUMN_WIDTH * 2) << setprecision(COLUMN_PRECISION)
-                  << ObjectivesCalculator::
-                  calculatePeakFinancialCostsObjective(u)
-                  /// Worse Case Costs
-                  << setw(COLUMN_WIDTH * 2) << setprecision(COLUMN_PRECISION)
-                  << ObjectivesCalculator::calculateWorseCaseCostsObjective(u)
-                  << endl;
+        for (auto u : utility_collectors) {
+            /// Create vector with restriction policies pertaining only to the
+            /// utility whose objectives are being calculated.
+            vector<RestrictionsDataCollector *> utility_restrictions;
+            for (vector<DataCollector *> p : drought_mitigation_policy_collectors)
+                if (p[0]->type == RESTRICTIONS && p[0]->id == u[0]->id)
+                    for (auto rp : p)
+                        utility_restrictions.push_back(
+                                dynamic_cast<RestrictionsDataCollector *>(rp));
+
+            outStream << setw(COLUMN_WIDTH) << u[0]->name
+                      /// Reliability
+                      << setw(COLUMN_WIDTH * 2)
+                      << setprecision(COLUMN_PRECISION)
+                      << ObjectivesCalculator::calculateReliabilityObjective(u)
+                      /// Restriction Frequency
+                      << setw(COLUMN_WIDTH * 2)
+                      << setprecision(COLUMN_PRECISION)
+                      << ObjectivesCalculator::
+                      calculateRestrictionFrequencyObjective(utility_restrictions)
+                      /// Infrastructure NPC
+                      << setw(COLUMN_WIDTH * 2)
+                      << setprecision(COLUMN_PRECISION)
+                      << ObjectivesCalculator::
+                      calculateNetPresentCostInfrastructureObjective(u)
+                      /// Peak Financial Cost
+                      << setw(COLUMN_WIDTH * 2)
+                      << setprecision(COLUMN_PRECISION)
+                      << ObjectivesCalculator::
+                      calculatePeakFinancialCostsObjective(u)
+                      /// Worse Case Costs
+                      << setw(COLUMN_WIDTH * 2)
+                      << setprecision(COLUMN_PRECISION)
+                      << ObjectivesCalculator::calculateWorseCaseCostsObjective(u)
+                      << endl;
+        }
+        outStream.close();
+    } else {
+        for (auto u : utility_collectors) {
+            /// Create vector with restriction policies pertaining only to the
+            /// utility whose objectives are being calculated.
+            vector<RestrictionsDataCollector *> utility_restrictions;
+            for (vector<DataCollector *> p : drought_mitigation_policy_collectors)
+                if (p[0]->type == RESTRICTIONS && p[0]->id == u[0]->id)
+                    for (auto rp : p)
+                        utility_restrictions.push_back(
+                                dynamic_cast<RestrictionsDataCollector *>(rp));
+
+            objectives.push_back
+                    (ObjectivesCalculator::calculateReliabilityObjective(u));
+            objectives.push_back
+                    (ObjectivesCalculator::calculateRestrictionFrequencyObjective(utility_restrictions));
+            objectives.push_back
+                    (ObjectivesCalculator::calculateNetPresentCostInfrastructureObjective(u));
+            objectives.push_back
+                    (ObjectivesCalculator::calculatePeakFinancialCostsObjective(u));
+            objectives.push_back
+                    (ObjectivesCalculator::calculateWorseCaseCostsObjective(u));
+        }
     }
-
-    outStream.close();
+    return objectives;
 }
 
 void MasterDataCollector::printPathways(string file_name) {
@@ -287,14 +318,14 @@ void MasterDataCollector::printPathways(string file_name) {
 void MasterDataCollector::setOutputDirectory(string directory) {
     output_directory = directory;
 
-    struct stat sb;
-    if (stat(output_directory.c_str(),
-             &sb) == 0 && S_ISDIR(sb.st_mode))
-        cout << "Output will be printed to folder " << output_directory << endl;
-    else {
-        cout << Utils::getexepath() << output_directory << endl;
-        __throw_invalid_argument("Output folder does not exist.");
-    }
+//    struct stat sb;
+//    if (stat(output_directory.c_str(),
+//             &sb) == 0 && S_ISDIR(sb.st_mode))
+//        cout << "Output will be printed to folder " << output_directory << endl;
+//    else {
+//        cout << Utils::getexepath() << output_directory << endl;
+//        __throw_invalid_argument("Output folder does not exist.");
+//    }
 }
 
 void MasterDataCollector::addRealization(
@@ -384,6 +415,7 @@ void MasterDataCollector::addRealization(
 }
 
 void MasterDataCollector::collectData(int r) {
+
     for (vector<UtilitiesDataCollector *> uc : utility_collectors)
         uc[r]->collect_data();
     for (vector<DataCollector *> dmp : drought_mitigation_policy_collectors)

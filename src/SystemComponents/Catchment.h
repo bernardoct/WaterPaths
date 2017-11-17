@@ -13,12 +13,15 @@ using namespace Constants;
 
 class Catchment {
 protected:
-    vector<vector<double>> *streamflows_all;
-    double *streamflows_realization;
+    vector<vector<float>> *streamflows_all;
+    float *streamflows_realization;
     int series_length;
+    int delta_week = (int) std::round(
+            Constants::WEEKS_IN_YEAR * Constants::NUMBER_REALIZATIONS_ROF);
+ 
 
 public:
-    Catchment(vector<vector<double>> *streamflows_all, int series_length);
+    Catchment(vector<vector<float>> *streamflows_all, int series_length);
 
     Catchment(Catchment &catchment);
 
@@ -26,7 +29,7 @@ public:
 
     Catchment &operator=(const Catchment &catchment);
 
-    double getStreamflow(int week);
+    float getStreamflow(int week);
 
     void setRealization(unsigned long r);
 };

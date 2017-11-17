@@ -18,11 +18,16 @@
 #include "SystemComponents/WaterSources/Relocation.h"
 #include "DroughtMitigationInstruments/InsuranceStorageToROF.h"
 #include "Utils/Solutions.h"
+// #include "../Borg/borgmm.h"
+// #include "../Borg/borgProblemDefinition.h"
 
 #include <getopt.h>
 #include <algorithm>
-#include <omp.h>
+// #include <omp.h>
+// #include <mpi.h>
 
+#define NUM_OBJECTIVES 6;
+#define NUM_DEC_VAR 57;
 
 using namespace std;
 using namespace Constants;
@@ -30,9 +35,9 @@ using namespace Solutions;
 
 struct infraRank {
     int id;
-    double xreal;
+    float xreal;
 
-    infraRank(int id, double xreal) {
+    infraRank(int id, float xreal) {
         this->id = id;
         this->xreal = xreal;
     }
@@ -53,9 +58,9 @@ vector<int> vecInfraRankToVecInt(vector<infraRank> v) {
     return sorted;
 }
 
-double checkAndFixInfraExpansionHighLowOrder(
+float checkAndFixInfraExpansionHighLowOrder(
         vector<int> *order, int id_low,
-        int id_high, double capacity_low, double capacity_high) {
+        int id_high, float capacity_low, float capacity_high) {
 
     long pos_low = distance(order->begin(),
                             find(order->begin(),
@@ -86,69 +91,70 @@ double checkAndFixInfraExpansionHighLowOrder(
  * on Jordan Lake (or any generic lake) but still pay for joint treatment
  * infrastructure).
  */
-void triangleTest(const double *x_real, int n_realizations, int n_weeks,
-                  int sol_number, string output_directory) {
-    srand(0);//(unsigned int) time(nullptr));
+void triangleTest(const float *x_real, float *c_obj, float *c_const,
+                  int n_realizations, int n_weeks, int sol_number,
+                  string output_directory, vector<int> realizations) {
+    //srand(0);//(unsigned int) time(nullptr));
 
     // ===================== SET UP DECISION VARIABLES  =====================
 
-    double Durham_restriction_trigger = x_real[0];
-    double OWASA_restriction_trigger = x_real[1];
-    double raleigh_restriction_trigger = x_real[2];
-    double cary_restriction_trigger = x_real[3];
-    double durham_transfer_trigger = x_real[4];
-    double owasa_transfer_trigger = x_real[5];
-    double raleigh_transfer_trigger = x_real[6];
-    double OWASA_JLA = x_real[7];
-    double Raleigh_JLA = x_real[8];
-    double Durham_JLA = x_real[9];
-    double Cary_JLA = x_real[10];
-    double durham_annual_payment = x_real[11]; // contingency fund
-    double owasa_annual_payment = x_real[12];
-    double raleigh_annual_payment = x_real[13];
-    double cary_annual_payment = x_real[14];
-    double durham_insurance_use = x_real[15]; // insurance st_rof
-    double owasa_insurance_use = x_real[16];
-    double raleigh_insurance_use = x_real[17];
-    double cary_insurance_use = x_real[18];
-    double durham_insurance_payment = x_real[19];
-    double owasa_insurance_payment = x_real[20];
-    double raleigh_insurance_payment = x_real[21];
-    double cary_insurance_payment = x_real[22];
-    double durham_inftrigger = x_real[23];
-    double owasa_inftrigger = x_real[24];
-    double raleigh_inftrigger = x_real[25];
-    double cary_inftrigger = x_real[26];
-    double university_lake_expansion_ranking = x_real[27]; // 14
-    double Cane_creek_expansion_ranking = x_real[28]; // 24
-    double Stone_quarry_reservoir_expansion_shallow_ranking = x_real[29]; // 12
-    double Stone_quarry_reservoir_expansion_deep_ranking = x_real[30]; // 13
-    double Teer_quarry_expansion_ranking = x_real[31]; // 9
-    double reclaimed_water_ranking_low = x_real[32]; // 18
-    double reclaimed_water_high = x_real[33]; // 19
-    double lake_michie_expansion_ranking_low = x_real[34]; // 15
-    double lake_michie_expansion_ranking_high = x_real[35]; // 16
-    double little_river_reservoir_ranking = x_real[36]; // 7
-    double richland_creek_quarry_rank = x_real[37]; // 8
-    double neuse_river_intake_rank = x_real[38]; // 10
-    double reallocate_falls_lake_rank = x_real[39]; // 17
-    double western_wake_treatment_plant_rank_OWASA_low = x_real[40]; // 20
-    double western_wake_treatment_plant_rank_OWASA_high = x_real[41]; // 21
-    double western_wake_treatment_plant_rank_durham_low = x_real[42]; // 20
-    double western_wake_treatment_plant_rank_durham_high = x_real[43]; // 21
-    double western_wake_treatment_plant_rank_raleigh_low = x_real[44]; // 20
-    double western_wake_treatment_plant_rank_raleigh_high = x_real[45]; // 21
-//    double caryupgrades_1 = x_real[46]; // not used: already built.
-    double caryupgrades_2 = x_real[47];
-    double caryupgrades_3 = x_real[48];
-    double western_wake_treatment_plant_owasa_frac = x_real[49];
-    double western_wake_treatment_frac_durham = x_real[50];
-    double western_wake_treatment_plant_raleigh_frac = x_real[51];
-    double falls_lake_reallocation = x_real[52];
-    double durham_inf_buffer = x_real[53];
-    double owasa_inf_buffer = x_real[54];
-    double raleigh_inf_buffer = x_real[55];
-    double cary_inf_buffer = x_real[56];
+    float Durham_restriction_trigger = x_real[0];
+    float OWASA_restriction_trigger = x_real[1];
+    float raleigh_restriction_trigger = x_real[2];
+    float cary_restriction_trigger = x_real[3];
+    float durham_transfer_trigger = x_real[4];
+    float owasa_transfer_trigger = x_real[5];
+    float raleigh_transfer_trigger = x_real[6];
+    float OWASA_JLA = x_real[7];
+    float Raleigh_JLA = x_real[8];
+    float Durham_JLA = x_real[9];
+    float Cary_JLA = x_real[10];
+    float durham_annual_payment = x_real[11]; // contingency fund
+    float owasa_annual_payment = x_real[12];
+    float raleigh_annual_payment = x_real[13];
+    float cary_annual_payment = x_real[14];
+    float durham_insurance_use = x_real[15]; // insurance st_rof
+    float owasa_insurance_use = x_real[16];
+    float raleigh_insurance_use = x_real[17];
+    float cary_insurance_use = x_real[18];
+    float durham_insurance_payment = x_real[19];
+    float owasa_insurance_payment = x_real[20];
+    float raleigh_insurance_payment = x_real[21];
+    float cary_insurance_payment = x_real[22];
+    float durham_inftrigger = x_real[23];
+    float owasa_inftrigger = x_real[24];
+    float raleigh_inftrigger = x_real[25];
+    float cary_inftrigger = x_real[26];
+    float university_lake_expansion_ranking = x_real[27]; // 14
+    float Cane_creek_expansion_ranking = x_real[28]; // 24
+    float Stone_quarry_reservoir_expansion_shallow_ranking = x_real[29]; // 12
+    float Stone_quarry_reservoir_expansion_deep_ranking = x_real[30]; // 13
+    float Teer_quarry_expansion_ranking = x_real[31]; // 9
+    float reclaimed_water_ranking_low = x_real[32]; // 18
+    float reclaimed_water_high = x_real[33]; // 19
+    float lake_michie_expansion_ranking_low = x_real[34]; // 15
+    float lake_michie_expansion_ranking_high = x_real[35]; // 16
+    float little_river_reservoir_ranking = x_real[36]; // 7
+    float richland_creek_quarry_rank = x_real[37]; // 8
+    float neuse_river_intake_rank = x_real[38]; // 10
+    float reallocate_falls_lake_rank = x_real[39]; // 17
+    float western_wake_treatment_plant_rank_OWASA_low = x_real[40]; // 20
+    float western_wake_treatment_plant_rank_OWASA_high = x_real[41]; // 21
+    float western_wake_treatment_plant_rank_durham_low = x_real[42]; // 20
+    float western_wake_treatment_plant_rank_durham_high = x_real[43]; // 21
+    float western_wake_treatment_plant_rank_raleigh_low = x_real[44]; // 20
+    float western_wake_treatment_plant_rank_raleigh_high = x_real[45]; // 21
+//    float caryupgrades_1 = x_real[46]; // not used: already built.
+    float caryupgrades_2 = x_real[47];
+    float caryupgrades_3 = x_real[48];
+    float western_wake_treatment_plant_owasa_frac = x_real[49];
+    float western_wake_treatment_frac_durham = x_real[50];
+    float western_wake_treatment_plant_raleigh_frac = x_real[51];
+    float falls_lake_reallocation = x_real[52];
+    float durham_inf_buffer = x_real[53];
+    float owasa_inf_buffer = x_real[54];
+    float raleigh_inf_buffer = x_real[55];
+    float cary_inf_buffer = x_real[56];
 
     vector<infraRank> durham_infra_order_raw = {
             infraRank(9, Teer_quarry_expansion_ranking),
@@ -178,10 +184,10 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
             infraRank(21, western_wake_treatment_plant_rank_raleigh_high)
     };
 
-    double added_storage_michie_expansion_low = 2500;
-    double added_storage_michie_expansion_high = 5200;
-    double reclaimed_capacity_low = 2.2 * 7;
-    double reclaimed_capacity_high = 9.1 * 7;
+    float added_storage_michie_expansion_low = 2500;
+    float added_storage_michie_expansion_high = 5200;
+    float reclaimed_capacity_low = 2.2 * 7;
+    float reclaimed_capacity_high = 9.1 * 7;
 
     /// get infrastructure construction order based on decision variables
     sort(durham_infra_order_raw.begin(),
@@ -196,15 +202,15 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
 
     vector<int> rof_triggered_infra_order_durham =
             vecInfraRankToVecInt(durham_infra_order_raw);
-    vector<double> rofs_infra_durham = vector<double>
+    vector<float> rofs_infra_durham = vector<float>
             (rof_triggered_infra_order_durham.size(), durham_inftrigger);
     vector<int> rof_triggered_infra_order_owasa =
             vecInfraRankToVecInt(owasa_infra_order_raw);
-    vector<double> rofs_infra_owasa = vector<double>
+    vector<float> rofs_infra_owasa = vector<float>
             (rof_triggered_infra_order_owasa.size(), owasa_inftrigger);
     vector<int> rof_triggered_infra_order_raleigh =
             vecInfraRankToVecInt(raleigh_infra_order_raw);
-    vector<double> rofs_infra_raleigh = vector<double>
+    vector<float> rofs_infra_raleigh = vector<float>
             (rof_triggered_infra_order_raleigh.size(), raleigh_inftrigger);
 
     /// Remove small expansions being built after big expansions that would
@@ -227,7 +233,7 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
 
 
     /// Normalize Jordan Lake Allocations in case they exceed 1.
-    double sum_jla_allocations = OWASA_JLA + Durham_JLA + Cary_JLA +
+    float sum_jla_allocations = OWASA_JLA + Durham_JLA + Cary_JLA +
                                  Raleigh_JLA;
     if (sum_jla_allocations > 1.) {
         OWASA_JLA /= sum_jla_allocations;
@@ -237,7 +243,7 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
     }
 
     /// Normalize West Jordan Lake WTP allocations.
-    double sum_wjlwtp = western_wake_treatment_frac_durham +
+    float sum_wjlwtp = western_wake_treatment_frac_durham +
                         western_wake_treatment_plant_owasa_frac +
                         western_wake_treatment_plant_raleigh_frac;
     western_wake_treatment_frac_durham /= sum_wjlwtp;
@@ -247,90 +253,97 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
 
     // ===================== SET UP PROBLEM COMPONENTS =====================
 
-    cout << "BEGINNING TRIANGLE TEST" << endl << endl;
-    cout << "Using " << omp_get_num_threads() << " cores." << endl;
+    //cout << "BEGINNING TRIANGLE TEST" << endl << endl;
+    // cout << "Using " << omp_get_num_threads() << " cores." << endl;
 //    cout << getexepath() << endl;
 
     /// Read streamflows
     int streamflow_n_weeks = 52 * (70 + 50);
 
+    /// In case a vector containing realizations numbers to be calculated is passed, set 
+    /// number of realizations to number of realizations in that vector.
     int max_lines = n_realizations;
+    vector<int> realizations_to_read;
+    if (realizations.size() > 0) {
+        realizations_to_read = realizations;
+        n_realizations = realizations_to_read.size();
+    } else
+        realizations_to_read = vector<int>();
 
-    cout << "Reading inflows." << endl;
-    vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/durham_inflows.csv",
-                                                                      max_lines);
-    vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/falls_lake_inflows.csv",
-                                                                    max_lines);
-    vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/lake_wb_inflows.csv",
-                                                                     max_lines);
-    vector<vector<double>> streamflows_llr = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/little_river_raleigh_inflows.csv",
-                                                                   max_lines);
-    vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/crabtree_inflows.csv",
-                                                                        max_lines);
-    vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/stone_quarry_inflows.csv",
-                                                                     max_lines);
-    vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/cane_creek_inflows.csv",
-                                                                    max_lines);
-    vector<vector<double>> streamflows_morgan = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/university_lake_inflows.csv",
-                                                                      max_lines);
-    vector<vector<double>> streamflows_haw = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/jordan_lake_inflows.csv",
-                                                                   max_lines);
-    vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/clayton_inflows.csv",
-                                                                       max_lines);
-    vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/lillington_inflows.csv",
-                                                                          max_lines);
+    vector<vector<float>> streamflows_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/durham_inflows.csv",
+                                                                      max_lines, realizations_to_read);
+    vector<vector<float>> streamflows_flat = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/falls_lake_inflows.csv",
+                                                                    max_lines, realizations_to_read);
+    vector<vector<float>> streamflows_swift = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/lake_wb_inflows.csv",
+                                                                     max_lines, realizations_to_read);
+    vector<vector<float>> streamflows_llr = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/little_river_raleigh_inflows.csv",
+                                                                   max_lines, realizations_to_read);
+    vector<vector<float>> streamflows_crabtree = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/crabtree_inflows.csv",
+                                                                        max_lines, realizations_to_read);
+    vector<vector<float>> streamflows_phils = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/stone_quarry_inflows.csv",
+                                                                     max_lines, realizations_to_read);
+    vector<vector<float>> streamflows_cane = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/cane_creek_inflows.csv",
+                                                                    max_lines, realizations_to_read);
+    vector<vector<float>> streamflows_morgan = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/university_lake_inflows.csv",
+                                                                      max_lines, realizations_to_read);
+    vector<vector<float>> streamflows_haw = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/jordan_lake_inflows.csv",
+                                                                   max_lines, realizations_to_read);
+    vector<vector<float>> streamflows_clayton = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/clayton_inflows.csv",
+                                                                       max_lines, realizations_to_read);
+    vector<vector<float>> streamflows_lillington = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/lillington_inflows.csv",
+                                                                          max_lines, realizations_to_read);
 
-    cout << "Reading demands." << endl;
-    vector<vector<double>> demand_cary = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/cary_demand.csv",
-                                                               max_lines);
-    vector<vector<double>> demand_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/durham_demand.csv",
-                                                                 max_lines);
-    vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/raleigh_demand.csv",
-                                                                  max_lines);
-    vector<vector<double>> demand_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/owasa_demand.csv",
-                                                                max_lines);
+    //cout << "Reading demands." << endl;
+    vector<vector<float>> demand_cary = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/cary_demand.csv",
+                                                               max_lines, realizations_to_read);
+    vector<vector<float>> demand_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/durham_demand.csv",
+                                                                 max_lines, realizations_to_read);
+    vector<vector<float>> demand_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/raleigh_demand.csv",
+                                                                  max_lines, realizations_to_read);
+    vector<vector<float>> demand_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/owasa_demand.csv",
+                                                                max_lines, realizations_to_read);
 
-    cout << "Reading evaporations." << endl;
-    vector<vector<double>> evap_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation/durham_evap.csv",
-                                                               max_lines);
-    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation/falls_lake_evap.csv",
-                                                                   max_lines);
-    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation/owasa_evap.csv",
-                                                              max_lines);
-    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation/little_river_raleigh_evap.csv",
-                                                                     max_lines);
-    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation/wb_evap.csv",
-                                                                       max_lines);
-    vector<vector<double>> evap_jordan_lake = evap_owasa;
+    //cout << "Reading evaporations." << endl;
+    vector<vector<float>> evap_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation/durham_evap.csv",
+                                                               max_lines, realizations_to_read);
+    vector<vector<float>> evap_falls_lake = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation/falls_lake_evap.csv",
+                                                                   max_lines, realizations_to_read);
+    vector<vector<float>> evap_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation/owasa_evap.csv",
+                                                              max_lines, realizations_to_read);
+    vector<vector<float>> evap_little_river = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation/little_river_raleigh_evap.csv",
+                                                                     max_lines, realizations_to_read);
+    vector<vector<float>> evap_wheeler_benson = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation/wb_evap.csv",
+                                                                       max_lines, realizations_to_read);
+    vector<vector<float>> evap_jordan_lake = evap_owasa;
 
-    cout << "Reading others." << endl;
-    vector<vector<double>> demand_to_wastewater_fraction_owasa_raleigh =
+    //cout << "Reading others." << endl;
+    vector<vector<float>> demand_to_wastewater_fraction_owasa_raleigh =
             Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
-    vector<vector<double>> demand_to_wastewater_fraction_durham =
+    vector<vector<float>> demand_to_wastewater_fraction_durham =
             Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_durham.csv");
 //
-    vector<vector<double>> caryDemandClassesFractions = Utils::parse2DCsvFile
+    vector<vector<float>> caryDemandClassesFractions = Utils::parse2DCsvFile
             (output_directory + "/TestFiles/caryDemandClassesFractions.csv");
-    vector<vector<double>> durhamDemandClassesFractions = Utils::parse2DCsvFile
+    vector<vector<float>> durhamDemandClassesFractions = Utils::parse2DCsvFile
             (output_directory + "/TestFiles/durhamDemandClassesFractions.csv");
-    vector<vector<double>> raleighDemandClassesFractions = Utils::parse2DCsvFile
+    vector<vector<float>> raleighDemandClassesFractions = Utils::parse2DCsvFile
             (output_directory + "/TestFiles/raleighDemandClassesFractions.csv");
-    vector<vector<double>> owasaDemandClassesFractions = Utils::parse2DCsvFile
+    vector<vector<float>> owasaDemandClassesFractions = Utils::parse2DCsvFile
             (output_directory + "/TestFiles/owasaDemandClassesFractions.csv");
 
-    vector<vector<double>> caryUserClassesWaterPrices = Utils::parse2DCsvFile
+    vector<vector<float>> caryUserClassesWaterPrices = Utils::parse2DCsvFile
             (output_directory + "/TestFiles/caryUserClassesWaterPrices.csv");
-    vector<vector<double>> durhamUserClassesWaterPrices = Utils::parse2DCsvFile
+    vector<vector<float>> durhamUserClassesWaterPrices = Utils::parse2DCsvFile
             (output_directory + "/TestFiles/durhamUserClassesWaterPrices.csv");
-    vector<vector<double>> raleighUserClassesWaterPrices = Utils::parse2DCsvFile
+    vector<vector<float>> raleighUserClassesWaterPrices = Utils::parse2DCsvFile
             (output_directory + "/TestFiles/raleighUserClassesWaterPrices.csv");
-    vector<vector<double>> owasaUserClassesWaterPrices = Utils::parse2DCsvFile
+    vector<vector<float>> owasaUserClassesWaterPrices = Utils::parse2DCsvFile
             (output_directory + "/TestFiles/owasaUserClassesWaterPrices.csv");
 
-    vector<vector<double>> owasaPriceSurcharges = Utils::parse2DCsvFile
+    vector<vector<float>> owasaPriceSurcharges = Utils::parse2DCsvFile
             (output_directory + "/TestFiles/owasaPriceRestMultipliers.csv");
 
-//    vector<double> sewageFractions = Utils::parse1DCsvFile(
+//    vector<float> sewageFractions = Utils::parse1DCsvFile(
 //            output_directory + "/TestFiles/sewageFractions.csv");
 
     EvaporationSeries evaporation_durham(&evap_durham, streamflow_n_weeks);
@@ -405,14 +418,14 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
     gage_lillington.push_back(&cape_fear_river_at_lillington);
 
     /// Storage vs. area reservoir curves.
-    vector<double> falls_lake_storage = {0, 23266, 34700};
-    vector<double> falls_lake_area = {0.32 * 5734, 0.32 * 29000, 0.28 * 40434};
-    vector<double> wheeler_benson_storage = {0, 2789.66};
-    vector<double> wheeler_benson_area = {0, 0.3675 * 2789.66};
-    vector<double> teer_storage = {0, 1315.0};
-    vector<double> teer_area = {20, 50};
-    vector<double> little_river_res_storage = {0, 3700};
-    vector<double> little_river_res_area = {0, 0.3675 * 3700};
+    vector<float> falls_lake_storage = {0, 23266, 34700};
+    vector<float> falls_lake_area = {0.32 * 5734, 0.32 * 29000, 0.28 * 40434};
+    vector<float> wheeler_benson_storage = {0, 2789.66};
+    vector<float> wheeler_benson_area = {0, 0.3675 * 2789.66};
+    vector<float> teer_storage = {0, 1315.0};
+    vector<float> teer_area = {20, 50};
+    vector<float> little_river_res_storage = {0, 3700};
+    vector<float> little_river_res_area = {0, 0.3675 * 3700};
 
     DataSeries falls_lake_storage_area(&falls_lake_storage, &falls_lake_area);
     DataSeries wheeler_benson_storage_area(&wheeler_benson_storage,
@@ -424,16 +437,16 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
 
     /// Minimum environmental flow rules (controls)
     vector<int> dlr_weeks = {0, 21, 47, 53};
-    vector<double> dlr_releases = {3.877 * 7, 9.05, 3.877 * 7};
-    vector<double> wb_storage = {0.3 * 2789.66, 0.6 * 2789.66, 2789.66};
-    vector<double> wb_releases = {0.646 * 7, 1.29 * 7, 1.94 * 7};
-    vector<double> ccr_inflows = {0.1422 * 7, 0.5 * 7, 1 * 7, 1.5 * 7,
+    vector<float> dlr_releases = {3.877 * 7, 9.05, 3.877 * 7};
+    vector<float> wb_storage = {0.3 * 2789.66, 0.6 * 2789.66, 2789.66};
+    vector<float> wb_releases = {0.646 * 7, 1.29 * 7, 1.94 * 7};
+    vector<float> ccr_inflows = {0.1422 * 7, 0.5 * 7, 1 * 7, 1.5 * 7,
                                   1.797 * 7};
-    vector<double> ccr_releases = {0.1422 * 7, 0.5 * 7, 1 * 7, 1.5 * 7,
+    vector<float> ccr_releases = {0.1422 * 7, 0.5 * 7, 1 * 7, 1.5 * 7,
                                    1.797 * 7};
     int falls_controls_weeks[2] = {13, 43};
-    double falls_base_releases[2] = {64.64 * 7, 38.78 * 7};
-    double falls_min_gage[2] = {180 * 7, 130 * 7};
+    float falls_base_releases[2] = {64.64 * 7, 38.78 * 7};
+    float falls_min_gage[2] = {180 * 7, 130 * 7};
 
     SeasonalMinEnvFlowControl durham_min_env_control(0, &dlr_weeks,
                                                      &dlr_releases);
@@ -466,7 +479,7 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
     FixedMinEnvFlowControl neuse_intake_min_env_control(10, 38.78 * 7);
 
 //    vector<int> eno_weeks = {7, 16, 53};
-//    vector<double> eno_releases = {6.49 * 7, 19.48 * 7, 6.49 * 7};
+//    vector<float> eno_releases = {6.49 * 7, 19.48 * 7, 6.49 * 7};
 //    SeasonalMinEnvFlowControl eno_min_env_control(&eno_weeks, &eno_releases);
 
     vector<MinEnvironFlowControl *> min_env_flow_controls;
@@ -483,36 +496,36 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
     min_env_flow_controls.push_back(&neuse_intake_min_env_control);
 
     /// Create reservoirs and corresponding vector
-    vector<double> construction_time_interval = {3.0, 5.0};
-    vector<double> city_infrastructure_rof_triggers = {owasa_inftrigger,
+    vector<float> construction_time_interval = {3.0, 5.0};
+    vector<float> city_infrastructure_rof_triggers = {owasa_inftrigger,
                                                        durham_inftrigger,
                                                        cary_inftrigger,
                                                        raleigh_inftrigger};
-    vector<double> bond_length = {25, 25, 25, 25};
-    vector<double> bond_rate = {0.05, 0.05, 0.05, 0.05};
+    vector<float> bond_length = {25, 25, 25, 25};
+    vector<float> bond_rate = {0.05, 0.05, 0.05, 0.05};
 
     /// Jordan Lake parameters
-    double jl_supply_capacity = 14924.0;
-    double jl_wq_capacity = 30825.0;
-    double jl_storage_capacity = jl_wq_capacity + jl_supply_capacity;
+    float jl_supply_capacity = 14924.0;
+    float jl_wq_capacity = 30825.0;
+    float jl_storage_capacity = jl_wq_capacity + jl_supply_capacity;
     vector<int> jl_allocations_ids = {0, 1, 2, 3, WATER_QUALITY_ALLOCATION};
-    vector<double> jl_allocation_fractions = {
+    vector<float> jl_allocation_fractions = {
             OWASA_JLA * jl_supply_capacity / jl_storage_capacity,
             Durham_JLA * jl_supply_capacity / jl_storage_capacity,
             Cary_JLA * jl_supply_capacity / jl_storage_capacity,
             Raleigh_JLA * jl_supply_capacity / jl_storage_capacity,
             jl_wq_capacity / jl_storage_capacity};
-    vector<double> jl_treatment_allocation_fractions = {0.0, 0.0, 1.0, 0.0};
+    vector<float> jl_treatment_allocation_fractions = {0.0, 0.0, 1.0, 0.0};
 
     /// Jordan Lake parameters
-    double fl_supply_capacity = 14700.0;
-    double fl_wq_capacity = 20000.0;
-    double fl_storage_capacity = fl_wq_capacity + fl_supply_capacity;
+    float fl_supply_capacity = 14700.0;
+    float fl_wq_capacity = 20000.0;
+    float fl_storage_capacity = fl_wq_capacity + fl_supply_capacity;
     vector<int> fl_allocations_ids = {3, WATER_QUALITY_ALLOCATION};
-    vector<double> fl_allocation_fractions = {
+    vector<float> fl_allocation_fractions = {
             fl_supply_capacity / fl_storage_capacity,
             fl_wq_capacity / fl_storage_capacity};
-    vector<double> fl_treatment_allocation_fractions = {0.0, 0.0, 0.0, 1.0};
+    vector<float> fl_treatment_allocation_fractions = {0.0, 0.0, 0.0, 1.0};
 
     // Existing Sources
     Reservoir durham_reservoirs("Lake Michie & Little River Res. (Durham)",
@@ -572,7 +585,7 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
     // other than Cary WTP for Jordan Lake, assume no WTP constraints - each
     // city can meet its daily demands with available treatment infrastructure
 
-    double WEEKS_IN_YEAR = 0;
+    float WEEKS_IN_YEAR = 0;
 
     // Potential Sources
     // The capacities listed here for expansions are what additional capacity is gained relative to existing capacity,
@@ -632,7 +645,7 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
     // FYI: spillage from Eno River also helps determine Teer quarry diversion, but Eno spillage isn't factored into
     // downstream water balance?
 
-    vector<double> fl_relocation_fractions = {
+    vector<float> fl_relocation_fractions = {
             (fl_supply_capacity + falls_lake_reallocation) /
             fl_storage_capacity,
             (fl_wq_capacity - falls_lake_reallocation) / fl_storage_capacity};
@@ -719,17 +732,17 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
 
     WEEKS_IN_YEAR = Constants::WEEKS_IN_YEAR;
 
-    vector<double> wjlwtp_treatment_capacity_fractions =
+    vector<float> wjlwtp_treatment_capacity_fractions =
             {western_wake_treatment_plant_owasa_frac,
              western_wake_treatment_frac_durham,
              0.,
              western_wake_treatment_plant_raleigh_frac,
              0.};
-    vector<double> cary_upgrades_treatment_capacity_fractions = {0., 0., 1.,
+    vector<float> cary_upgrades_treatment_capacity_fractions = {0., 0., 1.,
                                                                  0., 0.};
 
-    auto *shared_added_wjlwtp_treatment_pool = new vector<double>();
-    auto *shared_added_wjlwtp_price = new vector<double>();
+    auto *shared_added_wjlwtp_treatment_pool = new vector<float>();
+    auto *shared_added_wjlwtp_price = new vector<float>();
     SequentialJointTreatmentExpansion low_wjlwtp("Low WJLWTP",
                                                  20,
                                                  6,
@@ -907,7 +920,7 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
 
     vector<int> cary_ws_return_id = {};
     auto *cary_discharge_fraction_series =
-            new vector<vector<double>>();
+            new vector<vector<float>>();
     WwtpDischargeRule wwtp_discharge_cary(
             cary_discharge_fraction_series,
             &cary_ws_return_id);
@@ -928,7 +941,7 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
 
 
     vector<int> demand_triggered_infra_order_cary = {22, 23};
-    vector<double> demand_infra_cary = {caryupgrades_2 * 7, caryupgrades_3 * 7};
+    vector<float> demand_infra_cary = {caryupgrades_2 * 7, caryupgrades_3 * 7};
     Utility cary((char *) "Cary", 2, &demand_cary, demand_n_weeks,
                  cary_annual_payment, &caryDemandClassesFractions,
                  &caryUserClassesWaterPrices,
@@ -973,30 +986,30 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
 
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
     /// Restriction policies
-    vector<double> initial_restriction_triggers = {OWASA_restriction_trigger,
+    vector<float> initial_restriction_triggers = {OWASA_restriction_trigger,
                                                    Durham_restriction_trigger,
                                                    cary_restriction_trigger,
                                                    raleigh_restriction_trigger};
 
-    vector<double> restriction_stage_multipliers_cary = {0.9, 0.8, 0.7, 0.6};
-    vector<double> restriction_stage_triggers_cary = {initial_restriction_triggers[0],
-                                                      initial_restriction_triggers[0] + 0.15,
-                                                      initial_restriction_triggers[0] + 0.35,
-                                                      initial_restriction_triggers[0] + 0.6};
-    vector<double> restriction_stage_multipliers_durham = {0.9, 0.8, 0.7, 0.6};
-    vector<double> restriction_stage_triggers_durham = {initial_restriction_triggers[1],
-                                                        initial_restriction_triggers[1] + 0.15,
-                                                        initial_restriction_triggers[1] + 0.35,
-                                                        initial_restriction_triggers[1] + 0.6};
-    vector<double> restriction_stage_multipliers_owasa = {0.9, 0.8, 0.7};
-    vector<double> restriction_stage_triggers_owasa = {initial_restriction_triggers[2],
-                                                       initial_restriction_triggers[2] + 0.15,
-                                                       initial_restriction_triggers[2] + 0.35};
-    vector<double> restriction_stage_multipliers_raleigh = {0.9, 0.8, 0.7, 0.6};
-    vector<double> restriction_stage_triggers_raleigh = {initial_restriction_triggers[3],
-                                                         initial_restriction_triggers[3] + 0.15,
-                                                         initial_restriction_triggers[3] + 0.35,
-                                                         initial_restriction_triggers[3] + 0.6};
+    vector<float> restriction_stage_multipliers_cary = {0.9, 0.8, 0.7, 0.6};
+    vector<float> restriction_stage_triggers_cary = {initial_restriction_triggers[0],
+                                                      initial_restriction_triggers[0] + 0.15f,
+                                                      initial_restriction_triggers[0] + 0.35f,
+                                                      initial_restriction_triggers[0] + 0.6f};
+    vector<float> restriction_stage_multipliers_durham = {0.9, 0.8, 0.7, 0.6};
+    vector<float> restriction_stage_triggers_durham = {initial_restriction_triggers[1],
+                                                        initial_restriction_triggers[1] + 0.15f,
+                                                        initial_restriction_triggers[1] + 0.35f,
+                                                        initial_restriction_triggers[1] + 0.6f};
+    vector<float> restriction_stage_multipliers_owasa = {0.9, 0.8, 0.7};
+    vector<float> restriction_stage_triggers_owasa = {initial_restriction_triggers[2],
+                                                       initial_restriction_triggers[2] + 0.15f,
+                                                       initial_restriction_triggers[2] + 0.35f};
+    vector<float> restriction_stage_multipliers_raleigh = {0.9, 0.8, 0.7, 0.6};
+    vector<float> restriction_stage_triggers_raleigh = {initial_restriction_triggers[3],
+                                                         initial_restriction_triggers[3] + 0.15f,
+                                                         initial_restriction_triggers[3] + 0.35f,
+                                                         initial_restriction_triggers[3] + 0.6f};
 
     Restrictions restrictions_c(2,
                                 restriction_stage_multipliers_cary,
@@ -1029,9 +1042,9 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
 
     vector<int> buyers_ids = {0, 1, 3};
     //FIXME: CHECK IF TRANSFER CAPACITIES MATCH IDS IN BUYERS_IDS.
-    vector<double> buyers_transfers_capacities = {10.8 * 7, 10.0 * 7, 11.5 * 7,
+    vector<float> buyers_transfers_capacities = {10.8 * 7, 10.0 * 7, 11.5 * 7,
                                                   7.0 * 7};
-    vector<double> buyers_transfers_trigger = {owasa_transfer_trigger,
+    vector<float> buyers_transfers_trigger = {owasa_transfer_trigger,
                                                durham_transfer_trigger,
                                                raleigh_transfer_trigger};
 
@@ -1049,15 +1062,15 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
                 buyers_transfers_capacities,
                 buyers_transfers_trigger,
                 ug,
-                vector<double>(),
+                vector<float>(),
                 vector<int>());
     drought_mitigation_policies.push_back(&t);
 
 
-    double insurance_triggers[4] = {owasa_insurance_use,
+    float insurance_triggers[4] = {owasa_insurance_use,
                                     durham_insurance_use, cary_insurance_use,
                                     raleigh_insurance_use}; //FIXME: Change per solution
-    double fixed_payouts[4] = {owasa_insurance_payment,
+    float fixed_payouts[4] = {owasa_insurance_payment,
                                durham_insurance_payment,
                                cary_insurance_payment,
                                raleigh_insurance_payment};
@@ -1082,11 +1095,11 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
                  drought_mitigation_policies,
                  min_env_flow_controls,
                  n_weeks,
-                 max_lines);
-    cout << "Beginning simulation." << endl;
+                 n_realizations);
+    //cout << "Beginning simulation." << endl;
 //    s.runFullSimulation(n_threads);
     data_collector = s.runFullSimulation();
-    cout << "Ending simulation" << endl;
+    //cout << "Ending simulation" << endl;
 
     /// Calculate objective values.
     data_collector->setOutputDirectory(output_directory);
@@ -1099,20 +1112,20 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
     string fpw = "/TestFiles/output/Pathways";
 
     //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
-//    data_collector->printObjectives(fo + "_s" + std::to_string(sol_number));
+    data_collector->calculatePrintObjectives(fo + "_s" + std::to_string(sol_number), true);
 //    data_collector->printPathways(fpw + "_s" + std::to_string(sol_number));
-    data_collector->printUtilitiesOutputCompact(0,
-                                                n_weeks,
-                                                fu + "_s"
-                                                + std::to_string(sol_number));
-    data_collector->printWaterSourcesOutputCompact(0,
-                                                   n_weeks,
-                                                   fws + "_s"
-                                                   + std::to_string(sol_number));
-    data_collector->printPoliciesOutputCompact(0,
-                                               n_weeks,
-                                               fp + "_s"
-                                               + std::to_string(sol_number));
+//    data_collector->printUtilitiesOutputCompact(0,
+//                                                n_weeks,
+//                                                fu + "_s"
+//                                                + std::to_string(sol_number));
+//    data_collector->printWaterSourcesOutputCompact(0,
+//                                                   n_weeks,
+//                                                   fws + "_s"
+//                                                   + std::to_string(sol_number));
+//    data_collector->printPoliciesOutputCompact(0,
+//                                               n_weeks,
+//                                               fp + "_s"
+//                                               + std::to_string(sol_number));
 //    data_collector->printUtilitesOutputTabular(0,
 //                                               n_weeks,
 //                                               fu + "_s"
@@ -1125,74 +1138,90 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
 //                                               n_weeks,
 //                                               fp + "_s"
 //                                               + std::to_string(sol_number));
-    data_collector->printObjectives(fo + "_s" + std::to_string(sol_number));
-    data_collector->printPathways(fpw + "_s" + std::to_string(sol_number));
+    float *obj_not_jla = data_collector->calculatePrintObjectives(
+            fo + "_s" + std::to_string(sol_number), false).data();
+
+    int i = 0;
+    c_obj[i] = min(min(obj_not_jla[i*4], obj_not_jla[i*4+5]), min(obj_not_jla[i*4+10], obj_not_jla[i*4+15]));
+    for (i = 1; i < 5; ++i) {
+        c_obj[i] = max(max(obj_not_jla[i*4], obj_not_jla[i*4+5]), max(obj_not_jla[i*4+10], obj_not_jla[i*4+15]));
+    }
+
+    c_obj[5] = max(max(OWASA_JLA, Durham_JLA), max(Cary_JLA, Raleigh_JLA));
+
+    cout << "objectives returned" << endl;
+
+//    data_collector->printPathways(fpw + "_s" + std::to_string(sol_number));
+}
+
+int n_realizations_borg;
+int n_weeks_borg;
+string io_dir;
+
+void calculationWrapperFunction(float *xreal, float *obj, float *constr)
+{
+    triangleTest(xreal, obj, constr, n_realizations_borg, n_weeks_borg, 0, io_dir, vector<int>());
 }
 
 int main(int argc, char *argv[]) {
 
-//    if (argc == 5)
-//        for (int i = 0; i < solutions_16.size(); ++i) {
-//            cout << endl << endl << endl << "Running solution " << i << endl;
-//            triangleTest(solutions_16[i].data(), atoi(argv[2]),
-//                         atoi(argv[3]), i, argv[4]);
-//        }
-//    else if (argc == 6) {
-//        int i = atoi(argv[4]);
-//        cout << endl << endl << endl << "Running solution " << i << endl;
-//        triangleTest(solutions_16[i].data(), atoi(argv[2]),
-//                     atoi(argv[3]), i, argv[5]);
-//    }
-//    else if (argc == 7) {
-//        int first_sol = atoi(argv[4]);
-//        int last_sol = atoi(argv[5]);
-//
-//        cout << "Solutions " << first_sol << " to " << last_sol << endl;
-//
-//        for (int i = first_sol; i < last_sol; ++i) {
-//            cout << endl << endl << endl << "Running solution " << i << endl;
-//            triangleTest(solutions_16[i].data(), atoi(argv[2]),
-//                         atoi(argv[3]), i, argv[6]);
-//        }
-//    }
+    const int c_num_dec = NUM_DEC_VAR;
+    const int c_num_obj = NUM_OBJECTIVES;
+    int c_num_constr = 0;
+    float c_obj[c_num_obj * 4];
+    float c_constr[0];
 
     int n_realizations = 1000;
     int n_weeks = 1565;
-    char* system_io = const_cast<char *>("./");
-    char* solution_file = const_cast<char *>("");
-    char* uncertainty_file = const_cast<char *>("");
+    char* system_io = "./";
+    char* solution_file = "-1";
+    char* uncertainty_file = "-1";
+    char* bootstrap_file = "-1";
     int standard_solution = 0;
     int first_solution = -1;
     int last_solution = -1;
     bool verbose = false;
     bool tabular = false;
     bool plotting = true;
+    bool run_optimization = false;
+    // omp_set_num_threads(1);
+    unsigned int n_islands = 2;
+    unsigned int nfe = 1000;
+    unsigned int output_frequency = 200;
+    unsigned int seed = 0;
+    vector<int> bootstrap_sample = vector<int>();
 
     int c;
-    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p")) != -1) {
+    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:")) != -1) {
         switch (c) {
             case '?':
                 fprintf(stdout,
                         "%s\n"
-                        "\t-?: print this message\n"
-                        "\t-s: solutions file (hard coded solutions)\n"
-                        "\t-u: uncertain factors file (hard coded values)\n"
-                        "\t-T: number of threads (auto)\n"
-                        "\t-r: number of realizations (%d)\n"
-                        "\t-t: total simulated time in weeks (%d)\n"
-                        "\t-d: directory for system I/O (%s)\n"
-                        "\t-f: first solution number\n"
-                        "\t-l: last solution number\n"
-                        "\t-m: individual solution number\n"
-                        "\t-v: verbose mode (false)\n"
-                        "\t-c: tabular output (really big files, false)\n"
-                        "\t-p: plotting output (smaller csv files)\n",
+                                "\t-?: print this message\n"
+                                "\t-s: solutions file (hard coded solutions)\n"
+                                "\t-u: uncertain factors file (hard coded values)\n"
+                                "\t-T: number of threads (auto)\n"
+                                "\t-r: number of realizations (%d)\n"
+                                "\t-t: total simulated time in weeks (%d)\n"
+                                "\t-d: directory for system I/O (%s)\n"
+                                "\t-f: first solution number\n"
+                                "\t-l: last solution number\n"
+                                "\t-m: individual solution number\n"
+                                "\t-v: verbose mode (false)\n"
+                                "\t-c: tabular output (really big files, false)\n"
+                                "\t-p: plotting output (smaller csv files)\n"
+                                "\t-b: run optimization with Borg (false)\n"
+                                "\t-i: number of islands if using Borg (2)\n"
+                                "\t-n: number of function evaluations if using Borg (1000)\n"
+                                "\t-o: output frequency if using Borg (200)\n"
+                                "\t-e: seed number (none)\n"
+                                "\t-y: file with bootstrap samples\n",
                         argv[0], n_realizations, n_weeks, system_io);
                 return -1;
             case 's': solution_file = optarg; break;
             case 'u': uncertainty_file = optarg; break;
-            case 'T': omp_set_num_threads(atoi(optarg)); break;
-//            case 'T': break;
+            // case 'T': omp_set_num_threads(atoi(optarg)); break;
+            case 'T': break;
             case 'r': n_realizations = atoi(optarg); break;
             case 't': n_weeks = atoi(optarg); break;
             case 'd': system_io = optarg; break;
@@ -1202,42 +1231,118 @@ int main(int argc, char *argv[]) {
             case 'v': verbose = static_cast<bool>(atoi(optarg)); break;
             case 'c': tabular = static_cast<bool>(atoi(optarg)); break;
             case 'p': plotting = static_cast<bool>(atoi(optarg)); break;
+            case 'b': run_optimization = true; break;
+            case 'i': n_islands = atoi(optarg); break;
+            case 'n': nfe = atoi(optarg); break;
+            case 'o': output_frequency = atoi(optarg); break;
+            case 'e': seed = atoi(optarg); break;
+            case 'y': bootstrap_file = optarg; break;
             default:
                 fprintf(stderr, "Unknown option (-%c)\n", c);
                 return -1;
         }
     }
 
+    if (!run_optimization) {
+        if (strlen(bootstrap_file) > 2) {
+            vector<float> v = Utils::parse1DCsvFile(bootstrap_file);
+            bootstrap_sample = vector<int>(v.begin(), v.end());
+        }
 
-    vector<int> sol_range;
-    if ((first_solution == -1 && last_solution != -1) ||
-        (first_solution != -1 && last_solution == -1))
-        __throw_invalid_argument("If you set a first or last solution, you "
-                                         "must set the other as well.");
+        vector<int> sol_range;
+        if ((first_solution == -1 && last_solution != -1) ||
+            (first_solution != -1 && last_solution == -1))
+            __throw_invalid_argument("If you set a first or last solution, you "
+                                             "must set the other as well.");
 
-    if (strlen(system_io) == 0) {
-        __throw_invalid_argument("You must specify an input output directory.");
-    }
+        if (strlen(system_io) == 0) {
+            __throw_invalid_argument(
+                    "You must specify an input output directory.");
+        }
 
-    vector<vector<double>> solutions;
-    if (strlen(solution_file) > 0)
-        solutions = Utils::parse2DCsvFile(solution_file);
-    else
-        solutions = solutions_16;
+        vector<vector<float>> solutions;
+        if (strlen(solution_file) > 2)
+            solutions = Utils::parse2DCsvFile(string(system_io) +
+                                                      solution_file);
+        else
+            printf("You must specify a solutions file.\n");
 
-    if (first_solution == -1) {
-        cout << endl << endl << endl << "Running solution "
-             << standard_solution << endl;
-        triangleTest(solutions[standard_solution].data(), n_realizations,
-                     n_weeks, standard_solution, string(system_io));
-    } else {
-        for (int s = first_solution; s < last_solution; ++s) {
+        if (first_solution == -1) {
             cout << endl << endl << endl << "Running solution "
                  << standard_solution << endl;
-            triangleTest(solutions[s].data(), n_realizations,
-                         n_weeks, s, string(system_io));
+            triangleTest(solutions[standard_solution].data(), c_obj, c_constr,
+                         n_realizations, n_weeks, standard_solution,
+                         string(system_io), bootstrap_sample);
+        } else {
+            for (int s = first_solution; s < last_solution; ++s) {
+                cout << endl << endl << endl << "Running solution "
+                     << standard_solution << endl;
+                triangleTest(solutions[s].data(), c_obj, c_constr,
+                             n_realizations, n_weeks, s, string(system_io), bootstrap_sample);
+            }
         }
+
+        return 0;
+    } else {
+        n_weeks_borg = n_weeks;
+        n_realizations_borg = n_realizations;
+        io_dir = system_io;
+
+//        printf("Running Borg with:\n"
+//            "n_islands: %d\n"
+//            "nfe: %d\n"
+//            "output freq.: %d\n"
+//            "n_weeks: %d\n"
+//            "n_realizations: %d\n\n",
+//            n_islands, nfe, output_frequency, n_weeks, n_realizations);
+
+//        cout << "Defining problem" << endl;
+/*        BORG_Algorithm_ms_startup(&argc, &argv);
+        BORG_Algorithm_ms_islands(n_islands);
+        BORG_Algorithm_ms_initialization(INITIALIZATION_LATIN_GLOBAL);
+        BORG_Algorithm_ms_max_evaluations(nfe);
+        BORG_Algorithm_output_frequency(output_frequency);
+
+        // Define the problem.
+        BORG_Problem problem = BORG_Problem_create(c_num_dec, c_num_obj,
+                                                   c_num_constr,
+                                                   calculationWrapperFunction);
+
+        // Set all the parameter bounds and epsilons
+        setProblemDefinition(problem);
+
+        srand(seed);
+        char outputFilename[256];
+        char runtime[256];
+        FILE* outputFile = nullptr;
+        sprintf(outputFilename, "/home/bct52/WaterPaths_mm/output/NC_output_MM_S%d.set", seed);
+        // output path (make sure this exists)
+        sprintf(runtime, "/home/bct52/WaterPaths_mm/output/NC_runtime_MM_S%d_M%%d.runtime", seed); // runtime
+        // path (make sure this exists)
+
+        BORG_Algorithm_output_runtime(runtime);
+
+        // int rank; // different seed on each processor
+        // MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        // BORG_Random_seed(37*seed*(rank+1));
+        BORG_Random_seed(seed);
+        BORG_Archive result = BORG_Algorithm_ms_run(problem); // this actually runs the optimization
+
+        // If this is the master node, print out the final archive
+        if (result != nullptr) {
+            outputFile = fopen(outputFilename, "w");
+            if (!outputFile) {
+                BORG_Debug("Unable to open final output file\n");
+            }
+            BORG_Archive_print(result, outputFile);
+            BORG_Archive_destroy(result);
+            fclose(outputFile);
+        }
+
+        BORG_Algorithm_ms_shutdown();
+        BORG_Problem_destroy(problem);*/
+
+        return 0;
     }
 
-    return 0;
 }

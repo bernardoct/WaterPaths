@@ -14,9 +14,9 @@ InsuranceStorageToROF::InsuranceStorageToROF(
         vector<Utility *> &utilities,
         vector<MinEnvironFlowControl *>
         min_env_flow_controls,
-        double *rof_triggers,
-        const double insurance_premium,
-        const double *fixed_payouts)
+        float *rof_triggers,
+        const float insurance_premium,
+        const float *fixed_payouts)
         : DroughtMitigationPolicy(id, INSURANCE_STORAGE_ROF),
           ContinuityModelROF(Utils::copyWaterSourceVector(water_sources),
                              water_sources_graph,
@@ -26,8 +26,8 @@ InsuranceStorageToROF::InsuranceStorageToROF(
                              (unsigned int) NON_INITIALIZED),
           insurance_premium(insurance_premium), fixed_payouts(fixed_payouts),
           rof_triggers(rof_triggers),
-          utilities_revenue_last_year(new double[utilities.size()]()),
-          utilities_revenue_update(new double[utilities.size()]()) {
+          utilities_revenue_last_year(new float[utilities.size()]()),
+          utilities_revenue_update(new float[utilities.size()]()) {
 
     for (Utility *u : utilities) utilities_ids.push_back(u->id);
 
@@ -36,7 +36,7 @@ InsuranceStorageToROF::InsuranceStorageToROF(
         u->resetTotal_storage_capacity();
     }
 
-    insurance_price = new double[n_utilities];
+    insurance_price = new float[n_utilities];
 }
 
 InsuranceStorageToROF::InsuranceStorageToROF(
@@ -54,10 +54,10 @@ InsuranceStorageToROF::InsuranceStorageToROF(
         fixed_payouts(insurance.fixed_payouts),
         rof_triggers(insurance.rof_triggers),
         utilities_revenue_last_year(
-                new double[insurance.continuity_utilities.size()]()),
+                new float[insurance.continuity_utilities.size()]()),
         utilities_revenue_update(
-                new double[insurance.continuity_utilities.size()]()),
-        insurance_price(new double[n_utilities]) {
+                new float[insurance.continuity_utilities.size()]()),
+        insurance_price(new float[n_utilities]) {
 
     utilities_ids = insurance.utilities_ids;
 }
@@ -78,10 +78,10 @@ void InsuranceStorageToROF::applyPolicy(int week) {
     if (Utils::isFirstWeekOfTheYear(week + 1)) {
         delete utilities_revenue_last_year;
         utilities_revenue_last_year = utilities_revenue_update;
-        utilities_revenue_update = new double[continuity_utilities.size()]();
+        utilities_revenue_update = new float[continuity_utilities.size()]();
 
         priceInsurance(week_of_year);
-        storage_to_rof_table_prev_year = Matrix3D<double>
+        storage_to_rof_table_prev_year = Matrix3D<float>
                 (*storage_to_rof_table_);
     }
 
@@ -89,9 +89,9 @@ void InsuranceStorageToROF::applyPolicy(int week) {
     if (week > WEEKS_IN_YEAR) {
 
         /// Get ROFs from table.
-        double utilities_rof[realization_utilities.size()];
+        float utilities_rof[realization_utilities.size()];
         fill_n(utilities_rof, n_utilities, 0.);
-        double utilities_storage_capa_ratio[realization_utilities.size()];
+        float utilities_storage_capa_ratio[realization_utilities.size()];
         fill_n(utilities_storage_capa_ratio, n_utilities, 0.);
 
         for (int u = 0; u < realization_utilities.size(); ++u) {
@@ -154,19 +154,21 @@ void InsuranceStorageToROF::priceInsurance(int week) {
             continuityStep(w, r);
 
             /// Get utilities' approximate rof from storage-rof-table.
-            double utilities_rofs[n_utilities];
-            double* utilities_storage_capacity_ratio =
+            float utilities_rofs[n_utilities];
+            float* utilities_storage_capacity_ratio =
                     UtilitiesStorageCapacityRatio();
             getUtilitiesApproxROFs(utilities_storage_capacity_ratio,
                                    storage_to_rof_table_,
                                    Utils::weekOfTheYear(w), utilities_rofs);
 
             /// Increase the price of the insurance if payout is triggered.
-            for (int u : utilities_ids)
+//#pragma omp critical
+            for (int u : utilities_ids) {
                 if (utilities_rofs[u] > rof_triggers[u])
                     insurance_price[u] +=
                             fixed_payouts[u] * utilities_revenue_last_year[u] *
                             insurance_premium;
+            }
         }
     }
 
@@ -185,9 +187,9 @@ void InsuranceStorageToROF::priceInsurance(int week) {
  * @return
  */
 void InsuranceStorageToROF::getUtilitiesApproxROFs(
-        const double *u_storage_capacity_ratio,
-        const Matrix3D<double> *storage_to_rof_table,
-        int week, double *utilities_approx_rof) {
+        const float *u_storage_capacity_ratio,
+        const Matrix3D<float> *storage_to_rof_table,
+        int week, float *utilities_approx_rof) {
 
     for (int u = 0; u < n_utilities; ++u) {
         /// get storage index in the table corresponding to the utility's combined storage.
@@ -209,10 +211,10 @@ void InsuranceStorageToROF::getUtilitiesApproxROFs(
  * Calculation of storage-capacity ratio within the rof model for insurance price.
  * @return
  */
-double *InsuranceStorageToROF::UtilitiesStorageCapacityRatio() {
+float *InsuranceStorageToROF::UtilitiesStorageCapacityRatio() {
 
     int n_utilities = (int) continuity_utilities.size();
-    double *u_storage_capacity_ratio = new double[n_utilities];
+    float *u_storage_capacity_ratio = new float[n_utilities];
     for (int u = 0; u < n_utilities; ++u)
         u_storage_capacity_ratio[u] =
                 continuity_utilities[u]->getStorageToCapacityRatio();

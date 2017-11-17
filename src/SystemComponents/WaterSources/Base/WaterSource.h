@@ -16,74 +16,74 @@ const int BOND_INTEREST_PAYMENTS_PER_YEAR = 1;
 class WaterSource {
 protected:
 
-    double available_volume = 0;
-    double total_outflow = 0;
-    double upstream_source_inflow = 0;
-    double wastewater_inflow = 0;
-    double upstream_catchment_inflow = 0;
-    double total_demand = 0;
-    double policy_added_demand = 0;
-    double upstream_min_env_inflow;
-    double capacity;
-    double *available_allocated_volumes = new double();
-    double *allocated_capacities = nullptr;
-    double *allocated_treatment_capacities = nullptr;
-    double *allocated_treatment_fractions = nullptr;
-    double *allocated_fractions = nullptr;
+    float available_volume = 0;
+    float total_outflow = 0;
+    float upstream_source_inflow = 0;
+    float wastewater_inflow = 0;
+    float upstream_catchment_inflow = 0;
+    float total_demand = 0;
+    float policy_added_demand = 0;
+    float upstream_min_env_inflow;
+    float capacity;
+    float *available_allocated_volumes = nullptr;
+    float *allocated_capacities = nullptr;
+    float *allocated_treatment_capacities = nullptr;
+    float *allocated_treatment_fractions = nullptr;
+    float *allocated_fractions = nullptr;
     vector<int> *utilities_with_allocations = nullptr;
     int wq_pool_id = NON_INITIALIZED;
-    double total_allocated_fraction = NON_INITIALIZED;
+    float total_allocated_fraction = NON_INITIALIZED;
     bool online;
     vector<Catchment *> catchments;
-    double min_environmental_outflow;
-    double evaporated_volume = 0;
-    double total_treatment_capacity;
+    float min_environmental_outflow;
+    float evaporated_volume = 0;
+    float total_treatment_capacity;
     int highest_alloc_id = NON_INITIALIZED;
 
-    virtual void applyContinuity(int week, double upstream_source_inflow,
-                                     double wastewater_inflow,
-                                     vector<double> &demand_outflow) = 0;
+    virtual void applyContinuity(int week, float upstream_source_inflow,
+                                     float wastewater_inflow,
+                                     vector<float> &demand_outflow) = 0;
 
-    void bypass(int week, double total_upstream_inflow);
+    void bypass(int week, float total_upstream_inflow);
 
 public:
     const int id;
     const char *name;
     const int source_type;
-    const double construction_cost_of_capital;
-    const double construction_time;
-    const double permitting_period;
-    const double bond_term;
-    const double bond_interest_rate;
+    const float construction_cost_of_capital;
+    const float construction_time;
+    const float permitting_period;
+    const float bond_term;
+    const float bond_interest_rate;
 
     WaterSource(
             const char *name, const int id,
-            const vector<Catchment *> &catchments, const double capacity,
-            double treatment_capacity, const int source_type);
+            const vector<Catchment *> &catchments, const float capacity,
+            float treatment_capacity, const int source_type);
 
     WaterSource(const char *source_name, const int id,
-                    const vector<Catchment *> &catchments, const double capacity,
-                    double treatment_capacity, const int source_type,
-                    const vector<double> construction_time_range,
-                    double permitting_period, double construction_cost_of_capital,
-                    double bond_term, double bond_interest_rate);
+                    const vector<Catchment *> &catchments, const float capacity,
+                    float treatment_capacity, const int source_type,
+                    const vector<float> construction_time_range,
+                    float permitting_period, float construction_cost_of_capital,
+                    float bond_term, float bond_interest_rate);
 
     WaterSource(const char *name, const int id,
-                    const vector<Catchment *> &catchments, const double capacity,
-                    double treatment_capacity, const int source_type,
-                    vector<double> *allocated_treatment_fractions,
-                    vector<double> *allocated_fractions,
+                    const vector<Catchment *> &catchments, const float capacity,
+                    float treatment_capacity, const int source_type,
+                    vector<float> *allocated_treatment_fractions,
+                    vector<float> *allocated_fractions,
                     vector<int> *utilities_with_allocations,
-                    const vector<double> construction_time_range,
-                    double permitting_period, double construction_cost_of_capital,
-                    double bond_term, double bond_interest_rate);
+                    const vector<float> construction_time_range,
+                    float permitting_period, float construction_cost_of_capital,
+                    float bond_term, float bond_interest_rate);
 
     WaterSource(
             const char *name, const int id,
-            const vector<Catchment *> &catchments, const double capacity,
-            double treatment_capacity, const int source_type,
-            vector<double> *allocated_treatment_fractions,
-            vector<double> *allocated_fractions,
+            const vector<Catchment *> &catchments, const float capacity,
+            float treatment_capacity, const int source_type,
+            vector<float> *allocated_treatment_fractions,
+            vector<float> *allocated_fractions,
             vector<int> *utilities_with_allocations);
 
     WaterSource(const WaterSource &water_source);
@@ -98,78 +98,78 @@ public:
 
     bool operator==(const WaterSource *other);
 
-    void continuityWaterSource(int week, double upstream_source_inflow,
-                                   double wastewater_inflow,
-                                   vector<double> &demand_outflow);
+    void continuityWaterSource(int week, float upstream_source_inflow,
+                                   float wastewater_inflow,
+                                   vector<float> &demand_outflow);
 
     virtual void addTreatmentCapacity(
-            const double added_treatment_capacity,
-            double allocations_added_treatment_capacity,
+            const float added_treatment_capacity,
+            float allocations_added_treatment_capacity,
             int utility_id);
 
-    virtual double calculateNetPresentConstructionCost(
-            int week, int utility_id, double discount_rate,
-            double *level_debt_service_payment) const;
+    virtual float calculateNetPresentConstructionCost(
+            int week, int utility_id, float discount_rate,
+            float *level_debt_service_payment) const;
 
-    virtual void removeWater(int allocation_id, double volume);
+    virtual void removeWater(int allocation_id, float volume);
 
-    virtual void addCapacity(double capacity);
+    virtual void addCapacity(float capacity);
 
     virtual void setOnline();
 
-    virtual double getAvailableAllocatedVolume(int utility_id);
+    virtual float getAvailableAllocatedVolume(int utility_id);
 
-    double getMin_environmental_outflow() const;
+    float getMin_environmental_outflow() const;
 
-    void setMin_environmental_outflow(double min_environmental_outflow);
+    void setMin_environmental_outflow(float min_environmental_outflow);
 
-    double getAvailable_volume() const;
+    float getAvailable_volume() const;
 
-    double getTotal_outflow() const;
+    float getTotal_outflow() const;
 
     bool isOnline() const;
 
     virtual void setFull();
 
-    void setOutflow_previous_week(double outflow_previous_week);
+    void setOutflow_previous_week(float outflow_previous_week);
 
-    virtual double getCapacity();
+    virtual float getCapacity();
 
-    double getUpstream_source_inflow() const;
+    float getUpstream_source_inflow() const;
 
-    double getDemand() const;
+    float getDemand() const;
 
-    double getUpstreamCatchmentInflow() const;
+    float getUpstreamCatchmentInflow() const;
 
     static bool compare(WaterSource *lhs, WaterSource *rhs);
 
     virtual void setRealization(unsigned long r);
 
-    virtual double getAllocatedCapacity(int utility_id);
+    virtual float getAllocatedCapacity(int utility_id);
 
-    virtual double getAllocatedFraction(int utility_id);
+    virtual float getAllocatedFraction(int utility_id);
 
-    double getEvaporated_volume() const;
+    float getEvaporated_volume() const;
 
-    virtual double getAllocatedTreatmentCapacity(int utility_id) const;
+    virtual float getAllocatedTreatmentCapacity(int utility_id) const;
 
-    double getTotal_treatment_capacity(int utility_id) const;
+    float getTotal_treatment_capacity(int utility_id) const;
 
     void setAllocations(
             vector<int> *utilities_with_allocations,
-            vector<double> *allocated_fractions,
-            vector<double> *allocated_treatment_fractions);
+            vector<float> *allocated_fractions,
+            vector<float> *allocated_treatment_fractions);
 
-    void resetAllocations(const vector<double> *new_allocated_fractions);
+    void resetAllocations(const vector<float> *new_allocated_fractions);
 
     void setAvailableAllocatedVolumes(
-            double *available_allocated_volumes, double available_volume);
+            float *available_allocated_volumes, float available_volume);
 
-    double *getAvailable_allocated_volumes() const;
+    float *getAvailable_allocated_volumes() const;
 
     vector<int> *getUtilities_with_allocations() const;
 
-    double getWastewater_inflow() const;
+    float getWastewater_inflow() const;
 };
 
 

@@ -7,7 +7,7 @@
 #include "../Utils/Constants.h"
 
 
-Catchment::Catchment(vector<vector<double>> *streamflows_all, int series_length)
+Catchment::Catchment(vector<vector<float>> *streamflows_all, int series_length)
         : streamflows_all(streamflows_all), series_length(series_length) {
 
     if (series_length <
@@ -52,9 +52,8 @@ Catchment::~Catchment() {
  * @param week
  * @return
  */
-double Catchment::getStreamflow(int week) {
-    int adjusted_week = week + (int) std::round(
-            Constants::WEEKS_IN_YEAR * Constants::NUMBER_REALIZATIONS_ROF);
+float Catchment::getStreamflow(int week) {
+    int adjusted_week = week + delta_week;
     return streamflows_realization[adjusted_week];
 }
 
@@ -65,11 +64,9 @@ double Catchment::getStreamflow(int week) {
  * @param r
  */
 void Catchment::setRealization(unsigned long r) {
-    streamflows_realization = new double[streamflows_all->at(r).size()];
+    streamflows_realization = new float[streamflows_all->at(r).size()];
     std::copy(streamflows_all->at(r).begin(),
               streamflows_all->at(r).end(),
               streamflows_realization);
-
-    return;
 }
 

@@ -7,7 +7,7 @@
 #include "ObjectivesCalculator.h"
 #include "Utils.h"
 
-double ObjectivesCalculator::calculateReliabilityObjective(
+float ObjectivesCalculator::calculateReliabilityObjective(
         vector<UtilitiesDataCollector *> utility_collector) {
     unsigned long n_realizations = utility_collector.size();
     unsigned long n_weeks = utility_collector[0]->getCombined_storage().size();
@@ -46,20 +46,20 @@ double ObjectivesCalculator::calculateReliabilityObjective(
         }
     }
 
-    double check_non_zero = accumulate(year_reliabilities.rbegin(),
+    float check_non_zero = accumulate(year_reliabilities.rbegin(),
                                        year_reliabilities.rend(),
                                        0.0);
 
     /// Returns year with most realization failures, divided by the number of realizations (reliability objective).
     if (check_non_zero > 0)
-        return 1. - (double) *max_element(year_reliabilities.begin(),
+        return 1. - (float) *max_element(year_reliabilities.begin(),
                                           year_reliabilities.end()) /
                     n_realizations;
     else
         return 1.;
 }
 
-double ObjectivesCalculator::calculateRestrictionFrequencyObjective(
+float ObjectivesCalculator::calculateRestrictionFrequencyObjective(
         vector<RestrictionsDataCollector *> restriction_data) {
 
     unsigned long n_realizations = restriction_data.size();
@@ -70,10 +70,10 @@ double ObjectivesCalculator::calculateRestrictionFrequencyObjective(
                 ->getRestriction_multipliers().size();
         unsigned long n_years = (unsigned long) round(n_weeks / WEEKS_IN_YEAR);
 
-        vector<vector<double>> year_restriction_frequencies(n_realizations,
-                                                            vector<double>(n_years,
+        vector<vector<float>> year_restriction_frequencies(n_realizations,
+                                                            vector<float>(n_years,
                                                                            0));
-        double restriction_frequency = 0;
+        float restriction_frequency = 0;
 
         /// Counts how many years across all realizations had restrictions.
         for (int r = 0; r < n_realizations; ++r) {
@@ -95,10 +95,10 @@ double ObjectivesCalculator::calculateRestrictionFrequencyObjective(
         return NONE;
 }
 
-double ObjectivesCalculator::calculateNetPresentCostInfrastructureObjective(
+float ObjectivesCalculator::calculateNetPresentCostInfrastructureObjective(
         vector<UtilitiesDataCollector *> utility_data) {
 
-    double infrastructure_npc = 0;
+    float infrastructure_npc = 0;
     for (auto r : utility_data)
         infrastructure_npc += accumulate(
                 r->getNet_present_infrastructure_cost().begin(),
@@ -108,18 +108,18 @@ double ObjectivesCalculator::calculateNetPresentCostInfrastructureObjective(
     return infrastructure_npc / utility_data.size();
 }
 
-double ObjectivesCalculator::calculatePeakFinancialCostsObjective(
+float ObjectivesCalculator::calculatePeakFinancialCostsObjective(
         vector<UtilitiesDataCollector *> utility_data) {
     unsigned long n_realizations = utility_data.size();
     unsigned long n_weeks = utility_data[0]->getGross_revenues().size();
     unsigned long n_years = (unsigned long) round(n_weeks / WEEKS_IN_YEAR);
 
-    double realizations_year_debt_payment = 0;
-    double realizations_year_cont_fund_contribution = 0;
-    double realizations_year_gross_revenue = 0;
-    double realizations_year_insurance_contract_cost = 0;
-    vector<double> year_financial_costs;
-    vector<double> realization_financial_costs(n_realizations,
+    float realizations_year_debt_payment = 0;
+    float realizations_year_cont_fund_contribution = 0;
+    float realizations_year_gross_revenue = 0;
+    float realizations_year_insurance_contract_cost = 0;
+    vector<float> year_financial_costs;
+    vector<float> realization_financial_costs(n_realizations,
                                                0);
 
     /// Creates a table with years that failed in each realization.
@@ -169,17 +169,17 @@ double ObjectivesCalculator::calculatePeakFinancialCostsObjective(
                       0.0) / n_realizations;
 }
 
-double ObjectivesCalculator::calculateWorseCaseCostsObjective(
+float ObjectivesCalculator::calculateWorseCaseCostsObjective(
         vector<UtilitiesDataCollector *> utility_data) {
     unsigned long n_realizations = utility_data.size();
     unsigned long n_weeks = utility_data[0]->getGross_revenues().size();
     unsigned long n_years = (unsigned long) round(n_weeks / WEEKS_IN_YEAR);
 
-    vector<double> worse_year_financial_costs(n_realizations,
+    vector<float> worse_year_financial_costs(n_realizations,
                                               0);
-    vector<double> year_financial_costs;
-    double year_drought_mitigation_cost = 0;
-    double year_gross_revenue = 0;
+    vector<float> year_financial_costs;
+    float year_drought_mitigation_cost = 0;
+    float year_gross_revenue = 0;
 
     /// Creates a table with years that failed in each realization.
     int y;
@@ -198,7 +198,7 @@ double ObjectivesCalculator::calculateWorseCaseCostsObjective(
                 year_financial_costs[y] =
                         max(year_drought_mitigation_cost
                             - utility_data[r]->getContingency_fund_size()[w],
-                            0.0)
+                            0.0f)
                         / year_gross_revenue;
 
                 year_gross_revenue = 0;

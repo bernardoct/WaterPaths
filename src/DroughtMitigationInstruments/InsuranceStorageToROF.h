@@ -13,13 +13,13 @@ class InsuranceStorageToROF : public DroughtMitigationPolicy,
                               public ContinuityModelROF {
 private:
 
-    double *insurance_price;
-    const double *rof_triggers;
-    const double insurance_premium;
-    const double *fixed_payouts;
-    double *utilities_revenue_update;
-    double *utilities_revenue_last_year;
-    Matrix3D<double> storage_to_rof_table_prev_year;
+    float *insurance_price;
+    const float *rof_triggers;
+    const float insurance_premium;
+    const float *fixed_payouts;
+    float *utilities_revenue_update;
+    float *utilities_revenue_last_year;
+    Matrix3D<float> storage_to_rof_table_prev_year;
 
 public:
 
@@ -30,9 +30,9 @@ public:
             const vector<vector<int>> &water_sources_to_utilities,
             vector<Utility *> &utilities,
             vector<MinEnvironFlowControl *>
-            min_env_flow_controls, double *rof_triggers,
-            const double insurance_premium,
-            const double *fixed_payouts);
+            min_env_flow_controls, float *rof_triggers,
+            const float insurance_premium,
+            const float *fixed_payouts);
 
     InsuranceStorageToROF(InsuranceStorageToROF &insurance);
 
@@ -40,11 +40,11 @@ public:
 
     void priceInsurance(int week);
 
-    void getUtilitiesApproxROFs(const double *u_storage_capacity_ratio,
-                                const Matrix3D<double> *storage_to_rof_table,
-                                int week, double *utilities_approx_rof);
+    void getUtilitiesApproxROFs(const float *u_storage_capacity_ratio,
+                                const Matrix3D<float> *storage_to_rof_table,
+                                int week, float *utilities_approx_rof);
 
-    double *UtilitiesStorageCapacityRatio();
+    float *UtilitiesStorageCapacityRatio();
 
     void applyPolicy(int week) override;
 

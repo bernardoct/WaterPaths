@@ -23,7 +23,7 @@ string AllocatedReservoirDataCollector::printTabularString(int week) {
 
     out_stream << output;
 
-    for (double v : allocated_stored_volumes[week])
+    for (float v : allocated_stored_volumes[week])
         out_stream << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
                    << v;
 
@@ -37,7 +37,7 @@ string AllocatedReservoirDataCollector::printCompactString(int week) {
 
     out_stream << output;
 
-    for (double v : allocated_stored_volumes[week])
+    for (float v : allocated_stored_volumes[week])
         out_stream << v << ",";
 
     return out_stream.str();
@@ -81,7 +81,7 @@ string AllocatedReservoirDataCollector::printCompactStringHeader() {
 
 void AllocatedReservoirDataCollector::collect_data() {
     ReservoirDataCollector::collect_data();
-    vector<double> alloc_vol_vector = vector<double>
+    vector<float> alloc_vol_vector = vector<float>
             (allocated_reservoir->getAvailable_allocated_volumes(),
              allocated_reservoir->getAvailable_allocated_volumes() +
              allocated_reservoir->getUtilities_with_allocations()->size());

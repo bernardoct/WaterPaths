@@ -13,26 +13,26 @@ using namespace std;
 class DataSeries : public ControlRules {
 private:
 
-    vector<double> *series_x;
-    vector<double> *series_y;
+    vector<float> *series_x;
+    vector<float> *series_y;
 
 public:
     const unsigned long length;
 
-    DataSeries(vector<double> *series_x, vector<double> *series_y);
+    DataSeries(vector<float> *series_x, vector<float> *series_y);
 
-//    double get_dependent_variable(double x);
+//    float get_dependent_variable(float x);
 
-    const vector<double> &getSeries_x() const;
+    const vector<float> &getSeries_x() const;
 
-    double get_dependent_variable(double x) override;
+    float get_dependent_variable(float x) override;
 
-    double get_dependent_variable(int x) override;
+    float get_dependent_variable(int x) override;
 
 private:
-    double get_dependent_variable(double x, int week) override;
+    float get_dependent_variable(float x, int week) override;
 
-    double get_dependent_variable(int x, int week) override;
+    float get_dependent_variable(int x, int week) override;
 
 };
 

@@ -12,10 +12,10 @@
 
 class ContinuityModelROF : public ContinuityModel {
 private:
-    Matrix3D<double> *storage_to_rof_table;
-    Matrix3D<double> storage_to_rof_realization;
-//    __declspec(aligned(64)) double *capacities_toposorted;
-    double *capacities_toposorted __attribute__ ((aligned(64)));
+    Matrix3D<float> *storage_to_rof_table;
+    Matrix3D<float> storage_to_rof_realization;
+//    __declspec(aligned(64)) float *capacities_toposorted;
+    float *capacities_toposorted __attribute__ ((aligned(64)));
     int *downstream_sources_toposort;
     int *topo_sorted_to_all_sources;
     const int n_topo_sources;
@@ -35,9 +35,9 @@ public:
 
     ContinuityModelROF(ContinuityModelROF &continuity_model_rof);
 
-    vector<double> calculateShortTermROF(int week);
+    vector<float> calculateShortTermROF(int week);
 
-    vector<double> calculateLongTermROF(int week);
+    vector<float> calculateLongTermROF(int week);
 
     void resetUtilitiesAndReservoirs(int rof_type);
 
@@ -47,12 +47,12 @@ public:
 
     virtual ~ContinuityModelROF();
 
-    void updateStorageToROFTable(double storage_percent_decrement, int week_of_the_year,
-                                 const double *to_full_toposort);
+    void updateStorageToROFTable(float storage_percent_decrement, int week_of_the_year,
+                                 const float *to_full_toposort);
 
-    void shiftStorages(double *storages, const double *deltas, const double *spillage);
+    void shiftStorages(float *storages, const float *deltas, const float *spillage);
 
-    const Matrix3D<double> *getStorage_to_rof_table() const;
+    const Matrix3D<float> *getStorage_to_rof_table() const;
 };
 
 

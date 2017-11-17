@@ -10,57 +10,57 @@
 
 class Quarry : public Reservoir {
 private:
-    double max_diversion;
-    double diverted_flow;
+    float max_diversion;
+    float diverted_flow;
 
 public:
 
-    Quarry(const Quarry &quarry, const double max_diversion);
+    Quarry(const Quarry &quarry, const float max_diversion);
 
     Quarry(
             const char *name, const int id,
-            const vector<Catchment *> &catchments, const double capacity,
-            const double max_treatment_capacity,
+            const vector<Catchment *> &catchments, const float capacity,
+            const float max_treatment_capacity,
             EvaporationSeries *evaporation_series,
-            DataSeries *storage_area_curve, double max_diversion);
+            DataSeries *storage_area_curve, float max_diversion);
 
     Quarry(
             const char *name, const int id,
-            const vector<Catchment *> &catchments, const double capacity,
-            const double max_treatment_capacity,
+            const vector<Catchment *> &catchments, const float capacity,
+            const float max_treatment_capacity,
             EvaporationSeries *evaporation_series,
             DataSeries *storage_area_curve,
-            const double construction_rof_or_demand,
-            const vector<double> &construction_time_range,
-            double permitting_period,
-            double construction_cost, double bond_term,
-            double bond_interest_rate, double max_diversion);
+            const float construction_rof_or_demand,
+            const vector<float> &construction_time_range,
+            float permitting_period,
+            float construction_cost, float bond_term,
+            float bond_interest_rate, float max_diversion);
 
     Quarry(
             const char *name, const int id,
-            const vector<Catchment *> &catchments, const double capacity,
-            const double max_treatment_capacity,
-            EvaporationSeries *evaporation_series, double storage_area,
-            double max_diversion);
+            const vector<Catchment *> &catchments, const float capacity,
+            const float max_treatment_capacity,
+            EvaporationSeries *evaporation_series, float storage_area,
+            float max_diversion);
 
     Quarry(
             const char *name, const int id,
-            const vector<Catchment *> &catchments, const double capacity,
-            const double max_treatment_capacity,
-            EvaporationSeries *evaporation_series, double storage_area,
-            const double construction_rof_or_demand,
-            const vector<double> &construction_time_range,
-            double permitting_period,
-            double construction_cost, double bond_term,
-            double bond_interest_rate, double max_diversion);
+            const vector<Catchment *> &catchments, const float capacity,
+            const float max_treatment_capacity,
+            EvaporationSeries *evaporation_series, float storage_area,
+            const float construction_rof_or_demand,
+            const vector<float> &construction_time_range,
+            float permitting_period,
+            float construction_cost, float bond_term,
+            float bond_interest_rate, float max_diversion);
 
     Quarry &operator=(const Quarry &quarry);
 
     ~Quarry();
 
     void applyContinuity(
-            int week, double upstream_source_inflow, double wastewater_inflow,
-            vector<double> &demand_outflow) override;
+            int week, float upstream_source_inflow, float wastewater_inflow,
+            vector<float> &demand_outflow) override;
 
     void setOnline() override;
 };

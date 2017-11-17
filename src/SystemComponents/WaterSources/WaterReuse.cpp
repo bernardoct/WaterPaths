@@ -6,7 +6,7 @@
 #include <numeric>
 #include "WaterReuse.h"
 
-WaterReuse::WaterReuse(const char *name, const int id, const double capacity)
+WaterReuse::WaterReuse(const char *name, const int id, const float capacity)
         : WaterSource(name,
                       id,
                       vector<Catchment *>(),
@@ -18,12 +18,12 @@ WaterReuse::WaterReuse(const char *name, const int id, const double capacity)
 
 
 WaterReuse::WaterReuse(
-        const char *name, const int id, const double capacity,
-        const double construction_rof_or_demand,
-        const vector<double> &construction_time_range, double permitting_period,
-        double construction_cost_of_capital,
-        double bond_term,
-        double bond_interest_rate) : WaterSource(name, id,
+        const char *name, const int id, const float capacity,
+        const float construction_rof_or_demand,
+        const vector<float> &construction_time_range, float permitting_period,
+        float construction_cost_of_capital,
+        float bond_term,
+        float bond_interest_rate) : WaterSource(name, id,
                                                  vector<Catchment *>(),
                                                  capacity, capacity,
                                                  WATER_REUSE,
@@ -34,11 +34,11 @@ WaterReuse::WaterReuse(
     available_volume = capacity;
 }
 
-void WaterReuse::applyContinuity(int week, double upstream_source_inflow,
-                                 double wastewater_discharge,
-                                 vector<double> &demand_outflow) {
+void WaterReuse::applyContinuity(int week, float upstream_source_inflow,
+                                 float wastewater_discharge,
+                                 vector<float> &demand_outflow) {
 
-    double total_demand = std::accumulate(demand_outflow.begin(),
+    float total_demand = std::accumulate(demand_outflow.begin(),
                                           demand_outflow.end(),
                                           0.);
 
@@ -53,6 +53,6 @@ WaterReuse &WaterReuse::operator=(const WaterReuse &water_reuse) {
     return *this;
 }
 
-double WaterReuse::getReused_volume() const {
+float WaterReuse::getReused_volume() const {
     return treated_volume;
 }

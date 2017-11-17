@@ -21,7 +21,7 @@ string TransfersDataCollector::printTabularString(int week) {
 
     stringstream outStream;
 
-    for (double &a : demand_offsets.at((unsigned int) week))
+    for (float &a : demand_offsets.at((unsigned int) week))
         outStream << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION) << a;
 
     return outStream.str();
@@ -31,7 +31,7 @@ string TransfersDataCollector::printCompactString(int week) {
 
     stringstream outStream;
 
-    for (double &a : demand_offsets.at((unsigned int) week))
+    for (float &a : demand_offsets.at((unsigned int) week))
         outStream << a << ",";
 
     return outStream.str();

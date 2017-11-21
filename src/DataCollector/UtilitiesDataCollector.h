@@ -11,23 +11,24 @@
 
 class UtilitiesDataCollector : public DataCollector {
 private:
-    vector<float> st_rof;
-    vector<float> lt_rof;
-    vector<float> combined_storage;
-    vector<float> unrestricted_demand;
-    vector<float> restricted_demand;
-    vector<float> contingency_fund_size;
-    vector<float> gross_revenues;
-    vector<float> contingency_fund_contribution;
-    vector<float> debt_service_payments;
-    vector<float> insurance_contract_cost;
-    vector<float> insurance_payout;
-    vector<float> drought_mitigation_cost;
-    vector<float> capacity;
+    vector<double> st_rof;
+    vector<double> lt_rof;
+    vector<double> combined_storage;
+    vector<double> unrestricted_demand;
+    vector<double> restricted_demand;
+    vector<double> contingency_fund_size;
+    vector<double> gross_revenues;
+    vector<double> contingency_fund_contribution;
+    vector<double> debt_service_payments;
+    vector<double> insurance_contract_cost;
+    vector<double> insurance_payout;
+    vector<double> drought_mitigation_cost;
+    vector<double> capacity;
     vector<vector<int>> pathways;
-    vector<float> net_present_infrastructure_cost;
-    vector<float> waste_water_discharge;
-    vector<float> unfulfilled_demand;
+    vector<double> net_present_infrastructure_cost;
+    vector<double> waste_water_discharge;
+    vector<double> unfulfilled_demand;
+    vector<double> net_stream_inflow;
     const Utility *utility;
 
 public:
@@ -46,25 +47,25 @@ public:
 
     string printCompactStringHeader() override;
 
-    const vector<float> &getCombined_storage() const;
+    const vector<double> &getCombined_storage() const;
 
-    const vector<float> &getCapacity() const;
+    const vector<double> &getCapacity() const;
 
-    const vector<float> &getGross_revenues() const;
+    const vector<double> &getGross_revenues() const;
 
-    const vector<float> &getContingency_fund_contribution() const;
+    const vector<double> &getContingency_fund_contribution() const;
 
-    const vector<float> &getDebt_service_payments() const;
+    const vector<double> &getDebt_service_payments() const;
 
-    const vector<float> &getInsurance_contract_cost() const;
+    const vector<double> &getInsurance_contract_cost() const;
 
-    const vector<float> &getDrought_mitigation_cost() const;
+    const vector<double> &getDrought_mitigation_cost() const;
 
-    const vector<float> &getContingency_fund_size() const;
+    const vector<double> &getContingency_fund_size() const;
 
     const vector<vector<int>> &getPathways() const;
 
-    const vector<float> &getNet_present_infrastructure_cost() const;
+    const vector<double> &getNet_present_infrastructure_cost() const;
 
 };
 

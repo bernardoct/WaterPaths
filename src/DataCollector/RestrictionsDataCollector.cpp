@@ -54,7 +54,7 @@ void RestrictionsDataCollector::collect_data() {
             (restriction_policy->getCurrent_multiplier());
 }
 
-const vector<float> &
+const vector<double> &
 RestrictionsDataCollector::getRestriction_multipliers() const {
     return restriction_multipliers;
 }

@@ -11,7 +11,7 @@
 class EvaporationSeries : public Catchment {
 public:
     EvaporationSeries(
-            vector<vector<float>> *evaporation_series, int series_length);
+            vector<vector<double>> *evaporation_series, int series_length);
 
     EvaporationSeries(EvaporationSeries &evaporation_series);
 
@@ -19,7 +19,7 @@ public:
 
     ~EvaporationSeries() override;
 
-    float getEvaporation(int week);
+    double getEvaporation(int week);
 };
 
 

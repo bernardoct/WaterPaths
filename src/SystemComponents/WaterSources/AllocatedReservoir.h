@@ -12,48 +12,48 @@ class AllocatedReservoir : public Reservoir {
 public:
     AllocatedReservoir(
             const char *name, const int id,
-            const vector<Catchment *> &catchments, const float capacity,
-            const float max_treatment_capacity,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
             EvaporationSeries *evaporation_series,
             DataSeries *storage_area_curve,
             vector<int> *utilities_with_allocations,
-            vector<float> *allocated_fractions, vector<float>
+            vector<double> *allocated_fractions, vector<double>
             *allocated_treatment_fractions);
 
     AllocatedReservoir(
             const char *name, const int id,
-            const vector<Catchment *> &catchments, const float capacity,
-            const float max_treatment_capacity,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
             EvaporationSeries *evaporation_series,
             DataSeries *storage_area_curve,
-            const float construction_rof_or_demand,
-            const vector<float> &construction_time_range,
-            float construction_cost, float bond_term,
-            float bond_interest_rate,
+            const double construction_rof_or_demand,
+            const vector<double> &construction_time_range,
+            double construction_cost, double bond_term,
+            double bond_interest_rate,
             vector<int> *utilities_with_allocations,
-            vector<float> *allocated_fractions, vector<float>
+            vector<double> *allocated_fractions, vector<double>
             *allocated_treatment_fractions);
 
     AllocatedReservoir(
             const char *name, const int id,
-            const vector<Catchment *> &catchments, const float capacity,
-            const float max_treatment_capacity,
-            EvaporationSeries *evaporation_series, float storage_area,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
+            EvaporationSeries *evaporation_series, double storage_area,
             vector<int> *utilities_with_allocations,
-            vector<float> *allocated_fractions, vector<float>
+            vector<double> *allocated_fractions, vector<double>
             *allocated_treatment_fractions);
 
     AllocatedReservoir(
             const char *name, const int id,
-            const vector<Catchment *> &catchments, const float capacity,
-            const float max_treatment_capacity,
-            EvaporationSeries *evaporation_series, float storage_area,
-            const float construction_rof_or_demand,
-            const vector<float> &construction_time_range,
-            float construction_cost, float bond_term,
-            float bond_interest_rate,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
+            EvaporationSeries *evaporation_series, double storage_area,
+            const double construction_rof_or_demand,
+            const vector<double> &construction_time_range,
+            double construction_cost, double bond_term,
+            double bond_interest_rate,
             vector<int> *utilities_with_allocations,
-            vector<float> *allocated_fractions, vector<float>
+            vector<double> *allocated_fractions, vector<double>
             *allocated_treatment_fractions);
 
     AllocatedReservoir &operator=(
@@ -64,28 +64,28 @@ public:
 
     ~AllocatedReservoir();
 
-    void applyContinuity(int week, float upstream_source_inflow,
-                             float wastewater_inflow,
-                             vector<float> &demand_outflow) override;
+    void applyContinuity(int week, double upstream_source_inflow,
+                             double wastewater_inflow,
+                             vector<double> &demand_outflow) override;
 
     void setFull() override;
 
-    float getAvailableAllocatedVolume(int utility_id) override;
+    double getAvailableAllocatedVolume(int utility_id) override;
 
-    void removeWater(int allocation_id, float volume) override;
+    void removeWater(int allocation_id, double volume) override;
 
-    float getAllocatedCapacity(int utility_id) override;
+    double getAllocatedCapacity(int utility_id) override;
 
-    float getAllocatedFraction(int utility_id) override;
+    double getAllocatedFraction(int utility_id) override;
 
-    void addCapacity(float capacity) override;
+    void addCapacity(double capacity) override;
 
     void addTreatmentCapacity(
-            const float added_plant_treatment_capacity,
-            float allocated_fraction_of_total_capacity, int utility_id)
+            const double added_plant_treatment_capacity,
+            double allocated_fraction_of_total_capacity, int utility_id)
     override;
 
-    float getAllocatedTreatmentCapacity(int utility_id) const override;
+    double getAllocatedTreatmentCapacity(int utility_id) const override;
 
 
 };

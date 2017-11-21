@@ -17,7 +17,7 @@ using namespace std;
 class Reservoir : public WaterSource {
 protected:
     DataSeries *storage_area_curve;
-    float area = NON_INITIALIZED;
+    double area = NON_INITIALIZED;
 
 public:
     const bool fixed_area;
@@ -25,90 +25,90 @@ public:
 
     Reservoir(
             const char *name, const int id,
-            const vector<Catchment *> &catchments, const float capacity,
-            const float max_treatment_capacity,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
             EvaporationSeries *evaporation_series,
             DataSeries *storage_area_curve, int source_type = RESERVOIR);
 
     Reservoir(
             const char *name, const int id,
-            const vector<Catchment *> &catchments, const float capacity,
-            const float max_treatment_capacity,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
             EvaporationSeries *evaporation_series,
             DataSeries *storage_area_curve,
-            const float construction_rof_or_demand,
-            const vector<float> &construction_time_range,
-            float permitting_period,
-            float construction_cost, float bond_term,
-            float bond_interest_rate, int source_type = RESERVOIR);
+            const double construction_rof_or_demand,
+            const vector<double> &construction_time_range,
+            double permitting_period,
+            double construction_cost, double bond_term,
+            double bond_interest_rate, int source_type = RESERVOIR);
 
     Reservoir(
             const char *name, const int id,
-            const vector<Catchment *> &catchments, const float capacity,
-            const float max_treatment_capacity,
-            EvaporationSeries *evaporation_series, float storage_area,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
+            EvaporationSeries *evaporation_series, double storage_area,
             int source_type = RESERVOIR);
 
     Reservoir(
             const char *name, const int id,
-            const vector<Catchment *> &catchments, const float capacity,
-            const float max_treatment_capacity,
-            EvaporationSeries *evaporation_series, float storage_area,
-            const float construction_rof_or_demand,
-            const vector<float> &construction_time_range,
-            float permitting_period,
-            float construction_cost, float bond_term,
-            float bond_interest_rate, int source_type = RESERVOIR);
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
+            EvaporationSeries *evaporation_series, double storage_area,
+            const double construction_rof_or_demand,
+            const vector<double> &construction_time_range,
+            double permitting_period,
+            double construction_cost, double bond_term,
+            double bond_interest_rate, int source_type = RESERVOIR);
 
     Reservoir(
             const char *name, const int id,
-            const vector<Catchment *> &catchments, const float capacity,
-            const float max_treatment_capacity,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
             EvaporationSeries *evaporation_series,
             DataSeries *storage_area_curve,
-            vector<float> *allocated_treatment_fractions,
-            vector<float> *allocated_fractions,
-            vector<int> *utilities_with_allocations,
-            int source_type = RESERVOIR);
-
-    Reservoir(
-            const char *name, const int id,
-            const vector<Catchment *> &catchments, const float capacity,
-            const float max_treatment_capacity,
-            EvaporationSeries *evaporation_series, float storage_area,
-            vector<float> *allocated_treatment_fractions,
-            vector<float> *allocated_fractions,
+            vector<double> *allocated_treatment_fractions,
+            vector<double> *allocated_fractions,
             vector<int> *utilities_with_allocations,
             int source_type = RESERVOIR);
 
     Reservoir(
             const char *name, const int id,
-            const vector<Catchment *> &catchments, const float capacity,
-            const float max_treatment_capacity,
-            EvaporationSeries *evaporation_series,
-            DataSeries *storage_area_curve,
-            vector<float> *allocated_treatment_fractions,
-            vector<float> *allocated_fractions,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
+            EvaporationSeries *evaporation_series, double storage_area,
+            vector<double> *allocated_treatment_fractions,
+            vector<double> *allocated_fractions,
             vector<int> *utilities_with_allocations,
-            const float construction_rof_or_demand,
-            const vector<float> &construction_time_range,
-            float permitting_period,
-            float construction_cost, float bond_term,
-            float bond_interest_rate, int source_type = RESERVOIR);
+            int source_type = RESERVOIR);
 
     Reservoir(
             const char *name, const int id,
-            const vector<Catchment *> &catchments, const float capacity,
-            const float max_treatment_capacity,
-            EvaporationSeries *evaporation_series, float storage_area,
-            vector<float> *allocated_treatment_fractions,
-            vector<float> *allocated_fractions,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
+            EvaporationSeries *evaporation_series,
+            DataSeries *storage_area_curve,
+            vector<double> *allocated_treatment_fractions,
+            vector<double> *allocated_fractions,
             vector<int> *utilities_with_allocations,
-            const float construction_rof_or_demand,
-            const vector<float> &construction_time_range,
-            float permitting_period,
-            float construction_cost, float bond_term,
-            float bond_interest_rate, int source_type = RESERVOIR);
+            const double construction_rof_or_demand,
+            const vector<double> &construction_time_range,
+            double permitting_period,
+            double construction_cost, double bond_term,
+            double bond_interest_rate, int source_type = RESERVOIR);
+
+    Reservoir(
+            const char *name, const int id,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
+            EvaporationSeries *evaporation_series, double storage_area,
+            vector<double> *allocated_treatment_fractions,
+            vector<double> *allocated_fractions,
+            vector<int> *utilities_with_allocations,
+            const double construction_rof_or_demand,
+            const vector<double> &construction_time_range,
+            double permitting_period,
+            double construction_cost, double bond_term,
+            double bond_interest_rate, int source_type = RESERVOIR);
 
 
     Reservoir(const Reservoir &reservoir);
@@ -117,15 +117,15 @@ public:
 
     ~Reservoir() override;
 
-    void applyContinuity(int week, float upstream_source_inflow,
-                             float wastewater_discharge,
-                             vector<float> &demand_outflow) override;
+    void applyContinuity(int week, double upstream_source_inflow,
+                             double wastewater_discharge,
+                             vector<double> &demand_outflow) override;
 
     void setOnline() override;
 
     void setRealization(unsigned long r) override;
 
-    float getArea() const;
+    double getArea() const;
 };
 
 

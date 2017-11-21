@@ -56,7 +56,7 @@ void Graph::addEdge(int u, int v) {
         upstream_sources[i] = findUpstreamSources(i);
     }
 
-    vector<float> pipe_connectivity((unsigned long) V, 0);
+    vector<double> pipe_connectivity((unsigned long) V, 0);
     pipe_connectivity[u] = -1;
     pipe_connectivity[v] = 1;
 
@@ -165,9 +165,9 @@ const vector<int> Graph::getTopological_order() const {
  * the second set to flows in and out of vertexes.
  * @return Continuity Matrix
  */
-const vector<vector<float>> Graph::getContinuityMatrix() const {
-    vector<vector<float>> continuity_matrix(continuity_matrix_transpose[0].size(),
-                                             vector<float>(continuity_matrix_transpose.size(), 0));
+const vector<vector<double>> Graph::getContinuityMatrix() const {
+    vector<vector<double>> continuity_matrix(continuity_matrix_transpose[0].size(),
+                                             vector<double>(continuity_matrix_transpose.size(), 0));
 
     if (n_edges + 1 < V)
         __throw_invalid_argument("Are you sure your inputted graphs have all your edges or that you type the "

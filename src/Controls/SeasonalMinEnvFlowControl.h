@@ -13,14 +13,14 @@ using namespace std;
 class SeasonalMinEnvFlowControl : public MinEnvironFlowControl {
 private:
     const vector<int> *week_thresholds;
-    const vector<float> *min_env_flows;
+    const vector<double> *min_env_flows;
 
 public:
     SeasonalMinEnvFlowControl(
             int water_source_id, const vector<int> *week_thresholds,
-            const vector<float> *min_env_flows);
+            const vector<double> *min_env_flows);
 
-    float getRelease(int week) override;
+    double getRelease(int week) override;
 };
 
 

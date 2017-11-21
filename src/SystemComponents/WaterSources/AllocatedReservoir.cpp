@@ -6,16 +6,15 @@
 #include <iostream>
 #include <numeric>
 #include <zconf.h>
-#include <omp.h>
 #include "AllocatedReservoir.h"
 
 
 AllocatedReservoir::AllocatedReservoir(
         const char *name, const int id, const vector<Catchment *> &catchments,
-        const float capacity, const float max_treatment_capacity,
+        const double capacity, const double max_treatment_capacity,
         EvaporationSeries *evaporation_series, DataSeries *storage_area_curve,
         vector<int> *utilities_with_allocations,
-        vector<float> *allocated_fractions, vector<float>
+        vector<double> *allocated_fractions, vector<double>
         *allocated_treatment_fractions)
         : Reservoir(name,
                     id,
@@ -32,13 +31,13 @@ AllocatedReservoir::AllocatedReservoir(
 
 AllocatedReservoir::AllocatedReservoir(
         const char *name, const int id, const vector<Catchment *> &catchments,
-        const float capacity, const float max_treatment_capacity,
+        const double capacity, const double max_treatment_capacity,
         EvaporationSeries *evaporation_series, DataSeries *storage_area_curve,
-        const float construction_rof_or_demand,
-        const vector<float> &construction_time_range, float construction_cost,
-        float bond_term, float bond_interest_rate,
+        const double construction_rof_or_demand,
+        const vector<double> &construction_time_range, double construction_cost,
+        double bond_term, double bond_interest_rate,
         vector<int> *utilities_with_allocations,
-        vector<float> *allocated_fractions, vector<float>
+        vector<double> *allocated_fractions, vector<double>
         *allocated_treatment_fractions)
         : Reservoir(name,
                     id,
@@ -60,10 +59,10 @@ AllocatedReservoir::AllocatedReservoir(
 
 AllocatedReservoir::AllocatedReservoir(
         const char *name, const int id, const vector<Catchment *> &catchments,
-        const float capacity, const float max_treatment_capacity,
-        EvaporationSeries *evaporation_series, float storage_area,
+        const double capacity, const double max_treatment_capacity,
+        EvaporationSeries *evaporation_series, double storage_area,
         vector<int> *utilities_with_allocations,
-        vector<float> *allocated_fractions, vector<float>
+        vector<double> *allocated_fractions, vector<double>
         *allocated_treatment_fractions)
         : Reservoir(name,
                     id,
@@ -80,13 +79,13 @@ AllocatedReservoir::AllocatedReservoir(
 
 AllocatedReservoir::AllocatedReservoir(
         const char *name, const int id, const vector<Catchment *> &catchments,
-        const float capacity, const float max_treatment_capacity,
-        EvaporationSeries *evaporation_series, float storage_area,
-        const float construction_rof_or_demand,
-        const vector<float> &construction_time_range, float construction_cost,
-        float bond_term, float bond_interest_rate,
+        const double capacity, const double max_treatment_capacity,
+        EvaporationSeries *evaporation_series, double storage_area,
+        const double construction_rof_or_demand,
+        const vector<double> &construction_time_range, double construction_cost,
+        double bond_term, double bond_interest_rate,
         vector<int> *utilities_with_allocations,
-        vector<float> *allocated_fractions, vector<float>
+        vector<double> *allocated_fractions, vector<double>
         *allocated_treatment_fractions)
         : Reservoir(name,
                     id,
@@ -129,32 +128,30 @@ AllocatedReservoir::~AllocatedReservoir() {
 }
 
 
-void AllocatedReservoir::applyContinuity(int week, float upstream_source_inflow,
-                                         float wastewater_inflow,
-                                         vector<float> &demand_outflow) {
+void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow,
+                                         double wastewater_inflow,
+                                         vector<double> &demand_outflow) {
 
-//#pragma optimize("", off)
-//    usleep(1000);
-    float total_upstream_inflow;
-//#pragma omp critical
+    double total_upstream_inflow;
+
     total_upstream_inflow = upstream_source_inflow +
             wastewater_inflow;
 
     this->upstream_source_inflow = upstream_source_inflow;
     this->wastewater_inflow = wastewater_inflow;
 
-    float available_volume_old = available_volume;
+    double available_volume_old = available_volume;
 
-//    float total_demand = std::accumulate(demand_outflow.begin(),
+//    double total_demand = std::accumulate(demand_outflow.begin(),
 //                                           demand_outflow.end(),
 //                                           0.);
     
-    total_demand = 0.0f;
-    for (float i : demand_outflow) {
+    total_demand = 0.0;
+    for (double i : demand_outflow) {
         total_demand += i;
     }
 
-    float direct_demand = total_demand;
+    double direct_demand = total_demand;
 
 
     /// Calculate total runoff inflow reaching reservoir from its watershed.
@@ -169,12 +166,12 @@ void AllocatedReservoir::applyContinuity(int week, float upstream_source_inflow,
              evaporation_series->getEvaporation(week));
 
     /// Calculate new stored volume and outflow based on continuity.
-    float available_volume_new = available_volume
+    double available_volume_new = available_volume
                                   + total_upstream_inflow +
                                   upstream_catchment_inflow
                                   - total_demand - min_environmental_outflow
                                   - evaporated_volume;
-    float outflow_new = min_environmental_outflow;
+    double outflow_new = min_environmental_outflow;
     total_outflow = outflow_new;
 
 
@@ -192,13 +189,13 @@ void AllocatedReservoir::applyContinuity(int week, float upstream_source_inflow,
 
         available_volume = available_volume_new;
         /// Water exceeding allocated capacities.
-        float excess_allocated_water = 0.f;
-        float fraction_needing_water = 0.f;
+        double excess_allocated_water = 0.f;
+        double fraction_needing_water = 0.f;
         bool overallocation = false;
 
         /// Volume of water that entered the reservoir and stayed until being
         /// used or released.
-        float net_inflow = upstream_catchment_inflow +
+        double net_inflow = upstream_catchment_inflow +
                             total_upstream_inflow - evaporated_volume;
 
         for (int u : *utilities_with_allocations) {
@@ -241,7 +238,7 @@ void AllocatedReservoir::applyContinuity(int week, float upstream_source_inflow,
             /// Redistribute combined excess among utilities based on their
             /// allocation fractions. If one is exceeded, roll "second order"
             /// excess down to the next utility.
-            float rellocation_excess = 0;
+            double rellocation_excess = 0;
             while (excess_allocated_water > 0 &&
                    fraction_needing_water > 0) {
                 for (int u : *utilities_with_allocations) {
@@ -294,7 +291,7 @@ void AllocatedReservoir::applyContinuity(int week, float upstream_source_inflow,
     policy_added_demand = 0;
 
     /// Sanity checking from now on.
-    float sum_allocations = accumulate(available_allocated_volumes,
+    double sum_allocations = accumulate(available_allocated_volumes,
                                         available_allocated_volumes +
                                         wq_pool_id + 1,
                                         0.f);
@@ -320,7 +317,7 @@ void AllocatedReservoir::applyContinuity(int week, float upstream_source_inflow,
                                       "bct52@cornell.edu.");
     }
 
-    float cont_error = abs(available_volume_old - direct_demand + total_upstream_inflow +
+    double cont_error = abs(available_volume_old - direct_demand + total_upstream_inflow +
                            upstream_catchment_inflow - evaporated_volume -
                            total_outflow - available_volume);
 //    if (cont_error > abs(available_volume) * 1e-4) {
@@ -335,7 +332,7 @@ void AllocatedReservoir::applyContinuity(int week, float upstream_source_inflow,
     }
 }
 
-void AllocatedReservoir::addCapacity(float capacity) {
+void AllocatedReservoir::addCapacity(double capacity) {
     WaterSource::addCapacity(capacity);
 
     for (int i : *utilities_with_allocations)
@@ -352,8 +349,8 @@ void AllocatedReservoir::addCapacity(float capacity) {
  * @param utility_id
  */
 void AllocatedReservoir::addTreatmentCapacity(
-        const float added_plant_treatment_capacity,
-        float allocated_fraction_of_total_capacity,
+        const double added_plant_treatment_capacity,
+        double allocated_fraction_of_total_capacity,
         int utility_id) {
     WaterSource::addTreatmentCapacity(
             added_plant_treatment_capacity *
@@ -374,18 +371,18 @@ void AllocatedReservoir::addTreatmentCapacity(
     }
 }
 
-float AllocatedReservoir::getAvailableAllocatedVolume(int utility_id) {
+double AllocatedReservoir::getAvailableAllocatedVolume(int utility_id) {
     return available_allocated_volumes[utility_id];
 }
 
-void AllocatedReservoir::removeWater(int allocation_id, float volume) {
+void AllocatedReservoir::removeWater(int allocation_id, double volume) {
     available_allocated_volumes[allocation_id] -= volume;
     available_volume -= volume;
     total_demand += volume;
     policy_added_demand += volume;
 }
 
-float AllocatedReservoir::getAllocatedCapacity(int utility_id) {
+double AllocatedReservoir::getAllocatedCapacity(int utility_id) {
     return allocated_capacities[utility_id];
 }
 
@@ -395,11 +392,11 @@ void AllocatedReservoir::setFull() {
         available_allocated_volumes[u] = allocated_capacities[u];
 }
 
-float AllocatedReservoir::getAllocatedFraction(int utility_id) {
+double AllocatedReservoir::getAllocatedFraction(int utility_id) {
     return allocated_fractions[utility_id];
 }
 
-float AllocatedReservoir::getAllocatedTreatmentCapacity(int utility_id) const {
+double AllocatedReservoir::getAllocatedTreatmentCapacity(int utility_id) const {
     return allocated_treatment_capacities[utility_id];
 }
 

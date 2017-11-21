@@ -10,7 +10,7 @@ UtilitiesDataCollector::UtilitiesDataCollector(const Utility *utility)
         : DataCollector(utility->id,
                         utility->name,
                         UTILITY,
-                        11 * COLUMN_WIDTH),
+                        12 * COLUMN_WIDTH),
           utility(utility) {}
 
 string UtilitiesDataCollector::printTabularString(int week) {
@@ -22,9 +22,13 @@ string UtilitiesDataCollector::printTabularString(int week) {
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << capacity[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+	      << net_stream_inflow[week]
+              << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << st_rof[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << lt_rof[week]
+              << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+              << unfulfilled_demand[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << restricted_demand[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
@@ -48,6 +52,8 @@ string UtilitiesDataCollector::printCompactString(int week) {
     outStream << combined_storage[week]
               << ","
               << capacity[week]
+	      << ","
+	      << net_stream_inflow[week]
               << ","
               << st_rof[week]
               << ","
@@ -77,6 +83,7 @@ string UtilitiesDataCollector::printTabularStringHeaderLine1() {
 
     outStream << setw(2 * COLUMN_WIDTH) << "Stored"
               << setw(COLUMN_WIDTH) << " "
+              << setw(COLUMN_WIDTH) << "Net"
               << setw(COLUMN_WIDTH) << " "
               << setw(COLUMN_WIDTH) << " "
               << setw(COLUMN_WIDTH) << "Rest."
@@ -96,6 +103,7 @@ string UtilitiesDataCollector::printTabularStringHeaderLine2() {
 
     outStream << setw(2 * COLUMN_WIDTH) << "Volume"
               << setw(COLUMN_WIDTH) << "Capacity"
+              << setw(COLUMN_WIDTH) << "Inflow"
               << setw(COLUMN_WIDTH) << "ST-ROF"
               << setw(COLUMN_WIDTH) << "LT-ROF"
               << setw(COLUMN_WIDTH) << "Demand"
@@ -114,6 +122,7 @@ string UtilitiesDataCollector::printCompactStringHeader() {
 
     outStream << id << "st_vol" << ","
               << id << "capacity" << ","
+              << id << "net_inf" << ","
               << id << "st_rof" << ","
               << id << "lt_rof" << ","
               << id << "rest_demand" << ","
@@ -148,6 +157,7 @@ void UtilitiesDataCollector::collect_data() {
     capacity.push_back(utility->getTotal_storage_capacity());
     waste_water_discharge.push_back(utility->getWaste_water_discharge());
     unfulfilled_demand.push_back(utility->getUnfulfilled_demand());
+    net_stream_inflow.push_back(utility->getNet_stream_inflow());
 
     infra_built = utility->getInfrastructure_built();
     if (pathways.empty() && !infra_built.empty())
@@ -157,38 +167,38 @@ void UtilitiesDataCollector::collect_data() {
             pathways.push_back(infra_built);
 }
 
-const vector<float> &UtilitiesDataCollector::getCombined_storage() const {
+const vector<double> &UtilitiesDataCollector::getCombined_storage() const {
     return combined_storage;
 }
 
-const vector<float> &UtilitiesDataCollector::getCapacity() const {
+const vector<double> &UtilitiesDataCollector::getCapacity() const {
     return capacity;
 }
 
-const vector<float> &UtilitiesDataCollector::getGross_revenues() const {
+const vector<double> &UtilitiesDataCollector::getGross_revenues() const {
     return gross_revenues;
 }
 
-const vector<float> &
+const vector<double> &
 UtilitiesDataCollector::getContingency_fund_contribution() const {
     return contingency_fund_contribution;
 }
 
-const vector<float> &UtilitiesDataCollector::getDebt_service_payments() const {
+const vector<double> &UtilitiesDataCollector::getDebt_service_payments() const {
     return debt_service_payments;
 }
 
-const vector<float> &
+const vector<double> &
 UtilitiesDataCollector::getInsurance_contract_cost() const {
     return insurance_contract_cost;
 }
 
-const vector<float> &
+const vector<double> &
 UtilitiesDataCollector::getDrought_mitigation_cost() const {
     return drought_mitigation_cost;
 }
 
-const vector<float> &UtilitiesDataCollector::getContingency_fund_size() const {
+const vector<double> &UtilitiesDataCollector::getContingency_fund_size() const {
     return contingency_fund_size;
 }
 
@@ -196,7 +206,7 @@ const vector<vector<int>> &UtilitiesDataCollector::getPathways() const {
     return pathways;
 }
 
-const vector<float> &
+const vector<double> &
 UtilitiesDataCollector::getNet_present_infrastructure_cost() const {
     return net_present_infrastructure_cost;
 }

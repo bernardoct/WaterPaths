@@ -13,22 +13,22 @@ public:
     Relocation(const Relocation &relocation);
 
     const unsigned long parent_reservoir_ID;
-    const vector<float> *new_allocated_fractions;
+    const vector<double> *new_allocated_fractions;
     const vector<int> *utilities_with_allocations;
 
     Relocation(
             const char *name, const int id, unsigned long parent_reservoir_ID,
-            vector<float> *allocated_fractions,
+            vector<double> *allocated_fractions,
             vector<int> *utilities_with_allocations,
-            const float construction_rof_or_demand,
-            const vector<float> &construction_time_range,
-            float permitting_period,
-            float construction_cost_of_capital, float bond_term,
-            float bond_interest_rate);
+            const double construction_rof_or_demand,
+            const vector<double> &construction_time_range,
+            double permitting_period,
+            double construction_cost_of_capital, double bond_term,
+            double bond_interest_rate);
 
-    void applyContinuity(int week, float upstream_source_inflow,
-                             float wastewater_discharge,
-                             vector<float> &demand_outflow) override;
+    void applyContinuity(int week, double upstream_source_inflow,
+                             double wastewater_discharge,
+                             vector<double> &demand_outflow) override;
 
     unsigned long getParent_reservoir_ID() const;
 };

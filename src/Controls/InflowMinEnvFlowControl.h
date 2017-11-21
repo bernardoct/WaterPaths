@@ -12,13 +12,13 @@ class InflowMinEnvFlowControl : public MinEnvironFlowControl {
 public:
     InflowMinEnvFlowControl(
             int water_source_id, const vector<int> &aux_water_sources_ids,
-            const vector<float> *inflows, const vector<float> *releases);
+            const vector<double> *inflows, const vector<double> *releases);
 
-    const vector<float> *inflows;
-    const vector<float> *releases;
+    const vector<double> *inflows;
+    const vector<double> *releases;
 
 private:
-    float getRelease(int week);
+    double getRelease(int week);
 };
 
 

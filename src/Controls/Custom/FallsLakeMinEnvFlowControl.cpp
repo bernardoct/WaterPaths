@@ -7,8 +7,8 @@
 
 FallsLakeMinEnvFlowControl::FallsLakeMinEnvFlowControl(
         int water_source_id, int neuse_river_intake_id,
-        const int *week_interval, const float *base_min_env_flows,
-        const float *base_gage_flows, Catchment crabtree)
+        const int *week_interval, const double *base_min_env_flows,
+        const double *base_gage_flows, Catchment crabtree)
         : MinEnvironFlowControl(water_source_id,
                                 vector<int>(1,
                                             neuse_river_intake_id),
@@ -20,10 +20,10 @@ FallsLakeMinEnvFlowControl::FallsLakeMinEnvFlowControl(
           base_min_gage_flows(base_gage_flows), crabtree(crabtree) {}
 
 
-float FallsLakeMinEnvFlowControl::getRelease(int week) {
+double FallsLakeMinEnvFlowControl::getRelease(int week) {
 
-    float base_release;
-    float min_gage_flow;
+    double base_release;
+    double min_gage_flow;
 
     if (week < week_interval[0] && week > week_interval[1]) {
         base_release = base_min_env_flows[0];
@@ -33,7 +33,7 @@ float FallsLakeMinEnvFlowControl::getRelease(int week) {
         min_gage_flow = base_min_gage_flows[1];
     }
 
-    float neuse_outflow =
+    double neuse_outflow =
             water_sources[neuse_river_intake_id]->getTotal_outflow();
 
     return max(base_release,

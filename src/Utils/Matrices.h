@@ -29,7 +29,7 @@ public:
     Matrix2D<T> &operator=(const Matrix2D<T> &m);   // Assignment operator
     Matrix2D<T> &operator+=(const Matrix2D<T> &m);
 
-    Matrix2D<T> &operator/(const float m);
+    Matrix2D<T> &operator/(const double m);
 
     void setData(T *data);
 
@@ -90,7 +90,7 @@ Matrix2D<T> &Matrix2D<T>::operator+=(const Matrix2D<T> &m) {
 }
 
 template<typename T>
-Matrix2D<T> &Matrix2D<T>::operator/(const float n) {
+Matrix2D<T> &Matrix2D<T>::operator/(const double n) {
 
     for (int i = 0; i < di_ * dj_; ++i) {
         data_[i] /= n;
@@ -168,7 +168,7 @@ public:
     Matrix3D<T> &operator=(const Matrix3D<T> &m);   // Assignment operator
     Matrix3D<T> &operator+=(const Matrix3D<T> &m);
 
-    Matrix3D<T> &operator/(const float m);
+    Matrix3D<T> &operator/(const double m);
 
     Matrix2D<T> get2D(int ijk, char dim);
 
@@ -235,7 +235,7 @@ Matrix3D<T> &Matrix3D<T>::operator+=(const Matrix3D<T> &m) {
 }
 
 template<typename T>
-Matrix3D<T> &Matrix3D<T>::operator/(const float n) {
+Matrix3D<T> &Matrix3D<T>::operator/(const double n) {
 
     for (int i = 0; i < di_ * dj_ * dk_; ++i) {
         data_[i] /= n;

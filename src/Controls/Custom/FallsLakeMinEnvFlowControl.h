@@ -11,8 +11,8 @@
 class FallsLakeMinEnvFlowControl : public MinEnvironFlowControl {
 private:
     const int *week_interval;
-    const float *base_min_env_flows;
-    const float *base_min_gage_flows;
+    const double *base_min_env_flows;
+    const double *base_min_gage_flows;
     const int neuse_river_intake_id;
     Catchment crabtree;
 
@@ -20,10 +20,10 @@ private:
 public:
     FallsLakeMinEnvFlowControl(
             int water_source_id, int neuse_river_intake_id,
-            const int *week_interval, const float *base_min_env_flows,
-            const float *base_gage_flows, Catchment crabtree);
+            const int *week_interval, const double *base_min_env_flows,
+            const double *base_gage_flows, Catchment crabtree);
 
-    float getRelease(int week) override;
+    double getRelease(int week) override;
 
     void setRealization(unsigned int r) override;
 

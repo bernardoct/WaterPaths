@@ -10,12 +10,12 @@
 
 class FixedMinEnvFlowControl : public MinEnvironFlowControl {
 private:
-    float release;
+    double release;
 public:
     FixedMinEnvFlowControl(
-            int water_source_id, float release);
+            int water_source_id, double release);
 
-    float getRelease(int week) override;
+    double getRelease(int week) override;
 };
 
 

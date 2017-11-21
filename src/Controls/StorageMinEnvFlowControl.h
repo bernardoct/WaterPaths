@@ -12,12 +12,12 @@ class StorageMinEnvFlowControl : public MinEnvironFlowControl {
 public:
     StorageMinEnvFlowControl(
             int water_source_id, const vector<int> &aux_water_sources_ids,
-            vector<float> *storages, vector<float> *releases);
-    const vector<float> *storages;
-    const vector<float> *releases;
+            vector<double> *storages, vector<double> *releases);
+    const vector<double> *storages;
+    const vector<double> *releases;
 
 private:
-    float getRelease(int week);
+    double getRelease(int week);
 };
 
 

@@ -98,7 +98,7 @@ ContinuityModel::ContinuityModel(
             water_sources_capacities.push_back(
                     water_source->getCapacity());
         else
-            water_sources_capacities.push_back((float) NONE);
+            water_sources_capacities.push_back((double) NONE);
     }
 
     for (Utility *u : continuity_utilities)
@@ -119,8 +119,8 @@ ContinuityModel::ContinuityModel(
     for (MinEnvironFlowControl *mef : this->min_env_flow_controls)
         mef->addComponents(water_sources, utilities);
 
-    demands = std::vector<vector<float>>(
-            continuity_water_sources.size(), vector<float>(continuity_utilities
+    demands = std::vector<vector<double>>(
+            continuity_water_sources.size(), vector<double>(continuity_utilities
                                                                  .size(), 0.));
     
     /// populate array delta_realization_weeks so that the rounding and casting don't
@@ -147,11 +147,11 @@ ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) :
  */
 void ContinuityModel::continuityStep(
         int week, int rof_realization, bool apply_demand_buffer) {
-//    float upstream_spillage[n_sources] = {};
-//    float wastewater_discharges[n_sources] = {};
-    float upstream_spillage[n_sources];
+//    double upstream_spillage[n_sources] = {};
+//    double wastewater_discharges[n_sources] = {};
+    double upstream_spillage[n_sources];
     fill_n(upstream_spillage, n_sources, 0.);
-    float wastewater_discharges[n_sources];
+    double wastewater_discharges[n_sources];
     fill_n(wastewater_discharges, n_sources, 0.);
 
     /**

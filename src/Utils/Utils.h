@@ -16,10 +16,10 @@
 class Utils {
 public:
 
-    static vector<vector<float>> parse2DCsvFile(basic_string<char, char_traits<char>, allocator<char>> file_name, 
+    static vector<vector<double>> parse2DCsvFile(basic_string<char, char_traits<char>, allocator<char>> file_name, 
         int max_lines = 100000000, vector<int> rows_to_read = vector<int>());
 
-    static vector<float> parse1DCsvFile(basic_string<char, char_traits<char>, allocator<char>> file_name, 
+    static vector<double> parse1DCsvFile(basic_string<char, char_traits<char>, allocator<char>> file_name, 
         int max_lines = 100000000, vector<int> rows_to_read = vector<int>());
 
     static vector<WaterSource *> copyWaterSourceVector(vector<WaterSource *> water_sources_original);
@@ -31,11 +31,11 @@ public:
 
     static bool isFirstWeekOfTheYear(int week);
 
-    static float l2distanceSquare(vector<float> v1, vector<float> v2);
+    static double l2distanceSquare(vector<double> v1, vector<double> v2);
 
-    static vector<int> getQuantileIndeces(vector<float> v1, float quantile);
+    static vector<int> getQuantileIndeces(vector<double> v1, double quantile);
 
-    static vector<vector<float>> calculateDistances(vector<vector<float>> data_points);
+    static vector<vector<double>> calculateDistances(vector<vector<double>> data_points);
 
     static int weekOfTheYear(int week);
 

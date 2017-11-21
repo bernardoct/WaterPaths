@@ -28,13 +28,13 @@ public:
 
     vector<WaterSource *> getWater_sources();
 
-    void setShortTermROFs(const vector<float> &risks_of_failure);
+    void setShortTermROFs(const vector<double> &risks_of_failure);
 
     void applyDroughtMitigationPolicies(int week);
 
     const vector<DroughtMitigationPolicy *> getDrought_mitigation_policies() const;
 
-    void setLongTermROFs(const vector<float> &risks_of_failure, const int week);
+    void setLongTermROFs(const vector<double> &risks_of_failure, const int week);
 
     virtual ~ContinuityModelRealization();
 };

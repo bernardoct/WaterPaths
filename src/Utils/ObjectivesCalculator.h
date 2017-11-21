@@ -12,21 +12,21 @@
 class ObjectivesCalculator {
 
 public:
-    static float calculateReliabilityObjective(
+    static double calculateReliabilityObjective(
             vector<UtilitiesDataCollector *>
             utility_collector);
 
-    static float calculateRestrictionFrequencyObjective(
+    static double calculateRestrictionFrequencyObjective(
             vector<RestrictionsDataCollector *> restriction_data);
 
-    static float calculateNetPresentCostInfrastructureObjective(
+    static double calculateNetPresentCostInfrastructureObjective(
             vector<UtilitiesDataCollector *>
             utility_data);
 
-    static float calculatePeakFinancialCostsObjective(
+    static double calculatePeakFinancialCostsObjective(
             vector<UtilitiesDataCollector *> utility_data);
 
-    static float calculateWorseCaseCostsObjective(
+    static double calculateWorseCaseCostsObjective(
             vector<UtilitiesDataCollector *> utility_data);
 
 };

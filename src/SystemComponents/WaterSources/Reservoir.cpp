@@ -21,8 +21,8 @@ using namespace std;
  */
 Reservoir::Reservoir(
         const char *name, const int id,
-        const vector<Catchment *> &catchments, const float capacity,
-        const float max_treatment_capacity,
+        const vector<Catchment *> &catchments, const double capacity,
+        const double max_treatment_capacity,
         EvaporationSeries *evaporation_series,
         DataSeries *storage_area_curve, int source_type) :
         WaterSource(name,
@@ -50,9 +50,9 @@ Reservoir::Reservoir(
  */
 Reservoir::Reservoir(
         const char *name, const int id,
-        const vector<Catchment *> &catchments, const float capacity,
-        const float max_treatment_capacity,
-        EvaporationSeries *evaporation_series, float storage_area,
+        const vector<Catchment *> &catchments, const double capacity,
+        const double max_treatment_capacity,
+        EvaporationSeries *evaporation_series, double storage_area,
         int source_type) :
         WaterSource(name,
                     id,
@@ -78,13 +78,13 @@ Reservoir::Reservoir(
  */
 Reservoir::Reservoir(
         const char *name, const int id,
-        const vector<Catchment *> &catchments, const float capacity,
-        const float max_treatment_capacity,
+        const vector<Catchment *> &catchments, const double capacity,
+        const double max_treatment_capacity,
         EvaporationSeries *evaporation_series,
-        DataSeries *storage_area_curve, const float construction_rof_or_demand,
-        const vector<float> &construction_time_range, float permitting_period,
-        float construction_cost, float bond_term,
-        float bond_interest_rate, int source_type) :
+        DataSeries *storage_area_curve, const double construction_rof_or_demand,
+        const vector<double> &construction_time_range, double permitting_period,
+        double construction_cost, double bond_term,
+        double bond_interest_rate, int source_type) :
         WaterSource(name, id, catchments, capacity, max_treatment_capacity,
                     source_type, construction_time_range, permitting_period,
                     construction_cost, bond_term, bond_interest_rate),
@@ -110,13 +110,13 @@ Reservoir::Reservoir(
  */
 Reservoir::Reservoir(
         const char *name, const int id,
-        const vector<Catchment *> &catchments, const float capacity,
-        const float max_treatment_capacity,
-        EvaporationSeries *evaporation_series, float storage_area,
-        const float construction_rof_or_demand,
-        const vector<float> &construction_time_range, float permitting_period,
-        float construction_cost, float bond_term,
-        float bond_interest_rate, int source_type) :
+        const vector<Catchment *> &catchments, const double capacity,
+        const double max_treatment_capacity,
+        EvaporationSeries *evaporation_series, double storage_area,
+        const double construction_rof_or_demand,
+        const vector<double> &construction_time_range, double permitting_period,
+        double construction_cost, double bond_term,
+        double bond_interest_rate, int source_type) :
         WaterSource(name, id, catchments, capacity, max_treatment_capacity,
                     source_type, construction_time_range, permitting_period,
                     construction_cost, bond_term, bond_interest_rate),
@@ -135,12 +135,12 @@ Reservoir::Reservoir(
  */
 Reservoir::Reservoir(
         const char *name, const int id,
-        const vector<Catchment *> &catchments, const float capacity,
-        const float max_treatment_capacity,
+        const vector<Catchment *> &catchments, const double capacity,
+        const double max_treatment_capacity,
         EvaporationSeries *evaporation_series,
         DataSeries *storage_area_curve,
-        vector<float> *allocated_treatment_fractions,
-        vector<float> *allocated_fractions,
+        vector<double> *allocated_treatment_fractions,
+        vector<double> *allocated_fractions,
         vector<int> *utilities_with_allocations, int source_type) :
         WaterSource(name,
                     id,
@@ -171,11 +171,11 @@ Reservoir::Reservoir(
  */
 Reservoir::Reservoir(
         const char *name, const int id,
-        const vector<Catchment *> &catchments, const float capacity,
-        const float max_treatment_capacity,
-        EvaporationSeries *evaporation_series, float storage_area,
-        vector<float> *allocated_treatment_fractions,
-        vector<float> *allocated_fractions,
+        const vector<Catchment *> &catchments, const double capacity,
+        const double max_treatment_capacity,
+        EvaporationSeries *evaporation_series, double storage_area,
+        vector<double> *allocated_treatment_fractions,
+        vector<double> *allocated_fractions,
         vector<int> *utilities_with_allocations, int source_type) :
         WaterSource(name,
                     id,
@@ -204,17 +204,17 @@ Reservoir::Reservoir(
  */
 Reservoir::Reservoir(
         const char *name, const int id,
-        const vector<Catchment *> &catchments, const float capacity,
-        const float max_treatment_capacity,
+        const vector<Catchment *> &catchments, const double capacity,
+        const double max_treatment_capacity,
         EvaporationSeries *evaporation_series,
         DataSeries *storage_area_curve,
-        vector<float> *allocated_treatment_fractions,
-        vector<float> *allocated_fractions,
+        vector<double> *allocated_treatment_fractions,
+        vector<double> *allocated_fractions,
         vector<int> *utilities_with_allocations,
-        const float construction_rof_or_demand,
-        const vector<float> &construction_time_range, float permitting_period,
-        float construction_cost, float bond_term,
-        float bond_interest_rate, int source_type) :
+        const double construction_rof_or_demand,
+        const vector<double> &construction_time_range, double permitting_period,
+        double construction_cost, double bond_term,
+        double bond_interest_rate, int source_type) :
         WaterSource(name, id, catchments, capacity, max_treatment_capacity,
                     source_type, allocated_treatment_fractions,
                     allocated_fractions, utilities_with_allocations,
@@ -243,16 +243,16 @@ Reservoir::Reservoir(
  */
 Reservoir::Reservoir(
         const char *name, const int id,
-        const vector<Catchment *> &catchments, const float capacity,
-        const float max_treatment_capacity,
-        EvaporationSeries *evaporation_series, float storage_area,
-        vector<float> *allocated_treatment_fractions,
-        vector<float> *allocated_fractions,
+        const vector<Catchment *> &catchments, const double capacity,
+        const double max_treatment_capacity,
+        EvaporationSeries *evaporation_series, double storage_area,
+        vector<double> *allocated_treatment_fractions,
+        vector<double> *allocated_fractions,
         vector<int> *utilities_with_allocations,
-        const float construction_rof_or_demand,
-        const vector<float> &construction_time_range, float permitting_period,
-        float construction_cost, float bond_term,
-        float bond_interest_rate, int source_type) :
+        const double construction_rof_or_demand,
+        const vector<double> &construction_time_range, double permitting_period,
+        double construction_cost, double bond_term,
+        double bond_interest_rate, int source_type) :
         WaterSource(name, id, catchments, capacity, max_treatment_capacity,
                     source_type, allocated_treatment_fractions,
                     allocated_fractions, utilities_with_allocations,
@@ -299,14 +299,14 @@ Reservoir::~Reservoir() {
  * @param upstream_source_inflow
  * @param demand_outflow
  */
-void Reservoir::applyContinuity(int week, float upstream_source_inflow,
-                                float wastewater_inflow,
-                                vector<float> &demand_outflow) {
+void Reservoir::applyContinuity(int week, double upstream_source_inflow,
+                                double wastewater_inflow,
+                                vector<double> &demand_outflow) {
 
-    float total_upstream_inflow = upstream_source_inflow +
+    double total_upstream_inflow = upstream_source_inflow +
                                    wastewater_inflow;
 
-//    float total_demand = std::accumulate(demand_outflow.begin(),
+//    double total_demand = std::accumulate(demand_outflow.begin(),
 //                                          demand_outflow.end(),
 //                                          0.);
 
@@ -316,7 +316,7 @@ void Reservoir::applyContinuity(int week, float upstream_source_inflow,
     }
 
     /// Calculate total runoff inflow reaching reservoir from its watershed.
-    float catchment_inflow = 0;
+    double catchment_inflow = 0;
     for (Catchment *c : catchments) {
         /*if (c == nullptr) {
             cout << "not right\n";
@@ -334,11 +334,11 @@ void Reservoir::applyContinuity(int week, float upstream_source_inflow,
     }
 
     /// Calculate new stored volume and outflow based on continuity.
-    float stored_volume_new = available_volume
+    double stored_volume_new = available_volume
                                + total_upstream_inflow + catchment_inflow
                                - total_demand - min_environmental_outflow
                                - evaporated_volume;
-    float outflow_new = min_environmental_outflow;
+    double outflow_new = min_environmental_outflow;
 
 
     /// Check if spillage is needed and, if so, correct stored volume and
@@ -375,14 +375,14 @@ void Reservoir::setRealization(unsigned long r) {
     else {
         cout << "WARNING: No evaporated_volume time series for Reservoir "
              << name;
-        vector<vector<float>> *evaporation =
-                new std::vector<vector<float>>(1,
-                                                vector<float>(10000,
+        vector<vector<double>> *evaporation =
+                new std::vector<vector<double>>(1,
+                                                vector<double>(10000,
                                                                0));
         evaporation_series = new EvaporationSeries(evaporation, 10000);
     }
 }
 
-float Reservoir::getArea() const {
+double Reservoir::getArea() const {
     return area;
 }

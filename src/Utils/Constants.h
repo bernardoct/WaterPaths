@@ -11,10 +11,10 @@
 
 
 namespace Constants {
-    const float PEAKING_FACTOR = 0.85; ///Peaking factor used to move from daily capacity to average weekly capacity.
-    const float WEEKS_IN_YEAR = 52.179;
+    const double PEAKING_FACTOR = 0.85; ///Peaking factor used to move from daily capacity to average weekly capacity.
+    const double WEEKS_IN_YEAR = 52.179;
     const int NUMBER_OF_MONTHS = 12;
-    const float WEEKS_IN_MONTH = WEEKS_IN_YEAR / (float) NUMBER_OF_MONTHS;
+    const double WEEKS_IN_MONTH = WEEKS_IN_YEAR / (double) NUMBER_OF_MONTHS;
     const int WEEKS_ROF_SHORT_TERM = 52;
     const int WEEKS_ROF_LONG_TERM = 78;
     const int SHORT_TERM_ROF = 0;
@@ -23,7 +23,7 @@ namespace Constants {
     const int NUMBER_REALIZATIONS_ROF = 50;
     const int TREATMENT_CAPACITY_VS_VOLUME_SMALL_WTP = 200;
     const int ILLIMITED_TREATMENT_CAPACITY = 99999;
-    const float STORAGE_CAPACITY_RATIO_FAIL = 0.2;
+    const double STORAGE_CAPACITY_RATIO_FAIL = 0.2;
     const int NOT_ALLOCATED = 1;
 
     const bool APPLY_DEMAND_BUFFER = true;
@@ -63,9 +63,9 @@ namespace Constants {
     const int COLUMN_WIDTH = 10;
     const int COLUMN_PRECISION = 4;
 
-    const float WORSE_CASE_COST_PERCENTILE = 0.99;
+    const double WORSE_CASE_COST_PERCENTILE = 0.99;
 
-    const float INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD = 0.05;
+    const double INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD = 0.05;
     const int NO_OF_INSURANCE_STORAGE_TIERS = (int) std::round(1. / INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD);
 
     const int WATER_QUALITY_ALLOCATION = -1;

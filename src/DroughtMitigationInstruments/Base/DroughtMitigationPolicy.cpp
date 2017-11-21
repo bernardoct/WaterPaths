@@ -31,7 +31,7 @@ bool DroughtMitigationPolicy::operator>(const DroughtMitigationPolicy *other) {
     return id > other->id;
 }
 
-void DroughtMitigationPolicy::setStorage_to_rof_table_(const Matrix3D<float> *storage_to_rof_table_) {
+void DroughtMitigationPolicy::setStorage_to_rof_table_(const Matrix3D<double> *storage_to_rof_table_) {
     DroughtMitigationPolicy::storage_to_rof_table_ = storage_to_rof_table_;
 }
 

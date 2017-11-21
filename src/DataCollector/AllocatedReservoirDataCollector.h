@@ -11,7 +11,7 @@
 
 class AllocatedReservoirDataCollector : public ReservoirDataCollector {
     AllocatedReservoir *allocated_reservoir;
-    vector<vector<float>> allocated_stored_volumes;
+    vector<vector<double>> allocated_stored_volumes;
 
 public:
     AllocatedReservoirDataCollector(

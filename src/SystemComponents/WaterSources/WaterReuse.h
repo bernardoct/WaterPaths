@@ -10,25 +10,25 @@
 
 class WaterReuse : public WaterSource {
 private:
-    float treated_volume;
+    double treated_volume;
 public:
-    WaterReuse(const char *name, const int id, const float capacity);
+    WaterReuse(const char *name, const int id, const double capacity);
 
     WaterReuse(
-            const char *name, const int id, const float capacity,
-            const float construction_rof_or_demand,
-            const vector<float> &construction_time_range,
-            float permitting_period,
-            float construction_cost_of_capital, float bond_term,
-            float bond_interest_rate);
+            const char *name, const int id, const double capacity,
+            const double construction_rof_or_demand,
+            const vector<double> &construction_time_range,
+            double permitting_period,
+            double construction_cost_of_capital, double bond_term,
+            double bond_interest_rate);
 
-    void applyContinuity(int week, float upstream_source_inflow,
-                             float wastewater_discharge,
-                             vector<float> &demand_outflow) override;
+    void applyContinuity(int week, double upstream_source_inflow,
+                             double wastewater_discharge,
+                             vector<double> &demand_outflow) override;
 
     WaterReuse &operator=(const WaterReuse &water_reuse);
 
-    float getReused_volume() const;
+    double getReused_volume() const;
 
 };
 

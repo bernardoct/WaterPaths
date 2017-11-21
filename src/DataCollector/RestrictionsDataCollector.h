@@ -13,7 +13,7 @@
 class RestrictionsDataCollector : public DataCollector {
 private:
     Restrictions *restriction_policy;
-    vector<float> restriction_multipliers;
+    vector<double> restriction_multipliers;
 
 public:
     explicit RestrictionsDataCollector(
@@ -31,7 +31,7 @@ public:
 
     void collect_data() override;
 
-    const vector<float> &getRestriction_multipliers() const;
+    const vector<double> &getRestriction_multipliers() const;
 };
 
 

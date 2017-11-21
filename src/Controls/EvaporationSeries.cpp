@@ -5,7 +5,7 @@
 #include "EvaporationSeries.h"
 
 EvaporationSeries::EvaporationSeries(
-        vector<vector<float>> *evaporation_series, int series_length)
+        vector<vector<double>> *evaporation_series, int series_length)
         : Catchment(evaporation_series,
                     series_length) {}
 
@@ -34,6 +34,6 @@ EvaporationSeries &EvaporationSeries::operator=(
 
 EvaporationSeries::~EvaporationSeries() {}
 
-float EvaporationSeries::getEvaporation(int week) {
+double EvaporationSeries::getEvaporation(int week) {
     return Catchment::getStreamflow(week);
 }

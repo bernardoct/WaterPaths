@@ -7,7 +7,7 @@
 #include "../Utils/Constants.h"
 
 WwtpDischargeRule::WwtpDischargeRule(
-        const vector<vector<float>> *year_series_fraction_discharge,
+        const vector<vector<double>> *year_series_fraction_discharge,
         const vector<int> *discharge_to_source_ids) :
         year_series_fraction_discharge(year_series_fraction_discharge),
         discharge_to_source_ids(discharge_to_source_ids) {
@@ -58,25 +58,25 @@ WwtpDischargeRule &WwtpDischargeRule::operator=(
  * @param water_source_id ID of source receiving the effluent.
  * @return fraction of demand to be discharged.
  */
-float WwtpDischargeRule::get_dependent_variable(int water_source_id, int week) {
+double WwtpDischargeRule::get_dependent_variable(int water_source_id, int week) {
     return (*year_series_fraction_discharge)[source_id_to_vector_index[water_source_id]][week];
 }
 
-float WwtpDischargeRule::get_dependent_variable(float x, int week) {
+double WwtpDischargeRule::get_dependent_variable(double x, int week) {
     __throw_invalid_argument("WWTP discharge rules need a water source ID (int)"
                                      " and week number (int) to return the "
                                      "fraction of total_demand discharged to that "
                                      "source.");
 }
 
-float WwtpDischargeRule::get_dependent_variable(float x) {
+double WwtpDischargeRule::get_dependent_variable(double x) {
     __throw_invalid_argument("WWTP discharge rules need a water source ID (int)"
                                      " and week number (int) to return the "
                                      "fraction of total_demand discharged to that "
                                      "source.");
 }
 
-float WwtpDischargeRule::get_dependent_variable(int x) {
+double WwtpDischargeRule::get_dependent_variable(int x) {
     __throw_invalid_argument("WWTP discharge rules need a water source ID (int)"
                                      " and week number (int) to return the "
                                      "fraction of total_demand discharged to that "

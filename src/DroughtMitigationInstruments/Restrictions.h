@@ -12,21 +12,21 @@
 class Restrictions : public DroughtMitigationPolicy {
 
 private:
-    const vector<float> stage_multipliers;
-    const vector<float> stage_triggers;
-    float current_multiplier = 0;
-    float **restricted_weekly_average_volumetric_price = nullptr;
+    const vector<double> stage_multipliers;
+    const vector<double> stage_triggers;
+    double current_multiplier = 0;
+    double **restricted_weekly_average_volumetric_price = nullptr;
 
 public:
-    Restrictions(const int id, const vector<float> &stage_multipliers,
-                 const vector<float> &stage_triggers);
+    Restrictions(const int id, const vector<double> &stage_multipliers,
+                 const vector<double> &stage_triggers);
 
     Restrictions(
-            const int id, const vector<float> &stage_multipliers,
-            const vector<float> &stage_triggers,
-            const vector<vector<float>> *typesMonthlyDemandFraction,
-            const vector<vector<float>> *typesMonthlyWaterPrice,
-            const vector<vector<float>> *priceMultipliers);
+            const int id, const vector<double> &stage_multipliers,
+            const vector<double> &stage_triggers,
+            const vector<vector<double>> *typesMonthlyDemandFraction,
+            const vector<vector<double>> *typesMonthlyWaterPrice,
+            const vector<vector<double>> *priceMultipliers);
 
     Restrictions(const Restrictions &reservoir);
 
@@ -36,14 +36,14 @@ public:
                                  vector<WaterSource *> water_sources,
                                  vector<MinEnvironFlowControl *> min_env_flow_controls) override;
 
-    float getCurrent_multiplier() const;
+    double getCurrent_multiplier() const;
 
     ~Restrictions();
 
     void calculateWeeklyAverageWaterPrices(
-            const vector<vector<float>> *typesMonthlyDemandFraction,
-            const vector<vector<float>> *typesMonthlyWaterPrice,
-            const vector<vector<float>> *priceMultipliers);
+            const vector<vector<double>> *typesMonthlyDemandFraction,
+            const vector<vector<double>> *typesMonthlyWaterPrice,
+            const vector<vector<double>> *priceMultipliers);
 
     void setRealization(unsigned int realization_id) override;
 };

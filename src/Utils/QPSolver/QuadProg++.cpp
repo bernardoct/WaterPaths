@@ -19,38 +19,38 @@ File $Id: QuadProg++.cc 232 2007-06-21 12:29:00Z digasper $
 #include "QuadProg++.h"
 
 // Utility functions for updating some data needed by the solution method 
-void compute_d(Vector<float> &d, const Matrix<float> &J, const Vector<float> &np);
+void compute_d(Vector<double> &d, const Matrix<double> &J, const Vector<double> &np);
 
-void update_z(Vector<float> &z, const Matrix<float> &J, const Vector<float> &d, int iq);
+void update_z(Vector<double> &z, const Matrix<double> &J, const Vector<double> &d, int iq);
 
-void update_r(const Matrix<float> &R, Vector<float> &r, const Vector<float> &d, int iq);
+void update_r(const Matrix<double> &R, Vector<double> &r, const Vector<double> &d, int iq);
 
-bool add_constraint(Matrix<float> &R, Matrix<float> &J, Vector<float> &d, int &iq, float &rnorm);
+bool add_constraint(Matrix<double> &R, Matrix<double> &J, Vector<double> &d, int &iq, double &rnorm);
 
-void delete_constraint(Matrix<float> &R, Matrix<float> &J, Vector<int> &A, Vector<float> &u, int n, int p, int &iq,
+void delete_constraint(Matrix<double> &R, Matrix<double> &J, Vector<int> &A, Vector<double> &u, int n, int p, int &iq,
                        int l);
 
 // Utility functions for computing the Cholesky decomposition and solving
 // linear systems
-void cholesky_decomposition(Matrix<float> &A);
+void cholesky_decomposition(Matrix<double> &A);
 
-void cholesky_solve(const Matrix<float> &L, Vector<float> &x, const Vector<float> &b);
+void cholesky_solve(const Matrix<double> &L, Vector<double> &x, const Vector<double> &b);
 
-void forward_elimination(const Matrix<float> &L, Vector<float> &y, const Vector<float> &b);
+void forward_elimination(const Matrix<double> &L, Vector<double> &y, const Vector<double> &b);
 
-void backward_elimination(const Matrix<float> &U, Vector<float> &x, const Vector<float> &y);
+void backward_elimination(const Matrix<double> &U, Vector<double> &x, const Vector<double> &y);
 
 // Utility functions for computing the scalar product and the euclidean 
 // distance between two numbers
-float scalar_product(const Vector<float> &x, const Vector<float> &y);
+double scalar_product(const Vector<double> &x, const Vector<double> &y);
 
-float distance(float a, float b);
+double distance(double a, double b);
 
 // The Solving function, implementing the Goldfarb-Idnani method
-float solve_quadprog(Matrix<float> &G, Vector<float> &g0,
-                      const Matrix<float> &CE, const Vector<float> &ce0,
-                      const Matrix<float> &CI, const Vector<float> &ci0,
-                      Vector<float> &x) {
+double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
+                      const Matrix<double> &CE, const Vector<double> &ce0,
+                      const Matrix<double> &CI, const Vector<double> &ci0,
+                      Vector<double> &x) {
     std::ostringstream msg;
 
     unsigned int n = G.ncols(), p = CE.ncols(), m = CI.ncols();
@@ -77,12 +77,12 @@ float solve_quadprog(Matrix<float> &G, Vector<float> &g0,
     x.resize(n);
     register int i, j, k, l; /* indices */
     int ip; // this is the index of the constraint to be added to the active set
-    Matrix<float> R(n, n), J(n, n);
-    Vector<float> s(m + p), z(n), r(m + p), d(n), np(n), u(m + p), x_old(n), u_old(m + p);
-    float f_value, psi, c1, c2, sum, ss, R_norm;
-    float inf;
-    inf = std::numeric_limits<float>::infinity();
-    float t, t1, t2; /* t is the step lenght, which is the minimum of the partial step length t1
+    Matrix<double> R(n, n), J(n, n);
+    Vector<double> s(m + p), z(n), r(m + p), d(n), np(n), u(m + p), x_old(n), u_old(m + p);
+    double f_value, psi, c1, c2, sum, ss, R_norm;
+    double inf;
+    inf = std::numeric_limits<double>::infinity();
+    double t, t1, t2; /* t is the step lenght, which is the minimum of the partial step length t1
     * and the full step length t2 */
     Vector<int> A(m + p), A_old(m + p), iai(m + p);
     int iq, iter = 0;
@@ -172,7 +172,7 @@ float solve_quadprog(Matrix<float> &G, Vector<float> &g0,
         /* compute full step length t2: i.e., the minimum step in primal space s.t. the contraint
           becomes feasible */
         t2 = 0.0;
-        if (fabs(scalar_product(z, z)) > std::numeric_limits<float>::epsilon()) // i.e. z != 0
+        if (fabs(scalar_product(z, z)) > std::numeric_limits<double>::epsilon()) // i.e. z != 0
             t2 = (-scalar_product(np, x) - ce0[i]) / scalar_product(z, np);
 
         /* set allocations_aux = allocations_aux + t2 * z */
@@ -220,15 +220,15 @@ float solve_quadprog(Matrix<float> &G, Vector<float> &g0,
             sum += CI[j][i] * x[j];
         sum += ci0[i];
         s[i] = sum;
-        psi += std::min(0.0f, sum);
+        psi += std::min(0.0, sum);
     }
 #ifdef TRACE_SOLVER
     print_vector("s", s, m);
 #endif
 
 
-    if (fabs(psi) <= m * std::numeric_limits<float>::epsilon() * c1 * c2 *
-                             100.0f) {
+    if (fabs(psi) <= m * std::numeric_limits<double>::epsilon() * c1 * c2 *
+                             100.0) {
         /* numerically there are not infeasibilities anymore */
         return f_value;
     }
@@ -295,7 +295,7 @@ float solve_quadprog(Matrix<float> &G, Vector<float> &g0,
         }
     }
     /* Compute t2: full step length (minimum step in primal space such that the constraint ip becomes feasible */
-    if (fabs(scalar_product(z, z)) > std::numeric_limits<float>::epsilon()) // i.e. z != 0
+    if (fabs(scalar_product(z, z)) > std::numeric_limits<double>::epsilon()) // i.e. z != 0
     {
         t2 = -s[ip] / scalar_product(z, np);
         if (t2 < 0) // patch suggested by Takano Akio for handling numerical inconsistencies
@@ -355,7 +355,7 @@ float solve_quadprog(Matrix<float> &G, Vector<float> &g0,
     print_vector("A", A, iq + 1);
 #endif
 
-    if (fabs(t - t2) < std::numeric_limits<float>::epsilon()) {
+    if (fabs(t - t2) < std::numeric_limits<double>::epsilon()) {
 #ifdef TRACE_SOLVER
         std::cout << "Full step has taken " << t << std::endl;
         print_vector("allocations_aux", allocations_aux);
@@ -427,13 +427,13 @@ float solve_quadprog(Matrix<float> &G, Vector<float> &g0,
  * @param ub
  * @param x
  */
-void solve_quadprog_matlab_syntax(Matrix<float> &G, Vector<float> &g0,
-                                    const Matrix<float> &CE, const Vector<float> &ce0,
-                                    const Matrix<float> &CI, const Vector<float> &ci0,
-                                    const Vector<float> &lb, const Vector<float> &ub,
-                                    Vector<float> &x) {
-    Matrix<float> CE_T;
-    Matrix<float> expanded_CI;
+void solve_quadprog_matlab_syntax(Matrix<double> &G, Vector<double> &g0,
+                                    const Matrix<double> &CE, const Vector<double> &ce0,
+                                    const Matrix<double> &CI, const Vector<double> &ci0,
+                                    const Vector<double> &lb, const Vector<double> &ub,
+                                    Vector<double> &x) {
+    Matrix<double> CE_T;
+    Matrix<double> expanded_CI;
     CE_T.resize(0, CE.ncols(), CE.nrows());
     expanded_CI.resize(0, CI.nrows() + lb.size() + ub.size(), CI.ncols() + lb.size());
 
@@ -445,13 +445,13 @@ void solve_quadprog_matlab_syntax(Matrix<float> &G, Vector<float> &g0,
     }
 
     /// Reverse signs of ce0 and ci0.
-    Vector<float> ce0_inv;
+    Vector<double> ce0_inv;
     ce0_inv.resize(0, ce0.size());
     for (int i = 0; i < ce0.size(); ++i) {
         ce0_inv[i] = -ce0[i];
     }
     /// Expand ci0 to include the bounds.
-    Vector<float> ci0_inv;
+    Vector<double> ci0_inv;
     ci0_inv.resize((0, ci0.size() + lb.size() + ub.size()));
     for (int i = 0; i < ci0.size(); ++i) {
         ci0_inv[i] = -ci0[i];
@@ -471,7 +471,7 @@ void solve_quadprog_matlab_syntax(Matrix<float> &G, Vector<float> &g0,
     }
 
     /// Transpose expanded_CI
-    Matrix<float> expanded_CI_inv;
+    Matrix<double> expanded_CI_inv;
     expanded_CI_inv.resize(0, expanded_CI.ncols(), expanded_CI.nrows());
     for (int i = 0; i < expanded_CI.nrows(); ++i) {
         for (int j = 0; j < expanded_CI.ncols(); ++j) {
@@ -499,9 +499,9 @@ void solve_quadprog_matlab_syntax(Matrix<float> &G, Vector<float> &g0,
 }
 
 
-inline void compute_d(Vector<float> &d, const Matrix<float> &J, const Vector<float> &np) {
+inline void compute_d(Vector<double> &d, const Matrix<double> &J, const Vector<double> &np) {
     register int i, j, n = d.size();
-    register float sum;
+    register double sum;
 
     /* compute d = H^T * np */
     for (i = 0; i < n; i++) {
@@ -512,7 +512,7 @@ inline void compute_d(Vector<float> &d, const Matrix<float> &J, const Vector<flo
     }
 }
 
-inline void update_z(Vector<float> &z, const Matrix<float> &J, const Vector<float> &d, int iq) {
+inline void update_z(Vector<double> &z, const Matrix<double> &J, const Vector<double> &d, int iq) {
     register int i, j, n = z.size();
 
     /* setting of z = H * d */
@@ -523,9 +523,9 @@ inline void update_z(Vector<float> &z, const Matrix<float> &J, const Vector<floa
     }
 }
 
-inline void update_r(const Matrix<float> &R, Vector<float> &r, const Vector<float> &d, int iq) {
+inline void update_r(const Matrix<double> &R, Vector<double> &r, const Vector<double> &d, int iq) {
     register int i, j;
-    register float sum;
+    register double sum;
 
     /* setting of r = R^-1 d */
     for (i = iq - 1; i >= 0; i--) {
@@ -536,13 +536,13 @@ inline void update_r(const Matrix<float> &R, Vector<float> &r, const Vector<floa
     }
 }
 
-bool add_constraint(Matrix<float> &R, Matrix<float> &J, Vector<float> &d, int &iq, float &R_norm) {
+bool add_constraint(Matrix<double> &R, Matrix<double> &J, Vector<double> &d, int &iq, double &R_norm) {
     int n = d.size();
 #ifdef TRACE_SOLVER
     std::cout << "Add constraint " << iq << '/';
 #endif
     register int i, j, k;
-    float cc, ss, h, t1, t2, xny;
+    double cc, ss, h, t1, t2, xny;
 
     /* we have to find the Givens rotation which will reduce the element
       d[j] to zero.
@@ -560,7 +560,7 @@ bool add_constraint(Matrix<float> &R, Matrix<float> &J, Vector<float> &d, int &i
         cc = d[j - 1];
         ss = d[j];
         h = distance(cc, ss);
-        if (fabs(h) < std::numeric_limits<float>::epsilon()) // h == 0
+        if (fabs(h) < std::numeric_limits<double>::epsilon()) // h == 0
             continue;
         d[j] = 0.0;
         ss = ss / h;
@@ -593,21 +593,21 @@ bool add_constraint(Matrix<float> &R, Matrix<float> &J, Vector<float> &d, int &i
     print_vector("d", d, iq);
 #endif
 
-    if (fabs(d[iq - 1]) <= std::numeric_limits<float>::epsilon() * R_norm) {
+    if (fabs(d[iq - 1]) <= std::numeric_limits<double>::epsilon() * R_norm) {
         // problem degenerate
         return false;
     }
-    R_norm = std::max<float>(R_norm, fabs(d[iq - 1]));
+    R_norm = std::max<double>(R_norm, fabs(d[iq - 1]));
     return true;
 }
 
-void delete_constraint(Matrix<float> &R, Matrix<float> &J, Vector<int> &A, Vector<float> &u, int n, int p, int &iq,
+void delete_constraint(Matrix<double> &R, Matrix<double> &J, Vector<int> &A, Vector<double> &u, int n, int p, int &iq,
                        int l) {
 #ifdef TRACE_SOLVER
     std::cout << "Delete constraint " << l << ' ' << iq;
 #endif
     register int i, j, k, qq = -1; // just to prevent warnings from smart compilers
-    float cc, ss, h, xny, t1, t2;
+    double cc, ss, h, xny, t1, t2;
 
     /* Find the index qq for active constraint l to be removed */
     for (i = p; i < iq; i++)
@@ -643,7 +643,7 @@ void delete_constraint(Matrix<float> &R, Matrix<float> &J, Vector<int> &A, Vecto
         cc = R[j][j];
         ss = R[j + 1][j];
         h = distance(cc, ss);
-        if (fabs(h) < std::numeric_limits<float>::epsilon()) // h == 0
+        if (fabs(h) < std::numeric_limits<double>::epsilon()) // h == 0
             continue;
         cc = cc / h;
         ss = ss / h;
@@ -671,8 +671,8 @@ void delete_constraint(Matrix<float> &R, Matrix<float> &J, Vector<int> &A, Vecto
     }
 }
 
-inline float distance(float a, float b) {
-    register float a1, b1, t;
+inline double distance(double a, double b) {
+    register double a1, b1, t;
     a1 = fabs(a);
     b1 = fabs(b);
     if (a1 > b1) {
@@ -686,9 +686,9 @@ inline float distance(float a, float b) {
 }
 
 
-inline float scalar_product(const Vector<float> &x, const Vector<float> &y) {
+inline double scalar_product(const Vector<double> &x, const Vector<double> &y) {
     register int i, n = x.size();
-    register float sum;
+    register double sum;
 
     sum = 0.0;
     for (i = 0; i < n; i++)
@@ -696,9 +696,9 @@ inline float scalar_product(const Vector<float> &x, const Vector<float> &y) {
     return sum;
 }
 
-void cholesky_decomposition(Matrix<float> &A) {
+void cholesky_decomposition(Matrix<double> &A) {
     register int i, j, k, n = A.nrows();
-    register float sum;
+    register double sum;
 
     for (i = 0; i < n; i++) {
         for (j = i; j < n; j++) {
@@ -722,9 +722,9 @@ void cholesky_decomposition(Matrix<float> &A) {
     }
 }
 
-void cholesky_solve(const Matrix<float> &L, Vector<float> &x, const Vector<float> &b) {
+void cholesky_solve(const Matrix<double> &L, Vector<double> &x, const Vector<double> &b) {
     int n = L.nrows();
-    Vector<float> y((unsigned int) n);
+    Vector<double> y((unsigned int) n);
 
     /* Solve L * y = b */
     forward_elimination(L, y, b);
@@ -732,7 +732,7 @@ void cholesky_solve(const Matrix<float> &L, Vector<float> &x, const Vector<float
     backward_elimination(L, x, y);
 }
 
-inline void forward_elimination(const Matrix<float> &L, Vector<float> &y, const Vector<float> &b) {
+inline void forward_elimination(const Matrix<double> &L, Vector<double> &y, const Vector<double> &b) {
     register int i, j, n = L.nrows();
 
     y[0] = b[0] / L[0][0];
@@ -744,7 +744,7 @@ inline void forward_elimination(const Matrix<float> &L, Vector<float> &y, const 
     }
 }
 
-inline void backward_elimination(const Matrix<float> &U, Vector<float> &x, const Vector<float> &y) {
+inline void backward_elimination(const Matrix<double> &U, Vector<double> &x, const Vector<double> &y) {
     register int i, j, n = U.nrows();
 
     x[n - 1] = y[n - 1] / U[n - 1][n - 1];
@@ -756,7 +756,7 @@ inline void backward_elimination(const Matrix<float> &U, Vector<float> &x, const
     }
 }
 
-void print_matrix(char *name, const Matrix<float> &A, int n, int m) {
+void print_matrix(char *name, const Matrix<double> &A, int n, int m) {
     std::ostringstream s;
     std::string t;
     if (n == -1)
@@ -777,7 +777,7 @@ void print_matrix(char *name, const Matrix<float> &A, int n, int m) {
     std::cout << t << std::endl;
 }
 
-void print_vector(char *name, const Vector<float> &v, int n) {
+void print_vector(char *name, const Vector<double> &v, int n) {
     std::ostringstream s;
     std::string t;
     if (n == -1)

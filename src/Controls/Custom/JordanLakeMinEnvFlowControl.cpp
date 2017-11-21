@@ -20,9 +20,9 @@
  */
 JordanLakeMinEnvFlowControl::JordanLakeMinEnvFlowControl(
             int jordan_lake_id, Catchment *lillington_gage_catchment,
-            float rel02, float rel04, float rel06_up, float min_rel_llt06,
-            float min_rel_llt08, float min_rel_llt08_up,
-            float quality_capacity, float supply_capacity)
+            double rel02, double rel04, double rel06_up, double min_rel_llt06,
+            double min_rel_llt08, double min_rel_llt08_up,
+            double quality_capacity, double supply_capacity)
         : MinEnvironFlowControl(jordan_lake_id, vector<int>(1, jordan_lake_id),
                                 vector<int>(),
                                 JORDAN_CONTROLS),
@@ -49,11 +49,11 @@ JordanLakeMinEnvFlowControl &JordanLakeMinEnvFlowControl::operator=
 }
 
 
-float JordanLakeMinEnvFlowControl::getRelease(int week) {
-    float water_quality_storage =
+double JordanLakeMinEnvFlowControl::getRelease(int week) {
+    double water_quality_storage =
             max(water_sources[water_source_id]->getAvailable_volume(),
                 quality_capacity);
-    float lillington_flow_rate =
+    double lillington_flow_rate =
             water_sources[water_source_id]->getTotal_outflow() +
                     lillington_gage_catchment->getStreamflow(week);
 

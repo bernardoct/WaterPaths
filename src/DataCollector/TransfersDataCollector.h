@@ -13,7 +13,7 @@
 class TransfersDataCollector : public DataCollector {
 private:
     vector<int> utilities_ids;
-    vector<vector<float>> demand_offsets;
+    vector<vector<double>> demand_offsets;
     Transfers *transfer_policy;
 
 public:

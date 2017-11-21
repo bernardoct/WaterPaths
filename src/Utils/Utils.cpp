@@ -17,14 +17,14 @@
 #include <unistd.h>
 
 /**
- * Reads csv file into table, exported as a vector of vector of floats.
+ * Reads csv file into table, exported as a vector of vector of doubles.
  * @param file_name input file name (full path).
  * @param max_lines
  * @return
  */
-vector<vector<float>> Utils::parse2DCsvFile(string file_name, int max_lines, vector<int> rows_to_read) {
+vector<vector<double>> Utils::parse2DCsvFile(string file_name, int max_lines, vector<int> rows_to_read) {
 
-    vector<vector<float> > data;
+    vector<vector<double> > data;
     ifstream inputFile(file_name);
     int l = -1;
     int ml = (rows_to_read.empty() ? max_lines : *max_element(
@@ -39,7 +39,7 @@ vector<vector<float>> Utils::parse2DCsvFile(string file_name, int max_lines, vec
             string s;
             if (!getline(inputFile, s)) break;
 
-            vector<float> record;
+            vector<double> record;
             if (s[0] != '#' &&
                 (rows_to_read.empty() ||
                  std::find(rows_to_read.begin(), rows_to_read.end(), l)
@@ -70,15 +70,15 @@ vector<vector<float>> Utils::parse2DCsvFile(string file_name, int max_lines, vec
     if (rows_to_read.empty())
         return data;
     else {
-        vector<vector<float>> return_data;
+        vector<vector<double>> return_data;
         for (int i : rows_to_read)
             return_data.push_back(data[i]);
         return return_data;
     }
 }
 
-vector<float> Utils::parse1DCsvFile(string file_name, int max_lines, vector<int> rows_to_read) {
-    vector<float> data;
+vector<double> Utils::parse1DCsvFile(string file_name, int max_lines, vector<int> rows_to_read) {
+    vector<double> data;
     ifstream infile(file_name);
     int l = 0;
 
@@ -89,7 +89,7 @@ vector<float> Utils::parse1DCsvFile(string file_name, int max_lines, vector<int>
         if (s[0] != '#' && (rows_to_read.empty() || (!rows_to_read.empty() && l - 1 == rows_to_read[0]))) {
 
             istringstream ss(s);
-            float record;
+            double record;
 
             try {
                 record = stof(ss.str());
@@ -207,12 +207,12 @@ int Utils::weekOfTheYear(int week) {
  * @param v2
  * @return
  */
-float Utils::l2distanceSquare(vector<float> v1, vector<float> v2) {
-    float result = 0;
-    vector<float> difference;
+double Utils::l2distanceSquare(vector<double> v1, vector<double> v2) {
+    double result = 0;
+    vector<double> difference;
     std::transform(v1.begin(), v1.end(), v2.begin(), std::back_inserter(difference),
-                   [&](float l, float r) { return std::abs(l - r); });
-    for (float &d : difference) result += d * d;
+                   [&](double l, double r) { return std::abs(l - r); });
+    for (double &d : difference) result += d * d;
     return result;
 }
 
@@ -222,11 +222,11 @@ float Utils::l2distanceSquare(vector<float> v1, vector<float> v2) {
  * @param quantile
  * @return
  */
-vector<int> Utils::getQuantileIndeces(vector<float> v1, float quantile) {
-    vector<float> sorted_v1(v1);
+vector<int> Utils::getQuantileIndeces(vector<double> v1, double quantile) {
+    vector<double> sorted_v1(v1);
     vector<int> indeces_quantile;
     std::sort(sorted_v1.begin(), sorted_v1.end());
-    float quantile_threshold = sorted_v1[(int) ceil(v1.size() * quantile)];
+    double quantile_threshold = sorted_v1[(int) ceil(v1.size() * quantile)];
 
     for (int i = 0; i < v1.size(); ++i) {
         if (v1[i] < quantile_threshold) indeces_quantile.push_back(i);
@@ -240,8 +240,8 @@ vector<int> Utils::getQuantileIndeces(vector<float> v1, float quantile) {
  * @param data_points
  * @return
  */
-vector<vector<float>> Utils::calculateDistances(vector<vector<float>> data_points) {
-    vector<vector<float>> distances(data_points.size(), vector<float>(data_points.size(), 0.0));
+vector<vector<double>> Utils::calculateDistances(vector<vector<double>> data_points) {
+    vector<vector<double>> distances(data_points.size(), vector<double>(data_points.size(), 0.0));
     for (int i = 0; i < data_points.size(); ++i) {
         for (int j = i; j < data_points.size(); ++j) {
             distances[i][j] = Utils::l2distanceSquare(data_points[i], data_points[j]);

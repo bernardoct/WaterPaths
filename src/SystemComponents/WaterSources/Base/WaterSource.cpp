@@ -22,8 +22,8 @@ using namespace std;
  */
 WaterSource::WaterSource(
         const char *name, const int id,
-        const vector<Catchment *> &catchments, const float capacity,
-        float treatment_capacity, const int source_type)
+        const vector<Catchment *> &catchments, const double capacity,
+        double treatment_capacity, const int source_type)
         : name(name), capacity(capacity), catchments(catchments),
           online(ONLINE), available_volume(capacity), id(id),
           total_treatment_capacity(treatment_capacity),
@@ -47,11 +47,11 @@ WaterSource::WaterSource(
  * @param construction_cost_of_capital
  */
 WaterSource::WaterSource(const char *name, const int id,
-                         const vector<Catchment *> &catchments, const float capacity,
-                         float treatment_capacity, const int source_type,
-                         const vector<float> construction_time_range,
-                         float permitting_period, float construction_cost_of_capital,
-                         float bond_term, float bond_interest_rate)
+                         const vector<Catchment *> &catchments, const double capacity,
+                         double treatment_capacity, const int source_type,
+                         const vector<double> construction_time_range,
+                         double permitting_period, double construction_cost_of_capital,
+                         double bond_term, double bond_interest_rate)
         : name(name), capacity(capacity), catchments(catchments),
           online(OFFLINE), available_volume(capacity), id(id),
           total_treatment_capacity(treatment_capacity),
@@ -78,10 +78,10 @@ WaterSource::WaterSource(const char *name, const int id,
  */
 WaterSource::WaterSource(
         const char *name, const int id,
-        const vector<Catchment *> &catchments, const float capacity,
-        float treatment_capacity, const int source_type,
-        vector<float> *allocated_treatment_fractions,
-        vector<float> *allocated_fractions,
+        const vector<Catchment *> &catchments, const double capacity,
+        double treatment_capacity, const int source_type,
+        vector<double> *allocated_treatment_fractions,
+        vector<double> *allocated_fractions,
         vector<int> *utilities_with_allocations)
         : name(name), capacity(capacity), catchments(catchments),
           online(ONLINE), available_volume(capacity), id(id),
@@ -112,14 +112,14 @@ WaterSource::WaterSource(
  * @param construction_cost_of_capital
  */
 WaterSource::WaterSource(const char *name, const int id,
-                         const vector<Catchment *> &catchments, const float capacity,
-                         float treatment_capacity, const int source_type,
-                         vector<float> *allocated_treatment_fractions,
-                         vector<float> *allocated_fractions,
+                         const vector<Catchment *> &catchments, const double capacity,
+                         double treatment_capacity, const int source_type,
+                         vector<double> *allocated_treatment_fractions,
+                         vector<double> *allocated_fractions,
                          vector<int> *utilities_with_allocations,
-                         const vector<float> construction_time_range,
-                         float permitting_period, float construction_cost_of_capital,
-                         float bond_term, float bond_interest_rate)
+                         const vector<double> construction_time_range,
+                         double permitting_period, double construction_cost_of_capital,
+                         double bond_term, double bond_interest_rate)
         : name(name), capacity(capacity), catchments(catchments),
           online(OFFLINE), available_volume(capacity), id(id),
           total_treatment_capacity(treatment_capacity),
@@ -148,8 +148,8 @@ WaterSource::WaterSource(const char *name, const int id,
  */
 void WaterSource::setAllocations(
         vector<int> *utilities_with_allocations,
-        vector<float> *allocated_fractions,
-        vector<float> *allocated_treatment_fractions) {
+        vector<double> *allocated_fractions,
+        vector<double> *allocated_treatment_fractions) {
     if (utilities_with_allocations->size() != allocated_fractions->size())
         __throw_invalid_argument("There must be one allocation fraction in "
                                          "utilities_with_allocations for "
@@ -158,7 +158,7 @@ void WaterSource::setAllocations(
 
     total_allocated_fraction = accumulate(allocated_fractions->begin(),
                                           allocated_fractions->end(),
-                                          0.0f);
+                                          0.0);
 
     if (total_allocated_fraction < 1.0)
         for (int i = 0; i < utilities_with_allocations->size(); ++i)
@@ -171,11 +171,11 @@ void WaterSource::setAllocations(
                                    utilities_with_allocations->end()) + 1;
     highest_alloc_id = wq_pool_id;
 
-    this->allocated_fractions = new float[wq_pool_id + 1]();
-    this->allocated_treatment_fractions = new float[wq_pool_id + 1]();
-    available_allocated_volumes = new float[wq_pool_id + 1]();
-    allocated_capacities = new float[wq_pool_id + 1]();
-    allocated_treatment_capacities = new float[wq_pool_id + 1]();
+    this->allocated_fractions = new double[wq_pool_id + 1]();
+    this->allocated_treatment_fractions = new double[wq_pool_id + 1]();
+    available_allocated_volumes = new double[wq_pool_id + 1]();
+    allocated_capacities = new double[wq_pool_id + 1]();
+    allocated_treatment_capacities = new double[wq_pool_id + 1]();
 
     /// Populate vectors.
     for (unsigned long i = 0; i < utilities_with_allocations->size(); ++i) {
@@ -232,11 +232,11 @@ WaterSource::WaterSource(const WaterSource &water_source) :
 //            (utilities_with_allocations->begin(),
 //                                   utilities_with_allocations->end()) + 1;
 
-        allocated_fractions = new float[length];
-        allocated_treatment_fractions = new float[length];
-        available_allocated_volumes = new float[length];
-        allocated_capacities = new float[length];
-        allocated_treatment_capacities = new float[length];
+        allocated_fractions = new double[length];
+        allocated_treatment_fractions = new double[length];
+        available_allocated_volumes = new double[length];
+        allocated_capacities = new double[length];
+        allocated_treatment_capacities = new double[length];
 
         std::copy(water_source.allocated_fractions,
                   water_source.allocated_fractions + length,
@@ -282,11 +282,11 @@ WaterSource &WaterSource::operator=(const WaterSource &water_source) {
     if (wq_pool_id != NON_INITIALIZED) {
         wq_pool_id = water_source.wq_pool_id;
 
-        allocated_fractions = new float[wq_pool_id + 1]();
-        allocated_treatment_fractions = new float[wq_pool_id + 1]();
-        available_allocated_volumes = new float[wq_pool_id + 1]();
-        allocated_capacities = new float[wq_pool_id + 1]();
-        allocated_treatment_capacities = new float[wq_pool_id + 1]();
+        allocated_fractions = new double[wq_pool_id + 1]();
+        allocated_treatment_fractions = new double[wq_pool_id + 1]();
+        available_allocated_volumes = new double[wq_pool_id + 1]();
+        allocated_capacities = new double[wq_pool_id + 1]();
+        allocated_treatment_capacities = new double[wq_pool_id + 1]();
 
         int length = wq_pool_id + 1;//    *std::max_element
         highest_alloc_id = water_source.highest_alloc_id;
@@ -360,9 +360,9 @@ bool WaterSource::compare(WaterSource *lhs, WaterSource *rhs) {
  * water source, excluding water for the catchment between both water sources.
  * @param demand_outflow demand from utility.
  */
-void WaterSource::continuityWaterSource(int week, float upstream_source_inflow,
-                                        float wastewater_inflow,
-                                        vector<float> &demand_outflow) {
+void WaterSource::continuityWaterSource(int week, double upstream_source_inflow,
+                                        double wastewater_inflow,
+                                        vector<double> &demand_outflow) {
     if (online)
         applyContinuity(week, upstream_source_inflow, wastewater_inflow,
                         demand_outflow);
@@ -378,7 +378,7 @@ void WaterSource::continuityWaterSource(int week, float upstream_source_inflow,
  * source, excluding water for the
  * catchment between both water sources.
  */
-void WaterSource::bypass(int week, float total_upstream_inflow) {
+void WaterSource::bypass(int week, double total_upstream_inflow) {
 
     upstream_catchment_inflow = 0;
     for (Catchment *c : catchments) {
@@ -399,15 +399,15 @@ void WaterSource::bypass(int week, float total_upstream_inflow) {
  * @param discount_rate
  * @return Net present cost
  */
-float WaterSource::calculateNetPresentConstructionCost(
-        int week, int utility_id, float discount_rate,
-        float *level_debt_service_payment)
+double WaterSource::calculateNetPresentConstructionCost(
+        int week, int utility_id, double discount_rate,
+        double *level_debt_service_payment)
 const {
-    float rate = bond_interest_rate / BOND_INTEREST_PAYMENTS_PER_YEAR;
-    float principal = construction_cost_of_capital *
+    double rate = bond_interest_rate / BOND_INTEREST_PAYMENTS_PER_YEAR;
+    double principal = construction_cost_of_capital *
                        (allocated_fractions ? allocated_fractions[utility_id]
                                             : 1.);
-    float n_payments = bond_term * BOND_INTEREST_PAYMENTS_PER_YEAR;
+    double n_payments = bond_term * BOND_INTEREST_PAYMENTS_PER_YEAR;
 
     /// Level debt service payment value
     *level_debt_service_payment = principal * (rate * pow(1 + rate, n_payments)) /
@@ -415,7 +415,7 @@ const {
 
     /// Net present cost of stream of level debt service payments for the whole
     /// bond term, at the time of issuance.
-    float net_present_cost_at_issuance =
+    double net_present_cost_at_issuance =
             *level_debt_service_payment *
             (1 - pow(1 + discount_rate,
                      -n_payments)) / discount_rate;
@@ -434,19 +434,19 @@ const {
  * @param utility_id
  * @return
  */
-void WaterSource::removeWater(int allocation_id, float volume) {
+void WaterSource::removeWater(int allocation_id, double volume) {
     available_volume -= volume;
     total_demand += volume;
     policy_added_demand += volume;
 }
 
-void WaterSource::addCapacity(float capacity) {
+void WaterSource::addCapacity(double capacity) {
     WaterSource::capacity += capacity;
 }
 
 void WaterSource::addTreatmentCapacity(
-        const float added_treatment_capacity,
-        float allocations_added_treatment_capacity,
+        const double added_treatment_capacity,
+        double allocations_added_treatment_capacity,
         int utility_id) {
     total_treatment_capacity += added_treatment_capacity;
 }
@@ -463,7 +463,7 @@ void WaterSource::setRealization(unsigned long r) {
     }
 }
 
-float WaterSource::getAvailable_volume() const {
+double WaterSource::getAvailable_volume() const {
     return available_volume;
 }
 
@@ -474,7 +474,7 @@ float WaterSource::getAvailable_volume() const {
  * @param utility_id
  * @return
  */
-float WaterSource::getAvailableAllocatedVolume(int utility_id) {
+double WaterSource::getAvailableAllocatedVolume(int utility_id) {
     return getAvailable_volume();
 }
 
@@ -486,7 +486,7 @@ void WaterSource::setFull() {
     WaterSource::available_volume = capacity;
 }
 
-void WaterSource::setOutflow_previous_week(float outflow_previous_week) {
+void WaterSource::setOutflow_previous_week(double outflow_previous_week) {
     WaterSource::total_outflow = outflow_previous_week;
 }
 
@@ -494,57 +494,57 @@ void WaterSource::setOnline() {
     online = ONLINE;
 }
 
-float WaterSource::getTotal_outflow() const {
+double WaterSource::getTotal_outflow() const {
     return total_outflow;
 }
 
-float WaterSource::getCapacity() {
+double WaterSource::getCapacity() {
     return capacity;
 }
 
-float WaterSource::getAllocatedCapacity(int utility_id) {
+double WaterSource::getAllocatedCapacity(int utility_id) {
     return capacity;
 }
 
-float WaterSource::getDemand() const {
+double WaterSource::getDemand() const {
     return total_demand;
 }
 
-float WaterSource::getUpstream_source_inflow() const {
+double WaterSource::getUpstream_source_inflow() const {
     return upstream_source_inflow;
 }
 
-float WaterSource::getUpstreamCatchmentInflow() const {
+double WaterSource::getUpstreamCatchmentInflow() const {
     return upstream_catchment_inflow;
 }
 
 void WaterSource::setMin_environmental_outflow(
-        float min_environmental_outflow) {
+        double min_environmental_outflow) {
     WaterSource::min_environmental_outflow = min_environmental_outflow;
 }
 
-float WaterSource::getMin_environmental_outflow() const {
+double WaterSource::getMin_environmental_outflow() const {
     return min_environmental_outflow;
 }
 
-float WaterSource::getAllocatedFraction(int utility_id) {
+double WaterSource::getAllocatedFraction(int utility_id) {
     return 1.0;
 }
 
-float WaterSource::getEvaporated_volume() const {
+double WaterSource::getEvaporated_volume() const {
     return evaporated_volume;
 }
 
-float WaterSource::getAllocatedTreatmentCapacity(int utility_id) const {
+double WaterSource::getAllocatedTreatmentCapacity(int utility_id) const {
     return total_treatment_capacity;
 }
 
-float WaterSource::getTotal_treatment_capacity(int utility_id) const {
+double WaterSource::getTotal_treatment_capacity(int utility_id) const {
     return total_treatment_capacity;
 }
 
 void WaterSource::resetAllocations(
-        const vector<float>
+        const vector<double>
         *new_allocated_fractions) {
 
     /// Populate vectors.
@@ -563,7 +563,7 @@ void WaterSource::resetAllocations(
 }
 
 void WaterSource::setAvailableAllocatedVolumes(
-        float *available_allocated_volumes, float available_volume) {
+        double *available_allocated_volumes, double available_volume) {
 
     if (utilities_with_allocations)
         std::copy(available_allocated_volumes,
@@ -574,7 +574,7 @@ void WaterSource::setAvailableAllocatedVolumes(
     return;
 }
 
-float *WaterSource::getAvailable_allocated_volumes() const {
+double *WaterSource::getAvailable_allocated_volumes() const {
     return available_allocated_volumes;
 }
 
@@ -582,7 +582,7 @@ vector<int> *WaterSource::getUtilities_with_allocations() const {
     return utilities_with_allocations;
 }
 
-float WaterSource::getWastewater_inflow() const {
+double WaterSource::getWastewater_inflow() const {
     return wastewater_inflow;
 }
 

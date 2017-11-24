@@ -175,7 +175,7 @@ MasterDataCollector *Simulation::runFullSimulation() {
 //    std::cout << "Number of realizations: " << number_of_realizations << endl;
 //    std::cout << "Beginning realizations loop." << endl;
     MasterDataCollector* mdc = master_data_collector;
-    cout << omp_get_num_procs() << endl;
+//    cout << omp_get_num_procs() << endl;
 #pragma omp parallel for 
     for (int r = 0; r < number_of_realizations; ++r) {
 //	cout << "thread id: " << omp_get_thread_num() << endl;

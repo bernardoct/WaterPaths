@@ -22,12 +22,12 @@
  * @param max_lines
  * @return
  */
-vector<vector<double>> Utils::parse2DCsvFile(string file_name, int max_lines, vector<int> rows_to_read) {
+vector<vector<double>> Utils::parse2DCsvFile(string file_name, unsigned long max_lines, vector<unsigned long> rows_to_read) {
 
     vector<vector<double> > data;
     ifstream inputFile(file_name);
     int l = -1;
-    int ml = (rows_to_read.empty() ? max_lines : *max_element(
+    int ml = (int) (rows_to_read.empty() ? max_lines : *max_element(
                             rows_to_read.begin(), rows_to_read.end())) + 1;
 //    if (!rows_to_read.empty())
 //        ml = max_lines;
@@ -77,7 +77,7 @@ vector<vector<double>> Utils::parse2DCsvFile(string file_name, int max_lines, ve
     }
 }
 
-vector<double> Utils::parse1DCsvFile(string file_name, int max_lines, vector<int> rows_to_read) {
+vector<double> Utils::parse1DCsvFile(string file_name, unsigned long max_lines, vector<unsigned long> rows_to_read) {
     vector<double> data;
     ifstream infile(file_name);
     int l = 0;

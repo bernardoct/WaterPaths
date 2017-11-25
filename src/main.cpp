@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
     unsigned int nfe = 1000;
     unsigned int output_frequency = 200;
     unsigned int seed = 0;
-    vector<int> bootstrap_sample = vector<int>();
+    vector<unsigned long> bootstrap_sample = vector<unsigned long>();
 
     Triangle triangle(standard_solution, standard_rdm);
 
@@ -102,16 +102,16 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    /// Set basic realization parameters.
     triangle.setN_realizations(n_realizations);
     triangle.setN_weeks(n_weeks);
     triangle.setOutput_directory(system_io);
+    if (strlen(bootstrap_file) > 2) {
+        vector<double> v = Utils::parse1DCsvFile(bootstrap_file);
+        bootstrap_sample = vector<unsigned long>(v.begin(), v.end());
+    }
 
     if (!run_optimization) {
-        if (strlen(bootstrap_file) > 2) {
-            vector<double> v = Utils::parse1DCsvFile(bootstrap_file);
-            bootstrap_sample = vector<int>(v.begin(), v.end());
-        }
-
         vector<int> sol_range;
         if ((first_solution == -1 && last_solution != -1) ||
             (first_solution != -1 && last_solution == -1))
@@ -124,28 +124,29 @@ int main(int argc, char *argv[]) {
         }
 
         vector<vector<double>> solutions;
-        if (strlen(solution_file) > 2)
-            solutions = Utils::parse2DCsvFile(string(system_io) +
-                                                      solution_file);
-        else
+        if (strlen(solution_file) > 2) {
+            string full_path_solution_file = string(system_io) + solution_file;
+            solutions = Utils::parse2DCsvFile(full_path_solution_file);
+        } else {
             printf("You must specify a solutions file.\n");
+        }
 
         if (first_solution == -1) {
             cout << endl << endl << endl << "Running solution "
                  << standard_solution << endl;
+            triangle.setSol_number(standard_solution);
             triangle.setBootstrap_sample(bootstrap_sample);
             triangle.functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
+            triangle.calculateObjectivesAndPrintOutput();
         } else {
             for (int s = first_solution; s < last_solution; ++s) {
                 cout << endl << endl << endl << "Running solution "
                      << standard_solution << endl;
-                triangle.setSol_number(s);
                 triangle.setBootstrap_sample(bootstrap_sample);
                 triangle.functionEvaluation(solutions[s].data(), c_obj, c_constr);
+                triangle.calculateObjectivesAndPrintOutput();
             }
         }
-
-
         return 0;
     } else {
 

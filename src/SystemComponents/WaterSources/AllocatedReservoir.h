@@ -28,8 +28,7 @@ public:
             DataSeries *storage_area_curve,
             const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
-            double construction_cost, double bond_term,
-            double bond_interest_rate,
+            double construction_cost,
             vector<int> *utilities_with_allocations,
             vector<double> *allocated_fractions, vector<double>
             *allocated_treatment_fractions);
@@ -50,8 +49,7 @@ public:
             EvaporationSeries *evaporation_series, double storage_area,
             const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
-            double construction_cost, double bond_term,
-            double bond_interest_rate,
+            double construction_cost,
             vector<int> *utilities_with_allocations,
             vector<double> *allocated_fractions, vector<double>
             *allocated_treatment_fractions);

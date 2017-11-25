@@ -28,15 +28,13 @@ Restrictions::Restrictions(
         const vector<vector<double>> *typesMonthlyDemandFraction,
         const vector<vector<double>> *typesMonthlyWaterPrice,
         const vector<vector<double>> *priceMultipliers)
-        : DroughtMitigationPolicy(id,
-                                  RESTRICTIONS),
+        : DroughtMitigationPolicy(id, RESTRICTIONS),
           stage_multipliers(stage_multipliers),
           stage_triggers(stage_triggers) {
     calculateWeeklyAverageWaterPrices(typesMonthlyDemandFraction,
                                       typesMonthlyWaterPrice,
                                       priceMultipliers);
-    utilities_ids = vector<int>(1,
-                                id);
+    utilities_ids = vector<int>(1, id);
 }
 
 Restrictions::Restrictions(const Restrictions &restrictions) :
@@ -128,6 +126,9 @@ void Restrictions::calculateWeeklyAverageWaterPrices(
     }
 }
 
-void Restrictions::setRealization(unsigned int realization_id) {
-
+void Restrictions::setRealization(unsigned int realization_id, vector<vector<double>> *utilities_rdm,
+                                  vector<vector<double>> *water_sources_rdm, vector<vector<double>> *policy_rdm) {
+    for (double& sm : stage_multipliers) {
+        sm *= policy_rdm->at(realization_id)[id];
+    }
 }

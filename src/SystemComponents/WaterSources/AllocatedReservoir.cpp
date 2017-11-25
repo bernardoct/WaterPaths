@@ -35,7 +35,6 @@ AllocatedReservoir::AllocatedReservoir(
         EvaporationSeries *evaporation_series, DataSeries *storage_area_curve,
         const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double construction_cost,
-        double bond_term, double bond_interest_rate,
         vector<int> *utilities_with_allocations,
         vector<double> *allocated_fractions, vector<double>
         *allocated_treatment_fractions)
@@ -52,8 +51,6 @@ AllocatedReservoir::AllocatedReservoir(
                     construction_rof_or_demand,
                     construction_time_range,
                     construction_cost,
-                    bond_term,
-                    bond_interest_rate,
                     ALLOCATED_RESERVOIR) {
 }
 
@@ -83,7 +80,6 @@ AllocatedReservoir::AllocatedReservoir(
         EvaporationSeries *evaporation_series, double storage_area,
         const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double construction_cost,
-        double bond_term, double bond_interest_rate,
         vector<int> *utilities_with_allocations,
         vector<double> *allocated_fractions, vector<double>
         *allocated_treatment_fractions)
@@ -100,8 +96,6 @@ AllocatedReservoir::AllocatedReservoir(
                     construction_rof_or_demand,
                     construction_time_range,
                     construction_cost,
-                    bond_term,
-                    bond_interest_rate,
                     ALLOCATED_RESERVOIR) {
 }
 

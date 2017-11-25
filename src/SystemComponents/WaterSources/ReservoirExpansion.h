@@ -19,8 +19,7 @@ public:
             const double capacity, const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
             double permitting_period,
-            double construction_cost, double bond_term,
-            double bond_interest_rate);
+            double construction_cost);
 
     ReservoirExpansion(const ReservoirExpansion &reservoir_expansion);
 

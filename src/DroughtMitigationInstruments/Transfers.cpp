@@ -375,6 +375,7 @@ const vector<double> &Transfers::getAllocations() const {
     return allocations;
 }
 
-void Transfers::setRealization(unsigned int realization_id) {
+void Transfers::setRealization(unsigned int realization_id, vector<vector<double>> *utilities_rdm,
+                               vector<vector<double>> *water_sources_rdm, vector<vector<double>> *policy_rdm) {
 
 }

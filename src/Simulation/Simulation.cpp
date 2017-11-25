@@ -14,7 +14,10 @@ Simulation::Simulation(
         vector<Utility *> &utilities,
         const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
         vector<MinEnvironFlowControl *> &min_env_flow_controls,
-        const int total_simulation_time, const int number_of_realizations) :
+        vector<vector<double>> *utilities_rdm,
+        vector<vector<double>> *water_sources_rdm,
+        vector<vector<double>> *policies_rdm,
+        const unsigned long total_simulation_time, const unsigned long number_of_realizations) :
         total_simulation_time(total_simulation_time),
         number_of_realizations(number_of_realizations) {
 
@@ -120,6 +123,9 @@ Simulation::Simulation(
                 utilities_realization,
                 drought_mitigation_policies_realization,
                 min_env_flow_controls,
+                utilities_rdm,
+                water_sources_rdm,
+                policies_rdm,
                 r));
 
         /// Create rof models by copying the water utilities and sources.
@@ -133,10 +139,12 @@ Simulation::Simulation(
                                                     water_sources_to_utilities,
                                                     utilities_rof,
                                                     min_env_flow_controls,
+                                                    utilities_rdm,
+                                                    water_sources_rdm,
                                                     r));
 
-        /// Initialize rof models.
-        rof_models[r]->setRealization_water_sources(water_sources_realization);
+        /// Initialize rof models by connecting it to realization water sources.
+        rof_models[r]->connectRealizationWaterSources(water_sources_realization);
 
         /// Link storage-rof tables of policies and rof models.
         for (DroughtMitigationPolicy *dmp :

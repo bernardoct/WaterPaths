@@ -119,8 +119,7 @@ double ObjectivesCalculator::calculatePeakFinancialCostsObjective(
     double realizations_year_gross_revenue = 0;
     double realizations_year_insurance_contract_cost = 0;
     vector<double> year_financial_costs;
-    vector<double> realization_financial_costs(n_realizations,
-                                               0);
+    vector<double> realization_financial_costs(n_realizations, 0);
 
     /// Creates a table with years that failed in each realization.
     int y;
@@ -185,8 +184,7 @@ double ObjectivesCalculator::calculateWorseCaseCostsObjective(
     int y;
     for (int r = 0; r < n_realizations; ++r) {
         y = 0;
-        year_financial_costs.assign(n_years,
-                                    0);
+        year_financial_costs.assign(n_years, 0);
         for (int w = 0; w < n_weeks; ++w) {
             /// accumulate year's info by summing weekly amounts.
             year_drought_mitigation_cost +=

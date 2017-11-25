@@ -39,7 +39,6 @@ public:
             const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
             double permitting_period,
-            double construction_cost, double bond_term,
             double bond_interest_rate, int source_type = RESERVOIR);
 
     Reservoir(
@@ -57,8 +56,7 @@ public:
             const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
             double permitting_period,
-            double construction_cost, double bond_term,
-            double bond_interest_rate, int source_type = RESERVOIR);
+            double construction_cost, int source_type = RESERVOIR);
 
     Reservoir(
             const char *name, const int id,
@@ -93,8 +91,7 @@ public:
             const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
             double permitting_period,
-            double construction_cost, double bond_term,
-            double bond_interest_rate, int source_type = RESERVOIR);
+            double construction_cost, int source_type = RESERVOIR);
 
     Reservoir(
             const char *name, const int id,
@@ -107,8 +104,7 @@ public:
             const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
             double permitting_period,
-            double construction_cost, double bond_term,
-            double bond_interest_rate, int source_type = RESERVOIR);
+            double construction_cost, int source_type = RESERVOIR);
 
 
     Reservoir(const Reservoir &reservoir);
@@ -123,7 +119,7 @@ public:
 
     void setOnline() override;
 
-    void setRealization(unsigned long r) override;
+    void setRealization(unsigned long r, vector<vector<double>> *rdm_factors) override;
 
     double getArea() const;
 };

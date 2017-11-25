@@ -63,7 +63,7 @@ double Catchment::getStreamflow(int week) {
  * data set.
  * @param r
  */
-void Catchment::setRealization(unsigned long r) {
+void Catchment::setRealization(unsigned long r, vector<vector<double>> *rdm_factors) {
     streamflows_realization = new double[streamflows_all->at(r).size()];
     std::copy(streamflows_all->at(r).begin(),
               streamflows_all->at(r).end(),

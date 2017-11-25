@@ -71,6 +71,6 @@ double JordanLakeMinEnvFlowControl::getRelease(int week) {
         return rel06_up;
 }
 
-void JordanLakeMinEnvFlowControl::setRealization(unsigned int r) {
-    lillington_gage_catchment->setRealization(r);
+void JordanLakeMinEnvFlowControl::setRealization(unsigned int r, vector<vector<double>> *rdm_factors) {
+    lillington_gage_catchment->setRealization(r, rdm_factors);
 }

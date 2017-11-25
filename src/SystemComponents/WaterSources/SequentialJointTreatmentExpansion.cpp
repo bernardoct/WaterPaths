@@ -10,12 +10,9 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
         const vector<double> *added_treatment_capacity_fractions,
         const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double permitting_period,
-        double construction_cost, double bond_term,
-        double bond_interest_rate)
-        : WaterSource(name, id, vector<Catchment *>(), NONE, NON_INITIALIZED,
-                      NEW_WATER_TREATMENT_PLANT, construction_time_range,
-                      parent_reservoir_ID, construction_cost, bond_term,
-                      bond_interest_rate),
+        double construction_cost)
+        : WaterSource(name, id, vector<Catchment *>(), NONE, NON_INITIALIZED, NEW_WATER_TREATMENT_PLANT,
+                      construction_time_range, parent_reservoir_ID, construction_cost),
           parent_reservoir_ID((unsigned int) parent_reservoir_ID),
           added_treatment_capacity_fractions
                   (added_treatment_capacity_fractions),
@@ -32,12 +29,9 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
         vector<double> *max_sequential_added_construction_cost,
         const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double permitting_period,
-        double construction_cost, double bond_term,
-        double bond_interest_rate)
-        : WaterSource(name, id, vector<Catchment *>(), NONE, NON_INITIALIZED,
-                      NEW_WATER_TREATMENT_PLANT, construction_time_range,
-                      permitting_period, construction_cost, bond_term,
-                      bond_interest_rate),
+        double construction_cost)
+        : WaterSource(name, id, vector<Catchment *>(), NONE, NON_INITIALIZED, NEW_WATER_TREATMENT_PLANT,
+                      construction_time_range, permitting_period, construction_cost),
           parent_reservoir_ID((unsigned int) parent_reservoir_ID),
           added_treatment_capacity_fractions
                   (added_treatment_capacity_fractions),
@@ -188,14 +182,11 @@ SequentialJointTreatmentExpansion::setMax_sequential_added_construction_cost(
     this->max_sequential_added_capacity = max_sequential_added_construction_cost;
 }
 
-double SequentialJointTreatmentExpansion::calculateNetPresentConstructionCost(
-        int week, int utility_id, double discount_rate,
-        double *level_debt_service_payment) const {
+double SequentialJointTreatmentExpansion::calculateNetPresentConstructionCost(int week, int utility_id, double discount_rate,
+                                                                              double *level_debt_service_payment, double bond_term,
+                                                                              double bond_interest_rate) const {
     double combined_price = WaterSource::calculateNetPresentConstructionCost
-            (week,
-             utility_id,
-             discount_rate,
-             level_debt_service_payment);
+            (week, utility_id, discount_rate, level_debt_service_payment, bond_term, bond_interest_rate);
     double alloc = (*added_treatment_capacity_fractions)[utility_id];
 
     /// Return yearly payments proportional to treatment allocation.

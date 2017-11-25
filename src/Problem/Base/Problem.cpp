@@ -5,8 +5,53 @@
 #include <algorithm>
 #include "Problem.h"
 
-void Problem::printOutput() {
+double * Problem::calculateObjectivesAndPrintOutput() {
 
+    /// Calculate objective values.
+    master_data_collector->setOutputDirectory(output_directory);
+
+    /// Print output files.
+    string fu = "/TestFiles/output/Utilities";
+    string fws = "/TestFiles/output/WaterSources";
+    string fp = "/TestFiles/output/Policies";
+    string fo = "/TestFiles/output/Objectives";
+    string fpw = "/TestFiles/output/Pathways";
+
+    //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
+    cout << "Calculating and printing Objectives" << endl;
+    master_data_collector->calculatePrintObjectives(fo + "_s" + std::to_string(solution_no), true);
+    cout << "Printing Pathways" << endl;
+    master_data_collector->printPathways(fpw + "_s" + std::to_string(solution_no));
+    cout << "Printing time series" << endl;
+    master_data_collector->printUtilitiesOutputCompact(0,
+                                                       n_weeks,
+                                                       fu + "_s"
+                                                       + std::to_string(solution_no));
+    master_data_collector->printWaterSourcesOutputCompact(0,
+                                                          n_weeks,
+                                                          fws + "_s"
+                                                          + std::to_string(solution_no));
+    master_data_collector->printPoliciesOutputCompact(0,
+                                                      n_weeks,
+                                                      fp + "_s"
+                                                      + std::to_string(solution_no));
+    cout << "Updating objectives pointer" << endl;
+//    data_collector->printUtilitesOutputTabular(0,
+//                                               n_weeks,
+//                                               fu + "_s"
+//                                               + std::to_string(solution_no));
+//    data_collector->printWaterSourcesOutputTabular(0,
+//                                                   n_weeks,
+//                                                   fws + "_s"
+//                                                   + std::to_string(solution_no));
+//    data_collector->printPoliciesOutputTabular(0,
+//                                               n_weeks,
+//                                               fp + "_s"
+//                                               + std::to_string(solution_no));
+    double *obj_not_jla = master_data_collector->calculatePrintObjectives(
+            fo + "_s" + std::to_string(solution_no), false).data();
+
+    return obj_not_jla;
 }
 
 vector<int> Problem::vecInfraRankToVecInt(vector<infraRank> v) {
@@ -41,15 +86,15 @@ double Problem::checkAndFixInfraExpansionHighLowOrder(
 }
 
 
-void Problem::setN_realizations(int n_realizations) {
+void Problem::setN_realizations(unsigned long n_realizations) {
     Problem::n_realizations = n_realizations;
 }
 
-void Problem::setN_weeks(int n_weeks) {
+void Problem::setN_weeks(unsigned long n_weeks) {
     Problem::n_weeks = n_weeks;
 }
 
-void Problem::setSol_number(int sol_number) {
+void Problem::setSol_number(unsigned long sol_number) {
     Problem::solution_no = sol_number;
 }
 
@@ -57,7 +102,7 @@ void Problem::setOutput_directory(const string &output_directory) {
     Problem::output_directory = output_directory;
 }
 
-void Problem::setRealizations(const vector<int> &realizations) {
+void Problem::setRealizations(const vector<unsigned long> &realizations) {
     Problem::realizations = realizations;
 }
 
@@ -65,6 +110,6 @@ void Problem::setRdm_factors(const vector<double> &rdm_factors) {
     Problem::rdm_factors = rdm_factors;
 }
 
-void Problem::setBootstrap_sample(const vector<int> &bootstrap_sample) {
+void Problem::setBootstrap_sample(const vector<unsigned long> &bootstrap_sample) {
     Problem::bootstrap_sample = bootstrap_sample;
 }

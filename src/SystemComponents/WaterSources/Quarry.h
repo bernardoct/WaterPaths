@@ -33,8 +33,7 @@ public:
             const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
             double permitting_period,
-            double construction_cost, double bond_term,
-            double bond_interest_rate, double max_diversion);
+            double construction_cost, double max_diversion);
 
     Quarry(
             const char *name, const int id,
@@ -51,8 +50,8 @@ public:
             const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
             double permitting_period,
-            double construction_cost, double bond_term,
-            double bond_interest_rate, double max_diversion);
+            double construction_cost,
+            double max_diversion);
 
     Quarry &operator=(const Quarry &quarry);
 

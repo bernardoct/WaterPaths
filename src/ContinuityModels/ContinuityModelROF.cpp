@@ -16,11 +16,11 @@ ContinuityModelROF::ContinuityModelROF(
         const vector<vector<int>> &water_sources_to_utilities,
         vector<Utility *> utilities,
         vector<MinEnvironFlowControl *> &min_env_flow_controls,
-        const unsigned int realization_id) : ContinuityModel(water_sources,
-                                                             utilities,
-                                                             min_env_flow_controls,
-                                                             water_sources_graph,
-                                                             water_sources_to_utilities,
+        vector<vector<double>> *utilities_rdm,
+        vector<vector<double>> *water_sources_rdm,
+        const unsigned int realization_id) : ContinuityModel(water_sources, utilities, min_env_flow_controls,
+                                                             water_sources_graph, water_sources_to_utilities, utilities_rdm,
+                                                             water_sources_rdm,
                                                              realization_id),
                                              n_topo_sources((int) sources_topological_order.size()) {
 
@@ -52,11 +52,11 @@ ContinuityModelROF::ContinuityModelROF(
 }
 
 ContinuityModelROF::ContinuityModelROF(ContinuityModelROF &continuity_model_rof)
-        : ContinuityModel(continuity_model_rof.continuity_water_sources,
-                          continuity_model_rof.continuity_utilities,
-                          continuity_model_rof.min_env_flow_controls,
-                          continuity_model_rof.water_sources_graph,
+        : ContinuityModel(continuity_model_rof.continuity_water_sources, continuity_model_rof.continuity_utilities,
+                          continuity_model_rof.min_env_flow_controls, continuity_model_rof.water_sources_graph,
                           continuity_model_rof.water_sources_to_utilities,
+                          continuity_model_rof.utilities_rdm,
+                          continuity_model_rof.water_sources_rdm,
                           continuity_model_rof.realization_id),
           n_topo_sources(continuity_model_rof.n_topo_sources) {
 
@@ -118,13 +118,13 @@ vector<double> ContinuityModelROF::calculateShortTermROF(int week) {
                     year_failure[u] = FAILURE;
 
             /// calculated week of storage-rof table
-            //updateStorageToROFTable(INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD,
-            //                        week_of_the_year, to_full);
+            updateStorageToROFTable(INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD,
+                                    week_of_the_year, to_full);
         }
 
         /// update storage-rof table
-        //*storage_to_rof_table += storage_to_rof_realization /
-        //                         NUMBER_REALIZATIONS_ROF;
+        *storage_to_rof_table += storage_to_rof_realization /
+                                 NUMBER_REALIZATIONS_ROF;
 
         /// Count failures and reset failures counter.
         for (int uu = 0; uu < n_utilities; ++uu) {
@@ -135,18 +135,18 @@ vector<double> ContinuityModelROF::calculateShortTermROF(int week) {
 
     /// Set first tier for ROF table calculation close to where the first
     /// failure was observed for last week's table, so to save computations.
-    // for (int s = 0; s < NO_OF_INSURANCE_STORAGE_TIERS; ++s) {
-    //     int count_failures = 0;
-    //     for (int u = 0; u < n_utilities; ++u) {
-    //         if ((*storage_to_rof_table)(u, NO_OF_INSURANCE_STORAGE_TIERS - s,
-    //                     week_of_the_year) > 0.)
-    //             ++count_failures;
-    //     }
-    //     if (count_failures == 0)
-    //         beginning_tier = max(0, s - 1);
-    //     else
-    //         break;
-    // }
+     for (int s = 0; s < NO_OF_INSURANCE_STORAGE_TIERS; ++s) {
+         int count_failures = 0;
+         for (int u = 0; u < n_utilities; ++u) {
+             if ((*storage_to_rof_table)(u, NO_OF_INSURANCE_STORAGE_TIERS - s,
+                         week_of_the_year) > 0.)
+                 ++count_failures;
+         }
+         if (count_failures == 0)
+             beginning_tier = max(0, s - 1);
+         else
+             break;
+     }
 
 //    cout << "Week " << week_of_the_year << " B. Tier " << beginning_tier << endl;
 //    storage_to_rof_table->print(week_of_the_year);
@@ -366,7 +366,7 @@ void ContinuityModelROF::resetUtilitiesAndReservoirs(int rof_type) {
  * the rofs' year realizations.
  * @param water_sources_realization
  */
-void ContinuityModelROF::setRealization_water_sources(
+void ContinuityModelROF::connectRealizationWaterSources(
         const vector<WaterSource *> &water_sources_realization) {
     ContinuityModelROF::realization_water_sources = water_sources_realization;
 }

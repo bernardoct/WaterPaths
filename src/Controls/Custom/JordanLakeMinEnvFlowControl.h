@@ -29,7 +29,7 @@ public:
 
     double getRelease(int week) override;
 
-    void setRealization(unsigned int r) override;
+    void setRealization(unsigned int r, vector<vector<double>> *rdm_factors) override;
 
 
 };

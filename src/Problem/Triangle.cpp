@@ -202,13 +202,13 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
 
     /// In case a vector containing realizations numbers to be calculated is passed, set
     /// number of realizations to number of realizations in that vector.
-    int max_lines = n_realizations;
-    vector<int> realizations_to_read;
+    unsigned long max_lines = n_realizations;
+    vector<unsigned long> realizations_to_read;
     if (!realizations.empty()) {
-        realizations_to_read = realizations;
+        realizations_to_read = this->realizations;
         n_realizations = (int) realizations_to_read.size();
     } else
-        realizations_to_read = vector<int>();
+        realizations_to_read = vector<unsigned long>();
 
     vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/durham_inflows.csv",
                                                                       max_lines, realizations_to_read);
@@ -452,8 +452,9 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                                        durham_inftrigger,
                                                        cary_inftrigger,
                                                        raleigh_inftrigger};
-    vector<double> bond_length = {25, 25, 25, 25};
+    vector<double> bond_term = {25, 25, 25, 25};
     vector<double> bond_rate = {0.05, 0.05, 0.05, 0.05};
+    double discount_rate = 0.05;
 
     /// Jordan Lake parameters
     double jl_supply_capacity = 14924.0;
@@ -553,8 +554,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                      construction_time_interval,
                                      17 *
                                      WEEKS_IN_YEAR,
-                                     263.0,
-                                     bond_length[3], bond_rate[3]);
+                                     263.0);
     Quarry richland_creek_quarry("Richland Creek Quarry", 8, gage_clayton,
                                  4000.0,
                                  ILLIMITED_TREATMENT_CAPACITY,
@@ -565,9 +565,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                  17 *
                                  WEEKS_IN_YEAR,
                                  400.0,
-                                 bond_length[3],
-                                 bond_rate[3],
-                                 50 * 7);
+                                 50. * 7);
     // diversions to Richland Creek Quarry based on ability to meet downstream flow target at Clayton, NC
     Quarry teer_quarry("Teer Quarry",
                        9,
@@ -581,17 +579,13 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                        7 *
                        WEEKS_IN_YEAR,
                        22.6,
-                       bond_length[1],
-                       bond_rate[1],
                        15 * 7); //FIXME: MAX PUMPING CAPACITY?
     //Reservoir rNeuseRiverIntake("rNeuseRiverIntake", 10, 0, catchment_flat, 16.0, 99999, city_infrastructure_rof_triggers[3], construction_time_interval, 5000, 20, 0.05);
     Intake neuse_river_intake("Neuse River Intake", 10, catchment_flat, 16 * 7,
                               city_infrastructure_rof_triggers[3],
                               construction_time_interval,
                               17 * WEEKS_IN_YEAR,
-                              225.5,
-                              bond_length[3],
-                              bond_rate[3]);
+                              225.5);
     // diversions to Teer Quarry for Durham based on inflows to downstream Falls Lake from the Flat River
     // FYI: spillage from Eno River also helps determine Teer quarry diversion, but Eno spillage isn't factored into
     // downstream water balance?
@@ -608,9 +602,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                city_infrastructure_rof_triggers[3],
                                construction_time_interval,
                                12 * WEEKS_IN_YEAR,
-                               68.2,
-                               bond_length[3],
-                               bond_rate[3]);
+                               68.2);
     ReservoirExpansion ccr_expansion("Cane Creek Reservoir Expansion",
                                      24,
                                      4,
@@ -618,22 +610,19 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                      city_infrastructure_rof_triggers[2],
                                      construction_time_interval,
                                      17 * WEEKS_IN_YEAR,
-                                     127.0,
-                                     bond_length[2], bond_rate[2]);
+                                     127.0);
     ReservoirExpansion low_sq_expansion("Low Stone Quarry Expansion", 12, 3,
                                         1500.0,
                                         city_infrastructure_rof_triggers[2],
                                         construction_time_interval,
                                         23 * WEEKS_IN_YEAR,
-                                        1.4,
-                                        bond_length[2], bond_rate[2]);
+                                        1.4);
     ReservoirExpansion high_sq_expansion("High Stone Quarry Expansion", 13, 3,
                                          2200.0,
                                          city_infrastructure_rof_triggers[2],
                                          construction_time_interval,
                                          23 * WEEKS_IN_YEAR,
-                                         64.6,
-                                         bond_length[2], bond_rate[2]);
+                                         64.6);
     ReservoirExpansion univ_lake_expansion("University Lake Expansion",
                                            14,
                                            5,
@@ -641,8 +630,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                            city_infrastructure_rof_triggers[2],
                                            construction_time_interval,
                                            17 * WEEKS_IN_YEAR,
-                                           107.0,
-                                           bond_length[2], bond_rate[2]);
+                                           107.0);
     ReservoirExpansion low_michie_expansion("Low Lake Michie Expansion",
                                             15,
                                             0,
@@ -650,9 +638,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                             city_infrastructure_rof_triggers[1],
                                             construction_time_interval,
                                             17 * WEEKS_IN_YEAR,
-                                            158.3,
-                                            bond_length[1],
-                                            bond_rate[1]);
+                                            158.3);
     ReservoirExpansion high_michie_expansion("High Lake Michie Expansion",
                                              16,
                                              0,
@@ -660,26 +646,21 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                              city_infrastructure_rof_triggers[1],
                                              construction_time_interval,
                                              17 * WEEKS_IN_YEAR,
-                                             203.3,
-                                             bond_length[1], bond_rate[1]);
+                                             203.3);
     WaterReuse low_reclaimed("Low Reclaimed Water System",
                              18,
                              reclaimed_capacity_low,
                              city_infrastructure_rof_triggers[1],
                              construction_time_interval,
                              7 * WEEKS_IN_YEAR,
-                             27.5,
-                             bond_length[1],
-                             bond_rate[1]);
+                             27.5);
     WaterReuse high_reclaimed("High Reclaimed Water System",
                               19,
                               reclaimed_capacity_high,
                               city_infrastructure_rof_triggers[1],
                               construction_time_interval,
                               7 * WEEKS_IN_YEAR,
-                              104.4,
-                              bond_length[1],
-                              bond_rate[1]);
+                              104.4);
 
     WEEKS_IN_YEAR = Constants::WEEKS_IN_YEAR;
 
@@ -705,9 +686,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                                  city_infrastructure_rof_triggers[1],
                                                  construction_time_interval,
                                                  12 * WEEKS_IN_YEAR,
-                                                 243.3,
-                                                 bond_length[1],
-                                                 bond_rate[1]);
+                                                 243.3);
     SequentialJointTreatmentExpansion high_wjlwtp("High WJLWTP",
                                                   21,
                                                   6,
@@ -719,9 +698,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                                   city_infrastructure_rof_triggers[1],
                                                   construction_time_interval,
                                                   12 * WEEKS_IN_YEAR,
-                                                  316.8,
-                                                  bond_length[1],
-                                                  bond_rate[1]);
+                                                  316.8);
     SequentialJointTreatmentExpansion caryWtpUpgrade1("Cary WTP upgrade 1",
                                                       22,
                                                       6,
@@ -730,9 +707,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                                       caryupgrades_2 * 7,
                                                       construction_time_interval,
                                                       NONE,
-                                                      243. / 2,
-                                                      bond_length[1],
-                                                      bond_rate[1]);
+                                                      243. / 2);
     SequentialJointTreatmentExpansion caryWtpUpgrade2("Cary WTP upgrade 2",
                                                       23,
                                                       6,
@@ -741,45 +716,11 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                                       caryupgrades_3 * 7,
                                                       construction_time_interval,
                                                       NONE,
-                                                      316.8 / 2,
-                                                      bond_length[1],
-                                                      bond_rate[1]);
-//    Reservoir low_wjlwtp_durham("Low WJLWTP (Durham)", 20, 0, catchment_haw,
-//                                jl_storage_capacity * JL_allocation_fractions[1], 33.0 * JL_allocation_fractions[1],
-//                                &evaporation_jordan_lake, 13940,
-//                                city_infrastructure_rof_triggers[1], construction_time_interval,
-//                                243.3 * JL_allocation_fractions[1], bond_length[1], bond_rate[1]);
-//    Reservoir high_wjlwtp_durham("High WJLWTP (Durham)", 21, 0, catchment_haw,
-//                                 jl_storage_capacity * JL_allocation_fractions[1], 54.0 * JL_allocation_fractions[1],
-//                                 &evaporation_jordan_lake, 13940,
-//                                 city_infrastructure_rof_triggers[1], construction_time_interval,
-//                                 73.5 * JL_allocation_fractions[1], bond_length[1], bond_rate[1]);
-//    Reservoir low_wjlwtp_owasa("Low WJLWTP (OWASA)", 22, 0, catchment_haw,
-//                               jl_storage_capacity * JL_allocation_fractions[2], 33.0 * JL_allocation_fractions[2],
-//                               &evaporation_jordan_lake, 13940,
-//                               city_infrastructure_rof_triggers[2], construction_time_interval,
-//                               243.3 * JL_allocation_fractions[2], bond_length[2], bond_rate[2]);
-//    Reservoir high_wjlwtp_owasa("High WJLWTP (OWASA)", 23, 0, catchment_haw,
-//                                jl_storage_capacity * JL_allocation_fractions[2], 54.0 * JL_allocation_fractions[2],
-//                                &evaporation_jordan_lake, 13940,
-//                                city_infrastructure_rof_triggers[2], construction_time_interval,
-//                                73.5 * JL_allocation_fractions[2], bond_length[2], bond_rate[2]);
-//    Reservoir low_wjlwtp_raleigh("Low WJLWTP (Raleigh)", 24, 0, catchment_haw,
-//                                 jl_storage_capacity * JL_allocation_fractions[3], 33.0 * JL_allocation_fractions[3],
-//                                 &evaporation_jordan_lake, 13940,
-//                                 city_infrastructure_rof_triggers[3], construction_time_interval,
-//                                 243.3 * JL_allocation_fractions[3], bond_length[3], bond_rate[3]);
-//    Reservoir high_wjlwtp_raleigh("High WJLWTP (Raleigh)", 25, 0, catchment_haw,
-//                                  jl_storage_capacity * JL_allocation_fractions[4], 54.0 * JL_allocation_fractions[3],
-//                                  &evaporation_jordan_lake, 13940,
-//                                  city_infrastructure_rof_triggers[3], construction_time_interval,
-//                                  73.5 * JL_allocation_fractions[3], bond_length[3], bond_rate[3]);
+                                                      316.8 / 2);
 
     Reservoir dummy_endpoint("Dummy Node", 11, vector<Catchment *>(), 0, 0,
                              &evaporation_durham, 1, 1,
                              construction_time_interval,
-                             0,
-                             0,
                              0,
                              0);
 
@@ -893,32 +834,21 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
 
     vector<int> demand_triggered_infra_order_cary = {22, 23};
     vector<double> demand_infra_cary = {caryupgrades_2 * 7, caryupgrades_3 * 7};
-    Utility cary((char *) "Cary", 2, &demand_cary, demand_n_weeks,
-                 cary_annual_payment, &caryDemandClassesFractions,
-                 &caryUserClassesWaterPrices,
-                 wwtp_discharge_cary, cary_inf_buffer, vector<int>(),
-                 demand_triggered_infra_order_cary, demand_infra_cary, 0.05);
-    Utility durham((char *) "Durham", 1, &demand_durham, demand_n_weeks,
-                   durham_annual_payment, &durhamDemandClassesFractions,
-                   &durhamUserClassesWaterPrices,
-                   wwtp_discharge_durham, durham_inf_buffer,
-                   rof_triggered_infra_order_durham,
-                   vector<int>(), rofs_infra_durham, 0.05,
-                   &wjlwtp_remove_from_to_build_list);
-    Utility owasa((char *) "OWASA", 0, &demand_owasa, demand_n_weeks,
-                  owasa_annual_payment, &owasaDemandClassesFractions,
-                  &owasaUserClassesWaterPrices,
-                  wwtp_discharge_owasa, owasa_inf_buffer,
+    Utility cary((char *) "Cary", 2, &demand_cary, demand_n_weeks, cary_annual_payment, &caryDemandClassesFractions,
+                 &caryUserClassesWaterPrices, wwtp_discharge_cary, cary_inf_buffer, vector<int>(),
+                 demand_triggered_infra_order_cary, demand_infra_cary, discount_rate, bond_term[0], bond_rate[0]);
+    Utility durham((char *) "Durham", 1, &demand_durham, demand_n_weeks, durham_annual_payment,
+                   &durhamDemandClassesFractions, &durhamUserClassesWaterPrices, wwtp_discharge_durham,
+                   durham_inf_buffer, rof_triggered_infra_order_durham,
+                   vector<int>(), rofs_infra_durham, discount_rate, &wjlwtp_remove_from_to_build_list, bond_term[1], bond_rate[1]);
+    Utility owasa((char *) "OWASA", 0, &demand_owasa, demand_n_weeks, owasa_annual_payment,
+                  &owasaDemandClassesFractions, &owasaUserClassesWaterPrices, wwtp_discharge_owasa, owasa_inf_buffer,
                   rof_triggered_infra_order_owasa,
-                  vector<int>(), rofs_infra_owasa, 0.05,
-                  &wjlwtp_remove_from_to_build_list);
-    Utility raleigh((char *) "Raleigh", 3, &demand_raleigh, demand_n_weeks,
-                    raleigh_annual_payment, &raleighDemandClassesFractions,
-                    &raleighUserClassesWaterPrices,
-                    wwtp_discharge_raleigh, raleigh_inf_buffer,
-                    rof_triggered_infra_order_raleigh,
-                    vector<int>(), rofs_infra_raleigh, 0.05,
-                    &wjlwtp_remove_from_to_build_list);
+                  vector<int>(), rofs_infra_owasa, discount_rate, &wjlwtp_remove_from_to_build_list, bond_term[2], bond_rate[2]);
+    Utility raleigh((char *) "Raleigh", 3, &demand_raleigh, demand_n_weeks, raleigh_annual_payment,
+                    &raleighDemandClassesFractions, &raleighUserClassesWaterPrices, wwtp_discharge_raleigh,
+                    raleigh_inf_buffer, rof_triggered_infra_order_raleigh,
+                    vector<int>(), rofs_infra_raleigh, discount_rate, &wjlwtp_remove_from_to_build_list, bond_term[3], bond_rate[3]);
 
     vector<Utility *> utilities;
     utilities.push_back(&cary);
@@ -1031,12 +961,17 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                              g,
                              reservoir_utility_connectivity_matrix,
                              utilities, min_env_flow_controls,
+                             &utilities_rdm,
+                             &water_sources_rdm,
                              insurance_triggers, 1.2, fixed_payouts);
 
     drought_mitigation_policies.push_back(&in);
 
-    /// Data collector pointer
-    MasterDataCollector *data_collector = nullptr;
+    if (utilities_rdm.empty()) {
+        utilities_rdm = std::vector<vector<double>>(n_realizations, vector<double>(4, 1.));
+        water_sources_rdm = std::vector<vector<double>>(n_realizations, vector<double>(49, 1.));
+        policies_rdm = std::vector<vector<double>>(n_realizations, vector<double>(4, 1.));
+    }
 
     /// Creates simulation object
     Simulation s(water_sources,
@@ -1045,56 +980,17 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                  utilities,
                  drought_mitigation_policies,
                  min_env_flow_controls,
+                 &utilities_rdm,
+                 &water_sources_rdm,
+                 &policies_rdm,
                  n_weeks,
                  n_realizations);
     cout << "Beginning simulation." << endl;
 //    s.runFullSimulation(n_threads);
-    data_collector = s.runFullSimulation();
+    master_data_collector = s.runFullSimulation();
     cout << "Ending simulation" << endl;
 
-    /// Calculate objective values.
-    data_collector->setOutputDirectory(output_directory);
-
-    /// Print output files.
-    string fu = "/TestFiles/output/Utilities";
-    string fws = "/TestFiles/output/WaterSources";
-    string fp = "/TestFiles/output/Policies";
-    string fo = "/TestFiles/output/Objectives";
-    string fpw = "/TestFiles/output/Pathways";
-
-    //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
-    cout << "Calculating Objectives" << endl;
-    data_collector->calculatePrintObjectives(fo + "_s" + std::to_string(solution_no), true);
-    cout << "Printing Pathways" << endl;
-    data_collector->printPathways(fpw + "_s" + std::to_string(solution_no));
-    cout << "Printing Objectives" << endl;
-    data_collector->printUtilitiesOutputCompact(0,
-                                                n_weeks,
-                                                fu + "_s"
-                                                + std::to_string(solution_no));
-    data_collector->printWaterSourcesOutputCompact(0,
-                                                   n_weeks,
-                                                   fws + "_s"
-                                                   + std::to_string(solution_no));
-    data_collector->printPoliciesOutputCompact(0,
-                                               n_weeks,
-                                               fp + "_s"
-                                               + std::to_string(solution_no));
-    cout << "Updating objectives pointer" << endl;
-//    data_collector->printUtilitesOutputTabular(0,
-//                                               n_weeks,
-//                                               fu + "_s"
-//                                               + std::to_string(solution_no));
-//    data_collector->printWaterSourcesOutputTabular(0,
-//                                                   n_weeks,
-//                                                   fws + "_s"
-//                                                   + std::to_string(solution_no));
-//    data_collector->printPoliciesOutputTabular(0,
-//                                               n_weeks,
-//                                               fp + "_s"
-//                                               + std::to_string(solution_no));
-    double *obj_not_jla = data_collector->calculatePrintObjectives(
-            fo + "_s" + std::to_string(solution_no), false).data();
+    double* obj_not_jla = calculateObjectivesAndPrintOutput();
 
     int i = 0;
     objs[i] = min(min(obj_not_jla[i*4], obj_not_jla[i*4+5]), min(obj_not_jla[i*4+10], obj_not_jla[i*4+15]));

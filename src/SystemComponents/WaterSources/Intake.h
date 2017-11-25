@@ -26,8 +26,7 @@ public:
             const double construction_rof_or_demand,
             const vector<double> construction_time_range,
             double permitting_period,
-            double construction_npv_cost_of_capital, double bond_term,
-            double bond_interest_rate);
+            double construction_npv_cost_of_capital);
 
     Intake(const Intake &intake);
 
@@ -38,7 +37,7 @@ public:
     void applyContinuity(int week, double upstream_source_min_env_flow,
                              double wastewater_inflow, vector<double> &demand) override;
 
-    void setRealization(unsigned long r) override;
+    void setRealization(unsigned long r, vector<vector<double>> *rdm_factors) override;
 
 };
 

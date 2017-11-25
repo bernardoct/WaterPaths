@@ -9,18 +9,20 @@
 #include "ContinuityModel.h"
 #include "../../SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
 
-ContinuityModel::ContinuityModel(
-        vector<WaterSource *> &water_sources,
-        vector<Utility *> &utilities,
-        vector<MinEnvironFlowControl *> &min_env_flow_controls,
-        const Graph &water_sources_graph,
-        const vector<vector<int>> &water_sources_to_utilities,
-        unsigned int realization_id) :
+ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Utility *> &utilities,
+                                 vector<MinEnvironFlowControl *> &min_env_flow_controls,
+                                 const Graph &water_sources_graph,
+                                 const vector<vector<int>> &water_sources_to_utilities,
+                                 vector<vector<double>> *utilities_rdm,
+                                 vector<vector<double>> *water_sources_rdm,
+                                 unsigned int realization_id) :
         continuity_water_sources(water_sources),
         continuity_utilities(utilities),
         min_env_flow_controls(min_env_flow_controls),
         water_sources_graph(water_sources_graph),
         water_sources_to_utilities(water_sources_to_utilities),
+        utilities_rdm(utilities_rdm),
+        water_sources_rdm(water_sources_rdm),
         realization_id(realization_id),
         n_utilities((int) utilities.size()),
         n_sources((int) water_sources.size()),
@@ -112,7 +114,7 @@ ContinuityModel::ContinuityModel(
 
     /// Set realization id on utilities and water sources, so that they use the
     /// right streamflow, evaporation and demand data.
-    setRealization(realization_id);
+    setRealization(realization_id, utilities_rdm, water_sources_rdm);
 
     /// Add reference to water sources and utilities so that controls can
     /// access their info.
@@ -206,13 +208,14 @@ const vector<Utility *> &ContinuityModel::getUtilities() const {
     return continuity_utilities;
 }
 
-void ContinuityModel::setRealization(unsigned int realization) {
+void ContinuityModel::setRealization(unsigned int realization, vector<vector<double>> *utilities_rdm,
+                                     vector<vector<double>> *water_sources_rdm) {
     if (realization != (unsigned) NON_INITIALIZED) {
         for (Utility *u : continuity_utilities)
-            u->setRealization(realization);
+            u->setRealization(realization, utilities_rdm);
         for (WaterSource *ws : continuity_water_sources)
-            ws->setRealization(realization);
+            ws->setRealization(realization, water_sources_rdm);
         for (MinEnvironFlowControl *mef : min_env_flow_controls)
-            mef->setRealization(realization);
+            mef->setRealization(realization, water_sources_rdm);
     }
 }

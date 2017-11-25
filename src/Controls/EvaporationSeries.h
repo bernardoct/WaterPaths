@@ -20,6 +20,8 @@ public:
     ~EvaporationSeries() override;
 
     double getEvaporation(int week);
+
+    void setRealization(unsigned long r, vector<vector<double>> *rdm_factors) override;
 };
 
 

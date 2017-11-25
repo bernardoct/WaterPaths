@@ -27,15 +27,18 @@ struct by_xreal {
 
 class Problem {
 protected:
-    int n_realizations;
-    int n_weeks;
-    int solution_no;
-    int rdm_no;
+    unsigned long n_realizations;
+    unsigned long  n_weeks;
+    unsigned long  solution_no;
+    unsigned long  rdm_no;
     string output_directory;
-    vector<int> realizations;
+    vector<unsigned long > realizations;
     vector<double> rdm_factors;
-    vector<int> bootstrap_sample;
-    MasterDataCollector master_data_collector;
+    vector<unsigned long > bootstrap_sample;
+    MasterDataCollector* master_data_collector;
+    vector<vector<double>> utilities_rdm;
+    vector<vector<double>> water_sources_rdm;
+    vector<vector<double>> policies_rdm;
 
     double checkAndFixInfraExpansionHighLowOrder(vector<int> *order, int id_low, int id_high, double capacity_low,
                                                  double capacity_high);
@@ -45,21 +48,21 @@ protected:
 public:
     virtual void functionEvaluation(const double* vars, double* objs, double* consts)=0;
 
-    void setBootstrap_sample(const vector<int> &bootstrap_sample);
+    void setBootstrap_sample(const vector<unsigned long> &bootstrap_sample);
 
-    void setN_realizations(int n_realizations);
+    void setN_realizations(unsigned long n_realizations);
 
-    void setN_weeks(int n_weeks);
+    void setN_weeks(unsigned long n_weeks);
 
-    void setSol_number(int sol_number);
+    void setSol_number(unsigned long sol_number);
 
     void setOutput_directory(const string &output_directory);
 
-    void setRealizations(const vector<int> &realizations);
+    void setRealizations(const vector<unsigned long> &realizations);
 
     void setRdm_factors(const vector<double> &rdm_factors);
 
-    void printOutput();
+    double* calculateObjectivesAndPrintOutput();
 };
 
 

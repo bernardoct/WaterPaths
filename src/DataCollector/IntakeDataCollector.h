@@ -19,7 +19,8 @@ class IntakeDataCollector : public DataCollector {
     vector<double> total_catchments_inflow;
 
 public:
-    IntakeDataCollector(Intake *intake);
+    IntakeDataCollector(Intake *intake,
+                            unsigned long realization);
 
     string printTabularString(int week) override;
 

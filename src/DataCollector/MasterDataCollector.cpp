@@ -332,7 +332,7 @@ void MasterDataCollector::addRealization(
         vector<WaterSource *> water_sources_realization,
         vector<DroughtMitigationPolicy *> drought_mitigation_policies_realization,
         vector<Utility *> utilities_realization,
-        int r) {
+        unsigned long r) {
 
     /// If collectors vectors have not yet been initialized, initialize them.
     if (water_source_collectors.empty()) {
@@ -348,7 +348,7 @@ void MasterDataCollector::addRealization(
     /// Create utilities data collectors
     for (int u = 0; u < utilities_realization.size(); ++u) {
         utility_collectors[u].push_back(new UtilitiesDataCollector
-                                                (utilities_realization[u]));
+                                                (utilities_realization[u], r));
     }
  //   cout << "done " << r << endl;
 
@@ -359,13 +359,15 @@ void MasterDataCollector::addRealization(
             drought_mitigation_policy_collectors[dmp].push_back(
                     new RestrictionsDataCollector
                             (dynamic_cast<Restrictions *>
-                             (drought_mitigation_policies_realization[dmp])));
+                                                         (drought_mitigation_policies_realization[dmp]),
+                             r));
         else if (drought_mitigation_policies_realization[dmp]->type ==
                  TRANSFERS)
             drought_mitigation_policy_collectors[dmp].push_back(
                     new TransfersDataCollector
                             (dynamic_cast<Transfers *>
-                             (drought_mitigation_policies_realization[dmp])));
+                                                         (drought_mitigation_policies_realization[dmp]),
+                             r));
         else if (drought_mitigation_policies_realization[dmp]->type
                  == INSURANCE_STORAGE_ROF)
             drought_mitigation_policy_collectors[dmp].push_back(
@@ -381,25 +383,30 @@ void MasterDataCollector::addRealization(
         if (water_sources_realization[ws]->source_type == RESERVOIR)
             water_source_collectors[ws].push_back(
                     new ReservoirDataCollector(dynamic_cast<Reservoir *>
-                                               (water_sources_realization[ws])));
+                                                                   (water_sources_realization[ws]),
+                                               r));
         else if (water_sources_realization[ws]->source_type == INTAKE)
             water_source_collectors[ws].push_back(
                     new IntakeDataCollector(dynamic_cast<Intake *>
-                                            (water_sources_realization[ws])));
+                                                                (water_sources_realization[ws]),
+                                            r));
         else if (water_sources_realization[ws]->source_type == QUARRY)
             water_source_collectors[ws].push_back(
                     new QuaryDataCollector(dynamic_cast<Quarry *>
-                                           (water_sources_realization[ws])));
+                                                               (water_sources_realization[ws]),
+                                           r));
         else if (water_sources_realization[ws]->source_type == WATER_REUSE)
             water_source_collectors[ws].push_back(
                     new WaterReuseDataCollector(dynamic_cast<WaterReuse *>
-                                                (water_sources_realization[ws])));
+                                                                    (water_sources_realization[ws]),
+                                                r));
         else if (water_sources_realization[ws]->source_type ==
                  ALLOCATED_RESERVOIR)
             water_source_collectors[ws].push_back(
                     new AllocatedReservoirDataCollector(
                             dynamic_cast<AllocatedReservoir *>
-                            (water_sources_realization[ws])));
+                                                (water_sources_realization[ws]),
+                            r));
         else if (water_sources_realization[ws]->source_type ==
                  RESERVOIR_EXPANSION ||
                  water_sources_realization[ws]->source_type ==

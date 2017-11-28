@@ -17,7 +17,8 @@ private:
     Transfers *transfer_policy;
 
 public:
-    TransfersDataCollector(Transfers *transfer_policy);
+    TransfersDataCollector(Transfers *transfer_policy,
+                               unsigned long realization);
 
     string printTabularString(int week) override;
 

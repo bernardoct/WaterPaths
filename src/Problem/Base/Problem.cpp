@@ -19,22 +19,16 @@ double * Problem::calculateObjectivesAndPrintOutput() {
 
     //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
     cout << "Calculating and printing Objectives" << endl;
-    master_data_collector->calculatePrintObjectives(fo + "_s" + std::to_string(solution_no), true);
+    master_data_collector->calculatePrintObjectives(fo + "_s" + std::to_string(solution_no) + fname_sufix, true);
     cout << "Printing Pathways" << endl;
-    master_data_collector->printPathways(fpw + "_s" + std::to_string(solution_no));
+    master_data_collector->printPathways(fpw + "_s" + std::to_string(solution_no) + fname_sufix);
     cout << "Printing time series" << endl;
-    master_data_collector->printUtilitiesOutputCompact(0,
-                                                       n_weeks,
-                                                       fu + "_s"
-                                                       + std::to_string(solution_no));
-    master_data_collector->printWaterSourcesOutputCompact(0,
-                                                          n_weeks,
-                                                          fws + "_s"
-                                                          + std::to_string(solution_no));
-    master_data_collector->printPoliciesOutputCompact(0,
-                                                      n_weeks,
-                                                      fp + "_s"
-                                                      + std::to_string(solution_no));
+    master_data_collector->printUtilitiesOutputCompact(0, (int) n_weeks, fu + "_s"
+                                                       + std::to_string(solution_no) + fname_sufix);
+    master_data_collector->printWaterSourcesOutputCompact(0, (int) n_weeks, fws + "_s"
+                                                          + std::to_string(solution_no) + fname_sufix);
+    master_data_collector->printPoliciesOutputCompact(0, (int) n_weeks, fp + "_s"
+                                                      + std::to_string(solution_no) + fname_sufix);
     cout << "Updating objectives pointer" << endl;
 //    data_collector->printUtilitesOutputTabular(0,
 //                                               n_weeks,
@@ -48,8 +42,8 @@ double * Problem::calculateObjectivesAndPrintOutput() {
 //                                               n_weeks,
 //                                               fp + "_s"
 //                                               + std::to_string(solution_no));
-    double *obj_not_jla = master_data_collector->calculatePrintObjectives(
-            fo + "_s" + std::to_string(solution_no), false).data();
+    double *obj_not_jla = master_data_collector->calculatePrintObjectives(fo + "_s" + std::to_string(solution_no),
+                                                                          false).data();
 
     return obj_not_jla;
 }
@@ -106,10 +100,31 @@ void Problem::setRealizations(const vector<unsigned long> &realizations) {
     Problem::realizations = realizations;
 }
 
-void Problem::setRdm_factors(const vector<double> &rdm_factors) {
-    Problem::rdm_factors = rdm_factors;
-}
-
 void Problem::setBootstrap_sample(const vector<unsigned long> &bootstrap_sample) {
     Problem::bootstrap_sample = bootstrap_sample;
+}
+
+void Problem::setRDMOptimization(vector<vector<double>> &utilities_rdm,
+                                 vector<vector<double>> &water_sources_rdm,
+                                 vector<vector<double>> &policies_rdm) {
+    this->utilities_rdm = utilities_rdm;
+    this->water_sources_rdm = water_sources_rdm;
+    this->policies_rdm = policies_rdm;
+}
+
+void Problem::setRDMReevaluation(unsigned long rdm_no, vector<vector<double>> &utilities_rdm,
+                                 vector<vector<double>> &water_sources_rdm,
+                                 vector<vector<double>> &policies_rdm) {
+    this->rdm_no = rdm_no;
+    this->utilities_rdm = utilities_rdm;
+    this->water_sources_rdm = water_sources_rdm;
+    this->policies_rdm = policies_rdm;
+}
+
+void Problem::setFname_sufix(const string &fname_sufix) {
+    Problem::fname_sufix = fname_sufix;
+}
+
+void Problem::setEvap_inflows_suffix(const string &evap_inflows_suffix) {
+    Problem::evap_inflows_suffix = evap_inflows_suffix;
 }

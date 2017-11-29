@@ -10,7 +10,8 @@
 
 class QuaryDataCollector : public ReservoirDataCollector {
 public:
-    QuaryDataCollector(Reservoir *reservoir);
+    QuaryDataCollector(Reservoir *reservoir,
+                           unsigned long realization);
 
 };
 

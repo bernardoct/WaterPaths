@@ -23,11 +23,12 @@ class ReservoirDataCollector : public DataCollector {
     vector<double> area;
 
 public:
-    explicit ReservoirDataCollector(Reservoir *reservoir);
+    explicit ReservoirDataCollector(Reservoir *reservoir,
+                                        unsigned long realization);
 
-    explicit ReservoirDataCollector(
-            Reservoir *reservoir, int type,
-            int table_width);
+    explicit ReservoirDataCollector(Reservoir *reservoir,
+                                        int type, int table_width,
+                                        unsigned long realization);
 
     string printTabularString(int week) override;
 

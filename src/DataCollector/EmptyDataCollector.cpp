@@ -7,7 +7,7 @@
 
 EmptyDataCollector::EmptyDataCollector() : DataCollector
                                                    (Constants::NON_INITIALIZED,
-                                                    nullptr,
+                                                    nullptr, 0,
                                                     Constants::NON_INITIALIZED,
                                                     0) {}
 

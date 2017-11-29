@@ -24,14 +24,17 @@ int main(int argc, char *argv[]) {
     double c_obj[c_num_obj * 4];
     double c_constr[0];
 
-    int n_realizations = 1000;
-    int n_weeks = 1565;
-    char* system_io = const_cast<char *>("./");
-    char* solution_file = const_cast<char *>("-1");
-    char* uncertainty_file = const_cast<char *>("-1");
-    char* bootstrap_file = const_cast<char *>("-1");
-    char* rdm_file = const_cast<char *>("-1");
-    int standard_solution = 0;
+    unsigned long n_realizations = 1000;
+    unsigned long n_weeks = 1565;
+    string system_io = "./";
+    string solution_file = "-1";
+    string uncertainty_file = "-1";
+    string bootstrap_file = "-1";
+    string utilities_rdm_file = "-1";
+    string policies_rdm_file = "-1";
+    string water_sources_rdm_file = "-1";
+    string inflows_evap_directory_suffix = "-1";
+    unsigned long standard_solution = 0;
     int standard_rdm = 0;
     int first_solution = -1;
     int last_solution = -1;
@@ -40,16 +43,20 @@ int main(int argc, char *argv[]) {
     bool plotting = true;
     bool run_optimization = false;
     // omp_set_num_threads(1);
-    unsigned int n_islands = 2;
-    unsigned int nfe = 1000;
-    unsigned int output_frequency = 200;
-    unsigned int seed = 0;
+    unsigned long n_islands = 2;
+    unsigned long nfe = 1000;
+    unsigned long output_frequency = 200;
+    unsigned long seed = 0;
+    int rdm_no = -1;
     vector<unsigned long> bootstrap_sample = vector<unsigned long>();
+    vector<vector<double>> utilities_rdm;
+    vector<vector<double>> water_sources_rdm;
+    vector<vector<double>> policies_rdm;
 
     Triangle triangle(standard_solution, standard_rdm);
 
     int c;
-    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:R:")) != -1) {
+    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:R:U:P:W:I:")) != -1) {
         switch (c) {
             case '?':
                 fprintf(stdout,
@@ -58,8 +65,8 @@ int main(int argc, char *argv[]) {
                                 "\t-s: solutions file (hard coded solutions)\n"
                                 "\t-u: uncertain factors file (hard coded values)\n"
                                 "\t-T: number of threads (auto)\n"
-                                "\t-r: number of realizations (%d)\n"
-                                "\t-t: total simulated time in weeks (%d)\n"
+                                "\t-r: number of realizations (%lu)\n"
+                                "\t-t: total simulated time in weeks (%lu)\n"
                                 "\t-d: directory for system I/O (%s)\n"
                                 "\t-f: first solution number\n"
                                 "\t-l: last solution number\n"
@@ -73,29 +80,37 @@ int main(int argc, char *argv[]) {
                                 "\t-o: output frequency if using Borg (200)\n"
                                 "\t-e: seed number (none)\n"
                                 "\t-y: file with bootstrap samples\n"
-                                "\t-R: RDM file\n",
-                        argv[0], n_realizations, n_weeks, system_io);
+                                "\t-R: RDM sample number\n"
+                                "\t-U: Utilities RDM file\n"
+                                "\t-P: Policies RDM file\n"
+                                "\t-W: Water sources RDM file\n"
+                                "\t-I: Inflows and evaporation folder suffix to be added to \"inflows\" and \"evaporation\" (e.g., _high for inflows_high)\n",
+                        argv[0], n_realizations, n_weeks, system_io.c_str());
                 return -1;
             case 's': solution_file = optarg; break;
             case 'u': uncertainty_file = optarg; break;
             // case 'T': omp_set_num_threads(atoi(optarg)); break;
             case 'T': break;
-            case 'r': n_realizations = atoi(optarg); break;
-            case 't': n_weeks = atoi(optarg); break;
+            case 'r': n_realizations = (unsigned long)atoi(optarg); break;
+            case 't': n_weeks = (unsigned long)atoi(optarg); break;
             case 'd': system_io = optarg; break;
             case 'f': first_solution = atoi(optarg); break;
             case 'l': last_solution = atoi(optarg); break;
-            case 'm': standard_solution = atoi(optarg); break;
+            case 'm': standard_solution = (unsigned long) atoi(optarg); break;
             case 'v': verbose = static_cast<bool>(atoi(optarg)); break;
             case 'c': tabular = static_cast<bool>(atoi(optarg)); break;
             case 'p': plotting = static_cast<bool>(atoi(optarg)); break;
             case 'b': run_optimization = true; break;
-            case 'i': n_islands = atoi(optarg); break;
-            case 'n': nfe = atoi(optarg); break;
-            case 'o': output_frequency = atoi(optarg); break;
-            case 'e': seed = atoi(optarg); break;
+            case 'i': n_islands = (unsigned long) atoi(optarg); break;
+            case 'n': nfe = (unsigned long) atoi(optarg); break;
+            case 'o': output_frequency = (unsigned long) atoi(optarg); break;
+            case 'e': seed = (unsigned long) atoi(optarg); break;
             case 'y': bootstrap_file = optarg; break;
-            case 'R': rdm_file = optarg; break;
+            case 'R': rdm_no = atoi(optarg); break;
+            case 'U': utilities_rdm_file = optarg; break;
+            case 'P': policies_rdm_file = optarg; break;
+            case 'W': water_sources_rdm_file = optarg; break;
+            case 'I': inflows_evap_directory_suffix = optarg; break;
             default:
                 fprintf(stderr, "Unknown option (-%c)\n", c);
                 return -1;
@@ -106,8 +121,8 @@ int main(int argc, char *argv[]) {
     triangle.setN_realizations(n_realizations);
     triangle.setN_weeks(n_weeks);
     triangle.setOutput_directory(system_io);
-    if (strlen(bootstrap_file) > 2) {
-        vector<double> v = Utils::parse1DCsvFile(bootstrap_file);
+    if (strlen(bootstrap_file.c_str()) > 2) {
+        vector<double> v = Utils::parse1DCsvFile(system_io + bootstrap_file);
         bootstrap_sample = vector<unsigned long>(v.begin(), v.end());
     }
 
@@ -118,17 +133,49 @@ int main(int argc, char *argv[]) {
             __throw_invalid_argument("If you set a first or last solution, you "
                                              "must set the other as well.");
 
-        if (strlen(system_io) == 0) {
+        if (strlen(system_io.c_str()) == 0) {
             __throw_invalid_argument(
                     "You must specify an input output directory.");
         }
 
         vector<vector<double>> solutions;
-        if (strlen(solution_file) > 2) {
-            string full_path_solution_file = string(system_io) + solution_file;
-            solutions = Utils::parse2DCsvFile(full_path_solution_file);
+        if (strlen(solution_file.c_str()) > 2) {
+            solutions = Utils::parse2DCsvFile(system_io + solution_file);
         } else {
             printf("You must specify a solutions file.\n");
+        }
+
+        if (strlen(inflows_evap_directory_suffix.c_str()) > 2)
+            triangle.setEvap_inflows_suffix(inflows_evap_directory_suffix);
+
+        /// Read RDM file, if any
+        if (strlen(utilities_rdm_file.c_str()) > 2) {
+            if (rdm_no != NON_INITIALIZED) {
+                auto utilities_rdm_row = Utils::parse2DCsvFile(system_io + utilities_rdm_file)[rdm_no];
+                auto policies_rdm_row = Utils::parse2DCsvFile(system_io + policies_rdm_file)[rdm_no];
+                auto water_sources_rdm_row = Utils::parse2DCsvFile(system_io + water_sources_rdm_file)[rdm_no];
+
+                utilities_rdm = std::vector<vector<double>>(n_realizations, utilities_rdm_row);
+                policies_rdm = std::vector<vector<double>>(n_realizations, policies_rdm_row);
+                water_sources_rdm = std::vector<vector<double>>(n_realizations, water_sources_rdm_row);
+
+                triangle.setRDMReevaluation((unsigned long) rdm_no, utilities_rdm,
+                                            water_sources_rdm, policies_rdm);
+            } else {
+                utilities_rdm = Utils::parse2DCsvFile(system_io + utilities_rdm_file);
+                water_sources_rdm = Utils::parse2DCsvFile(system_io + policies_rdm_file);
+                policies_rdm = Utils::parse2DCsvFile(system_io + water_sources_rdm_file);
+                if (n_realizations > utilities_rdm.size()) {
+                    __throw_length_error("If no rdm number is passed, the number of realizations needs to be smaller "
+                                                 "or equal to the number of rows in the rdm files.");
+                }
+                triangle.setRDMReevaluation((unsigned long) rdm_no, utilities_rdm,
+                                            water_sources_rdm, policies_rdm);
+            }
+            if (strlen(inflows_evap_directory_suffix.c_str()) > 2)
+                triangle.setFname_sufix("_RDM" + std::to_string(rdm_no) + "_infevap" + inflows_evap_directory_suffix);
+            else
+                triangle.setFname_sufix("_RDM" + std::to_string(rdm_no));
         }
 
         if (first_solution == -1) {
@@ -141,7 +188,8 @@ int main(int argc, char *argv[]) {
         } else {
             for (int s = first_solution; s < last_solution; ++s) {
                 cout << endl << endl << endl << "Running solution "
-                     << standard_solution << endl;
+                     << s << endl;
+                triangle.setSol_number(s);
                 triangle.setBootstrap_sample(bootstrap_sample);
                 triangle.functionEvaluation(solutions[s].data(), c_obj, c_constr);
                 triangle.calculateObjectivesAndPrintOutput();

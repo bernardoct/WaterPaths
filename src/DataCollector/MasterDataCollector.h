@@ -45,7 +45,7 @@ public:
     void addRealization(
             vector<WaterSource *> water_sources_realization,
             vector<DroughtMitigationPolicy *> drought_mitigation_policies_realization,
-            vector<Utility *> utilities_realization, int r);
+            vector<Utility *> utilities_realization, unsigned long r);
 
     void collectData(int r);
 };

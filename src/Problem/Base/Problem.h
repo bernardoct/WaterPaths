@@ -30,12 +30,21 @@ protected:
     unsigned long n_realizations;
     unsigned long  n_weeks;
     unsigned long  solution_no;
-    unsigned long  rdm_no;
     string output_directory;
+    string fname_sufix;
+    string evap_inflows_suffix;
+public:
+    void setEvap_inflows_suffix(const string &evap_inflows_suffix);
+
+public:
+    void setFname_sufix(const string &fname_sufix);
+
+protected:
     vector<unsigned long > realizations;
-    vector<double> rdm_factors;
     vector<unsigned long > bootstrap_sample;
     MasterDataCollector* master_data_collector;
+
+    unsigned long  rdm_no;
     vector<vector<double>> utilities_rdm;
     vector<vector<double>> water_sources_rdm;
     vector<vector<double>> policies_rdm;
@@ -60,9 +69,13 @@ public:
 
     void setRealizations(const vector<unsigned long> &realizations);
 
-    void setRdm_factors(const vector<double> &rdm_factors);
-
     double* calculateObjectivesAndPrintOutput();
+
+    void setRDMOptimization(vector<vector<double>> &utilities_rdm, vector<vector<double>> &water_sources_rdm,
+                            vector<vector<double>> &policies_rdm);
+
+    void setRDMReevaluation(unsigned long rdm_no, vector<vector<double>> &utilities_rdm,
+                                vector<vector<double>> &water_sources_rdm, vector<vector<double>> &policies_rdm);
 };
 
 

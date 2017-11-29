@@ -6,10 +6,9 @@
 #include "UtilitiesDataCollector.h"
 
 
-UtilitiesDataCollector::UtilitiesDataCollector(const Utility *utility)
-        : DataCollector(utility->id,
-                        utility->name,
-                        UTILITY,
+UtilitiesDataCollector::UtilitiesDataCollector(const Utility *utility,
+                                               unsigned long realization)
+        : DataCollector(utility->id, utility->name, realization, UTILITY,
                         12 * COLUMN_WIDTH),
           utility(utility) {}
 
@@ -145,12 +144,10 @@ void UtilitiesDataCollector::collect_data() {
     unrestricted_demand.push_back(utility->getUnrestrictedDemand());
     restricted_demand.push_back(utility->getRestrictedDemand());
     contingency_fund_size.push_back(utility->getContingency_fund());
-    net_present_infrastructure_cost
-            .push_back(utility->getInfrastructure_net_present_cost());
+    net_present_infrastructure_cost.push_back(utility->getInfrastructure_net_present_cost());
     gross_revenues.push_back(utility->getGrossRevenue());
     debt_service_payments.push_back(utility->getCurrent_debt_payment());
-    contingency_fund_contribution
-            .push_back(utility->getCurrent_contingency_fund_contribution());
+    contingency_fund_contribution.push_back(utility->getCurrent_contingency_fund_contribution());
     drought_mitigation_cost.push_back(utility->getDrought_mitigation_cost());
     insurance_contract_cost.push_back(utility->getInsurance_purchase());
     insurance_payout.push_back(utility->getInsurance_payout());
@@ -159,12 +156,36 @@ void UtilitiesDataCollector::collect_data() {
     unfulfilled_demand.push_back(utility->getUnfulfilled_demand());
     net_stream_inflow.push_back(utility->getNet_stream_inflow());
 
+    checkForNans();
+
     infra_built = utility->getInfrastructure_built();
     if (pathways.empty() && !infra_built.empty())
         pathways.push_back(infra_built);
     else
         if (!infra_built.empty() && infra_built[2] != pathways.back()[2])
             pathways.push_back(infra_built);
+}
+
+const void UtilitiesDataCollector::checkForNans() const {
+    string error = "nan in combined_storage in week " + to_string(lt_rof.size
+            ()) + ", realization " + to_string(realization);
+    if (isnan(unrestricted_demand.back())) __throw_runtime_error(error.c_str());
+    if (isnan(restricted_demand.back())) __throw_runtime_error(error.c_str());
+    if (isnan(combined_storage.back())) __throw_runtime_error(error.c_str());
+    if (isnan(lt_rof.back())) __throw_runtime_error(error.c_str());
+    if (isnan(st_rof.back())) __throw_runtime_error(error.c_str());
+    if (isnan(contingency_fund_size.back())) __throw_runtime_error(error.c_str());
+    if (isnan(net_present_infrastructure_cost.back())) __throw_runtime_error(error.c_str());
+    if (isnan(gross_revenues.back())) __throw_runtime_error(error.c_str());
+    if (isnan(debt_service_payments.back())) __throw_runtime_error(error.c_str());
+    if (isnan(contingency_fund_contribution.back())) __throw_runtime_error(error.c_str());
+    if (isnan(drought_mitigation_cost.back())) __throw_runtime_error(error.c_str());
+    if (isnan(insurance_contract_cost.back())) __throw_runtime_error(error.c_str());
+    if (isnan(insurance_payout.back())) __throw_runtime_error(error.c_str());
+    if (isnan(capacity.back())) __throw_runtime_error(error.c_str());
+    if (isnan(waste_water_discharge.back())) __throw_runtime_error(error.c_str());
+    if (isnan(unfulfilled_demand.back())) __throw_runtime_error(error.c_str());
+    if (isnan(net_stream_inflow.back())) __throw_runtime_error(error.c_str());
 }
 
 const vector<double> &UtilitiesDataCollector::getCombined_storage() const {

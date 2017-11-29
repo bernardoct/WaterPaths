@@ -33,7 +33,8 @@ private:
 
 public:
 
-    explicit UtilitiesDataCollector(const Utility *utility);
+    explicit UtilitiesDataCollector(const Utility *utility,
+                                        unsigned long realization);
 
     string printTabularString(int week) override;
 
@@ -67,6 +68,7 @@ public:
 
     const vector<double> &getNet_present_infrastructure_cost() const;
 
+    const void checkForNans() const;
 };
 
 

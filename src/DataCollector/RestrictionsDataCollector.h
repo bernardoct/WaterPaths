@@ -17,7 +17,7 @@ private:
 
 public:
     explicit RestrictionsDataCollector(
-            Restrictions *restriction_policy);
+                Restrictions *restriction_policy, unsigned long realization);
 
     string printTabularString(int week) override;
 

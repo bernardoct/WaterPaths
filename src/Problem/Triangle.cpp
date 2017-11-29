@@ -210,89 +210,47 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
     } else
         realizations_to_read = vector<unsigned long>();
 
-    vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/durham_inflows.csv",
-                                                                      max_lines, realizations_to_read);
-    vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/falls_lake_inflows.csv",
-                                                                    max_lines, realizations_to_read);
-    vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/lake_wb_inflows.csv",
-                                                                     max_lines, realizations_to_read);
-    vector<vector<double>> streamflows_llr = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/little_river_raleigh_inflows.csv",
-                                                                   max_lines, realizations_to_read);
-    vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/crabtree_inflows.csv",
-                                                                        max_lines, realizations_to_read);
-    vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/stone_quarry_inflows.csv",
-                                                                     max_lines, realizations_to_read);
-    vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/cane_creek_inflows.csv",
-                                                                    max_lines, realizations_to_read);
-    vector<vector<double>> streamflows_morgan = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/university_lake_inflows.csv",
-                                                                      max_lines, realizations_to_read);
-    vector<vector<double>> streamflows_haw = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/jordan_lake_inflows.csv",
-                                                                   max_lines, realizations_to_read);
-    vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/clayton_inflows.csv",
-                                                                       max_lines, realizations_to_read);
-    vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows/lillington_inflows.csv",
-                                                                          max_lines, realizations_to_read);
+    vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/durham_inflows.csv", max_lines, realizations_to_read);
+    vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/falls_lake_inflows.csv", max_lines, realizations_to_read);
+    vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/lake_wb_inflows.csv", max_lines, realizations_to_read);
+    vector<vector<double>> streamflows_llr = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/little_river_raleigh_inflows.csv", max_lines, realizations_to_read);
+    vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/crabtree_inflows.csv", max_lines, realizations_to_read);
+    vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/stone_quarry_inflows.csv", max_lines, realizations_to_read);
+    vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/cane_creek_inflows.csv", max_lines, realizations_to_read);
+    vector<vector<double>> streamflows_morgan = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/university_lake_inflows.csv", max_lines, realizations_to_read);
+    vector<vector<double>> streamflows_haw = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/jordan_lake_inflows.csv", max_lines, realizations_to_read);
+    vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/clayton_inflows.csv", max_lines, realizations_to_read);
+    vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/lillington_inflows.csv", max_lines, realizations_to_read);
 
     //cout << "Reading demands." << endl;
-    vector<vector<double>> demand_cary = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/cary_demand.csv",
-                                                               max_lines, realizations_to_read);
-    vector<vector<double>> demand_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/durham_demand.csv",
-                                                                 max_lines, realizations_to_read);
-    vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/raleigh_demand.csv",
-                                                                  max_lines, realizations_to_read);
-    vector<vector<double>> demand_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/owasa_demand.csv",
-                                                                max_lines, realizations_to_read);
-
-    /// Apply demand multiplier
-    double demand_multiplier = rdm_factors[0];
-    for (int r = 0; r < n_realizations; ++r) {
-        for (int w = 0; w < n_weeks; ++w) {
-            demand_cary[r][w] *= demand_multiplier;
-            demand_durham[r][w] *= demand_multiplier;
-            demand_raleigh[r][w] *= demand_multiplier;
-            demand_owasa[r][w] *= demand_multiplier;
-        }
-    }
+    vector<vector<double>> demand_cary = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/cary_demand.csv", max_lines, realizations_to_read);
+    vector<vector<double>> demand_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/durham_demand.csv", max_lines, realizations_to_read);
+    vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/raleigh_demand.csv", max_lines, realizations_to_read);
+    vector<vector<double>> demand_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/owasa_demand.csv", max_lines, realizations_to_read);
 
     //cout << "Reading evaporations." << endl;
-    vector<vector<double>> evap_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation/durham_evap.csv",
-                                                               max_lines, realizations_to_read);
-    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation/falls_lake_evap.csv",
-                                                                   max_lines, realizations_to_read);
-    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation/owasa_evap.csv",
-                                                              max_lines, realizations_to_read);
-    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation/little_river_raleigh_evap.csv",
-                                                                     max_lines, realizations_to_read);
-    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation/wb_evap.csv",
-                                                                       max_lines, realizations_to_read);
+    vector<vector<double>> evap_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/durham_evap.csv", max_lines, realizations_to_read);
+    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/falls_lake_evap.csv", max_lines, realizations_to_read);
+    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/owasa_evap.csv", max_lines, realizations_to_read);
+    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/little_river_raleigh_evap.csv", max_lines, realizations_to_read);
+    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/wb_evap.csv", max_lines, realizations_to_read);
     vector<vector<double>> evap_jordan_lake = evap_owasa;
 
     //cout << "Reading others." << endl;
-    vector<vector<double>> demand_to_wastewater_fraction_owasa_raleigh =
-            Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
-    vector<vector<double>> demand_to_wastewater_fraction_durham =
-            Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_durham.csv");
+    vector<vector<double>> demand_to_wastewater_fraction_owasa_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
+    vector<vector<double>> demand_to_wastewater_fraction_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_durham.csv");
 //
-    vector<vector<double>> caryDemandClassesFractions = Utils::parse2DCsvFile
-            (output_directory + "/TestFiles/caryDemandClassesFractions.csv");
-    vector<vector<double>> durhamDemandClassesFractions = Utils::parse2DCsvFile
-            (output_directory + "/TestFiles/durhamDemandClassesFractions.csv");
-    vector<vector<double>> raleighDemandClassesFractions = Utils::parse2DCsvFile
-            (output_directory + "/TestFiles/raleighDemandClassesFractions.csv");
-    vector<vector<double>> owasaDemandClassesFractions = Utils::parse2DCsvFile
-            (output_directory + "/TestFiles/owasaDemandClassesFractions.csv");
+    vector<vector<double>> caryDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/caryDemandClassesFractions.csv");
+    vector<vector<double>> durhamDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/durhamDemandClassesFractions.csv");
+    vector<vector<double>> raleighDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/raleighDemandClassesFractions.csv");
+    vector<vector<double>> owasaDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/owasaDemandClassesFractions.csv");
 
-    vector<vector<double>> caryUserClassesWaterPrices = Utils::parse2DCsvFile
-            (output_directory + "/TestFiles/caryUserClassesWaterPrices.csv");
-    vector<vector<double>> durhamUserClassesWaterPrices = Utils::parse2DCsvFile
-            (output_directory + "/TestFiles/durhamUserClassesWaterPrices.csv");
-    vector<vector<double>> raleighUserClassesWaterPrices = Utils::parse2DCsvFile
-            (output_directory + "/TestFiles/raleighUserClassesWaterPrices.csv");
-    vector<vector<double>> owasaUserClassesWaterPrices = Utils::parse2DCsvFile
-            (output_directory + "/TestFiles/owasaUserClassesWaterPrices.csv");
+    vector<vector<double>> caryUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/caryUserClassesWaterPrices.csv");
+    vector<vector<double>> durhamUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/durhamUserClassesWaterPrices.csv");
+    vector<vector<double>> raleighUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/raleighUserClassesWaterPrices.csv");
+    vector<vector<double>> owasaUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/owasaUserClassesWaterPrices.csv");
 
-    vector<vector<double>> owasaPriceSurcharges = Utils::parse2DCsvFile
-            (output_directory + "/TestFiles/owasaPriceRestMultipliers.csv");
+    vector<vector<double>> owasaPriceSurcharges = Utils::parse2DCsvFile(output_directory + "/TestFiles/owasaPriceRestMultipliers.csv");
 
 //    vector<double> sewageFractions = Utils::parse1DCsvFile(
 //            output_directory + "/TestFiles/sewageFractions.csv");
@@ -947,7 +905,6 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                 vector<int>());
     drought_mitigation_policies.push_back(&t);
 
-
     double insurance_triggers[4] = {owasa_insurance_use,
                                     durham_insurance_use, cary_insurance_use,
                                     raleigh_insurance_use}; //FIXME: Change per solution
@@ -1004,7 +961,6 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
 }
 
 Triangle::Triangle(int solution_no, int rdm_no) {
-    rdm_factors = vector<double>(40, 1.);
 }
 
 

@@ -164,24 +164,20 @@ MasterDataCollector *Simulation::runFullSimulation() {
 
     int n_utilities = (int) realization_models[0]->getUtilities().size();
     vector<double> risks_of_failure_week((unsigned long) n_utilities, 0.0);
-    time_t timer_i;
-    time_t timer_f;
-    double seconds;
 
     /// Run realizations.
-    time(&timer_i);
     int count = 0;
 //    std::cout << "Simulated time: " << total_simulation_time << endl;
 //    std::cout << "Number of realizations: " << number_of_realizations << endl;
 //    std::cout << "Beginning realizations loop." << endl;
     MasterDataCollector* mdc = master_data_collector;
     cout << omp_get_num_procs() << endl;
-#pragma omp parallel for 
+    double realization_start = omp_get_wtime();
+#pragma omp parallel for num_threads(1)
     for (int r = 0; r < number_of_realizations; ++r) {
 //	cout << "thread id: " << omp_get_thread_num() << endl;
 //        try {
-        time_t timer_ir, timer_fr;
-        time(&timer_ir);
+        double start = omp_get_wtime();
         for (int w = 0; w < total_simulation_time; ++w) {
             // DO NOT change the order of the steps. This would mess up
             // important dependencies.
@@ -193,11 +189,11 @@ MasterDataCollector *Simulation::runFullSimulation() {
             realization_models[r]->continuityStep(w);
             mdc->collectData(r);
         }
-        time(&timer_fr);
+	double end = omp_get_wtime();
         #pragma omp atomic
             count++;
         std::cout << "Realization " << count << ": "
-                  << difftime(timer_fr, timer_ir) << std::endl;
+                  << end - start << std::endl;
           
 
 //        } catch (const std::exception &e) {
@@ -205,9 +201,8 @@ MasterDataCollector *Simulation::runFullSimulation() {
 //            e.what();
 //        }
     }
-    time(&timer_f);
-    seconds = difftime(timer_f, timer_i);
-    std::cout << "Calculations: " << seconds << "s" << std::endl;
+    double realization_end = omp_get_wtime();
+    std::cout << "Calculations: " << realization_end - realization_start << "s" << std::endl;
 
     return mdc;
 }

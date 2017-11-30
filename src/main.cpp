@@ -189,7 +189,7 @@ int main(int argc, char *argv[]) {
             for (int s = first_solution; s < last_solution; ++s) {
                 cout << endl << endl << endl << "Running solution "
                      << s << endl;
-                triangle.setSol_number(s);
+                triangle.setSol_number((unsigned long) s);
                 triangle.setBootstrap_sample(bootstrap_sample);
                 triangle.functionEvaluation(solutions[s].data(), c_obj, c_constr);
                 triangle.calculateObjectivesAndPrintOutput();

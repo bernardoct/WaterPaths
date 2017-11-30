@@ -170,6 +170,14 @@ void InsuranceStorageToROF::priceInsurance(int week) {
         }
     }
 
+//    for (int u = 0; u < realization_utilities.size(); ++u) {
+//        /// output approximate ROF in given week
+//        double temporary_output_utilities_rofs[n_utilities];
+//        getUtilitiesApproxROFs(UtilitiesStorageCapacityRatio(), storage_to_rof_table_,
+//                               Utils::weekOfTheYear(week), temporary_output_utilities_rofs);
+//        cout << temporary_output_utilities_rofs[u] << endl;
+//    }
+
     /// Average out insurance price across realizations
     for (int u : utilities_ids) {
         insurance_price[u] /= NUMBER_REALIZATIONS_ROF;

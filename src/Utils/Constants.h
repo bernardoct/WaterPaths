@@ -68,6 +68,7 @@ namespace Constants {
 
     const double INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD = 0.02;
     const int NO_OF_STORAGE_TO_ROF_TABLE_TIERS = (int) std::round(1. / INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD);
+    const int NO_OF_INSURANCE_STORAGE_TIERS = (int) std::round(1. / INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD);
 
     const int WATER_QUALITY_ALLOCATION = -1;
 };

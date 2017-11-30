@@ -59,10 +59,10 @@ void RawWaterReleases::applyPolicy(int week) {
     storage_targets[DOWNSTREAM_UTILITY] = getUtilityStorageFromROF(Utils::weekOfTheYear(week),
                                                                    storage_to_rof_table_, downstream_utility_id);
 
-    /// Raw water transfers are calculated if upstream ROF is above trigger level AND
-    /// downstream ROF is below trigger level
-    if ((downstream_utility->getRisk_of_failure() >= rof_triggers[downstream_utility_id]) &
-        (upstream_utility->getRisk_of_failure() < rof_triggers[upstream_utility_id])) {
+    /// Raw water transfers are calculated if upstream storage is above the ROF target
+    /// and downstream storage is below ROF target
+    if ((downstream_utility->getStorageToCapacityRatio() < storage_targets[DOWNSTREAM_UTILITY]) &
+        (upstream_utility->getStorageToCapacityRatio() > storage_targets[UPSTREAM_UTILITY])) {
 
         /// optional: print detail in each instance of a transfer
         if (LOUD) {
@@ -118,9 +118,8 @@ void RawWaterReleases::applyPolicy(int week) {
         ///     2. non-negativity
         raw_water_transfer_volume -= upstream_min_env_flow_control->getRelease(week);
 
-        if (raw_water_transfer_volume < 0) {
+        if (raw_water_transfer_volume < 0)
             raw_water_transfer_volume = 0.0;
-        }
 
         /// optional: print detail in each instance of a transfer
         if (LOUD) {
@@ -130,7 +129,7 @@ void RawWaterReleases::applyPolicy(int week) {
             cout << "Recipient Initial Storage Ratio: " << downstream_utility->getStorageToCapacityRatio() << endl;
         }
 
-        /// adjust storage (and water quality, when applicable) levels in each reservoir
+        /// adjust supply storage (and water quality storage, when applicable) levels in each reservoir
         downstream_reservoir->addWater(WATER_QUALITY_ALLOCATION,
                                        raw_water_transfer_volume *
                                        (1 - raw_water_transfer_downstream_allocation_ratio));

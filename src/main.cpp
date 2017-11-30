@@ -109,8 +109,10 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
     double raleigh_annual_payment = x_real[13];
     double cary_annual_payment = x_real[14];
     double durham_insurance_use = x_real[15]; // insurance st_rof
+    durham_insurance_use = 0.04;
     double owasa_insurance_use = x_real[16];
     double raleigh_insurance_use = x_real[17];
+    raleigh_insurance_use = 0.04;
     double cary_insurance_use = x_real[18];
     double durham_insurance_payment = x_real[19];
     double owasa_insurance_payment = x_real[20];
@@ -151,8 +153,8 @@ void triangleTest(const double *x_real, int n_realizations, int n_weeks,
     double raleigh_inf_buffer = x_real[55];
     double cary_inf_buffer = x_real[56];
 
-    double durham_raw_water_transfer_trigger = 0.10;
-    double raleigh_raw_water_transfer_trigger = 0.01;
+    double durham_raw_water_transfer_trigger = 0.04;
+    double raleigh_raw_water_transfer_trigger = 0.04;
     double cary_raw_water_transfer_trigger = 2;
     double owasa_raw_water_transfer_trigger = 2;
 

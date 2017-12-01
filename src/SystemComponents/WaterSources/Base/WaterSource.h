@@ -27,11 +27,13 @@ protected:
     double construction_cost_of_capital;
     double upstream_min_env_inflow;
     double capacity;
-    double *available_allocated_volumes = nullptr;
-    double *allocated_capacities = nullptr;
-    double *allocated_treatment_capacities = nullptr;
-    double *allocated_treatment_fractions = nullptr;
-    double *allocated_fractions = nullptr;
+
+    vector<double> available_allocated_volumes;
+    vector<double> allocated_capacities;
+    vector<double> allocated_treatment_capacities;
+    vector<double> allocated_treatment_fractions;
+    vector<double> allocated_fractions;
+
     vector<int> *utilities_with_allocations = nullptr;
     int wq_pool_id = NON_INITIALIZED;
     double total_allocated_fraction = NON_INITIALIZED;
@@ -155,9 +157,9 @@ public:
     void resetAllocations(const vector<double> *new_allocated_fractions);
 
     void setAvailableAllocatedVolumes(
-            double *available_allocated_volumes, double available_volume);
+            vector<double> available_allocated_volumes, double available_volume);
 
-    double *getAvailable_allocated_volumes() const;
+    vector<double> getAvailable_allocated_volumes() const;
 
     vector<int> *getUtilities_with_allocations() const;
 

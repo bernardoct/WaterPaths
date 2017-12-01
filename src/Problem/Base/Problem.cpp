@@ -5,10 +5,11 @@
 #include <algorithm>
 #include "Problem.h"
 
-double * Problem::calculateObjectivesAndPrintOutput() {
+vector<double> Problem::calculateObjectivesAndPrintOutput() {
 
+cout <<"calling\n";
     /// Calculate objective values.
-    master_data_collector->setOutputDirectory(output_directory);
+    this->master_data_collector->setOutputDirectory(output_directory);
 
     /// Print output files.
     string fu = "/TestFiles/output/Utilities";
@@ -19,15 +20,15 @@ double * Problem::calculateObjectivesAndPrintOutput() {
 
     //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
     cout << "Calculating and printing Objectives" << endl;
-    master_data_collector->calculatePrintObjectives(fo + "_s" + std::to_string(solution_no) + fname_sufix, true);
+    this->master_data_collector->calculatePrintObjectives(fo + "_s" + std::to_string(solution_no) + fname_sufix, true);
     cout << "Printing Pathways" << endl;
-    master_data_collector->printPathways(fpw + "_s" + std::to_string(solution_no) + fname_sufix);
+    this->master_data_collector->printPathways(fpw + "_s" + std::to_string(solution_no) + fname_sufix);
     cout << "Printing time series" << endl;
-    master_data_collector->printUtilitiesOutputCompact(0, (int) n_weeks, fu + "_s"
+    this->master_data_collector->printUtilitiesOutputCompact(0, (int) n_weeks, fu + "_s"
                                                        + std::to_string(solution_no) + fname_sufix);
-    master_data_collector->printWaterSourcesOutputCompact(0, (int) n_weeks, fws + "_s"
+    this->master_data_collector->printWaterSourcesOutputCompact(0, (int) n_weeks, fws + "_s"
                                                           + std::to_string(solution_no) + fname_sufix);
-    master_data_collector->printPoliciesOutputCompact(0, (int) n_weeks, fp + "_s"
+    this->master_data_collector->printPoliciesOutputCompact(0, (int) n_weeks, fp + "_s"
                                                       + std::to_string(solution_no) + fname_sufix);
     cout << "Updating objectives pointer" << endl;
 //    data_collector->printUtilitesOutputTabular(0,
@@ -42,8 +43,7 @@ double * Problem::calculateObjectivesAndPrintOutput() {
 //                                               n_weeks,
 //                                               fp + "_s"
 //                                               + std::to_string(solution_no));
-    double *obj_not_jla = master_data_collector->calculatePrintObjectives(fo + "_s" + std::to_string(solution_no),
-                                                                          false).data();
+    vector<double> obj_not_jla = this->master_data_collector->calculatePrintObjectives(fo + "_s" + std::to_string(solution_no), false);
 
     return obj_not_jla;
 }

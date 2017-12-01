@@ -155,7 +155,6 @@ void MasterDataCollector::printUtilitesOutputTabular(
 void MasterDataCollector::printWaterSourcesOutputCompact(
         int week_i, int week_f, string file_name) {
 
-#pragma omp parallel for
     for (int r = 0; r < water_source_collectors[0].size(); ++r) {
         std::ofstream out_stream;
         out_stream.open(output_directory + "/" + file_name + "_r"

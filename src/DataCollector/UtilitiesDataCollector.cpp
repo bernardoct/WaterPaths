@@ -166,26 +166,26 @@ void UtilitiesDataCollector::collect_data() {
             pathways.push_back(infra_built);
 }
 
-const void UtilitiesDataCollector::checkForNans() const {
+void UtilitiesDataCollector::checkForNans() const {
     string error = "nan in combined_storage in week " + to_string(lt_rof.size
             ()) + ", realization " + to_string(realization);
-    if (isnan(unrestricted_demand.back())) __throw_runtime_error(error.c_str());
-    if (isnan(restricted_demand.back())) __throw_runtime_error(error.c_str());
-    if (isnan(combined_storage.back())) __throw_runtime_error(error.c_str());
-    if (isnan(lt_rof.back())) __throw_runtime_error(error.c_str());
-    if (isnan(st_rof.back())) __throw_runtime_error(error.c_str());
-    if (isnan(contingency_fund_size.back())) __throw_runtime_error(error.c_str());
-    if (isnan(net_present_infrastructure_cost.back())) __throw_runtime_error(error.c_str());
-    if (isnan(gross_revenues.back())) __throw_runtime_error(error.c_str());
-    if (isnan(debt_service_payments.back())) __throw_runtime_error(error.c_str());
-    if (isnan(contingency_fund_contribution.back())) __throw_runtime_error(error.c_str());
-    if (isnan(drought_mitigation_cost.back())) __throw_runtime_error(error.c_str());
-    if (isnan(insurance_contract_cost.back())) __throw_runtime_error(error.c_str());
-    if (isnan(insurance_payout.back())) __throw_runtime_error(error.c_str());
-    if (isnan(capacity.back())) __throw_runtime_error(error.c_str());
-    if (isnan(waste_water_discharge.back())) __throw_runtime_error(error.c_str());
-    if (isnan(unfulfilled_demand.back())) __throw_runtime_error(error.c_str());
-    if (isnan(net_stream_inflow.back())) __throw_runtime_error(error.c_str());
+    if (::isnan(unrestricted_demand.back())) __throw_runtime_error(error.c_str());
+    if (::isnan(restricted_demand.back())) __throw_runtime_error(error.c_str());
+    if (::isnan(combined_storage.back())) __throw_runtime_error(error.c_str());
+    if (::isnan(lt_rof.back())) __throw_runtime_error(error.c_str());
+    if (::isnan(st_rof.back())) __throw_runtime_error(error.c_str());
+    if (::isnan(contingency_fund_size.back())) __throw_runtime_error(error.c_str());
+    if (::isnan(net_present_infrastructure_cost.back())) __throw_runtime_error(error.c_str());
+    if (::isnan(gross_revenues.back())) __throw_runtime_error(error.c_str());
+    if (::isnan(debt_service_payments.back())) __throw_runtime_error(error.c_str());
+    if (::isnan(contingency_fund_contribution.back())) __throw_runtime_error(error.c_str());
+    if (::isnan(drought_mitigation_cost.back())) __throw_runtime_error(error.c_str());
+    if (::isnan(insurance_contract_cost.back())) __throw_runtime_error(error.c_str());
+    if (::isnan(insurance_payout.back())) __throw_runtime_error(error.c_str());
+    if (::isnan(capacity.back())) __throw_runtime_error(error.c_str());
+    if (::isnan(waste_water_discharge.back())) __throw_runtime_error(error.c_str());
+    if (::isnan(unfulfilled_demand.back())) __throw_runtime_error(error.c_str());
+    if (::isnan(net_stream_inflow.back())) __throw_runtime_error(error.c_str());
 }
 
 const vector<double> &UtilitiesDataCollector::getCombined_storage() const {

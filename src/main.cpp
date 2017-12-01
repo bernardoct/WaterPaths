@@ -184,7 +184,6 @@ int main(int argc, char *argv[]) {
             triangle.setSol_number(standard_solution);
             triangle.setBootstrap_sample(bootstrap_sample);
             triangle.functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
-            triangle.calculateObjectivesAndPrintOutput();
         } else {
             for (int s = first_solution; s < last_solution; ++s) {
                 cout << endl << endl << endl << "Running solution "
@@ -192,7 +191,6 @@ int main(int argc, char *argv[]) {
                 triangle.setSol_number(s);
                 triangle.setBootstrap_sample(bootstrap_sample);
                 triangle.functionEvaluation(solutions[s].data(), c_obj, c_constr);
-                triangle.calculateObjectivesAndPrintOutput();
             }
         }
         return 0;

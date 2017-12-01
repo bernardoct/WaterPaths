@@ -905,9 +905,9 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                 vector<int>());
     drought_mitigation_policies.push_back(&t);
 
-    double insurance_triggers[4] = {owasa_insurance_use,
-                                    durham_insurance_use, cary_insurance_use,
-                                    raleigh_insurance_use}; //FIXME: Change per solution
+    vector<double> insurance_triggers = {owasa_insurance_use,
+                                         durham_insurance_use, cary_insurance_use,
+                                         raleigh_insurance_use}; //FIXME: Change per solution
     double fixed_payouts[4] = {owasa_insurance_payment,
                                durham_insurance_payment,
                                cary_insurance_payment,
@@ -943,11 +943,11 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                  n_weeks,
                  n_realizations);
     cout << "Beginning simulation." << endl;
-//    s.runFullSimulation(n_threads);
-    master_data_collector = s.runFullSimulation();
+    auto* mdc = s.runFullSimulation();
+    this->master_data_collector = mdc;
     cout << "Ending simulation" << endl;
 
-    double* obj_not_jla = calculateObjectivesAndPrintOutput();
+/*    vector<double> obj_not_jla = calculateObjectivesAndPrintOutput();
 
     int i = 0;
     objs[i] = min(min(obj_not_jla[i*4], obj_not_jla[i*4+5]), min(obj_not_jla[i*4+10], obj_not_jla[i*4+15]));
@@ -955,7 +955,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
         objs[i] = max(max(obj_not_jla[i*4], obj_not_jla[i*4+5]), max(obj_not_jla[i*4+10], obj_not_jla[i*4+15]));
     }
 
-    objs[5] = max(max(OWASA_JLA, Durham_JLA), max(Cary_JLA, Raleigh_JLA));
+    objs[5] = max(max(OWASA_JLA, Durham_JLA), max(Cary_JLA, Raleigh_JLA));*/
 
     cout << "objectives returned" << endl;
 }

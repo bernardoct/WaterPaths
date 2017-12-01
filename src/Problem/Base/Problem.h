@@ -69,7 +69,7 @@ public:
 
     void setRealizations(const vector<unsigned long> &realizations);
 
-    double* calculateObjectivesAndPrintOutput();
+    vector<double> calculateObjectivesAndPrintOutput();
 
     void setRDMOptimization(vector<vector<double>> &utilities_rdm, vector<vector<double>> &water_sources_rdm,
                             vector<vector<double>> &policies_rdm);

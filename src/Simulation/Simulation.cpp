@@ -178,10 +178,10 @@ MasterDataCollector *Simulation::runFullSimulation() {
 //    std::cout << "Simulated time: " << total_simulation_time << endl;
 //    std::cout << "Number of realizations: " << number_of_realizations << endl;
 //    std::cout << "Beginning realizations loop." << endl;
-    MasterDataCollector* mdc = master_data_collector;
-#pragma omp parallel for 
     cout << omp_get_num_procs() << endl;
     double realization_start = omp_get_wtime();
+    MasterDataCollector* mdc = master_data_collector;
+#pragma omp parallel for shared(mdc)
     for (int r = 0; r < number_of_realizations; ++r) {
 //	cout << "thread id: " << omp_get_thread_num() << endl;
 //        try {
@@ -190,16 +190,15 @@ MasterDataCollector *Simulation::runFullSimulation() {
             // DO NOT change the order of the steps. This would mess up
             // important dependencies.
             if (Utils::isFirstWeekOfTheYear(w))
-                realization_models[r]->setLongTermROFs(rof_models[r]->calculateLongTermROF
-                                                  (w), w);
+                realization_models[r]->setLongTermROFs(rof_models[r]->calculateLongTermROF(w), w);
             realization_models[r]->setShortTermROFs(rof_models[r]->calculateShortTermROF(w));
             realization_models[r]->applyDroughtMitigationPolicies(w);
             realization_models[r]->continuityStep(w);
             mdc->collectData(r);
         }
-	double end = omp_get_wtime();
+    	double end = omp_get_wtime();
         #pragma omp atomic
-            count++;
+        count++;
         std::cout << "Realization " << count << ": "
                   << end - start << std::endl;
           

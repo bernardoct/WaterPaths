@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
+#include <stdio.h>
 #include "AllocatedReservoirDataCollector.h"
 
 AllocatedReservoirDataCollector::AllocatedReservoirDataCollector(
@@ -81,9 +82,6 @@ string AllocatedReservoirDataCollector::printCompactStringHeader() {
 
 void AllocatedReservoirDataCollector::collect_data() {
     ReservoirDataCollector::collect_data();
-    vector<double> alloc_vol_vector = vector<double>
-            (allocated_reservoir->getAvailable_allocated_volumes(),
-             allocated_reservoir->getAvailable_allocated_volumes() +
-             allocated_reservoir->getUtilities_with_allocations()->size());
+    vector<double> alloc_vol_vector = allocated_reservoir->getAvailable_allocated_volumes();
     allocated_stored_volumes.push_back(alloc_vol_vector);
 }

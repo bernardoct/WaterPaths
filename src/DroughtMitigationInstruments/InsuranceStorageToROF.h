@@ -14,7 +14,7 @@ class InsuranceStorageToROF : public DroughtMitigationPolicy,
 private:
 
     double *insurance_price;
-    const double *rof_triggers;
+    const vector<double> rof_triggers;
     const double insurance_premium;
     const double *fixed_payouts;
     double *utilities_revenue_update;
@@ -32,7 +32,7 @@ public:
             vector<MinEnvironFlowControl *> min_env_flow_controls,
             vector<vector<double>> *utilities_rdm,
             vector<vector<double>> *water_sources_rdm,
-            double *rof_triggers,
+            vector<double> rof_triggers,
             const double insurance_premium,
             const double *fixed_payouts);
 
@@ -42,11 +42,11 @@ public:
 
     void priceInsurance(int week);
 
-    void getUtilitiesApproxROFs(const double *u_storage_capacity_ratio,
+    void getUtilitiesApproxROFs(const vector<double> u_storage_capacity_ratio,
                                 const Matrix3D<double> *storage_to_rof_table,
-                                int week, double *utilities_approx_rof);
+                                int week, vector<double>& utilities_approx_rof);
 
-    double *UtilitiesStorageCapacityRatio();
+    vector<double> UtilitiesStorageCapacityRatio();
 
     void applyPolicy(int week) override;
 

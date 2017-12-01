@@ -101,7 +101,8 @@ AllocatedReservoir::AllocatedReservoir(
 
 AllocatedReservoir::AllocatedReservoir(
         const AllocatedReservoir &allocated_reservoir)
-        : Reservoir(allocated_reservoir) {}
+        : Reservoir(allocated_reservoir) {
+        }
 
 /**
  * Copy assignment operator
@@ -114,11 +115,6 @@ AllocatedReservoir &AllocatedReservoir::operator=(
 };
 
 AllocatedReservoir::~AllocatedReservoir() {
-    delete[] allocated_fractions;
-    delete[] allocated_treatment_fractions;
-    delete[] available_allocated_volumes;
-    delete[] allocated_capacities;
-    delete[] allocated_treatment_capacities;
 }
 
 
@@ -285,9 +281,8 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
     policy_added_demand = 0;
 
     /// Sanity checking from now on.
-    double sum_allocations = accumulate(available_allocated_volumes,
-                                        available_allocated_volumes +
-                                        wq_pool_id + 1,
+    double sum_allocations = accumulate(available_allocated_volumes.begin(),
+                                        available_allocated_volumes.end(),
                                         0.f);
     if ((int) abs(sum_allocations - available_volume) > 1) {
         cout << endl;
@@ -391,6 +386,6 @@ double AllocatedReservoir::getAllocatedFraction(int utility_id) {
 }
 
 double AllocatedReservoir::getAllocatedTreatmentCapacity(int utility_id) const {
-    return allocated_treatment_capacities[utility_id];
+    return allocated_treatment_capacities.at(utility_id);
 }
 

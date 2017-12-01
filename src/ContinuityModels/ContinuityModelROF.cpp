@@ -217,7 +217,6 @@ void ContinuityModelROF::updateStorageToROFTable(double storage_percent_decremen
                                                  const double *to_full_toposort) {
     double available_volumes[n_topo_sources];
     double to_full[n_topo_sources];
-//    __declspec(align(64)) double spillage[n_topo_sources];
     double spillage[n_topo_sources] __attribute__ ((aligned(64)));
     for (int ws = 0; ws < n_topo_sources; ++ws) {
         available_volumes[ws] = continuity_water_sources[sources_topological_order[ws]]->getAvailable_volume();

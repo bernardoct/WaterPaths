@@ -68,7 +68,7 @@ public:
 
     const vector<double> &getNet_present_infrastructure_cost() const;
 
-    const void checkForNans() const;
+    void checkForNans() const;
 };
 
 

@@ -186,9 +186,10 @@ void ContinuityModel::continuityStep(
      * rof calculation but an actual simulation instead, rof_realization will
      * be equal to -1 (see header file) so that there is no week shift.
      */
+    auto& upstream_sources_ids = water_sources_graph.getUpstream_sources();
     for (int i : sources_topological_order) {
         /// Sum spillage from all sources upstream source i.
-        for (int ws : water_sources_graph.getUpstream_sources()[i])
+        for (int ws : upstream_sources_ids[i])
             upstream_spillage[i] +=
                     continuity_water_sources[ws]->getTotal_outflow();
 

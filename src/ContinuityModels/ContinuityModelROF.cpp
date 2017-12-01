@@ -118,35 +118,35 @@ vector<double> ContinuityModelROF::calculateShortTermROF(int week) {
                     year_failure[u] = FAILURE;
 
             /// calculated week of storage-rof table
-            updateStorageToROFTable(INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD,
-                                    week_of_the_year, to_full);
+//            updateStorageToROFTable(INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD,
+//                                    week_of_the_year, to_full);
         }
 
-        /// update storage-rof table
-        *storage_to_rof_table += storage_to_rof_realization /
-                                 NUMBER_REALIZATIONS_ROF;
-
+//        /// update storage-rof table
+//        *storage_to_rof_table += storage_to_rof_realization /
+//                                 NUMBER_REALIZATIONS_ROF;
+//
         /// Count failures and reset failures counter.
         for (int uu = 0; uu < n_utilities; ++uu) {
             risk_of_failure[uu] += year_failure[uu];
             year_failure[uu] = NON_FAILURE;
         }
     }
-
-    /// Set first tier for ROF table calculation close to where the first
-    /// failure was observed for last week's table, so to save computations.
-     for (int s = 0; s < NO_OF_INSURANCE_STORAGE_TIERS; ++s) {
-         int count_failures = 0;
-         for (int u = 0; u < n_utilities; ++u) {
-             if ((*storage_to_rof_table)(u, NO_OF_INSURANCE_STORAGE_TIERS - s,
-                         week_of_the_year) > 0.)
-                 ++count_failures;
-         }
-         if (count_failures == 0)
-             beginning_tier = max(0, s - 1);
-         else
-             break;
-     }
+//
+//    /// Set first tier for ROF table calculation close to where the first
+//    /// failure was observed for last week's table, so to save computations.
+//     for (int s = 0; s < NO_OF_INSURANCE_STORAGE_TIERS; ++s) {
+//         int count_failures = 0;
+//         for (int u = 0; u < n_utilities; ++u) {
+//             if ((*storage_to_rof_table)(u, NO_OF_INSURANCE_STORAGE_TIERS - s,
+//                         week_of_the_year) > 0.)
+//                 ++count_failures;
+//         }
+//         if (count_failures == 0)
+//             beginning_tier = max(0, s - 1);
+//         else
+//             break;
+//     }
 
 //    cout << "Week " << week_of_the_year << " B. Tier " << beginning_tier << endl;
 //    storage_to_rof_table->print(week_of_the_year);

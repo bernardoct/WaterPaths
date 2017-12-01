@@ -421,12 +421,13 @@ void Utility::splitDemands(
     bool over_allocation = false;
     double remaining_stored_volume = total_stored_volume;
     for (int ws : non_priority_draw_water_source) {
+        auto source = water_sources[ws];
         over_allocation_ws[ws] = false;
 
         /// Calculate allocation based on sources' available volumes.
         double demand_fraction =
                 max(1.0e-6,
-                    water_sources[ws]->getAvailableAllocatedVolume(id) /
+                    source->getAvailableAllocatedVolume(id) /
                     total_stored_volume);
 
         /// Calculate demand allocated to a given source.
@@ -436,15 +437,14 @@ void Utility::splitDemands(
         /// Check if allocated demand was greater than treatment capacity.
         double over_allocated_demand_ws =
                 max(source_demand -
-                    water_sources[ws]->getAllocatedTreatmentCapacity(id),
-                    0.0);
+                            source->getAllocatedTreatmentCapacity(id), 0.0);
 
         /// Set reallocation variables for the sake of reallocating demand.
         if (over_allocated_demand_ws > 0.) {
             over_allocation = true;
             over_allocation_ws[ws] = true;
             remaining_stored_volume -=
-                    water_sources[ws]->getAvailableAllocatedVolume(id);
+                    source->getAvailableAllocatedVolume(id);
             demands[ws][id] = source_demand - over_allocated_demand_ws;
         }
 

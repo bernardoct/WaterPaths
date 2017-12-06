@@ -41,6 +41,6 @@ double FallsLakeMinEnvFlowControl::getRelease(int week) {
                crabtree.getStreamflow(week));
 }
 
-void FallsLakeMinEnvFlowControl::setRealization(unsigned int r) {
-    crabtree.setRealization(r);
+void FallsLakeMinEnvFlowControl::setRealization(unsigned int r, vector<vector<double>> *rdm_factors) {
+    crabtree.setRealization(r, rdm_factors);
 }

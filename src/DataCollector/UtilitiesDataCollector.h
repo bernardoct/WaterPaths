@@ -28,11 +28,13 @@ private:
     vector<double> net_present_infrastructure_cost;
     vector<double> waste_water_discharge;
     vector<double> unfulfilled_demand;
+    vector<double> net_stream_inflow;
     const Utility *utility;
 
 public:
 
-    explicit UtilitiesDataCollector(const Utility *utility);
+    explicit UtilitiesDataCollector(const Utility *utility,
+                                        unsigned long realization);
 
     string printTabularString(int week) override;
 
@@ -66,6 +68,7 @@ public:
 
     const vector<double> &getNet_present_infrastructure_cost() const;
 
+    const void checkForNans() const;
 };
 
 

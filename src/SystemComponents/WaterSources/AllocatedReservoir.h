@@ -28,8 +28,7 @@ public:
             DataSeries *storage_area_curve,
             const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
-            double construction_cost, double bond_term,
-            double bond_interest_rate,
+            double construction_cost,
             vector<int> *utilities_with_allocations,
             vector<double> *allocated_fractions, vector<double>
             *allocated_treatment_fractions);
@@ -50,8 +49,7 @@ public:
             EvaporationSeries *evaporation_series, double storage_area,
             const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
-            double construction_cost, double bond_term,
-            double bond_interest_rate,
+            double construction_cost,
             vector<int> *utilities_with_allocations,
             vector<double> *allocated_fractions, vector<double>
             *allocated_treatment_fractions);
@@ -68,13 +66,13 @@ public:
                              double wastewater_inflow,
                              vector<double> &demand_outflow) override;
 
+    void setFull() override;
+
     double getAvailableAllocatedVolume(int utility_id) override;
 
     void removeWater(int allocation_id, double volume) override;
 
     void addWater(int allocation_id, double volume) override;
-
-    void setFull() override;
 
     double getAllocatedCapacity(int utility_id) override;
 
@@ -84,8 +82,7 @@ public:
 
     void addTreatmentCapacity(
             const double added_plant_treatment_capacity,
-            double
-            allocated_fraction_of_total_capacity, int utility_id)
+            double allocated_fraction_of_total_capacity, int utility_id)
     override;
 
     double getAllocatedTreatmentCapacity(int utility_id) const override;

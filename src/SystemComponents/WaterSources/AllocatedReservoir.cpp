@@ -35,7 +35,6 @@ AllocatedReservoir::AllocatedReservoir(
         EvaporationSeries *evaporation_series, DataSeries *storage_area_curve,
         const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double construction_cost,
-        double bond_term, double bond_interest_rate,
         vector<int> *utilities_with_allocations,
         vector<double> *allocated_fractions, vector<double>
         *allocated_treatment_fractions)
@@ -52,8 +51,6 @@ AllocatedReservoir::AllocatedReservoir(
                     construction_rof_or_demand,
                     construction_time_range,
                     construction_cost,
-                    bond_term,
-                    bond_interest_rate,
                     ALLOCATED_RESERVOIR) {
 }
 
@@ -83,7 +80,6 @@ AllocatedReservoir::AllocatedReservoir(
         EvaporationSeries *evaporation_series, double storage_area,
         const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double construction_cost,
-        double bond_term, double bond_interest_rate,
         vector<int> *utilities_with_allocations,
         vector<double> *allocated_fractions, vector<double>
         *allocated_treatment_fractions)
@@ -100,8 +96,6 @@ AllocatedReservoir::AllocatedReservoir(
                     construction_rof_or_demand,
                     construction_time_range,
                     construction_cost,
-                    bond_term,
-                    bond_interest_rate,
                     ALLOCATED_RESERVOIR) {
 }
 
@@ -116,39 +110,6 @@ AllocatedReservoir::AllocatedReservoir(
  */
 AllocatedReservoir &AllocatedReservoir::operator=(
         const AllocatedReservoir &allocated_reservoir) {
-
-    wq_pool_id = allocated_reservoir.wq_pool_id;
-
-    allocated_fractions = new double[wq_pool_id + 1]();
-    allocated_treatment_fractions = new double[wq_pool_id + 1]();
-    available_allocated_volumes = new double[wq_pool_id + 1]();
-    allocated_capacities = new double[wq_pool_id + 1]();
-    allocated_treatment_capacities = new double[wq_pool_id + 1]();
-
-    int length = wq_pool_id + 1;//    *std::max_element
-//            (utilities_with_allocations->begin(),
-//                                   utilities_with_allocations->end()) + 1;
-
-    std::copy(allocated_reservoir.allocated_fractions,
-              allocated_reservoir.allocated_fractions + length,
-              allocated_fractions);
-
-    std::copy(allocated_reservoir.allocated_treatment_fractions,
-              allocated_reservoir.allocated_treatment_fractions + length,
-              allocated_treatment_fractions);
-
-    std::copy(allocated_reservoir.available_allocated_volumes,
-              allocated_reservoir.available_allocated_volumes + length,
-              available_allocated_volumes);
-
-    std::copy(allocated_reservoir.allocated_capacities,
-              allocated_reservoir.allocated_capacities + length,
-              allocated_capacities);
-
-    std::copy(allocated_reservoir.allocated_treatment_capacities,
-              allocated_reservoir.allocated_treatment_capacities + length,
-              allocated_treatment_capacities);
-
     return *this;
 };
 
@@ -160,22 +121,32 @@ AllocatedReservoir::~AllocatedReservoir() {
     delete[] allocated_treatment_capacities;
 }
 
+
 void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow,
                                          double wastewater_inflow,
                                          vector<double> &demand_outflow) {
 
-    double total_upstream_inflow = upstream_source_inflow +
+    double total_upstream_inflow;
+
+    total_upstream_inflow = upstream_source_inflow +
             wastewater_inflow;
+
     this->upstream_source_inflow = upstream_source_inflow;
     this->wastewater_inflow = wastewater_inflow;
 
     double available_volume_old = available_volume;
 
-    double direct_demand = std::accumulate(demand_outflow.begin(),
-                                           demand_outflow.end(),
-                                           0.);
+//    double total_demand = std::accumulate(demand_outflow.begin(),
+//                                           demand_outflow.end(),
+//                                           0.);
+    
+    total_demand = 0.0;
+    for (double i : demand_outflow) {
+        total_demand += i;
+    }
 
-    total_demand = direct_demand;
+    double direct_demand = total_demand;
+
 
     /// Calculate total runoff inflow reaching reservoir from its watershed.
     upstream_catchment_inflow = 0;
@@ -197,6 +168,8 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
     double outflow_new = min_environmental_outflow;
     total_outflow = outflow_new;
 
+
+
     /// Check if spillage is needed and, if so, correct stored volume and
     /// calculate spillage and set all allocations to full. Otherwise,
     /// distributed inflows and outflows among respective allocations.
@@ -210,8 +183,8 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
 
         available_volume = available_volume_new;
         /// Water exceeding allocated capacities.
-        double excess_allocated_water = 0.;
-        double fraction_needing_water = 0.;
+        double excess_allocated_water = 0.f;
+        double fraction_needing_water = 0.f;
         bool overallocation = false;
 
         /// Volume of water that entered the reservoir and stayed until being
@@ -315,9 +288,8 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
     double sum_allocations = accumulate(available_allocated_volumes,
                                         available_allocated_volumes +
                                         wq_pool_id + 1,
-                                        0.);
-    if ((int) std::round(sum_allocations / 10) !=
-            (int) std::round(available_volume / 10)) {
+                                        0.f);
+    if ((int) abs(sum_allocations - available_volume) > 1) {
         cout << endl;
         cout << "week: " << week << endl;
         cout << "source: " << name << endl;
@@ -332,22 +304,27 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
         cout << "total_outflow: " << total_outflow << endl;
         cout << "continuity error: " << available_volume_old +
                 total_upstream_inflow + upstream_catchment_inflow -
-                evaporated_volume - total_demand - total_outflow << endl;
+                evaporated_volume - total_demand - total_outflow -
+                available_volume << endl;
         __throw_runtime_error("Sum of allocated volumes in a reservoir must "
                                       "total current storage minus unallocated "
                                       "volume.Please report this error to "
                                       "bct52@cornell.edu.");
     }
 
-    if (abs(available_volume_old - direct_demand + total_upstream_inflow +
-                    upstream_catchment_inflow - evaporated_volume -
-                    total_outflow - available_volume) >  abs(available_volume) * 1e-4) {
-		    cerr << "Source " << name << endl;
-		    cerr << "Week " << week << endl;
+    double cont_error = abs(available_volume_old - direct_demand + total_upstream_inflow +
+                           upstream_catchment_inflow - evaporated_volume -
+                           total_outflow - available_volume);
+//    if (cont_error > abs(available_volume) * 1e-4) {
+    if (cont_error > 1.f) {
+        cout << "Source " << name << endl;
+        cout << "available_volume " << available_volume << endl;
+        cout << "Error " << cont_error << endl;
+        cout << "Week " << week << endl;
         __throw_runtime_error("Continuity error in allocated water source. "
                                       "If you cannot find the problem, please "
                                       "report this to bct52@cornell.edu");
-	    }
+    }
 }
 
 void AllocatedReservoir::addCapacity(double capacity) {

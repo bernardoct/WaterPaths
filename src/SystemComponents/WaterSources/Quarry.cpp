@@ -28,8 +28,7 @@ Quarry::Quarry(
         EvaporationSeries *evaporation_series,
         DataSeries *storage_area_curve, const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double permitting_period,
-        double construction_cost, double bond_term,
-        double bond_interest_rate, double max_diversion)
+        double construction_cost, double max_diversion)
         : Reservoir(name,
                     id,
                     catchments,
@@ -41,8 +40,6 @@ Quarry::Quarry(
                     construction_time_range,
                     permitting_period,
                     construction_cost,
-                    bond_term,
-                    bond_interest_rate,
                     QUARRY), max_diversion(max_diversion) {}
 
 Quarry::Quarry(
@@ -67,8 +64,7 @@ Quarry::Quarry(
         EvaporationSeries *evaporation_series, double storage_area,
         const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double permitting_period,
-        double construction_cost, double bond_term,
-        double bond_interest_rate, double max_diversion)
+        double construction_cost, double max_diversion)
         : Reservoir(name,
                     id,
                     catchments,
@@ -80,8 +76,6 @@ Quarry::Quarry(
                     construction_time_range,
                     permitting_period,
                     construction_cost,
-                    bond_term,
-                    bond_interest_rate,
                     QUARRY), max_diversion(max_diversion) {}
 
 Quarry::Quarry(const Quarry &quarry, const double max_diversion) :
@@ -117,11 +111,12 @@ void Quarry::applyContinuity(int week, double upstream_source_inflow,
     this->upstream_source_inflow = upstream_source_inflow;
     this->wastewater_inflow = wastewater_inflow;
 
-    double total_demand = std::accumulate(demand_outflow.begin(),
-                                          demand_outflow.end(),
-                                          0.);
+    total_demand = 0;
+    for (int i = 0; i < demand_outflow.size(); ++i) {
+        total_demand += demand_outflow[i];
+    }
 
-    double catchment_inflow = 0;
+    double catchment_inflow = 0.0;
     for (Catchment *c : catchments) {
         catchment_inflow += c->getStreamflow((week));
     }
@@ -151,7 +146,7 @@ void Quarry::applyContinuity(int week, double upstream_source_inflow,
     this->total_demand = total_demand;
     available_volume = max(stored_volume_new, 0.0);
     total_outflow = outflow_new + policy_added_demand;
-    policy_added_demand = 0;
+    policy_added_demand = 0.0;
     upstream_catchment_inflow = catchment_inflow;
     this->upstream_source_inflow = upstream_source_inflow;
     this->wastewater_inflow = wastewater_inflow;

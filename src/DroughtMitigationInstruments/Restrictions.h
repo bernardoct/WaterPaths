@@ -12,7 +12,7 @@
 class Restrictions : public DroughtMitigationPolicy {
 
 private:
-    const vector<double> stage_multipliers;
+    vector<double> stage_multipliers;
     const vector<double> stage_triggers;
     double current_multiplier = 0;
     double **restricted_weekly_average_volumetric_price = nullptr;
@@ -45,7 +45,8 @@ public:
             const vector<vector<double>> *typesMonthlyWaterPrice,
             const vector<vector<double>> *priceMultipliers);
 
-    void setRealization(unsigned int realization_id) override;
+    void setRealization(unsigned int realization_id, vector<vector<double>> *utilities_rdm,
+                        vector<vector<double>> *water_sources_rdm, vector<vector<double>> *policy_rdm) override;
 };
 
 

@@ -6,11 +6,10 @@
 #include "UtilitiesDataCollector.h"
 
 
-UtilitiesDataCollector::UtilitiesDataCollector(const Utility *utility)
-        : DataCollector(utility->id,
-                        utility->name,
-                        UTILITY,
-                        11 * COLUMN_WIDTH),
+UtilitiesDataCollector::UtilitiesDataCollector(const Utility *utility,
+                                               unsigned long realization)
+        : DataCollector(utility->id, utility->name, realization, UTILITY,
+                        12 * COLUMN_WIDTH),
           utility(utility) {}
 
 string UtilitiesDataCollector::printTabularString(int week) {
@@ -22,9 +21,13 @@ string UtilitiesDataCollector::printTabularString(int week) {
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << capacity[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+	      << net_stream_inflow[week]
+              << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << st_rof[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << lt_rof[week]
+              << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+              << unfulfilled_demand[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << restricted_demand[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
@@ -48,6 +51,8 @@ string UtilitiesDataCollector::printCompactString(int week) {
     outStream << combined_storage[week]
               << ","
               << capacity[week]
+	      << ","
+	      << net_stream_inflow[week]
               << ","
               << st_rof[week]
               << ","
@@ -77,6 +82,7 @@ string UtilitiesDataCollector::printTabularStringHeaderLine1() {
 
     outStream << setw(2 * COLUMN_WIDTH) << "Stored"
               << setw(COLUMN_WIDTH) << " "
+              << setw(COLUMN_WIDTH) << "Net"
               << setw(COLUMN_WIDTH) << " "
               << setw(COLUMN_WIDTH) << " "
               << setw(COLUMN_WIDTH) << "Rest."
@@ -96,6 +102,7 @@ string UtilitiesDataCollector::printTabularStringHeaderLine2() {
 
     outStream << setw(2 * COLUMN_WIDTH) << "Volume"
               << setw(COLUMN_WIDTH) << "Capacity"
+              << setw(COLUMN_WIDTH) << "Inflow"
               << setw(COLUMN_WIDTH) << "ST-ROF"
               << setw(COLUMN_WIDTH) << "LT-ROF"
               << setw(COLUMN_WIDTH) << "Demand"
@@ -114,6 +121,7 @@ string UtilitiesDataCollector::printCompactStringHeader() {
 
     outStream << id << "st_vol" << ","
               << id << "capacity" << ","
+              << id << "net_inf" << ","
               << id << "st_rof" << ","
               << id << "lt_rof" << ","
               << id << "rest_demand" << ","
@@ -136,18 +144,19 @@ void UtilitiesDataCollector::collect_data() {
     unrestricted_demand.push_back(utility->getUnrestrictedDemand());
     restricted_demand.push_back(utility->getRestrictedDemand());
     contingency_fund_size.push_back(utility->getContingency_fund());
-    net_present_infrastructure_cost
-            .push_back(utility->getInfrastructure_net_present_cost());
+    net_present_infrastructure_cost.push_back(utility->getInfrastructure_net_present_cost());
     gross_revenues.push_back(utility->getGrossRevenue());
     debt_service_payments.push_back(utility->getCurrent_debt_payment());
-    contingency_fund_contribution
-            .push_back(utility->getCurrent_contingency_fund_contribution());
+    contingency_fund_contribution.push_back(utility->getCurrent_contingency_fund_contribution());
     drought_mitigation_cost.push_back(utility->getDrought_mitigation_cost());
     insurance_contract_cost.push_back(utility->getInsurance_purchase());
     insurance_payout.push_back(utility->getInsurance_payout());
     capacity.push_back(utility->getTotal_storage_capacity());
     waste_water_discharge.push_back(utility->getWaste_water_discharge());
     unfulfilled_demand.push_back(utility->getUnfulfilled_demand());
+    net_stream_inflow.push_back(utility->getNet_stream_inflow());
+
+    checkForNans();
 
     infra_built = utility->getInfrastructure_built();
     if (pathways.empty() && !infra_built.empty())
@@ -155,6 +164,28 @@ void UtilitiesDataCollector::collect_data() {
     else
         if (!infra_built.empty() && infra_built[2] != pathways.back()[2])
             pathways.push_back(infra_built);
+}
+
+const void UtilitiesDataCollector::checkForNans() const {
+    string error = "nan in combined_storage in week " + to_string(lt_rof.size
+            ()) + ", realization " + to_string(realization);
+    if (isnan(unrestricted_demand.back())) __throw_runtime_error(error.c_str());
+    if (isnan(restricted_demand.back())) __throw_runtime_error(error.c_str());
+    if (isnan(combined_storage.back())) __throw_runtime_error(error.c_str());
+    if (isnan(lt_rof.back())) __throw_runtime_error(error.c_str());
+    if (isnan(st_rof.back())) __throw_runtime_error(error.c_str());
+    if (isnan(contingency_fund_size.back())) __throw_runtime_error(error.c_str());
+    if (isnan(net_present_infrastructure_cost.back())) __throw_runtime_error(error.c_str());
+    if (isnan(gross_revenues.back())) __throw_runtime_error(error.c_str());
+    if (isnan(debt_service_payments.back())) __throw_runtime_error(error.c_str());
+    if (isnan(contingency_fund_contribution.back())) __throw_runtime_error(error.c_str());
+    if (isnan(drought_mitigation_cost.back())) __throw_runtime_error(error.c_str());
+    if (isnan(insurance_contract_cost.back())) __throw_runtime_error(error.c_str());
+    if (isnan(insurance_payout.back())) __throw_runtime_error(error.c_str());
+    if (isnan(capacity.back())) __throw_runtime_error(error.c_str());
+    if (isnan(waste_water_discharge.back())) __throw_runtime_error(error.c_str());
+    if (isnan(unfulfilled_demand.back())) __throw_runtime_error(error.c_str());
+    if (isnan(net_stream_inflow.back())) __throw_runtime_error(error.c_str());
 }
 
 const vector<double> &UtilitiesDataCollector::getCombined_storage() const {

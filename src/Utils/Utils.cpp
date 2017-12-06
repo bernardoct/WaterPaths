@@ -20,54 +20,66 @@
 
 /**
  * Reads csv file into table, exported as a vector of vector of doubles.
- * @param inputFileName input file name (full path).
- * @param maxLines
+ * @param file_name input file name (full path).
+ * @param max_lines
  * @return
  */
-vector<vector<double>> Utils::parse2DCsvFile(string inputFileName, int maxLines) {
+vector<vector<double>> Utils::parse2DCsvFile(string file_name, unsigned long max_lines, vector<unsigned long> rows_to_read) {
 
     vector<vector<double> > data;
-    ifstream inputFile(inputFileName);
-    int l = 0;
+    ifstream inputFile(file_name);
+    int l = -1;
+    int ml = (int) (rows_to_read.empty() ? max_lines : *max_element(
+                            rows_to_read.begin(), rows_to_read.end())) + 1;
+//    if (!rows_to_read.empty())
+//        ml = max_lines;
+//    else
+//        ml = *max_element(rows_to_read.begin(), rows_to_read.end());
+    if (inputFile.is_open()) {
+        while (inputFile && l < ml) {
+            l++;
+            string s;
+            if (!getline(inputFile, s)) break;
 
-    while (inputFile && l < maxLines) {
-        l++;
-        string s;
-        if (!getline(inputFile, s)) break;
-        if (s[0] != '#') {
-            istringstream ss(s);
             vector<double> record;
+            if (s[0] != '#' &&
+                (rows_to_read.empty() ||
+                 std::find(rows_to_read.begin(), rows_to_read.end(), l)
+                 != rows_to_read.end())) {
+                istringstream ss(s);
 
-            while (ss) {
-                string line;
-                if (!getline(ss, line, ','))
-                    break;
-                try {
-                    record.push_back(stof(line));
-                }
-                catch (const std::invalid_argument e) {
-                    cout << "NaN found in file " << inputFileName << " line " << l
-                         << endl;
-                    e.what();
+                while (ss) {
+                    string line;
+                    if (!getline(ss, line, ','))
+                        break;
+                    try {
+                        record.push_back(stof(line));
+                    }
+                    catch (const std::invalid_argument e) {
+                        cout << "NaN found in file " << file_name << " line "
+                             << l << endl;
+                        e.what();
+                    }
                 }
             }
-
             data.push_back(record);
         }
-    }
-
-    if (!inputFile.eof() && l < maxLines) {
-        cerr << "Could not read file " << inputFileName << "\n";
+    } else {
+        cerr << "Could not read file " << file_name << "\n";
         __throw_invalid_argument("File not found.");
     }
 
-    return data;
+    if (rows_to_read.empty())
+        return data;
+    else {
+        vector<vector<double>> return_data;
+        for (int i : rows_to_read)
+            return_data.push_back(data[i]);
+        return return_data;
+    }
 }
 
-vector<double> Utils::parse1DCsvFile(
-        char const *file_name,
-        int max_lines) {
-
+vector<double> Utils::parse1DCsvFile(string file_name, unsigned long max_lines, vector<unsigned long> rows_to_read) {
     vector<double> data;
     ifstream infile(file_name);
     int l = 0;
@@ -75,29 +87,32 @@ vector<double> Utils::parse1DCsvFile(
     while (infile && l < max_lines) {
         l++;
         string s;
-        if (!getline(infile,
-                     s))
-            break;
+        if (!getline(infile, s)) break;
+        if (s[0] != '#' && (rows_to_read.empty() || (!rows_to_read.empty() && l - 1 == rows_to_read[0]))) {
 
-        istringstream ss(s);
-        double record;
+            istringstream ss(s);
+            double record;
 
-        try {
-            record = stof(ss.str());
-            data.push_back(record);
-        } catch (const std::invalid_argument e) {
-            cout << "NaN found in file " << file_name << " line " << l << endl;
-            e.what();
+            try {
+                record = stof(ss.str());
+                data.push_back(record);
+            } catch (const std::invalid_argument e) {
+                cout << "NaN found in file " << file_name << " line " << l << endl;
+                e.what();
+            }
+            if (!rows_to_read.empty() && rows_to_read[0] != NON_INITIALIZED) rows_to_read.erase(rows_to_read.begin());
         }
     }
 
     if (!infile.eof() && l < max_lines) {
         cerr << "Could not read file " << file_name << "\n";
+        __throw_invalid_argument("File not found.");
     }
 
     return data;
 }
 
+//#pragma optimize("", off)
 vector<WaterSource *> Utils::copyWaterSourceVector(
         vector<WaterSource *> water_sources_original) {
     vector<WaterSource *> water_sources_new;

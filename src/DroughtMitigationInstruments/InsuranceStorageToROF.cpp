@@ -12,8 +12,9 @@ InsuranceStorageToROF::InsuranceStorageToROF(
         const Graph &water_sources_graph,
         const vector<vector<int>> &water_sources_to_utilities,
         vector<Utility *> &utilities,
-        vector<MinEnvironFlowControl *>
-        min_env_flow_controls,
+        vector<MinEnvironFlowControl *> min_env_flow_controls,
+        vector<vector<double>> *utilities_rdm,
+        vector<vector<double>> *water_sources_rdm,
         double *rof_triggers,
         const double insurance_premium,
         const double *fixed_payouts)
@@ -23,6 +24,8 @@ InsuranceStorageToROF::InsuranceStorageToROF(
                              water_sources_to_utilities,
                              Utils::copyUtilityVector(utilities, true),
                              min_env_flow_controls,
+                             utilities_rdm,
+                             water_sources_rdm,
                              (unsigned int) NON_INITIALIZED),
           insurance_premium(insurance_premium), fixed_payouts(fixed_payouts),
           rof_triggers(rof_triggers),
@@ -49,6 +52,8 @@ InsuranceStorageToROF::InsuranceStorageToROF(
                            Utils::copyUtilityVector(
                                    insurance.continuity_utilities, true),
                            insurance.min_env_flow_controls,
+                           insurance.utilities_rdm,
+                           insurance.water_sources_rdm,
                            insurance.realization_id),
         insurance_premium(insurance.insurance_premium),
         fixed_payouts(insurance.fixed_payouts),
@@ -125,7 +130,7 @@ void InsuranceStorageToROF::addSystemComponents(vector<Utility *> utilities,
     for (int i : utilities_ids)
         realization_utilities[i] = utilities[i];
 
-    setRealization_water_sources(water_sources);
+    connectRealizationWaterSources(water_sources);
 }
 
 /**
@@ -162,11 +167,13 @@ void InsuranceStorageToROF::priceInsurance(int week) {
                                    Utils::weekOfTheYear(w), utilities_rofs);
 
             /// Increase the price of the insurance if payout is triggered.
-            for (int u : utilities_ids)
-                if (utilities_rofs[u] > rof_triggers[u])
+            for (int u : utilities_ids) {
+                if (utilities_rofs[u] > rof_triggers[u]) {
                     insurance_price[u] +=
                             fixed_payouts[u] * utilities_revenue_last_year[u] *
                             insurance_premium;
+                }
+            }
         }
     }
 
@@ -228,6 +235,7 @@ double *InsuranceStorageToROF::UtilitiesStorageCapacityRatio() {
     return u_storage_capacity_ratio;
 }
 
-void InsuranceStorageToROF::setRealization(unsigned int realization_id) {
-    ContinuityModel::setRealization(realization_id);
+void InsuranceStorageToROF::setRealization(unsigned int realization_id, vector<vector<double>> *utilities_rdm,
+                                           vector<vector<double>> *water_sources_rdm, vector<vector<double>> *policy_rdm) {
+    ContinuityModel::setRealization(realization_id, utilities_rdm, water_sources_rdm);
 }

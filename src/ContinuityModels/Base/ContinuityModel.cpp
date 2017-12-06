@@ -9,18 +9,20 @@
 #include "ContinuityModel.h"
 #include "../../SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
 
-ContinuityModel::ContinuityModel(
-        vector<WaterSource *> &water_sources,
-        vector<Utility *> &utilities,
-        vector<MinEnvironFlowControl *> &min_env_flow_controls,
-        const Graph &water_sources_graph,
-        const vector<vector<int>> &water_sources_to_utilities,
-        unsigned int realization_id) :
+ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Utility *> &utilities,
+                                 vector<MinEnvironFlowControl *> &min_env_flow_controls,
+                                 const Graph &water_sources_graph,
+                                 const vector<vector<int>> &water_sources_to_utilities,
+                                 vector<vector<double>> *utilities_rdm,
+                                 vector<vector<double>> *water_sources_rdm,
+                                 unsigned int realization_id) :
         continuity_water_sources(water_sources),
         continuity_utilities(utilities),
         min_env_flow_controls(min_env_flow_controls),
         water_sources_graph(water_sources_graph),
         water_sources_to_utilities(water_sources_to_utilities),
+        utilities_rdm(utilities_rdm),
+        water_sources_rdm(water_sources_rdm),
         realization_id(realization_id),
         n_utilities((int) utilities.size()),
         n_sources((int) water_sources.size()),
@@ -119,7 +121,7 @@ ContinuityModel::ContinuityModel(
 
     /// Set realization id on utilities and water sources, so that they use the
     /// right streamflow, evaporation and demand data.
-    setRealization(realization_id);
+    setRealization(realization_id, utilities_rdm, water_sources_rdm);
 
     /// Add reference to water sources and utilities so that controls can
     /// access their info.
@@ -129,6 +131,12 @@ ContinuityModel::ContinuityModel(
     demands = std::vector<vector<double>>(
             continuity_water_sources.size(), vector<double>(continuity_utilities
                                                                  .size(), 0.));
+    
+    /// populate array delta_realization_weeks so that the rounding and casting don't
+    /// have to be done every time continuityStep is called, avoiding a bottleneck.
+    for (int r = 0; r < NUMBER_REALIZATIONS_ROF; ++r) {
+        delta_realization_weeks[r] = (int) std::round((r + 1) * WEEKS_IN_YEAR);
+    }
 }
 
 ContinuityModel::~ContinuityModel() = default;
@@ -187,13 +195,13 @@ void ContinuityModel::continuityStep(
      */
     for (int i : sources_topological_order) {
         /// Sum spillage from all sources upstream source i.
-        for (int &ws : water_sources_graph.getUpstream_sources(i))
+        for (int ws : water_sources_graph.getUpstream_sources()[i])
             upstream_spillage[i] +=
                     continuity_water_sources[ws]->getTotal_outflow();
 
         /// Apply
         continuity_water_sources[i]->continuityWaterSource(
-                week - (int) std::round((rof_realization + 1) * WEEKS_IN_YEAR),
+                week - delta_realization_weeks[rof_realization],
                 upstream_spillage[i], wastewater_discharges[i], demands[i]);
     }
 
@@ -207,13 +215,14 @@ const vector<Utility *> &ContinuityModel::getUtilities() const {
     return continuity_utilities;
 }
 
-void ContinuityModel::setRealization(unsigned int realization) {
+void ContinuityModel::setRealization(unsigned int realization, vector<vector<double>> *utilities_rdm,
+                                     vector<vector<double>> *water_sources_rdm) {
     if (realization != (unsigned) NON_INITIALIZED) {
         for (Utility *u : continuity_utilities)
-            u->setRealization(realization);
+            u->setRealization(realization, utilities_rdm);
         for (WaterSource *ws : continuity_water_sources)
-            ws->setRealization(realization);
+            ws->setRealization(realization, water_sources_rdm);
         for (MinEnvironFlowControl *mef : min_env_flow_controls)
-            mef->setRealization(realization);
+            mef->setRealization(realization, water_sources_rdm);
     }
 }

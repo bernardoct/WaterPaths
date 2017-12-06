@@ -60,6 +60,11 @@ namespace Constants {
     const int STORAGE_CONTROLS = 3;
     const int JORDAN_CONTROLS = 4;
     const int FALLS_CONTROLS = 5;
+
+    const int N_RDM_FACTORS_UTILITIES = 4;
+    const int N_RDM_FACTORS_WATER_SOURCES = 2;
+    const int N_RDM_FACTORS_EVAPORATION = 1;
+    const int N_RDM_FACTORS_RESTRICTIONS = 1;
     
     const int COLUMN_WIDTH = 10;
     const int COLUMN_PRECISION = 4;

@@ -31,6 +31,8 @@ public:
             const vector<vector<int>> &water_sources_to_utilities,
             vector<Utility *> utilities,
             vector<MinEnvironFlowControl *> &min_env_flow_controls,
+            vector<vector<double>> *utilities_rdm,
+            vector<vector<double>> *water_sources_rdm,
             unsigned int realization_id);
 
     ContinuityModelROF(ContinuityModelROF &continuity_model_rof);
@@ -41,7 +43,7 @@ public:
 
     void resetUtilitiesAndReservoirs(int rof_type);
 
-    void setRealization_water_sources(const vector<WaterSource *> &water_sources_realization);
+    void connectRealizationWaterSources(const vector<WaterSource *> &water_sources_realization);
 
     void updateOnlineInfrastructure(int week);
 

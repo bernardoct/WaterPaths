@@ -30,8 +30,7 @@ WaterSource::WaterSource(
           source_type(source_type),
           construction_time(NON_INITIALIZED),
           construction_cost_of_capital(NON_INITIALIZED),
-          bond_term(NON_INITIALIZED), bond_interest_rate(NON_INITIALIZED),
-          permitting_period(NON_INITIALIZED), highest_alloc_id(NOT_ALLOCATED) {}
+          permitting_time(NON_INITIALIZED), highest_alloc_id(NOT_ALLOCATED) {}
 
 /**
  * Constructor for when water source does not exist in the beginning of the simulation.
@@ -46,12 +45,10 @@ WaterSource::WaterSource(
  * @param construction_time_range
  * @param construction_cost_of_capital
  */
-WaterSource::WaterSource(const char *name, const int id,
-                         const vector<Catchment *> &catchments, const double capacity,
-                         double treatment_capacity, const int source_type,
-                         const vector<double> construction_time_range,
-                         double permitting_period, double construction_cost_of_capital,
-                         double bond_term, double bond_interest_rate)
+WaterSource::WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
+                         const double capacity, double treatment_capacity, const int source_type,
+                         const vector<double> construction_time_range, double permitting_period,
+                         double construction_cost_of_capital)
         : name(name), capacity(capacity), catchments(catchments),
           online(OFFLINE), available_volume(capacity), id(id),
           total_treatment_capacity(treatment_capacity),
@@ -61,9 +58,8 @@ WaterSource::WaterSource(const char *name, const int id,
                   (construction_time_range[1] -
                    construction_time_range[0]) *
                   (rand() % (int) WEEKS_IN_YEAR)),
-          permitting_period(permitting_period),
-          construction_cost_of_capital(construction_cost_of_capital), bond_term(bond_term),
-          bond_interest_rate(bond_interest_rate), highest_alloc_id(NOT_ALLOCATED) {}
+          permitting_time(permitting_period),
+          construction_cost_of_capital(construction_cost_of_capital), highest_alloc_id(NOT_ALLOCATED) {}
 
 
 /**
@@ -89,10 +85,9 @@ WaterSource::WaterSource(
           total_treatment_capacity(treatment_capacity),
           construction_time(NON_INITIALIZED),
           construction_cost_of_capital(NON_INITIALIZED),
-          bond_term(NON_INITIALIZED), bond_interest_rate(NON_INITIALIZED),
           available_allocated_volumes(nullptr),
           utilities_with_allocations(utilities_with_allocations),
-          wq_pool_id(NON_INITIALIZED), permitting_period(NON_INITIALIZED) {
+          wq_pool_id(NON_INITIALIZED), permitting_time(NON_INITIALIZED) {
     setAllocations(utilities_with_allocations,
                    allocated_fractions,
                    allocated_treatment_fractions);
@@ -111,15 +106,11 @@ WaterSource::WaterSource(
  * @param construction_time_range
  * @param construction_cost_of_capital
  */
-WaterSource::WaterSource(const char *name, const int id,
-                         const vector<Catchment *> &catchments, const double capacity,
-                         double treatment_capacity, const int source_type,
-                         vector<double> *allocated_treatment_fractions,
-                         vector<double> *allocated_fractions,
-                         vector<int> *utilities_with_allocations,
-                         const vector<double> construction_time_range,
-                         double permitting_period, double construction_cost_of_capital,
-                         double bond_term, double bond_interest_rate)
+WaterSource::WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
+                         const double capacity, double treatment_capacity, const int source_type,
+                         vector<double> *allocated_treatment_fractions, vector<double> *allocated_fractions,
+                         vector<int> *utilities_with_allocations, const vector<double> construction_time_range,
+                         double permitting_period, double construction_cost_of_capital)
         : name(name), capacity(capacity), catchments(catchments),
           online(OFFLINE), available_volume(capacity), id(id),
           total_treatment_capacity(treatment_capacity),
@@ -131,10 +122,8 @@ WaterSource::WaterSource(const char *name, const int id,
                             (construction_time_range[1] -
                              construction_time_range[0]) *
                             (rand() % (int) WEEKS_IN_YEAR)),
-          permitting_period(permitting_period),
-          construction_cost_of_capital(construction_cost_of_capital),
-          bond_term(bond_term),
-          bond_interest_rate(bond_interest_rate) {
+          permitting_time(permitting_period),
+          construction_cost_of_capital(construction_cost_of_capital) {
     setAllocations(utilities_with_allocations,
                    allocated_fractions,
                    allocated_treatment_fractions);
@@ -158,7 +147,7 @@ void WaterSource::setAllocations(
 
     total_allocated_fraction = accumulate(allocated_fractions->begin(),
                                           allocated_fractions->end(),
-                                          0.);
+                                          0.0);
 
     if (total_allocated_fraction < 1.0)
         for (int i = 0; i < utilities_with_allocations->size(); ++i)
@@ -219,24 +208,22 @@ WaterSource::WaterSource(const WaterSource &water_source) :
         total_treatment_capacity(water_source.total_treatment_capacity),
         construction_time(water_source.construction_time),
         construction_cost_of_capital(water_source.construction_cost_of_capital),
-        bond_term(water_source.bond_term),
-        bond_interest_rate(water_source.bond_interest_rate),
         utilities_with_allocations(water_source.utilities_with_allocations),
-        permitting_period(water_source.permitting_period),
+        permitting_time(water_source.permitting_time),
         highest_alloc_id(water_source.highest_alloc_id) {
 
     if (water_source.wq_pool_id != NON_INITIALIZED) {
         wq_pool_id = water_source.wq_pool_id;
 
-        allocated_fractions = new double[wq_pool_id + 1]();
-        allocated_treatment_fractions = new double[wq_pool_id + 1]();
-        available_allocated_volumes = new double[wq_pool_id + 1]();
-        allocated_capacities = new double[wq_pool_id + 1]();
-        allocated_treatment_capacities = new double[wq_pool_id + 1]();
-
         int length = wq_pool_id + 1;//    *std::max_element
 //            (utilities_with_allocations->begin(),
 //                                   utilities_with_allocations->end()) + 1;
+
+        allocated_fractions = new double[length];
+        allocated_treatment_fractions = new double[length];
+        available_allocated_volumes = new double[length];
+        allocated_capacities = new double[length];
+        allocated_treatment_capacities = new double[length];
 
         std::copy(water_source.allocated_fractions,
                   water_source.allocated_fractions + length,
@@ -399,14 +386,13 @@ void WaterSource::bypass(int week, double total_upstream_inflow) {
  * @param discount_rate
  * @return Net present cost
  */
-double WaterSource::calculateNetPresentConstructionCost(
-        int week, int utility_id, double discount_rate,
-        double *level_debt_service_payment)
+double WaterSource::calculateNetPresentConstructionCost(int week, int utility_id, double discount_rate,
+                                                        double *level_debt_service_payment, double bond_term,
+                                                        double bond_interest_rate)
 const {
     double rate = bond_interest_rate / BOND_INTEREST_PAYMENTS_PER_YEAR;
     double principal = construction_cost_of_capital *
-                       (allocated_fractions ? allocated_fractions[utility_id]
-                                            : 1.);
+                       (allocated_fractions ? allocated_fractions[utility_id] : 1.);
     double n_payments = bond_term * BOND_INTEREST_PAYMENTS_PER_YEAR;
 
     /// Level debt service payment value
@@ -417,12 +403,11 @@ const {
     /// bond term, at the time of issuance.
     double net_present_cost_at_issuance =
             *level_debt_service_payment *
-            (1 - pow(1 + discount_rate,
+            (1. - pow(1. + discount_rate,
                      -n_payments)) / discount_rate;
 
     /// Return NPC discounted from the time of issuance to the present.
-    return net_present_cost_at_issuance / pow(1 + discount_rate,
-                                              week / WEEKS_IN_YEAR);
+    return net_present_cost_at_issuance;// / pow(1 + discount_rate, week / WEEKS_IN_YEAR);
 }
 
 /**
@@ -455,9 +440,16 @@ void WaterSource::addTreatmentCapacity(
     total_treatment_capacity += added_treatment_capacity;
 }
 
-void WaterSource::setRealization(unsigned long r) {
+/**
+ * Set inflows, evaporation and rdm values for water source for a given utility r
+ * @param r
+ * @param rdm_factors table with one realization per row in which the first column
+ * is the evaporation multiplier, followed by pairs of values for each source representing
+ * permitting time and construction cost.
+ */
+void WaterSource::setRealization(unsigned long r, vector<vector<double>> *rdm_factors) {
     for (Catchment *c : catchments)
-        c->setRealization(r);
+        c->setRealization(r, rdm_factors);
 
     /// Update total catchment inflow, demand, and available water volume for
     /// week 0;
@@ -465,6 +457,10 @@ void WaterSource::setRealization(unsigned long r) {
     for (Catchment *c : catchments) {
         this->upstream_catchment_inflow = c->getStreamflow(0);
     }
+
+    /// Set permitting times and construction cost overruns according to corresponding rdm factors.
+    permitting_time *= rdm_factors->at(r)[1 + 2 * id];
+    construction_cost_of_capital *= rdm_factors->at(r)[1 + 2 * id + 1];
 }
 
 double WaterSource::getAvailable_volume() const {
@@ -590,4 +586,18 @@ double WaterSource::getWastewater_inflow() const {
     return wastewater_inflow;
 }
 
+double WaterSource::getPermitting_period() const {
+    return permitting_time;
+}
 
+void WaterSource::setPermitting_period(double permitting_period) {
+    WaterSource::permitting_time = permitting_period;
+}
+
+double WaterSource::getConstruction_cost_of_capital() const {
+    return construction_cost_of_capital;
+}
+
+void WaterSource::setConstruction_cost_of_capital(double construction_cost_of_capital) {
+    WaterSource::construction_cost_of_capital = construction_cost_of_capital;
+}

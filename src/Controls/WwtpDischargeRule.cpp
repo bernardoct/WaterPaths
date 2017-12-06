@@ -29,9 +29,13 @@ WwtpDischargeRule::WwtpDischargeRule(
                                              "exactly 53 (for years with "
                                              "extra week) values.");
     }
-    if (year_series_fraction_discharge->size() != discharge_to_source_ids->size())
+    if (year_series_fraction_discharge->size() != discharge_to_source_ids->size()) {
+        printf("Number of series: %lu\nNumber of source IDs: %lu\n", 
+            year_series_fraction_discharge->size(), 
+            discharge_to_source_ids->size());
         __throw_invalid_argument("Number of wwtp discharge time series must be "
-                                         "the same as number of sources ids.");
+                                          "the same as number of sources ids.");
+    }
 }
 
 WwtpDischargeRule::WwtpDischargeRule(WwtpDischargeRule &wwtp_discharge_rule) :

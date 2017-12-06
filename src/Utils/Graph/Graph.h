@@ -40,8 +40,7 @@ public:
     // function to add an edge to graph
     void addEdge(int u, int v);
 
-    vector<int> &getUpstream_sources(int i);
-
+    const vector<vector<int>> &getUpstream_sources() const;
 
     const vector<vector<double>> getContinuityMatrix() const;
 

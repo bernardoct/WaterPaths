@@ -28,7 +28,10 @@ public:
             vector<Utility *> &utilities,
             const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
             vector<MinEnvironFlowControl *> &min_env_flow_controls,
-            const int total_simulation_time, const int number_of_realizations);
+            vector<vector<double>> *utilities_rdm,
+            vector<vector<double>> *water_sources_rdm,
+            vector<vector<double>> *policies_rdm,
+            unsigned long total_simulation_time, unsigned long number_of_realizations);
 
     Simulation &operator=(const Simulation &simulation);
 
@@ -38,8 +41,8 @@ public:
 
 private:
 
-    int total_simulation_time;
-    int number_of_realizations;
+    unsigned long total_simulation_time;
+    unsigned long number_of_realizations;
     vector<ContinuityModelRealization *> realization_models;
     vector<ContinuityModelROF *> rof_models;
     MasterDataCollector *master_data_collector;

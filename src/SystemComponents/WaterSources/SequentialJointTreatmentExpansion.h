@@ -24,8 +24,7 @@ public:
             const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
             double permitting_period,
-            double construction_cost, double bond_term,
-            double bond_interest_rate);
+            double construction_cost);
 
     SequentialJointTreatmentExpansion(
             const char *name, const int id, const int parent_reservoir_ID,
@@ -37,8 +36,7 @@ public:
             const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
             double permitting_period,
-            double construction_cost, double bond_term,
-            double bond_interest_rate);
+            double construction_cost);
 
     SequentialJointTreatmentExpansion(
             const SequentialJointTreatmentExpansion &joint_water_treatment_plant);
@@ -67,9 +65,9 @@ public:
 
     double payConstructionCost(int utility_id);
 
-    double calculateNetPresentConstructionCost(
-            int week, int utility_id, double discount_rate,
-            double *level_debt_service_payment) const override;
+    double calculateNetPresentConstructionCost(int week, int utility_id, double discount_rate,
+                                                   double *level_debt_service_payment, double bond_term,
+                                                   double bond_interest_rate) const override;
 };
 
 

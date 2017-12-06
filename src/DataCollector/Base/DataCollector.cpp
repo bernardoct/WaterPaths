@@ -4,8 +4,8 @@
 
 #include "DataCollector.h"
 
-DataCollector::DataCollector(
-        int id, const char *name, int type, int table_width)
+DataCollector::DataCollector(int id, const char *name, unsigned long realization, int type,
+                             int table_width)
         : id(id), name(name),
           type(type), table_width(table_width) {}
 

@@ -83,11 +83,9 @@ Reservoir::Reservoir(
         EvaporationSeries *evaporation_series,
         DataSeries *storage_area_curve, const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double permitting_period,
-        double construction_cost, double bond_term,
-        double bond_interest_rate, int source_type) :
-        WaterSource(name, id, catchments, capacity, max_treatment_capacity,
-                    source_type, construction_time_range, permitting_period,
-                    construction_cost, bond_term, bond_interest_rate),
+        double construction_cost, int source_type) :
+        WaterSource(name, id, catchments, capacity, max_treatment_capacity, source_type, construction_time_range,
+                    permitting_period, construction_cost),
         evaporation_series(evaporation_series),
         storage_area_curve(storage_area_curve), fixed_area(false) {
 
@@ -115,11 +113,9 @@ Reservoir::Reservoir(
         EvaporationSeries *evaporation_series, double storage_area,
         const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double permitting_period,
-        double construction_cost, double bond_term,
-        double bond_interest_rate, int source_type) :
-        WaterSource(name, id, catchments, capacity, max_treatment_capacity,
-                    source_type, construction_time_range, permitting_period,
-                    construction_cost, bond_term, bond_interest_rate),
+        double construction_cost, int source_type) :
+        WaterSource(name, id, catchments, capacity, max_treatment_capacity, source_type, construction_time_range,
+                    permitting_period, construction_cost),
         evaporation_series(evaporation_series),
         storage_area_curve(nullptr), fixed_area(true), area(storage_area) {}
 
@@ -213,13 +209,10 @@ Reservoir::Reservoir(
         vector<int> *utilities_with_allocations,
         const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double permitting_period,
-        double construction_cost, double bond_term,
-        double bond_interest_rate, int source_type) :
-        WaterSource(name, id, catchments, capacity, max_treatment_capacity,
-                    source_type, allocated_treatment_fractions,
-                    allocated_fractions, utilities_with_allocations,
-                    construction_time_range, permitting_period,
-                    construction_cost, bond_term, bond_interest_rate),
+        double construction_cost, int source_type) :
+        WaterSource(name, id, catchments, capacity, max_treatment_capacity, source_type, allocated_treatment_fractions,
+                    allocated_fractions, utilities_with_allocations, construction_time_range, permitting_period,
+                    construction_cost),
         evaporation_series(evaporation_series),
         storage_area_curve(storage_area_curve), fixed_area(false) {
 
@@ -251,13 +244,10 @@ Reservoir::Reservoir(
         vector<int> *utilities_with_allocations,
         const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double permitting_period,
-        double construction_cost, double bond_term,
-        double bond_interest_rate, int source_type) :
-        WaterSource(name, id, catchments, capacity, max_treatment_capacity,
-                    source_type, allocated_treatment_fractions,
-                    allocated_fractions, utilities_with_allocations,
-                    construction_time_range, permitting_period,
-                    construction_cost, bond_term, bond_interest_rate),
+        double construction_cost, int source_type) :
+        WaterSource(name, id, catchments, capacity, max_treatment_capacity, source_type, allocated_treatment_fractions,
+                    allocated_fractions, utilities_with_allocations, construction_time_range, permitting_period,
+                    construction_cost),
         evaporation_series(evaporation_series),
         storage_area_curve(nullptr), fixed_area(true), area(storage_area) {}
 
@@ -306,14 +296,19 @@ void Reservoir::applyContinuity(int week, double upstream_source_inflow,
     double total_upstream_inflow = upstream_source_inflow +
                                    wastewater_inflow;
 
-    double total_demand = std::accumulate(demand_outflow.begin(),
-                                          demand_outflow.end(),
-                                          0.);
+    total_demand = 0;
+    for (int i = 0; i < demand_outflow.size(); ++i) {
+        total_demand += demand_outflow[i];
+    }
 
     /// Calculate total runoff inflow reaching reservoir from its watershed.
     double catchment_inflow = 0;
-    for (Catchment *c : catchments)
+    for (Catchment *c : catchments) {
+        /*if (c == nullptr) {
+            cout << "not right\n";
+        }*/
         catchment_inflow += c->getStreamflow(week);
+    }
 
     /// Calculates water lost through evaporation.
     if (fixed_area)
@@ -356,20 +351,18 @@ void Reservoir::setOnline() {
     available_volume = NONE;
 }
 
-void Reservoir::setRealization(unsigned long r) {
-    WaterSource::setRealization(r);
+void Reservoir::setRealization(unsigned long r, vector<vector<double>> *rdm_factors) {
+    WaterSource::setRealization(r, rdm_factors);
 
     /// Set evaporation time series and cut off access to series set by setting
     /// its pointer to the set to NULL.
     if (evaporation_series != nullptr)
-        evaporation_series->setRealization(r);
+        evaporation_series->setRealization(r, rdm_factors);
     else {
         cout << "WARNING: No evaporated_volume time series for Reservoir "
              << name;
         vector<vector<double>> *evaporation =
-                new std::vector<vector<double>>(1,
-                                                vector<double>(10000,
-                                                               0));
+                new std::vector<vector<double>>(1, vector<double>(10000, 0));
         evaporation_series = new EvaporationSeries(evaporation, 10000);
     }
 }

@@ -13,19 +13,19 @@ ContinuityModelRealization::ContinuityModelRealization(
         vector<Utility *> &utilities,
         const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
         vector<MinEnvironFlowControl *> &min_env_flow_control,
+        vector<vector<double>> *utilities_rdm,
+        vector<vector<double>> *water_sources_rdm,
+        vector<vector<double>> *policy_rdm,
         const unsigned int realization_id)
-        : ContinuityModel(water_sources,
-                          utilities,
-                          min_env_flow_control,
-                          water_sources_graph,
-                          water_sources_to_utilities,
+        : ContinuityModel(water_sources, utilities, min_env_flow_control, water_sources_graph,
+                          water_sources_to_utilities, utilities_rdm, water_sources_rdm,
                           realization_id),
           drought_mitigation_policies(drought_mitigation_policies) {
 
     /// Pass corresponding utilities to drought mitigation instruments.
     for (DroughtMitigationPolicy *dmp : this->drought_mitigation_policies) {
-        dmp->addSystemComponents(utilities, water_sources,min_env_flow_control);
-        dmp->setRealization(realization_id);
+        dmp->addSystemComponents(utilities, water_sources, min_env_flow_control);
+        dmp->setRealization(realization_id, utilities_rdm, water_sources_rdm, policy_rdm);
     }
 }
 
@@ -34,8 +34,9 @@ ContinuityModelRealization::ContinuityModelRealization(ContinuityModelRealizatio
                           continuity_model_realization.continuity_utilities,
                           continuity_model_realization.min_env_flow_controls,
                           continuity_model_realization.water_sources_graph,
-                          continuity_model_realization
-                                  .water_sources_to_utilities,
+                          continuity_model_realization.water_sources_to_utilities,
+                          continuity_model_realization.utilities_rdm,
+                          continuity_model_realization.water_sources_rdm,
                           continuity_model_realization.realization_id) {
 }
 

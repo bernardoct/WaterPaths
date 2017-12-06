@@ -29,8 +29,10 @@ public:
             const Graph &water_sources_graph,
             const vector<vector<int>> &water_sources_to_utilities,
             vector<Utility *> &utilities,
-            vector<MinEnvironFlowControl *>
-            min_env_flow_controls, double *rof_triggers,
+            vector<MinEnvironFlowControl *> min_env_flow_controls,
+            vector<vector<double>> *utilities_rdm,
+            vector<vector<double>> *water_sources_rdm,
+            double *rof_triggers,
             const double insurance_premium,
             const double *fixed_payouts);
 
@@ -52,7 +54,8 @@ public:
                                  vector<WaterSource *> water_sources,
                                  vector<MinEnvironFlowControl *> min_env_flow_controls) override;
 
-    void setRealization(unsigned int realization_id) override;
+    void setRealization(unsigned int realization_id, vector<vector<double>> *utilities_rdm,
+                        vector<vector<double>> *water_sources_rdm, vector<vector<double>> *policy_rdm) override;
 
 };
 

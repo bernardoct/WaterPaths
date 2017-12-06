@@ -15,10 +15,15 @@ OBJECTS=$(SOURCES:.cpp=.o)
 TARGET=triangleSimulation
 EXECUTABLE=$(TARGET)
 
-LIB_DIR=./lib/
+LIB_DIR=./lib
 LIBS=-lm
 
 all: $(SOURCES) $(TARGET)
+
+borg: CC=mpiicpc
+borg: LIBS += -lborgmm
+borg: CFLAGS += -DPARALLEL
+borg: all
 
 openmp: CFLAGS += -fopenmp
 openmp: all
@@ -31,7 +36,8 @@ prof: all
 	$(CC) -c $(CFLAGS) $^ -o $@
 	
 $(TARGET): $(OBJECTS)
-	$(CC) $(LDFLAGS) $(OBJECTS) $(CFLAGS) -o $@ -L$(LIB_DIR) $(LIBS) $(DEFINES)
+	$(CC) -I. $(LDFLAGS) $(OBJECTS) $(CFLAGS) -o $@ -L$(LIB_DIR) $(LIBS) $(DEFINES)
 
 clean:
 	rm -rf $(shell find . -name "*.o") $(EXECUTABLE)
+	rm -rf $(shell find . -name "*.optrpt") $(EXECUTABLE)

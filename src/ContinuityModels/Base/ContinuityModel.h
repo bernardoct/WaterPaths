@@ -32,19 +32,22 @@ protected:
     vector<double> water_sources_capacities;
     vector<double> utilities_capacities;
     vector<vector<double>> demands;
+    vector<vector<double>> *utilities_rdm;
+    vector<vector<double>> *water_sources_rdm;
     const int n_utilities;
     const int n_sources;
+    int delta_realization_weeks[NUMBER_REALIZATIONS_ROF];
 
 public:
     const unsigned int realization_id;
 
-    ContinuityModel(
-            vector<WaterSource *> &water_sources,
-            vector<Utility *> &utilities,
-            vector<MinEnvironFlowControl *> &min_env_flow_controls,
-            const Graph &water_sources_graph,
-            const vector<vector<int>> &water_sources_to_utilities,
-            unsigned int realization_id);
+    ContinuityModel(vector<WaterSource *> &water_sources, vector<Utility *> &utilities,
+                        vector<MinEnvironFlowControl *> &min_env_flow_controls,
+                        const Graph &water_sources_graph,
+                        const vector<vector<int>> &water_sources_to_utilities,
+                        vector<vector<double>> *utilities_rdm,
+                        vector<vector<double>> *water_sources_rdm,
+                        unsigned int realization_id);
 
     ContinuityModel(ContinuityModel &continuity_model);
 
@@ -56,7 +59,8 @@ public:
 
     virtual ~ContinuityModel();
 
-    void setRealization(unsigned int realization);
+    void setRealization(unsigned int realization, vector<vector<double>> *utilities_rdm,
+                        vector<vector<double>> *water_sources_rdm);
 };
 
 

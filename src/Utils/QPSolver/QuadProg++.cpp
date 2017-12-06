@@ -227,7 +227,8 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
 #endif
 
 
-    if (fabs(psi) <= m * std::numeric_limits<double>::epsilon() * c1 * c2 * 100.0) {
+    if (fabs(psi) <= m * std::numeric_limits<double>::epsilon() * c1 * c2 *
+                             100.0) {
         /* numerically there are not infeasibilities anymore */
         return f_value;
     }

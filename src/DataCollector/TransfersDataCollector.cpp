@@ -5,10 +5,9 @@
 #include <algorithm>
 #include "TransfersDataCollector.h"
 
-TransfersDataCollector::TransfersDataCollector(Transfers *transfer_policy)
-        : DataCollector(transfer_policy->id,
-                        nullptr,
-                        TRANSFERS,
+TransfersDataCollector::TransfersDataCollector(Transfers *transfer_policy,
+                                               unsigned long realization)
+        : DataCollector(transfer_policy->id, nullptr, realization, TRANSFERS,
                         NON_INITIALIZED),
           utilities_ids(transfer_policy->getUtilities_ids()),
           transfer_policy(transfer_policy) {

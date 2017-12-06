@@ -31,12 +31,9 @@ Intake::Intake(
         const double raw_water_main_capacity,
         const double construction_rof_or_demand,
         const vector<double> construction_time_range, double permitting_period,
-        double construction_npv_cost_of_capital, double bond_term,
-        double bond_interest_rate) :
-        WaterSource(name, id, catchments, NONE, raw_water_main_capacity, INTAKE,
-                    construction_time_range, permitting_period,
-                    construction_npv_cost_of_capital, bond_term,
-                    bond_interest_rate) {
+        double construction_npv_cost_of_capital) :
+        WaterSource(name, id, catchments, NONE, raw_water_main_capacity, INTAKE, construction_time_range,
+                    permitting_period, construction_npv_cost_of_capital) {
 
 //    /// Update total catchment inflow, total_demand, and available water volume for week 0;
 //    this->upstream_catchment_inflow = 0;
@@ -88,9 +85,10 @@ void Intake::applyContinuity(int week, double upstream_source_inflow,
     double total_upstream_inflow = upstream_source_inflow +
                                    wastewater_inflow;
 
-    double total_demand = std::accumulate(demand.begin(),
-                                          demand.end(),
-                                          0.);
+    total_demand = 0;
+    for (int i = 0; i < demand.size(); ++i) {
+        total_demand += demand[i];
+    }
 
     /// Get all upstream catchment inflow.
     upstream_catchment_inflow = 0;
@@ -119,8 +117,8 @@ void Intake::applyContinuity(int week, double upstream_source_inflow,
     this->wastewater_inflow = wastewater_inflow;
 }
 
-void Intake::setRealization(unsigned long r) {
-    WaterSource::setRealization(r);
+void Intake::setRealization(unsigned long r, vector<vector<double>> *rdm_factors) {
+    WaterSource::setRealization(r, rdm_factors);
 
     total_demand = 0;
     available_volume = this->upstream_catchment_inflow -

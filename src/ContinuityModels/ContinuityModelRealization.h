@@ -21,6 +21,9 @@ public:
             vector<Utility *> &utilities,
             const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
             vector<MinEnvironFlowControl *> &min_env_flow_control,
+            vector<vector<double>> *utilities_rdm,
+            vector<vector<double>> *water_sources_rdm,
+            vector<vector<double>> *policy_rdm,
             const unsigned int realization_index);
 
     ContinuityModelRealization(

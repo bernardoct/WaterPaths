@@ -23,9 +23,11 @@ protected:
     double upstream_catchment_inflow = 0;
     double total_demand = 0;
     double policy_added_demand = 0;
+    double permitting_time;
+    double construction_cost_of_capital;
     double upstream_min_env_inflow;
     double capacity;
-    double *available_allocated_volumes = new double();
+    double *available_allocated_volumes = nullptr;
     double *allocated_capacities = nullptr;
     double *allocated_treatment_capacities = nullptr;
     double *allocated_treatment_fractions = nullptr;
@@ -50,33 +52,23 @@ public:
     const int id;
     const char *name;
     const int source_type;
-    const double construction_cost_of_capital;
     const double construction_time;
-    const double permitting_period;
-    const double bond_term;
-    const double bond_interest_rate;
 
     WaterSource(
             const char *name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
             double treatment_capacity, const int source_type);
 
-    WaterSource(const char *source_name, const int id,
-                    const vector<Catchment *> &catchments, const double capacity,
-                    double treatment_capacity, const int source_type,
-                    const vector<double> construction_time_range,
-                    double permitting_period, double construction_cost_of_capital,
-                    double bond_term, double bond_interest_rate);
+    WaterSource(const char *source_name, const int id, const vector<Catchment *> &catchments,
+                    const double capacity, double treatment_capacity, const int source_type,
+                    const vector<double> construction_time_range, double permitting_period,
+                    double construction_cost_of_capital);
 
-    WaterSource(const char *name, const int id,
-                    const vector<Catchment *> &catchments, const double capacity,
-                    double treatment_capacity, const int source_type,
-                    vector<double> *allocated_treatment_fractions,
-                    vector<double> *allocated_fractions,
-                    vector<int> *utilities_with_allocations,
-                    const vector<double> construction_time_range,
-                    double permitting_period, double construction_cost_of_capital,
-                    double bond_term, double bond_interest_rate);
+    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
+                    const double capacity, double treatment_capacity, const int source_type,
+                    vector<double> *allocated_treatment_fractions, vector<double> *allocated_fractions,
+                    vector<int> *utilities_with_allocations, const vector<double> construction_time_range,
+                    double permitting_period, double construction_cost_of_capital);
 
     WaterSource(
             const char *name, const int id,
@@ -107,9 +99,9 @@ public:
             double allocations_added_treatment_capacity,
             int utility_id);
 
-    virtual double calculateNetPresentConstructionCost(
-            int week, int utility_id, double discount_rate,
-            double *level_debt_service_payment) const;
+    virtual double calculateNetPresentConstructionCost(int week, int utility_id, double discount_rate,
+                                                           double *level_debt_service_payment, double bond_term,
+                                                           double bond_interest_rate) const;
 
     virtual void removeWater(int allocation_id, double volume);
 
@@ -143,7 +135,7 @@ public:
 
     static bool compare(WaterSource *lhs, WaterSource *rhs);
 
-    virtual void setRealization(unsigned long r);
+    virtual void setRealization(unsigned long r, vector<vector<double>> *rdm_factors);
 
     virtual double getAllocatedCapacity(int utility_id);
 
@@ -170,6 +162,15 @@ public:
     vector<int> *getUtilities_with_allocations() const;
 
     double getWastewater_inflow() const;
+
+    double getPermitting_period() const;
+
+    void setPermitting_period(double permitting_period);
+
+    double getConstruction_cost_of_capital() const;
+
+    void setConstruction_cost_of_capital(double construction_cost_of_capital);
+
 
     virtual void addWater(int allocation_id, double volume);
 };

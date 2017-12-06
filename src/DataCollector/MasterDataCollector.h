@@ -21,7 +21,7 @@ private:
 
 public:
 
-    void printObjectives(string file_name);
+    vector<double> calculatePrintObjectives(string file_name, bool print);
 
     void printPoliciesOutputCompact(
             int week_i, int week_f, string file_name);
@@ -45,7 +45,7 @@ public:
     void addRealization(
             vector<WaterSource *> water_sources_realization,
             vector<DroughtMitigationPolicy *> drought_mitigation_policies_realization,
-            vector<Utility *> utilities_realization, int r);
+            vector<Utility *> utilities_realization, unsigned long r);
 
     void collectData(int r);
 };

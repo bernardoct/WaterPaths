@@ -8,12 +8,12 @@
 #include "AllocatedReservoirDataCollector.h"
 
 AllocatedReservoirDataCollector::AllocatedReservoirDataCollector(
-        AllocatedReservoir *allocated_reservoir)
-        : ReservoirDataCollector(allocated_reservoir,
-                                 ALLOCATED_RESERVOIR,
+            AllocatedReservoir *allocated_reservoir, unsigned long realization)
+        : ReservoirDataCollector(allocated_reservoir, ALLOCATED_RESERVOIR,
                                  (7 + (int) allocated_reservoir->
-                                         getUtilities_with_allocations()->
-                                         size()) * COLUMN_WIDTH),
+                                                 getUtilities_with_allocations()->
+                                                 size()) * COLUMN_WIDTH,
+                                 realization),
           allocated_reservoir(allocated_reservoir) {}
 
 string AllocatedReservoirDataCollector::printTabularString(int week) {

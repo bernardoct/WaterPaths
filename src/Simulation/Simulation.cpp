@@ -6,6 +6,7 @@
 #include "../Utils/Utils.h"
 #include <ctime>
 #include <algorithm>
+#include <omp.h>
 
 Simulation::Simulation(
         vector<WaterSource *> &water_sources, Graph &water_sources_graph,
@@ -13,7 +14,10 @@ Simulation::Simulation(
         vector<Utility *> &utilities,
         const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
         vector<MinEnvironFlowControl *> &min_env_flow_controls,
-        const int total_simulation_time, const int number_of_realizations) :
+        vector<vector<double>> *utilities_rdm,
+        vector<vector<double>> *water_sources_rdm,
+        vector<vector<double>> *policies_rdm,
+        const unsigned long total_simulation_time, const unsigned long number_of_realizations) :
         total_simulation_time(total_simulation_time),
         number_of_realizations(number_of_realizations) {
 
@@ -120,6 +124,9 @@ Simulation::Simulation(
                 utilities_realization,
                 drought_mitigation_policies_realization,
                 min_env_flow_controls,
+                utilities_rdm,
+                water_sources_rdm,
+                policies_rdm,
                 r));
 
         /// Create rof models by copying the water utilities and sources.
@@ -133,10 +140,12 @@ Simulation::Simulation(
                                                     water_sources_to_utilities,
                                                     utilities_rof,
                                                     min_env_flow_controls,
+                                                    utilities_rdm,
+                                                    water_sources_rdm,
                                                     r));
 
-        /// Initialize rof models.
-        rof_models[r]->setRealization_water_sources(water_sources_realization);
+        /// Initialize rof models by connecting it to realization water sources.
+        rof_models[r]->connectRealizationWaterSources(water_sources_realization);
 
         /// Link storage-rof tables of policies and rof models.
         for (DroughtMitigationPolicy *dmp :
@@ -171,30 +180,34 @@ MasterDataCollector *Simulation::runFullSimulation() {
     /// Run realizations.
     time(&timer_i);
     int count = 0;
-    std::cout << "Simulated time: " << total_simulation_time << endl;
-    std::cout << "Number of realizations: " << number_of_realizations << endl;
-    std::cout << "Beginning realizations loop." << endl;
+//    std::cout << "Simulated time: " << total_simulation_time << endl;
+//    std::cout << "Number of realizations: " << number_of_realizations << endl;
+//    std::cout << "Beginning realizations loop." << endl;
+    MasterDataCollector* mdc = master_data_collector;
+//    cout << omp_get_num_procs() << endl;
 #pragma omp parallel for
     for (int r = 0; r < number_of_realizations; ++r) {
+//	cout << "thread id: " << omp_get_thread_num() << endl;
 //        try {
-#pragma omp critical
+        time_t timer_ir, timer_fr;
+        time(&timer_ir);
+        for (int w = 0; w < total_simulation_time; ++w) {
+            // DO NOT change the order of the steps. This would mess up
+            // important dependencies.
+            if (Utils::isFirstWeekOfTheYear(w))
+                realization_models[r]->setLongTermROFs(rof_models[r]->calculateLongTermROF
+                                                  (w), w);
+            realization_models[r]->setShortTermROFs(rof_models[r]->calculateShortTermROF(w));
+            realization_models[r]->applyDroughtMitigationPolicies(w);
+            realization_models[r]->continuityStep(w);
+            mdc->collectData(r);
+        }
+        time(&timer_fr);
+        #pragma omp atomic
             count++;
+        std::cout << "Realization " << count << ": "
+                  << difftime(timer_fr, timer_ir) << std::endl;
 
-            time_t timer_ir, timer_fr;
-            time(&timer_ir);
-            for (int w = 0; w < total_simulation_time; ++w) {
-                // DO NOT change the order of the steps. This would mess up
-                // important dependencies.
-                if (Utils::isFirstWeekOfTheYear(w))
-                    realization_models[r]->setLongTermROFs(rof_models[r]->calculateLongTermROF(w), w);
-                realization_models[r]->setShortTermROFs(rof_models[r]->calculateShortTermROF(w));
-                realization_models[r]->applyDroughtMitigationPolicies(w);
-                realization_models[r]->continuityStep(w);
-                master_data_collector->collectData(r);
-            }
-            time(&timer_fr);
-            std::cout << "Realization " << count << ": "
-                      << difftime(timer_fr, timer_ir) << std::endl;
 
 //        } catch (const std::exception &e) {
 //            cout << "Error in realization " << r << endl;
@@ -205,10 +218,5 @@ MasterDataCollector *Simulation::runFullSimulation() {
     seconds = difftime(timer_f, timer_i);
     std::cout << "Calculations: " << seconds << "s" << std::endl;
 
-    time(&timer_f);
-    seconds = difftime(timer_f,
-                   timer_i);
-    std::cout << "Total: " << seconds << "s" << std::endl;
-
-    return master_data_collector;
+    return mdc;
 }

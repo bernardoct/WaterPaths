@@ -23,8 +23,9 @@ Graph::Graph(int V) : V(V) {
     downstream_sources = vector<vector<int>>((unsigned long) V);
 }
 
-Graph::~Graph() {
-}
+Graph::~Graph() {}
+
+Graph::Graph() {}
 
 /**
  * Add connection (stream) between water sources.
@@ -146,13 +147,14 @@ vector<int> Graph::findUpstreamSources(int id) const {
     return upstream_sources;
 }
 
-vector<int> &Graph::getUpstream_sources(int i) {
-    return upstream_sources[i];
-}
-
 const vector<vector<int>> Graph::getDownSources() const {
     return downstream_sources;
 }
+
+const vector<vector<int>> &Graph::getUpstream_sources() const {
+    return upstream_sources;
+}
+
 
 const vector<int> Graph::getTopological_order() const {
     return topological_order;
@@ -188,5 +190,3 @@ const vector<vector<double>> Graph::getContinuityMatrix() const {
 
     return continuity_matrix;
 }
-
-Graph::Graph() {}

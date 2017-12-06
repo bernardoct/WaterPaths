@@ -208,8 +208,7 @@ Utility::Utility(Utility &utility) :
 }
 
 Utility::~Utility() {
-//    delete[] demand_series_realization;
-//    delete[] weekly_average_volumetric_price;
+    delete[] demand_series_realization;
 }
 
 Utility &Utility::operator=(const Utility &utility) {

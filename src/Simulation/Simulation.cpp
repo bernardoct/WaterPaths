@@ -202,6 +202,8 @@ MasterDataCollector *Simulation::runFullSimulation() {
         std::cout << "Realization " << count << ": "
                   << end - start << std::endl;
           
+        delete realization_models[r];
+        delete rof_models[r];
 
 //        } catch (const std::exception &e) {
 //            cout << "Error in realization " << r << endl;

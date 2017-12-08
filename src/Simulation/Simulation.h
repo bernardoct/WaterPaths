@@ -37,7 +37,7 @@ public:
 
     virtual ~Simulation();
 
-    MasterDataCollector *runFullSimulation();
+    MasterDataCollector *runFullSimulation(unsigned long n_threads);
 
 private:
 

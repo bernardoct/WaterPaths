@@ -208,7 +208,7 @@ Utility::Utility(Utility &utility) :
 }
 
 Utility::~Utility() {
-    delete[] demand_series_realization;
+//    delete[] demand_series_realization;
 }
 
 Utility &Utility::operator=(const Utility &utility) {

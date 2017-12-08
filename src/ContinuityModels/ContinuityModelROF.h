@@ -14,10 +14,7 @@ class ContinuityModelROF : public ContinuityModel {
 private:
     Matrix3D<double> *storage_to_rof_table;
     Matrix3D<double> storage_to_rof_realization;
-//    __declspec(aligned(64)) double *capacities_toposorted;
-    double *capacities_toposorted __attribute__ ((aligned(64)));
-    int *downstream_sources_toposort;
-    int *topo_sorted_to_all_sources;
+    bool *storage_wout_downstream;
     const int n_topo_sources;
 
 protected:
@@ -49,12 +46,14 @@ public:
 
     virtual ~ContinuityModelROF();
 
-    void updateStorageToROFTable(double storage_percent_decrement, int week_of_the_year,
+    void updateStorageToROFTable(double storage_percent_decrement,
+                                 int week_of_the_year,
                                  const double *to_full_toposort);
 
-    void shiftStorages(double *storages, const double *deltas, const double *spillage);
-
     const Matrix3D<double> *getStorage_to_rof_table() const;
+
+    void shiftStorages(double *available_volumes_shifted, const double
+    *delta_storage);
 };
 
 

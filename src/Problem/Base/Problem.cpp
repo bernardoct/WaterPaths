@@ -128,3 +128,7 @@ void Problem::setFname_sufix(const string &fname_sufix) {
 void Problem::setEvap_inflows_suffix(const string &evap_inflows_suffix) {
     Problem::evap_inflows_suffix = evap_inflows_suffix;
 }
+
+void Problem::setN_threads(unsigned long n_threads) {
+    Problem::n_threads = n_threads;
+}

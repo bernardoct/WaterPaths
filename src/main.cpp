@@ -7,6 +7,7 @@
 // #include "../Borg/borgProblemDefinition.h"
 
 #include <getopt.h>
+#include <omp.h>
 // #include <mpi.h>
 
 #define NUM_OBJECTIVES 6;
@@ -35,6 +36,7 @@ int main(int argc, char *argv[]) {
     string water_sources_rdm_file = "-1";
     string inflows_evap_directory_suffix = "-1";
     unsigned long standard_solution = 0;
+    int n_threads = omp_get_num_procs();
     int standard_rdm = 0;
     int first_solution = -1;
     int last_solution = -1;
@@ -89,8 +91,7 @@ int main(int argc, char *argv[]) {
                 return -1;
             case 's': solution_file = optarg; break;
             case 'u': uncertainty_file = optarg; break;
-            // case 'T': omp_set_num_threads(atoi(optarg)); break;
-            case 'T': break;
+            case 'T': n_threads = atoi(optarg); break;
             case 'r': n_realizations = (unsigned long)atoi(optarg); break;
             case 't': n_weeks = (unsigned long)atoi(optarg); break;
             case 'd': system_io = optarg; break;
@@ -121,6 +122,7 @@ int main(int argc, char *argv[]) {
     triangle.setN_realizations(n_realizations);
     triangle.setN_weeks(n_weeks);
     triangle.setOutput_directory(system_io);
+    triangle.setN_threads((unsigned long) n_threads);
     if (strlen(bootstrap_file.c_str()) > 2) {
         vector<double> v = Utils::parse1DCsvFile(system_io + bootstrap_file);
         bootstrap_sample = vector<unsigned long>(v.begin(), v.end());

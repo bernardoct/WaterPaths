@@ -168,7 +168,7 @@ Simulation &Simulation::operator=(const Simulation &simulation) {
     return *this;
 }
 
-MasterDataCollector *Simulation::runFullSimulation() {
+MasterDataCollector *Simulation::runFullSimulation(unsigned long n_threads) {
 
     int n_utilities = (int) realization_models[0]->getUtilities().size();
     vector<double> risks_of_failure_week((unsigned long) n_utilities, 0.0);
@@ -178,10 +178,10 @@ MasterDataCollector *Simulation::runFullSimulation() {
 //    std::cout << "Simulated time: " << total_simulation_time << endl;
 //    std::cout << "Number of realizations: " << number_of_realizations << endl;
 //    std::cout << "Beginning realizations loop." << endl;
-    cout << omp_get_num_procs() << endl;
+//    cout << omp_get_num_procs() << endl;
     double realization_start = omp_get_wtime();
     MasterDataCollector* mdc = master_data_collector;
-#pragma omp parallel for shared(mdc)
+#pragma omp parallel for num_threads(n_threads)
     for (int r = 0; r < number_of_realizations; ++r) {
 //	cout << "thread id: " << omp_get_thread_num() << endl;
 //        try {

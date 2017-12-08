@@ -30,6 +30,7 @@ protected:
     unsigned long n_realizations;
     unsigned long  n_weeks;
     unsigned long  solution_no;
+    unsigned long n_threads;
     string output_directory;
     string fname_sufix;
     string evap_inflows_suffix;
@@ -76,6 +77,8 @@ public:
 
     void setRDMReevaluation(unsigned long rdm_no, vector<vector<double>> &utilities_rdm,
                                 vector<vector<double>> &water_sources_rdm, vector<vector<double>> &policies_rdm);
+
+    void setN_threads(unsigned long n_threads);
 };
 
 

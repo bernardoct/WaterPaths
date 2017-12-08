@@ -943,7 +943,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                  n_weeks,
                  n_realizations);
     cout << "Beginning simulation." << endl;
-    auto* mdc = s.runFullSimulation();
+    auto* mdc = s.runFullSimulation(n_threads);
     this->master_data_collector = mdc;
     cout << "Ending simulation" << endl;
 

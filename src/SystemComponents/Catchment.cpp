@@ -42,7 +42,7 @@ Catchment &Catchment::operator=(const Catchment &catchment) = default;
  * Destructor.
  */
 Catchment::~Catchment() {
-    delete[] streamflows_realization;
+    //delete[] streamflows_realization;
 }
 
 /**
@@ -64,7 +64,7 @@ double Catchment::getStreamflow(int week) {
  * @param r
  */
 void Catchment::setRealization(unsigned long r, vector<vector<double>> *rdm_factors) {
-    delete[] streamflows_realization;
+    //delete[] streamflows_realization;
     streamflows_realization = new double[streamflows_all->at(r).size()];
     std::copy(streamflows_all->at(r).begin(),
               streamflows_all->at(r).end(),

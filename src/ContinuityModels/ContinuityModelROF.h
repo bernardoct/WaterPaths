@@ -14,6 +14,7 @@ class ContinuityModelROF : public ContinuityModel {
 private:
     Matrix3D<double> *storage_to_rof_table;
     Matrix3D<double> storage_to_rof_realization;
+    vector<int> online_downstream_sources;
     bool *storage_wout_downstream;
     const int n_topo_sources;
 

@@ -106,6 +106,7 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
     for (Utility *u : continuity_utilities)
         utilities_capacities.push_back(u->getTotal_storage_capacity());
 
+    /// Populate vector indicating the downstream source from each source.
     for (vector<int> ds : water_sources_graph.getDownSources())
         if (ds.empty())
             downstream_sources.push_back(NON_INITIALIZED);
@@ -219,4 +220,21 @@ void ContinuityModel::setRealization(unsigned int realization, vector<vector<dou
         for (MinEnvironFlowControl *mef : min_env_flow_controls)
             mef->setRealization(realization, water_sources_rdm);
     }
+}
+
+/*
+ * Get list of next online downstream sources for each source.
+ * @return vector with downstream water sources.
+ */
+vector<int> ContinuityModel::getOnlineDownstreamSources() {
+    vector<int> online_downstream_sources(n_sources, NON_INITIALIZED);
+    for (int ws : sources_topological_order) {
+        int downstream_source_online = ws;
+        do {
+            downstream_source_online = downstream_sources[downstream_source_online];
+        } while (downstream_source_online != NON_INITIALIZED && !continuity_water_sources[downstream_source_online]->isOnline());
+        online_downstream_sources[ws] = downstream_source_online;
+    }
+
+    return online_downstream_sources;
 }

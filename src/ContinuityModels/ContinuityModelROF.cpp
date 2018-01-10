@@ -40,6 +40,9 @@ ContinuityModelROF::ContinuityModelROF(
     storage_wout_downstream = new bool[sources_topological_order.size()];
     for (int ws : sources_topological_order)
         storage_wout_downstream[ws] = downstream_sources[ws] != NON_INITIALIZED;
+
+    /// Get next online downstream source for each source.
+    online_downstream_sources = getOnlineDownstreamSources();
 }
 
 ContinuityModelROF::ContinuityModelROF(ContinuityModelROF &continuity_model_rof)
@@ -237,8 +240,8 @@ void ContinuityModelROF::updateStorageToROFTable(double storage_percent_decremen
             /// shifted storages.
             for (int ws : water_sources_online_to_utilities[u])
                 utility_storage += available_volumes_shifted[ws] *
-                                   continuity_water_sources[ws]
-                                           ->getAllocatedFraction(u);
+                        continuity_water_sources[ws]->getAllocatedFraction(u) *
+                        (realization_water_sources[ws]->getAllocatedTreatmentCapacity(u) > 0);
             /// Register failure in the table for each utility meeting
             /// failure criteria.
             if (utility_storage / utilities_capacities[u] <
@@ -246,6 +249,8 @@ void ContinuityModelROF::updateStorageToROFTable(double storage_percent_decremen
                 storage_to_rof_realization(u, NO_OF_INSURANCE_STORAGE_TIERS - s,
                                            week_of_the_year) = FAILURE;
                 count_fails++;
+            } else if (s == 19) {
+                int i = 0;
             }
         }
 
@@ -295,8 +300,8 @@ void ContinuityModelROF::shiftStorages(
 
             available_volumes_shifted[ws] += spillage_retrieved;
 
-            if (storage_wout_downstream[ws])
-                available_volumes_shifted[downstream_sources[ws]] -=
+            if (online_downstream_sources[ws] > 0)
+                available_volumes_shifted[online_downstream_sources[ws]] -=
                         spillage_retrieved;
         }
     }
@@ -364,6 +369,8 @@ void ContinuityModelROF::updateOnlineInfrastructure(int week) {
             utilities_capacities[u] =
                     continuity_utilities[u]->getTotal_storage_capacity();
         }
+
+    online_downstream_sources = getOnlineDownstreamSources();
 }
 
 const Matrix3D<double> *ContinuityModelROF::getStorage_to_rof_table() const {

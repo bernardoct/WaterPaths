@@ -188,7 +188,7 @@ vector<double> ContinuityModelROF::calculateShortTermROF(int week) {
             break;
     }
 
-    cout << "Week " << week << " B. Tier " << beginning_tier << endl;
+//    cout << "Week " << week << " B. Tier " << beginning_tier << endl;
     storage_to_rof_table->print(week_of_the_year);
     cout << endl;
 
@@ -241,7 +241,8 @@ void ContinuityModelROF::updateStorageToROFTable(double storage_percent_decremen
             for (int ws : water_sources_online_to_utilities[u])
                 utility_storage += available_volumes_shifted[ws] *
                         continuity_water_sources[ws]->getAllocatedFraction(u) *
-                        (realization_water_sources[ws]->getAllocatedTreatmentCapacity(u) > 0);
+                        (realization_water_sources[ws]->getAllocatedTreatmentCapacity(u) > 0
+                         && realization_water_sources[ws]->isOnline());
             /// Register failure in the table for each utility meeting
             /// failure criteria.
             if (utility_storage / utilities_capacities[u] <
@@ -249,8 +250,6 @@ void ContinuityModelROF::updateStorageToROFTable(double storage_percent_decremen
                 storage_to_rof_realization(u, NO_OF_INSURANCE_STORAGE_TIERS - s,
                                            week_of_the_year) = FAILURE;
                 count_fails++;
-            } else if (s == 19) {
-                int i = 0;
             }
         }
 
@@ -303,6 +302,13 @@ void ContinuityModelROF::shiftStorages(
             if (online_downstream_sources[ws] > 0)
                 available_volumes_shifted[online_downstream_sources[ws]] -=
                         spillage_retrieved;
+        } else {
+            double spillage = -available_volume_to_full;
+            if (online_downstream_sources[ws] > 0) {
+                available_volumes_shifted[ws] -= spillage;
+                available_volumes_shifted[online_downstream_sources[ws]] +=
+                        spillage;
+            }
         }
     }
 }
@@ -353,16 +359,19 @@ void ContinuityModelROF::connectRealizationWaterSources(
  * Checks if new infrastructure became online.
  */
 void ContinuityModelROF::updateOnlineInfrastructure(int week) {
-    for (int i = 0; i < n_sources; ++i)
+    for (int ws = 0; ws < n_sources; ++ws) {
         for (int u = 0; u < n_utilities; ++u)
-            if (realization_water_sources[i]->isOnline() &&
-                !continuity_water_sources[i]->isOnline()) {
-                for (int u : utilities_to_water_sources[i]) {
-                    water_sources_online_to_utilities[u].push_back(i);
+            if (realization_water_sources[ws]->isOnline() &&
+                !continuity_water_sources[ws]->isOnline()) {
+                for (int u : utilities_to_water_sources[ws]) {
+                    water_sources_online_to_utilities[u].push_back(ws);
                     continuity_utilities[u]
-                            ->setWaterSourceOnline((unsigned int) i);
+                            ->setWaterSourceOnline((unsigned int) ws);
                 }
             }
+        water_sources_capacities[ws] =
+                continuity_water_sources[ws]->getCapacity();
+    }
 
     if (Utils::isFirstWeekOfTheYear(week) || week == 0)
         for (int u = 0; u < n_utilities; ++u) {

@@ -676,7 +676,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                                       NONE,
                                                       316.8 / 2);
 
-    Reservoir dummy_endpoint("Dummy Node", 11, vector<Catchment *>(), 0, 0,
+    Reservoir dummy_endpoint("Dummy Node", 11, vector<Catchment *>(), 1., 0,
                              &evaporation_durham, 1, 1,
                              construction_time_interval,
                              0,
@@ -947,8 +947,8 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
     this->master_data_collector = mdc;
     cout << "Ending simulation" << endl;
 
-/*    vector<double> obj_not_jla = calculateObjectivesAndPrintOutput();
-
+    vector<double> obj_not_jla = calculateObjectivesAndPrintOutput();
+/*
     int i = 0;
     objs[i] = min(min(obj_not_jla[i*4], obj_not_jla[i*4+5]), min(obj_not_jla[i*4+10], obj_not_jla[i*4+15]));
     for (i = 1; i < 5; ++i) {

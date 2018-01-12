@@ -1,9 +1,9 @@
-#CC=g++
-CC=icc
+CC=g++
+#CC=icc
 
 #the following is for normal use:
-CFLAGS=-std=c++14 -O3 -march=native -restrict -simd -axCORE-AVX2 -Wall -Wextra -qopt-report=5 -g #-check-pointers=rw
-#CFLAGS=-std=c++14 -O3 -march=native -mavx -Wall -Wextra -flto-report #-check-pointers=rw
+#CFLAGS=-std=c++14 -O3 -march=native -restrict -simd -axCORE-AVX2 -Wall -Wextra -qopt-report=5 -g #-check-pointers=rw
+CFLAGS=-std=c++14 -O3 -march=native -Wall -Wextra -flto-report #-check-pointers=rw
 
 
 # List of sources and objects (include all .cpp files)

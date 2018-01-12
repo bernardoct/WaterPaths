@@ -232,7 +232,9 @@ vector<int> ContinuityModel::getOnlineDownstreamSources() {
         int downstream_source_online = ws;
         do {
             downstream_source_online = downstream_sources[downstream_source_online];
-        } while (downstream_source_online != NON_INITIALIZED && !continuity_water_sources[downstream_source_online]->isOnline());
+        } while (downstream_source_online != NON_INITIALIZED &&
+                !continuity_water_sources[downstream_source_online]->isOnline() &&
+                 continuity_water_sources[ws]->getCapacity() == 0);
         online_downstream_sources[ws] = downstream_source_online;
     }
 

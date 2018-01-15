@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <fstream>
 #include "ContinuityModelROF.h"
 #include "../Utils/Utils.h"
 
@@ -311,6 +312,30 @@ void ContinuityModelROF::shiftStorages(
             }
         }
     }
+}
+
+/**
+ * Prints a text file with the rof_table for a given realization in a given week.
+ * @param week
+ */
+void ContinuityModelROF::printROFTable(int week) {
+    std::ofstream out_stream;
+    string file_name = "tables_r" + to_string(realization_id) + "_w" + to_string(week);
+    out_stream.open("rof_tables/" + file_name + ".csv");
+
+    int week_of_year = Utils::weekOfTheYear(week);
+    string line;
+
+    for (int u = 0; u < n_utilities; ++u) {
+        for (int s = 0; s < NO_OF_INSURANCE_STORAGE_TIERS; ++s) {
+            line += to_string((*storage_to_rof_table)(u, s, week_of_year)).substr (0, 4) + " ";
+        }
+        line.pop_back();
+        out_stream << line << endl;
+        line = "";
+    }
+
+    out_stream.close();
 }
 
 /**

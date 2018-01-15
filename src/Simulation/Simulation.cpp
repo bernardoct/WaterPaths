@@ -168,10 +168,14 @@ Simulation &Simulation::operator=(const Simulation &simulation) {
     return *this;
 }
 
-MasterDataCollector *Simulation::runFullSimulation(unsigned long n_threads) {
+MasterDataCollector *Simulation::runFullSimulation(unsigned long n_threads,
+                                                   bool export_rof_tables,
+                                                   bool use_pre_computed_rof_tables) {
 
     int n_utilities = (int) realization_models[0]->getUtilities().size();
     vector<double> risks_of_failure_week((unsigned long) n_utilities, 0.0);
+
+    system("mkdir rof_tables");
 
     /// Run realizations.
     int count = 0;
@@ -194,6 +198,8 @@ MasterDataCollector *Simulation::runFullSimulation(unsigned long n_threads) {
             realization_models[r]->setShortTermROFs(rof_models[r]->calculateShortTermROF(w));
             realization_models[r]->applyDroughtMitigationPolicies(w);
             realization_models[r]->continuityStep(w);
+            if (export_rof_tables)
+                rof_models[r]->printROFTable(w);
             mdc->collectData(r);
         }
     	double end = omp_get_wtime();

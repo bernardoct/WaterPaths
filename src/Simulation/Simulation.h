@@ -20,6 +20,14 @@ using namespace Constants;
 using namespace std;
 
 class Simulation {
+private:
+    unsigned long total_simulation_time;
+    unsigned long number_of_realizations;
+    vector<ContinuityModelRealization *> realization_models;
+    vector<ContinuityModelROF *> rof_models;
+    MasterDataCollector *master_data_collector;
+    Matrix3D<double> pre_computed_rof_table;
+
 public:
 
     Simulation(
@@ -37,15 +45,9 @@ public:
 
     virtual ~Simulation();
 
-    MasterDataCollector *runFullSimulation(unsigned long n_threads);
-
-private:
-
-    unsigned long total_simulation_time;
-    unsigned long number_of_realizations;
-    vector<ContinuityModelRealization *> realization_models;
-    vector<ContinuityModelROF *> rof_models;
-    MasterDataCollector *master_data_collector;
+    MasterDataCollector * runFullSimulation(unsigned long n_threads,
+                      bool export_rof_tables = DO_NOT_EXPORT_ROF_TABLES,
+                      bool use_pre_computed_rof_tables = DO_NOT_USE_PRE_CALCULATED_ROF_TABLES);
 
 };
 

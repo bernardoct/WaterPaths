@@ -28,6 +28,12 @@ namespace Constants {
 
     const bool APPLY_DEMAND_BUFFER = true;
 
+    const bool USE_PRE_CALCULATED_ROF_TABLES = true;
+    const bool DO_NOT_USE_PRE_CALCULATED_ROF_TABLES = false;
+
+    const bool EXPORT_ROF_TABLES = true;
+    const bool DO_NOT_EXPORT_ROF_TABLES = false;
+
     const bool ONLINE = true;
     const bool OFFLINE = false;
 

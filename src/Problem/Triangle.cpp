@@ -425,8 +425,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
             Cary_JLA * jl_supply_capacity / jl_storage_capacity,
             Raleigh_JLA * jl_supply_capacity / jl_storage_capacity,
             jl_wq_capacity / jl_storage_capacity};
-//    vector<double> jl_treatment_allocation_fractions = {0.0, 0.0, 1.0, 0.0};
-    vector<double> jl_treatment_allocation_fractions = {0.0, 0.0, 0.5, 0.5};
+    vector<double> jl_treatment_allocation_fractions = {0.0, 0.0, 1.0, 0.0};
 
     /// Jordan Lake parameters
     double fl_supply_capacity = 14700.0;
@@ -486,7 +485,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                    6,
                                    catchment_haw,
                                    jl_storage_capacity,
-                                   800,//448,
+                                   448,
                                    &evaporation_jordan_lake,
                                    13940,
                                    &jl_allocations_ids,

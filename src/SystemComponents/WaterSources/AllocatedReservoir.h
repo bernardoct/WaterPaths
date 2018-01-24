@@ -9,6 +9,9 @@
 #include "Reservoir.h"
 
 class AllocatedReservoir : public Reservoir {
+protected:
+    const bool has_water_quality_pool;
+
 public:
     AllocatedReservoir(
             const char *name, const int id,
@@ -86,6 +89,11 @@ public:
     double getAllocatedTreatmentCapacity(int utility_id) const override;
 
 
+    bool
+    mass_balance_with_wq_pool(double net_inflow, vector<double> &demand_outflow);
+
+    bool
+    mass_balance_without_wq_pool(double net_inflow, vector<double> &demand_outflow);
 };
 
 

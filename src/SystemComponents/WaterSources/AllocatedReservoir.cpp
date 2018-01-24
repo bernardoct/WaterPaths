@@ -26,7 +26,11 @@ AllocatedReservoir::AllocatedReservoir(
                     allocated_treatment_fractions,
                     allocated_fractions,
                     utilities_with_allocations,
-                    ALLOCATED_RESERVOIR) {
+                    ALLOCATED_RESERVOIR),
+        has_water_quality_pool(std::find(utilities_with_allocations->begin()
+                , utilities_with_allocations->end(),
+                                          WATER_QUALITY_ALLOCATION)
+                                !=utilities_with_allocations->end()) {
 }
 
 AllocatedReservoir::AllocatedReservoir(
@@ -51,7 +55,11 @@ AllocatedReservoir::AllocatedReservoir(
                     construction_rof_or_demand,
                     construction_time_range,
                     construction_cost,
-                    ALLOCATED_RESERVOIR) {
+                    ALLOCATED_RESERVOIR),
+          has_water_quality_pool(std::find(utilities_with_allocations->begin()
+                  , utilities_with_allocations->end(),
+                                           WATER_QUALITY_ALLOCATION)
+                                 !=utilities_with_allocations->end()) {
 }
 
 AllocatedReservoir::AllocatedReservoir(
@@ -71,7 +79,11 @@ AllocatedReservoir::AllocatedReservoir(
                     allocated_treatment_fractions,
                     allocated_fractions,
                     utilities_with_allocations,
-                    ALLOCATED_RESERVOIR) {
+                    ALLOCATED_RESERVOIR),
+          has_water_quality_pool(std::find(utilities_with_allocations->begin()
+                  , utilities_with_allocations->end(),
+                                           WATER_QUALITY_ALLOCATION)
+                                 !=utilities_with_allocations->end()) {
 }
 
 AllocatedReservoir::AllocatedReservoir(
@@ -96,12 +108,17 @@ AllocatedReservoir::AllocatedReservoir(
                     construction_rof_or_demand,
                     construction_time_range,
                     construction_cost,
-                    ALLOCATED_RESERVOIR) {
+                    ALLOCATED_RESERVOIR),
+          has_water_quality_pool(std::find(utilities_with_allocations->begin()
+                  , utilities_with_allocations->end(),
+                                           WATER_QUALITY_ALLOCATION)
+                                 !=utilities_with_allocations->end()) {
 }
 
 AllocatedReservoir::AllocatedReservoir(
         const AllocatedReservoir &allocated_reservoir)
-        : Reservoir(allocated_reservoir) {
+        : Reservoir(allocated_reservoir),
+          has_water_quality_pool(allocated_reservoir.has_water_quality_pool) {
         }
 
 /**
@@ -131,10 +148,6 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
     this->wastewater_inflow = wastewater_inflow;
 
     double available_volume_old = available_volume;
-
-//    double total_demand = std::accumulate(demand_outflow.begin(),
-//                                           demand_outflow.end(),
-//                                           0.);
     
     total_demand = 0.0;
     for (double i : demand_outflow) {
@@ -165,7 +178,6 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
     total_outflow = outflow_new;
 
 
-
     /// Check if spillage is needed and, if so, correct stored volume and
     /// calculate spillage and set all allocations to full. Otherwise,
     /// distributed inflows and outflows among respective allocations.
@@ -181,32 +193,19 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
         /// Water exceeding allocated capacities.
         double excess_allocated_water = 0.f;
         double fraction_needing_water = 0.f;
-        bool overallocation = false;
 
         /// Volume of water that entered the reservoir and stayed until being
         /// used or released.
         double net_inflow = upstream_catchment_inflow +
                             total_upstream_inflow - evaporated_volume;
 
-        for (int u : *utilities_with_allocations) {
-            if (u != wq_pool_id) {
-                /// Split inflows and evaporation among allocations and
-                /// subtract demands.
-                available_allocated_volumes[u] +=
-                        net_inflow * allocated_fractions[u] -
-                        demand_outflow[u];
-            } else {
-                /// the water quality pool has no demand and provided the
-                /// minimum environmental flows.
-                available_allocated_volumes[u] +=
-                        net_inflow * allocated_fractions[u] -
-                        min_environmental_outflow;
-            }
-
-            /// Flag the occurrence of an allocation exceeding its capacity
-            if (!overallocation)
-                overallocation = available_allocated_volumes[u] >
-                                 allocated_capacities[u];
+        bool overallocation;
+        if (has_water_quality_pool) {
+            overallocation = mass_balance_with_wq_pool(net_inflow,
+                                                       demand_outflow);
+        } else {
+            overallocation = mass_balance_without_wq_pool(net_inflow,
+                                                          demand_outflow);
         }
 
         /// Split among utilities any allocated volume exceeding a giver
@@ -358,6 +357,61 @@ void AllocatedReservoir::addTreatmentCapacity(
         allocated_treatment_fractions[i] = allocated_treatment_capacities[i]
                                            / total_treatment_capacity;
     }
+}
+
+bool AllocatedReservoir::mass_balance_with_wq_pool(double net_inflow,
+                                                     vector<double>
+                                                     &demand_outflow) {
+    bool overallocation = false;
+    int u;
+    for (int i = 0; i < utilities_with_allocations->size() - 1; ++i) {
+        u = (*utilities_with_allocations)[i];
+        /// Split inflows and evaporation among allocations and
+        /// subtract demands.
+        available_allocated_volumes[u] +=
+                net_inflow * allocated_fractions[u] -
+                demand_outflow[u];
+
+        /// Flag the occurrence of an allocation exceeding its capacity
+        if (!overallocation)
+            overallocation = available_allocated_volumes[u] >
+                             allocated_capacities[u];
+    }
+
+    /// the water quality pool has no demand and provided the
+    /// minimum environmental flows.
+    u = *utilities_with_allocations->end();
+    available_allocated_volumes[u] +=
+            net_inflow * allocated_fractions[u] -
+            min_environmental_outflow;
+
+    /// Flag the occurrence of an allocation exceeding its capacity
+    if (!overallocation)
+        overallocation = available_allocated_volumes[u] >
+                         allocated_capacities[u];
+
+    return overallocation;
+}
+
+bool AllocatedReservoir::mass_balance_without_wq_pool(double net_inflow,
+                                                   vector<double>
+                                                   &demand_outflow) {
+    bool overallocation = false;
+    net_inflow -= min_environmental_outflow;
+    for (int u : *utilities_with_allocations) {
+        /// Split inflows, min environmental outflows and evaporation among
+        /// allocations and subtract demands.
+        available_allocated_volumes[u] +=
+                net_inflow * allocated_fractions[u] -
+                demand_outflow[u];
+
+        /// Flag the occurrence of an allocation exceeding its capacity
+        if (!overallocation)
+            overallocation = available_allocated_volumes[u] >
+                             allocated_capacities[u];
+    }
+
+    return overallocation;
 }
 
 double AllocatedReservoir::getAvailableAllocatedVolume(int utility_id) {

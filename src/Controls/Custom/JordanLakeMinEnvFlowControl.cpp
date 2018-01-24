@@ -51,7 +51,7 @@ JordanLakeMinEnvFlowControl &JordanLakeMinEnvFlowControl::operator=
 
 double JordanLakeMinEnvFlowControl::getRelease(int week) {
     double water_quality_storage =
-            max(water_sources[water_source_id]->getAvailable_volume(),
+            max(water_sources[water_source_id]->getAvailableVolume(),
                 quality_capacity);
     double lillington_flow_rate =
             water_sources[water_source_id]->getTotal_outflow() +

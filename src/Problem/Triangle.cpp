@@ -425,7 +425,8 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
             Cary_JLA * jl_supply_capacity / jl_storage_capacity,
             Raleigh_JLA * jl_supply_capacity / jl_storage_capacity,
             jl_wq_capacity / jl_storage_capacity};
-    vector<double> jl_treatment_allocation_fractions = {0.0, 0.0, 1.0, 0.0};
+//    vector<double> jl_treatment_allocation_fractions = {0.0, 0.0, 1.0, 0.0};
+    vector<double> jl_treatment_allocation_fractions = {0.0, 0.0, 0.5, 0.5};
 
     /// Jordan Lake parameters
     double fl_supply_capacity = 14700.0;
@@ -485,7 +486,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                    6,
                                    catchment_haw,
                                    jl_storage_capacity,
-                                   448,
+                                   800,//448,
                                    &evaporation_jordan_lake,
                                    13940,
                                    &jl_allocations_ids,
@@ -504,16 +505,22 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
     // and a high expansion will provide 7.7BG more water than current. if small expansion happens, followed by a large
     // expansion, the maximum capacity through expansion is 7.7BG, NOT 2.5BG + 7.7BG.
     Reservoir little_river_reservoir("Little River Reservoir (Raleigh)", 7,
-                                     catchment_little_river_raleigh, 3700.0,
+                                     catchment_little_river_raleigh,
+                                     3700.0,
                                      ILLIMITED_TREATMENT_CAPACITY,
                                      &evaporation_little_river,
+//                                     &little_river_storage_area);
                                      &little_river_storage_area,
                                      city_infrastructure_rof_triggers[3],
                                      construction_time_interval,
                                      17 *
                                      WEEKS_IN_YEAR,
                                      263.0);
-    Quarry richland_creek_quarry("Richland Creek Quarry", 8, gage_clayton,
+//    auto it7 = std::find(rof_triggered_infra_order_raleigh.begin(),
+//                         rof_triggered_infra_order_raleigh.end(), 7);
+//    rof_triggered_infra_order_raleigh.erase(it7);
+    Quarry richland_creek_quarry("Richland Creek Quarry", 8,
+                                 gage_clayton,
                                  4000.0,
                                  ILLIMITED_TREATMENT_CAPACITY,
                                  &evaporation_falls_lake,
@@ -525,6 +532,10 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                  400.0,
                                  50. * 7);
     // diversions to Richland Creek Quarry based on ability to meet downstream flow target at Clayton, NC
+//    auto it8 = std::find(rof_triggered_infra_order_raleigh.begin(),
+//                         rof_triggered_infra_order_raleigh.end(), 8);
+//    rof_triggered_infra_order_raleigh.erase(it8);
+
     Quarry teer_quarry("Teer Quarry",
                        9,
                        vector<Catchment *>(),
@@ -539,11 +550,14 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                        22.6,
                        15 * 7); //FIXME: MAX PUMPING CAPACITY?
     //Reservoir rNeuseRiverIntake("rNeuseRiverIntake", 10, 0, catchment_flat, 16.0, 99999, city_infrastructure_rof_triggers[3], construction_time_interval, 5000, 20, 0.05);
-    Intake neuse_river_intake("Neuse River Intake", 10, catchment_flat, 16 * 7,
-                              city_infrastructure_rof_triggers[3],
-                              construction_time_interval,
-                              17 * WEEKS_IN_YEAR,
-                              225.5);
+    Intake neuse_river_intake("Neuse River Intake", 10, catchment_flat, 16 * 7);//,
+//                              city_infrastructure_rof_triggers[3],
+//                              construction_time_interval,
+//                              17 * WEEKS_IN_YEAR,
+//                              225.5);
+    auto it10 = std::find(rof_triggered_infra_order_raleigh.begin(),
+                         rof_triggered_infra_order_raleigh.end(), 10);
+    rof_triggered_infra_order_raleigh.erase(it10);
     // diversions to Teer Quarry for Durham based on inflows to downstream Falls Lake from the Flat River
     // FYI: spillage from Eno River also helps determine Teer quarry diversion, but Eno spillage isn't factored into
     // downstream water balance?
@@ -961,6 +975,10 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
 }
 
 Triangle::Triangle(int solution_no, int rdm_no) {
+}
+
+void Triangle::setRof_tables(const vector<Matrix3D<double>> &rof_tables) {
+    Triangle::rof_tables = rof_tables;
 }
 
 

@@ -19,11 +19,10 @@ StorageMinEnvFlowControl::StorageMinEnvFlowControl(
 
 double StorageMinEnvFlowControl::getRelease(int week) {
     double source_storage = water_sources[water_source_id]
-            ->getAvailable_volume();
+            ->getAvailableVolume();
 
     double release = 0;
     for (int i = 0; i < storages->size(); ++i) {
-        /// Done with ternary operator for improved performance.
         release = (source_storage >= (*storages)[i] ? (*releases)[i] : release);
     }
     return release;

@@ -53,6 +53,7 @@ private:
     double infra_discount_rate;
     double bond_term;
     double bond_interest_rate;
+    double max_capacity = 0;
 
     /// Infrastructure cost
     double current_debt_payment = 0;

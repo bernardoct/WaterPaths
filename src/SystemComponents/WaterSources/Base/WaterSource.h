@@ -33,9 +33,10 @@ protected:
     vector<double> allocated_treatment_capacities;
     vector<double> allocated_treatment_fractions;
     vector<double> allocated_fractions;
+    vector<double> supply_allocated_fractions;
 
     vector<int> *utilities_with_allocations = nullptr;
-    int wq_pool_id = NON_INITIALIZED;
+    unsigned int wq_pool_id = NON_INITIALIZED;
     double total_allocated_fraction = NON_INITIALIZED;
     bool online;
     vector<Catchment *> catchments;
@@ -117,7 +118,7 @@ public:
 
     void setMin_environmental_outflow(double min_environmental_outflow);
 
-    double getAvailable_volume() const;
+    double getAvailableVolume() const;
 
     double getTotal_outflow() const;
 
@@ -127,7 +128,7 @@ public:
 
     void setOutflow_previous_week(double outflow_previous_week);
 
-    virtual double getCapacity();
+    virtual double getSupplyCapacity();
 
     double getUpstream_source_inflow() const;
 
@@ -173,6 +174,11 @@ public:
 
     void setConstruction_cost_of_capital(double construction_cost_of_capital);
 
+    double getAvailableSupplyVolume() const;
+
+    double getAllocatedInflow(int utility_id) const;
+
+    virtual double getSupplyAllocatedFraction(int utility_id);
 };
 
 

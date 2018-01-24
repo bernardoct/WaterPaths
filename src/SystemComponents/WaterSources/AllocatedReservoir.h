@@ -85,6 +85,8 @@ public:
 
     double getAllocatedTreatmentCapacity(int utility_id) const override;
 
+    double getSupplyAllocatedFraction(int utility_id) override;
+
 
 };
 

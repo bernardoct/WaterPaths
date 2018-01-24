@@ -56,7 +56,7 @@ public:
     void shiftStorages(double *available_volumes_shifted, const double
     *delta_storage);
 
-    void printROFTable(int week);
+    void printROFTable(int week, const string &folder);
 };
 
 

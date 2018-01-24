@@ -330,14 +330,14 @@ void Utility::updateTotalStoredVolume() {
         total_stored_volume +=
                 max(1.0e-6,
                     water_sources[ws]->getAvailableAllocatedVolume(id));
-	net_stream_inflow += water_sources[ws]->getUpstreamCatchmentInflow() * water_sources[ws]->getAllocatedFraction(id);
+	    net_stream_inflow += water_sources[ws]->getAllocatedInflow(id);
     }
 
     for (int ws : non_priority_draw_water_source) {
         total_stored_volume +=
                 max(1.0e-6,
                     water_sources[ws]->getAvailableAllocatedVolume(id));
-	net_stream_inflow += water_sources[ws]->getUpstreamCatchmentInflow() * water_sources[ws]->getAllocatedFraction(id);
+	    net_stream_inflow += water_sources[ws]->getAllocatedInflow(id);
     }
 
 }
@@ -369,6 +369,7 @@ void Utility::addWaterSource(WaterSource *water_source) {
         addWaterSourceToOnlineLists(water_source->id);
 
     n_sources++;
+    max_capacity += water_source->getAllocatedCapacity(id);
 }
 
 void Utility::addWaterSourceToOnlineLists(int source_id) {

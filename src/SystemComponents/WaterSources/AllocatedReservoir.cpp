@@ -440,6 +440,15 @@ double AllocatedReservoir::getAllocatedFraction(int utility_id) {
 }
 
 double AllocatedReservoir::getAllocatedTreatmentCapacity(int utility_id) const {
-    return allocated_treatment_capacities.at(utility_id);
+    if (utility_id == WATER_QUALITY_ALLOCATION)
+        __throw_invalid_argument("Water quality pool does not have allocated treatment "
+                                     "capacity.");
+    return allocated_treatment_capacities[utility_id];
 }
 
+double AllocatedReservoir::getSupplyAllocatedFraction(int utility_id) {
+    if (utility_id == WATER_QUALITY_ALLOCATION)
+        __throw_invalid_argument("Water quality pool allocation fraction cannot "
+                                         "be used for supply.");
+    return supply_allocated_fractions[utility_id];
+}

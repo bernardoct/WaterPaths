@@ -126,7 +126,7 @@ string ReservoirDataCollector::printCompactStringHeader() {
 
 void ReservoirDataCollector::collect_data() {
 
-    stored_volume.push_back(reservoir->getAvailable_volume());
+    stored_volume.push_back(reservoir->getAvailableSupplyVolume());
     demands.push_back(reservoir->getDemand());
     total_upstream_sources_inflows
             .push_back(reservoir->getUpstream_source_inflow());

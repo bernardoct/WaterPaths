@@ -28,6 +28,12 @@ namespace Constants {
 
     const bool APPLY_DEMAND_BUFFER = true;
 
+    const bool USE_PRE_CALCULATED_ROF_TABLES = true;
+    const bool DO_NOT_USE_PRE_CALCULATED_ROF_TABLES = false;
+
+    const bool EXPORT_ROF_TABLES = true;
+    const bool DO_NOT_EXPORT_ROF_TABLES = false;
+
     const bool ONLINE = true;
     const bool OFFLINE = false;
 
@@ -70,7 +76,7 @@ namespace Constants {
 
     const double WORSE_CASE_COST_PERCENTILE = 0.99;
 
-    const double INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD = 0.05;
+    const double INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD = 0.025;
     const int NO_OF_INSURANCE_STORAGE_TIERS = (int) std::round(1. / INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD);
 
     const int WATER_QUALITY_ALLOCATION = -1;

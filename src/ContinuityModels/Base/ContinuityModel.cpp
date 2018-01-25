@@ -98,7 +98,7 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
 
         if (online)
             water_sources_capacities.push_back(
-                    water_source->getCapacity());
+                    water_source->getSupplyCapacity());
         else
             water_sources_capacities.push_back((double) NONE);
     }
@@ -234,7 +234,7 @@ vector<int> ContinuityModel::getOnlineDownstreamSources() {
             downstream_source_online = downstream_sources[downstream_source_online];
         } while (downstream_source_online != NON_INITIALIZED &&
                 !continuity_water_sources[downstream_source_online]->isOnline() &&
-                 continuity_water_sources[ws]->getCapacity() == 0);
+                continuity_water_sources[ws]->getSupplyCapacity() == 0);
         online_downstream_sources[ws] = downstream_source_online;
     }
 

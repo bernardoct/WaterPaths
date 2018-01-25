@@ -168,10 +168,16 @@ Simulation &Simulation::operator=(const Simulation &simulation) {
     return *this;
 }
 
-MasterDataCollector *Simulation::runFullSimulation(unsigned long n_threads) {
+MasterDataCollector *Simulation::runFullSimulation(unsigned long n_threads,
+                                                   bool export_rof_tables,
+                                                   bool use_pre_computed_rof_tables) {
 
     int n_utilities = (int) realization_models[0]->getUtilities().size();
     vector<double> risks_of_failure_week((unsigned long) n_utilities, 0.0);
+
+    string mkdir_command = "mkdir";
+    string base_folder_name = "rof_tables_r";
+    string folder_name_complement = "_sq_jla_treatment";
 
     /// Run realizations.
     int count = 0;
@@ -183,6 +189,8 @@ MasterDataCollector *Simulation::runFullSimulation(unsigned long n_threads) {
     MasterDataCollector* mdc = master_data_collector;
 #pragma omp parallel for num_threads(n_threads)
     for (int r = 0; r < number_of_realizations; ++r) {
+        string folder = base_folder_name + to_string(r) + folder_name_complement;
+        system((mkdir_command + " " + folder).c_str());
 //	cout << "thread id: " << omp_get_thread_num() << endl;
 //        try {
         double start = omp_get_wtime();
@@ -194,6 +202,8 @@ MasterDataCollector *Simulation::runFullSimulation(unsigned long n_threads) {
             realization_models[r]->setShortTermROFs(rof_models[r]->calculateShortTermROF(w));
             realization_models[r]->applyDroughtMitigationPolicies(w);
             realization_models[r]->continuityStep(w);
+            if (export_rof_tables)
+                rof_models[r]->printROFTable(w, folder);
             mdc->collectData(r);
         }
     	double end = omp_get_wtime();

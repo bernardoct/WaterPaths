@@ -88,6 +88,8 @@ public:
 
     double getAllocatedTreatmentCapacity(int utility_id) const override;
 
+    double getSupplyAllocatedFraction(int utility_id) override;
+
 
     bool
     mass_balance_with_wq_pool(double net_inflow, vector<double> &demand_outflow);

@@ -27,10 +27,7 @@ AllocatedReservoir::AllocatedReservoir(
                     allocated_fractions,
                     utilities_with_allocations,
                     ALLOCATED_RESERVOIR),
-        has_water_quality_pool(std::find(utilities_with_allocations->begin()
-                , utilities_with_allocations->end(),
-                                          WATER_QUALITY_ALLOCATION)
-                                !=utilities_with_allocations->end()) {
+          has_water_quality_pool(wq_pool_id != NON_INITIALIZED) {
 }
 
 AllocatedReservoir::AllocatedReservoir(
@@ -56,10 +53,7 @@ AllocatedReservoir::AllocatedReservoir(
                     construction_time_range,
                     construction_cost,
                     ALLOCATED_RESERVOIR),
-          has_water_quality_pool(std::find(utilities_with_allocations->begin()
-                  , utilities_with_allocations->end(),
-                                           WATER_QUALITY_ALLOCATION)
-                                 !=utilities_with_allocations->end()) {
+          has_water_quality_pool(wq_pool_id != NON_INITIALIZED) {
 }
 
 AllocatedReservoir::AllocatedReservoir(
@@ -80,10 +74,7 @@ AllocatedReservoir::AllocatedReservoir(
                     allocated_fractions,
                     utilities_with_allocations,
                     ALLOCATED_RESERVOIR),
-          has_water_quality_pool(std::find(utilities_with_allocations->begin()
-                  , utilities_with_allocations->end(),
-                                           WATER_QUALITY_ALLOCATION)
-                                 !=utilities_with_allocations->end()) {
+          has_water_quality_pool(wq_pool_id != NON_INITIALIZED) {
 }
 
 AllocatedReservoir::AllocatedReservoir(
@@ -109,10 +100,7 @@ AllocatedReservoir::AllocatedReservoir(
                     construction_time_range,
                     construction_cost,
                     ALLOCATED_RESERVOIR),
-          has_water_quality_pool(std::find(utilities_with_allocations->begin()
-                  , utilities_with_allocations->end(),
-                                           WATER_QUALITY_ALLOCATION)
-                                 !=utilities_with_allocations->end()) {
+          has_water_quality_pool(wq_pool_id != NON_INITIALIZED) {
 }
 
 AllocatedReservoir::AllocatedReservoir(
@@ -380,7 +368,7 @@ bool AllocatedReservoir::mass_balance_with_wq_pool(double net_inflow,
 
     /// the water quality pool has no demand and provided the
     /// minimum environmental flows.
-    u = *utilities_with_allocations->end();
+    u = utilities_with_allocations->back();
     available_allocated_volumes[u] +=
             net_inflow * allocated_fractions[u] -
             min_environmental_outflow;

@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
     vector<vector<double>> water_sources_rdm;
     vector<vector<double>> policies_rdm;
 
-    Triangle triangle(standard_solution, standard_rdm);
+    Triangle triangle(standard_solution, standard_rdm, 0);
 
     int c;
     while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:R:U:P:W:I:")) != -1) {

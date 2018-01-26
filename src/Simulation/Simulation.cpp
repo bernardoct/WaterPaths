@@ -176,8 +176,11 @@ MasterDataCollector *Simulation::runFullSimulation(unsigned long n_threads,
     vector<double> risks_of_failure_week((unsigned long) n_utilities, 0.0);
 
     string mkdir_command = "mkdir";
-    string base_folder_name = "rof_tables_r";
-    string folder_name_complement = "_sq_jla_treatment";
+//    string base_folder_name = "rof_tables_r";
+//    string folder_name_complement = "_sq";
+    string base_folder_name = "rof_tables";
+    string folder = base_folder_name;
+    int output = system((mkdir_command + " " + folder).c_str());
 
     /// Run realizations.
     int count = 0;
@@ -189,8 +192,8 @@ MasterDataCollector *Simulation::runFullSimulation(unsigned long n_threads,
     MasterDataCollector* mdc = master_data_collector;
 #pragma omp parallel for num_threads(n_threads)
     for (int r = 0; r < number_of_realizations; ++r) {
-        string folder = base_folder_name + to_string(r) + folder_name_complement;
-        system((mkdir_command + " " + folder).c_str());
+//        string folder = base_folder_name + to_string(r) + folder_name_complement;
+//        system((mkdir_command + " " + folder).c_str());
 //	cout << "thread id: " << omp_get_thread_num() << endl;
 //        try {
         double start = omp_get_wtime();
@@ -224,4 +227,9 @@ MasterDataCollector *Simulation::runFullSimulation(unsigned long n_threads,
     std::cout << "Calculations: " << realization_end - realization_start << "s" << std::endl;
 
     return mdc;
+}
+
+void Simulation::setPre_computed_rof_table(
+        const vector<Matrix3D<double>> &pre_computed_rof_table) {
+    Simulation::pre_computed_rof_table = pre_computed_rof_table;
 }

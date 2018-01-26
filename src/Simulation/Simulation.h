@@ -26,7 +26,11 @@ private:
     vector<ContinuityModelRealization *> realization_models;
     vector<ContinuityModelROF *> rof_models;
     MasterDataCollector *master_data_collector;
-    Matrix3D<double> pre_computed_rof_table;
+    vector<Matrix3D<double>> pre_computed_rof_table;
+public:
+    void
+    setPre_computed_rof_table(const vector<Matrix3D<double>>
+                              &pre_computed_rof_table);
 
 public:
 

@@ -477,7 +477,8 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                   ILLIMITED_TREATMENT_CAPACITY,
                   &evaporation_owasa,
                   500);
-    Reservoir university_lake("University Lake", 5, catchment_morgan, 449.0,
+    Reservoir university_lake("University Lake", 5, catchment_morgan,
+                              449.0,
                               ILLIMITED_TREATMENT_CAPACITY,
                               &evaporation_owasa,
                               212);
@@ -973,11 +974,39 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
     cout << "objectives returned" << endl;
 }
 
-Triangle::Triangle(int solution_no, int rdm_no) {
+Triangle::Triangle(int solution_no, int rdm_no, bool use_precomp_rof_tables)
+        : use_precomp_rof_tables(use_precomp_rof_tables) {
 }
 
-void Triangle::setRof_tables(const vector<Matrix3D<double>> &rof_tables) {
-    Triangle::rof_tables = rof_tables;
+/**
+ * Read pre-computed ROF tables.
+ * @param folder Folder containing the ROF tables.
+ * @param n_realizations number of realizations.
+ * @param n_weeks number of weeks.
+ */
+void
+Triangle::setRofTables(const string &folder, int n_realizations, int n_weeks,
+                       vector<vector<double>> &infra_table_shift) {
+
+    auto table0 = Utils::parse2DCsvFile(folder + "/tables_r0_w0.csv");
+    int n_utilities = (int) table0.size();
+    int n_tiers = (int) table0[0].size();
+    this->infra_table_shift = infra_table_shift;
+
+    for (int r = 0; r < n_realizations; ++r) {
+        auto realization_table = Matrix3D<double>(
+                n_realizations, n_utilities, n_tiers);
+        for (int w = 0; w < n_weeks; ++w) {
+            string file = folder + "/tables_r" + to_string(r) +
+                    "_w" + to_string(w) + ".csv";
+            auto table_week = Utils::parse2DCsvFile(file);
+            for (int u = 0; u < n_utilities; ++u) {
+                for (int t = 0; t < n_tiers; ++t) {
+                    realization_table(w, u, t) = table_week[u][t];
+                }
+            }
+        }
+
+        rof_tables.push_back(realization_table);
+    }
 }
-
-

@@ -3,11 +3,19 @@
 //
 
 #include <algorithm>
+#include <numeric>
 #include "Problem.h"
 
-vector<double> Problem::calculateObjectivesAndPrintOutput() {
+vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
 
-cout <<"calling\n";
+    string fo = "/TestFiles/output/Objectives";
+    objectives = this->master_data_collector->calculatePrintObjectives(
+            fo + "_s" + std::to_string(solution_no) + fname_sufix, print_files);
+
+    return objectives;
+}
+
+void Problem::printTimeSeriesAndPathways() {
     /// Calculate objective values.
     this->master_data_collector->setOutputDirectory(output_directory);
 
@@ -15,22 +23,21 @@ cout <<"calling\n";
     string fu = "/TestFiles/output/Utilities";
     string fws = "/TestFiles/output/WaterSources";
     string fp = "/TestFiles/output/Policies";
-    string fo = "/TestFiles/output/Objectives";
     string fpw = "/TestFiles/output/Pathways";
 
     //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
-    cout << "Calculating and printing Objectives" << endl;
-    this->master_data_collector->calculatePrintObjectives(fo + "_s" + std::to_string(solution_no) + fname_sufix, true);
     cout << "Printing Pathways" << endl;
     this->master_data_collector->printPathways(fpw + "_s" + std::to_string(solution_no) + fname_sufix);
     cout << "Printing time series" << endl;
     this->master_data_collector->printUtilitiesOutputCompact(0, (int) n_weeks, fu + "_s"
-                                                       + std::to_string(solution_no) + fname_sufix);
+                                                                               + std::to_string(solution_no) +
+                                                                               fname_sufix);
     this->master_data_collector->printWaterSourcesOutputCompact(0, (int) n_weeks, fws + "_s"
-                                                          + std::to_string(solution_no) + fname_sufix);
+                                                                                  + std::to_string(solution_no) +
+                                                                                  fname_sufix);
     this->master_data_collector->printPoliciesOutputCompact(0, (int) n_weeks, fp + "_s"
-                                                      + std::to_string(solution_no) + fname_sufix);
-    cout << "Updating objectives pointer" << endl;
+                                                                              + std::to_string(solution_no) +
+                                                                              fname_sufix);
 //    data_collector->printUtilitesOutputTabular(0,
 //                                               n_weeks,
 //                                               fu + "_s"
@@ -43,9 +50,7 @@ cout <<"calling\n";
 //                                               n_weeks,
 //                                               fp + "_s"
 //                                               + std::to_string(solution_no));
-    vector<double> obj_not_jla = this->master_data_collector->calculatePrintObjectives(fo + "_s" + std::to_string(solution_no), false);
 
-    return obj_not_jla;
 }
 
 vector<int> Problem::vecInfraRankToVecInt(vector<infraRank> v) {
@@ -80,10 +85,6 @@ double Problem::checkAndFixInfraExpansionHighLowOrder(
 }
 
 
-void Problem::setN_realizations(unsigned long n_realizations) {
-    Problem::n_realizations = n_realizations;
-}
-
 void Problem::setN_weeks(unsigned long n_weeks) {
     Problem::n_weeks = n_weeks;
 }
@@ -94,14 +95,6 @@ void Problem::setSol_number(unsigned long sol_number) {
 
 void Problem::setOutput_directory(const string &output_directory) {
     Problem::output_directory = output_directory;
-}
-
-void Problem::setRealizations(const vector<unsigned long> &realizations) {
-    Problem::realizations = realizations;
-}
-
-void Problem::setBootstrap_sample(const vector<unsigned long> &bootstrap_sample) {
-    Problem::bootstrap_sample = bootstrap_sample;
 }
 
 void Problem::setRDMOptimization(vector<vector<double>> &utilities_rdm,
@@ -131,4 +124,37 @@ void Problem::setEvap_inflows_suffix(const string &evap_inflows_suffix) {
 
 void Problem::setN_threads(unsigned long n_threads) {
     Problem::n_threads = n_threads;
+}
+
+const vector<double> &Problem::getObjectives() const {
+    return objectives;
+}
+
+void Problem::setPrint_output_files(bool print_output_files) {
+    Problem::print_output_files = print_output_files;
+}
+
+void Problem::setN_realizations(unsigned long n_realizations) {
+    Problem::n_realizations = n_realizations;
+
+    realizations_to_run = vector<unsigned long>(n_realizations);
+    iota(begin(realizations_to_run), end(realizations_to_run), 0);
+}
+
+void Problem::setRealizationsToRun(vector<unsigned long> realizations_to_run) {
+    this->realizations_to_run = realizations_to_run;
+}
+
+const MasterDataCollector* Problem::getMaster_data_collector() {
+    return master_data_collector;
+}
+
+Problem::~Problem() {}
+
+void Problem::destroyDataCollector() {
+    delete master_data_collector;
+}
+
+Problem::Problem(unsigned long n_weeks) : n_weeks(n_weeks) {
+
 }

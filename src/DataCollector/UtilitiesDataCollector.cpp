@@ -13,6 +13,14 @@ UtilitiesDataCollector::UtilitiesDataCollector(const Utility *utility,
                         12 * COLUMN_WIDTH),
           utility(utility) {}
 
+/**
+ * Copy assignment operator.
+ * @param catchment
+ * @return
+ */
+UtilitiesDataCollector &UtilitiesDataCollector::operator=(const UtilitiesDataCollector &utility_data_collector) {}
+
+
 string UtilitiesDataCollector::printTabularString(int week) {
 
     stringstream outStream;
@@ -139,7 +147,7 @@ string UtilitiesDataCollector::printCompactStringHeader() {
 void UtilitiesDataCollector::collect_data() {
     vector<int> infra_built;
 
-    combined_storage.push_back(utility->getTotal_stored_volume());
+    combined_storage.push_back(utility->getTotal_available_volume());
     lt_rof.push_back(utility->getLong_term_risk_of_failure());
     st_rof.push_back(utility->getRisk_of_failure());
     unrestricted_demand.push_back(utility->getUnrestrictedDemand());

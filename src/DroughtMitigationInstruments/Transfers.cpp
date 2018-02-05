@@ -152,9 +152,8 @@ Transfers::Transfers(const Transfers &transfers) :
  * Destructor
  */
 Transfers::~Transfers() {
-    //FIXME: I'M GETTING SEGMENTATION FAULT HERE.
-//    if (source_utility)
-//       delete source_utility;
+    source_utility = nullptr;
+    transfer_water_source = nullptr;
 }
 
 /**

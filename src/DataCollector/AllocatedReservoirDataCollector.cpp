@@ -4,8 +4,6 @@
 
 #include <sstream>
 #include <iomanip>
-#include <algorithm>
-#include <stdio.h>
 #include "AllocatedReservoirDataCollector.h"
 
 AllocatedReservoirDataCollector::AllocatedReservoirDataCollector(
@@ -15,7 +13,9 @@ AllocatedReservoirDataCollector::AllocatedReservoirDataCollector(
                                                  getUtilities_with_allocations()->
                                                  size()) * COLUMN_WIDTH,
                                  realization),
-          allocated_reservoir(allocated_reservoir) {}
+          allocated_reservoir(allocated_reservoir),
+          utilities_with_allocations
+                  (*allocated_reservoir->getUtilities_with_allocations()) {}
 
 string AllocatedReservoirDataCollector::printTabularString(int week) {
     string output = ReservoirDataCollector::printTabularString(week);
@@ -74,7 +74,7 @@ string AllocatedReservoirDataCollector::printCompactStringHeader() {
 
     stringstream out_stream;
 
-    for (int u : *(allocated_reservoir->getUtilities_with_allocations()))
+    for (int u : utilities_with_allocations)
         out_stream << id << "alloc_" + to_string(u) << ",";
 
     return ReservoirDataCollector::printCompactStringHeader() + out_stream.str();

@@ -36,10 +36,10 @@ protected:
     vector<double> supply_allocated_fractions;
 
     vector<int> *utilities_with_allocations = nullptr;
-    unsigned int wq_pool_id = NON_INITIALIZED;
+    int wq_pool_id = NON_INITIALIZED;
     double total_allocated_fraction = NON_INITIALIZED;
     bool online;
-    vector<Catchment *> catchments;
+    vector<Catchment> catchments;
     double min_environmental_outflow;
     double evaporated_volume = 0;
     double total_treatment_capacity;

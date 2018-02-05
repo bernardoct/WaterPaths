@@ -12,29 +12,26 @@
 class InsuranceStorageToROF : public DroughtMitigationPolicy,
                               public ContinuityModelROF {
 private:
-
-    double *insurance_price;
-    const vector<double> rof_triggers;
+    const unsigned long total_simulation_time;
     const double insurance_premium;
+    double *insurance_price;
     const double *fixed_payouts;
-    double *utilities_revenue_update;
-    double *utilities_revenue_last_year;
+    vector<double> utilities_revenue_update;
+    vector<double> utilities_revenue_last_year;
+    const vector<double> rof_triggers;
     Matrix3D<double> storage_to_rof_table_prev_year;
 
 public:
 
-    InsuranceStorageToROF(
-            const int id,
-            vector<WaterSource *> &water_sources,
-            const Graph &water_sources_graph,
-            const vector<vector<int>> &water_sources_to_utilities,
-            vector<Utility *> &utilities,
-            vector<MinEnvironFlowControl *> min_env_flow_controls,
-            vector<vector<double>> *utilities_rdm,
-            vector<vector<double>> *water_sources_rdm,
-            vector<double> rof_triggers,
-            const double insurance_premium,
-            const double *fixed_payouts);
+    InsuranceStorageToROF(const int id, vector<WaterSource *> &water_sources,
+                              const Graph &water_sources_graph,
+                              const vector<vector<int>> &water_sources_to_utilities,
+                              vector<Utility *> &utilities,
+                              vector<MinEnvironFlowControl *> min_env_flow_controls,
+                              vector<vector<double>> *utilities_rdm,
+                              vector<vector<double>> *water_sources_rdm, vector<double> rof_triggers,
+                              const double insurance_premium, const double *fixed_payouts,
+                              unsigned long total_simulation_time);
 
     InsuranceStorageToROF(InsuranceStorageToROF &insurance);
 
@@ -42,8 +39,7 @@ public:
 
     void priceInsurance(int week);
 
-    void getUtilitiesApproxROFs(const vector<double> u_storage_capacity_ratio,
-                                const Matrix3D<double> *storage_to_rof_table,
+    void getUtilitiesApproxROFs(const vector<double> &u_storage_capacity_ratio,
                                 int week, vector<double>& utilities_approx_rof);
 
     vector<double> UtilitiesStorageCapacityRatio();

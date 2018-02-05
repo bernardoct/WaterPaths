@@ -12,6 +12,7 @@
 class AllocatedReservoirDataCollector : public ReservoirDataCollector {
     AllocatedReservoir *allocated_reservoir;
     vector<vector<double>> allocated_stored_volumes;
+    vector<int> utilities_with_allocations;
 
 public:
     AllocatedReservoirDataCollector(

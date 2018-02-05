@@ -22,15 +22,15 @@ using namespace std;
 class Simulation {
 private:
     unsigned long total_simulation_time;
-    unsigned long number_of_realizations;
+    unsigned long n_realizations;
     vector<ContinuityModelRealization *> realization_models;
     vector<ContinuityModelROF *> rof_models;
-    MasterDataCollector *master_data_collector;
-    vector<Matrix3D<double>> pre_computed_rof_table;
-public:
-    void
-    setPre_computed_rof_table(const vector<Matrix3D<double>>
-                              &pre_computed_rof_table);
+    MasterDataCollector* master_data_collector;
+    vector<unsigned long> realizations_to_run;
+
+    const int import_export_rof_tables;
+    vector<Matrix3D<double>> precomputed_rof_tables;
+    vector<vector<double>> table_storage_shift;
 
 public:
 
@@ -43,15 +43,21 @@ public:
             vector<vector<double>> *utilities_rdm,
             vector<vector<double>> *water_sources_rdm,
             vector<vector<double>> *policies_rdm,
-            unsigned long total_simulation_time, unsigned long number_of_realizations);
+            int import_export_rof_tables,
+            const unsigned long total_simulation_time,
+            vector<unsigned long> &realizations_to_run);
 
     Simulation &operator=(const Simulation &simulation);
 
     virtual ~Simulation();
 
-    MasterDataCollector * runFullSimulation(unsigned long n_threads,
-                      bool export_rof_tables = DO_NOT_EXPORT_ROF_TABLES,
-                      bool use_pre_computed_rof_tables = DO_NOT_USE_PRE_CALCULATED_ROF_TABLES);
+    MasterDataCollector* runFullSimulation(unsigned long n_threads);
+
+    void setPrecomputed_rof_tables(const vector<Matrix3D<double>> &precomputed_rof_tables,
+                                   vector<vector<double>> &table_storage_shift);
+
+    void setRealizations_to_run(const vector<unsigned long> &realizations_to_run);
+
 
 };
 

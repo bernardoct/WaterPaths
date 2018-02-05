@@ -15,7 +15,7 @@ public:
     WaterReuse(const char *name, const int id, const double capacity);
 
     WaterReuse(
-            const char *name, const int id, const double capacity,
+            const char *name, const int id, const double treatment_capacity,
             const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
             double permitting_period,

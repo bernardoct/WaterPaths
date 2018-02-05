@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <cstring>
+#include <bits/unique_ptr.h>
 
 template<typename T>
 class Matrix2D {
@@ -154,7 +155,7 @@ template<typename T>
 class Matrix3D {
 private:
     int di_ = NON_INITIALIZED, dj_ = NON_INITIALIZED, dk_ = NON_INITIALIZED;
-    T *data_ = nullptr;
+    unique_ptr<T[]> data_;
 public:
     Matrix3D();
 
@@ -172,15 +173,25 @@ public:
 
     Matrix2D<T> get2D(int ijk, char dim);
 
+    void add_to_position(int i, int j, int k, T* data, unsigned long length);
+
+    void setPartialData(int i, int j, T *data, int length);
+
+    T* getPointerToElement(int i, int j, int k) const;
+
     void reset(T value);
 
-    void print(int k) const;
+    void print(int i) const;
+
+    void setData(T *data, unsigned long length);
 
     int get_i() const;
 
     int get_j() const;
 
     int get_k() const;
+
+    bool empty() const;
 };
 
 
@@ -189,26 +200,23 @@ Matrix3D<T>::Matrix3D(int di, int dj, int dk) : di_(di), dj_(dj), dk_(dk)
 {
     if (di == 0 || dj == 0 || dk == 0)
         std::__throw_length_error("Matrix3D dimensions has 0 size");
-    data_ = new T[di * dj * dk];
-    fill_n(data_, di_ * dj_ * dk_, 0);
+    data_ = unique_ptr<T[]>(new T[di * dj * dk]);
+    fill_n(data_.get(), di_ * dj_ * dk_, 0);
 }
 
 template<typename T>
 Matrix3D<T>::Matrix3D(const Matrix3D<T> &m) : di_(m.di_), dj_(m.dj_), dk_(m.dk_) {
     if (di_ == 0 || dj_ == 0 || dk_ == 0)
         std::__throw_length_error("Matrix3D dimensions has 0 size");
-    data_ = new T[di_ * dj_ * dk_];
-    std::copy(m.data_, m.data_ + di_ * dj_ * dk_, data_);
+    data_ = unique_ptr<T[]>(new T[di_ * dj_ * dk_]);
+    std::copy(m.data_.get(), m.data_.get() + di_ * dj_ * dk_, data_.get());
 }
 
 template<typename T>
 Matrix3D<T>::Matrix3D() = default;
 
 template<typename T>
-Matrix3D<T>::~Matrix3D() {
-    if (di_ * dj_ * dk_ != 0)
-        delete[] data_;
-}
+Matrix3D<T>::~Matrix3D() {}
 
 template<typename T>
 Matrix3D<T> &Matrix3D<T>::operator=(const Matrix3D<T> &m) {
@@ -217,8 +225,8 @@ Matrix3D<T> &Matrix3D<T>::operator=(const Matrix3D<T> &m) {
     dk_ = m.dk_;
     if (di_ == 0 || dj_ == 0 || dk_ == 0)
         std::__throw_length_error("Matrix3D dimensions has 0 size");
-    data_ = new T[di_ * dj_ * dk_];
-    std::copy(m.data_, m.data_ + di_ * dj_ * dk_, data_);
+    data_ = unique_ptr<T[]>(new T[di_ * dj_ * dk_]);
+    std::copy(m.data_.get(), m.data_.get() + di_ * dj_ * dk_, data_.get());
     return *this;
 }
 
@@ -258,14 +266,36 @@ T Matrix3D<T>::operator()(int i, int j, int k) const {
 }
 
 template<typename T>
-void Matrix3D<T>::reset(T value) {
-    fill_n(data_, di_ * dj_ * dk_, value);
+void Matrix3D<T>::setData(T *data, unsigned long length) {
+    if (length != di_*dj_*dk_) {
+        string er = "Size of data does not match that of matrix: " +
+                to_string(length) + " vs. " + to_string(di_*dj_*dk_);
+        __throw_invalid_argument(er.c_str());
+    }
+    memcpy(data_.get(), data, length* sizeof(T));
 }
 
 template<typename T>
-void Matrix3D<T>::print(int k) const {
-    for (int i = 0; i < di_; ++i) {
-        for (int j = 0; j < dj_; ++j) {
+void Matrix3D<T>::setPartialData(int i, int j, T *data, int length) {
+    if (i >= di_ || j >= dj_ || i * j < 0)
+        std::__throw_length_error("Matrix3D subscript out of bounds or negative");
+    memcpy(data_.get() + i * dj_ * dk_ + j * dk_, data, length * sizeof(T));
+}
+
+template<typename T>
+bool Matrix3D<T>::empty() const {
+    return di_ == NON_INITIALIZED;
+}
+
+template<typename T>
+void Matrix3D<T>::reset(T value) {
+    fill_n(data_.get(), di_ * dj_ * dk_, value);
+}
+
+template<typename T>
+void Matrix3D<T>::print(int i) const {
+    for (int j = 0; j < dj_; ++j) {
+        for (int k = 0; k < dk_; ++k) {
             std::cout << data_[dj_ * dk_ * i + dk_ * j + k] << " ";
         }
         std::cout << std::endl;
@@ -330,6 +360,20 @@ int Matrix3D<T>::get_j() const {
 template<typename T>
 int Matrix3D<T>::get_k() const {
     return dk_;
+}
+
+template<typename T>
+T *Matrix3D<T>::getPointerToElement(int i, int j, int k) const {
+    return data_.get() + i * dj_ * dk_ + j * dk_ + k;
+}
+
+template<typename T>
+void Matrix3D<T>::add_to_position(int i, int j, int k, T *data,
+                                  unsigned long length) {
+    int pos0 = i * dj_ * dk_ + j * dk_ + k;
+    for (int p = 0; p < length; ++p) {
+        data_[pos0 + p] += data[p];
+    }
 }
 
 

@@ -4,7 +4,6 @@
 
 #include <cmath>
 #include "Catchment.h"
-#include "../Utils/Constants.h"
 
 
 Catchment::Catchment(vector<vector<double>> *streamflows_all, int series_length)
@@ -25,10 +24,11 @@ Catchment::Catchment(vector<vector<double>> *streamflows_all, int series_length)
  * Copy constructor.
  * @param catchment
  */
-Catchment::Catchment(Catchment &catchment) :
+Catchment::Catchment(const Catchment &catchment) :
         series_length(catchment.series_length),
         streamflows_all(catchment.streamflows_all),
-        streamflows_realization(catchment.streamflows_realization) {
+        streamflows_realization(catchment.streamflows_realization),
+        parent(false) {
 }
 
 /**
@@ -41,9 +41,7 @@ Catchment &Catchment::operator=(const Catchment &catchment) = default;
 /**
  * Destructor.
  */
-Catchment::~Catchment() {
-    //delete[] streamflows_realization;
-}
+Catchment::~Catchment() {}
 
 /**
  * Get streamflow for a given week. This function assures that the number of
@@ -64,10 +62,6 @@ double Catchment::getStreamflow(int week) {
  * @param r
  */
 void Catchment::setRealization(unsigned long r, vector<vector<double>> *rdm_factors) {
-    //delete[] streamflows_realization;
-    streamflows_realization = new double[streamflows_all->at(r).size()];
-    std::copy(streamflows_all->at(r).begin(),
-              streamflows_all->at(r).end(),
-              streamflows_realization);
+    streamflows_realization = vector<double>(streamflows_all->at(r));
 }
 

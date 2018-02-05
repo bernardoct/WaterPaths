@@ -6,10 +6,10 @@
 #include <numeric>
 #include <algorithm>
 #include "Utility.h"
-#include "../Utils/Utils.h"
 #include "WaterSources/ReservoirExpansion.h"
 #include "WaterSources/SequentialJointTreatmentExpansion.h"
 #include "WaterSources/Relocation.h"
+#include "../Utils/Utils.h"
 
 /**
  * Main constructor for the Utility class.
@@ -44,7 +44,7 @@ Utility::Utility(
         infra_discount_rate(NON_INITIALIZED),
         wwtp_discharge_rule(wwtp_discharge_rule),
         demand_buffer(demand_buffer),
-        total_stored_volume(NONE),
+        total_available_volume(NONE),
         total_storage_capacity(NONE),
         bond_term(NON_INITIALIZED),
         bond_interest_rate(NON_INITIALIZED) {
@@ -93,7 +93,7 @@ Utility::Utility(const char *name, int id, vector<vector<double>> *demands_all_r
         infra_discount_rate(infra_discount_rate),
         wwtp_discharge_rule(wwtp_discharge_rule),
         demand_buffer(demand_buffer),
-        total_stored_volume(NONE),
+        total_available_volume(NONE),
         total_storage_capacity(NONE),
         infra_if_built_remove(infra_if_built_remove),
         bond_term(bond_term),
@@ -157,7 +157,7 @@ Utility::Utility(const char *name, int id, vector<vector<double>> *demands_all_r
         infra_discount_rate(infra_discount_rate),
         wwtp_discharge_rule(wwtp_discharge_rule),
         demand_buffer(demand_buffer),
-        total_stored_volume(NONE),
+        total_available_volume(NONE),
         total_storage_capacity(NONE),
         infra_if_built_remove(new vector<vector<int>>()),
         bond_term(bond_term),
@@ -188,8 +188,8 @@ Utility::Utility(Utility &utility) :
         name(utility.name),
         number_of_week_demands(utility.number_of_week_demands),
         total_storage_capacity(utility.total_storage_capacity),
-        total_stored_volume(utility.total_stored_volume),
-        demand_series_realization(new double[utility.number_of_week_demands]),
+        total_available_volume(utility.total_available_volume),
+        demand_series_realization(unique_ptr<double[]>(new double[utility.number_of_week_demands])),
         percent_contingency_fund_contribution(utility.percent_contingency_fund_contribution),
         weekly_average_volumetric_price(utility.weekly_average_volumetric_price),
         rof_infra_construction_order(utility.rof_infra_construction_order),
@@ -208,12 +208,12 @@ Utility::Utility(Utility &utility) :
 }
 
 Utility::~Utility() {
-//    delete[] demand_series_realization;
+    water_sources.clear();
 }
 
 Utility &Utility::operator=(const Utility &utility) {
 
-    demand_series_realization = new double[utility.number_of_week_demands];
+    demand_series_realization = unique_ptr<double[]>(new double[utility.number_of_week_demands]);
 
     /// Create copies of sources
     water_sources.clear();
@@ -322,21 +322,23 @@ void Utility::priceCalculationErrorChecking(
 /**
  * updates combined stored volume for this utility.
  */
-void Utility::updateTotalStoredVolume() {
+void Utility::updateTotalAvailableVolume() {
+    total_available_volume = 0.0;
     total_stored_volume = 0.0;
     net_stream_inflow = 0.0;
 
     for (int ws : priority_draw_water_source) {
-        total_stored_volume +=
+        total_available_volume +=
                 max(1.0e-6,
                     water_sources[ws]->getAvailableAllocatedVolume(id));
 	    net_stream_inflow += water_sources[ws]->getAllocatedInflow(id);
     }
 
     for (int ws : non_priority_draw_water_source) {
-        total_stored_volume +=
-                max(1.0e-6,
-                    water_sources[ws]->getAvailableAllocatedVolume(id));
+        double stored_volume = max(1.0e-6,
+                                   water_sources[ws]->getAvailableAllocatedVolume(id));
+        total_available_volume += stored_volume;
+        total_stored_volume += stored_volume;
 	    net_stream_inflow += water_sources[ws]->getAllocatedInflow(id);
     }
 
@@ -374,19 +376,23 @@ void Utility::addWaterSource(WaterSource *water_source) {
 
 void Utility::addWaterSourceToOnlineLists(int source_id) {
 
+    auto ws = water_sources[source_id];
+
     /// Add capacities to utility.
     total_storage_capacity +=
-            water_sources[source_id]->getAllocatedCapacity(id);
+            ws->getAllocatedCapacity(id);
     total_treatment_capacity +=
-            water_sources[source_id]->getAllocatedTreatmentCapacity(id);
-    total_stored_volume = total_storage_capacity;
+            ws->getAllocatedTreatmentCapacity(id);
+    total_available_volume = total_storage_capacity;
 
     /// Add source to the corresponding list of online water sources.
-    if ((water_sources[source_id]->source_type == INTAKE ||
-         water_sources[source_id]->source_type == WATER_REUSE))
+    if ((ws->source_type == INTAKE ||
+            ws->source_type == WATER_REUSE)) {
         priority_draw_water_source.push_back(source_id);
-    else
+    } else {
         non_priority_draw_water_source.push_back(source_id);
+        total_stored_volume += ws->getAvailableAllocatedVolume(id);
+    }
 }
 
 /**
@@ -419,7 +425,7 @@ void Utility::splitDemands(
     /// Allocates remaining demand to reservoirs based on allocated available
     /// volume to this utility.
     bool over_allocation = false;
-    double remaining_stored_volume = total_stored_volume;
+    double remaining_stored_volume = total_available_volume;
     for (int ws : non_priority_draw_water_source) {
         auto source = water_sources[ws];
         over_allocation_ws[ws] = false;
@@ -428,7 +434,7 @@ void Utility::splitDemands(
         double demand_fraction =
                 max(1.0e-6,
                     source->getAvailableAllocatedVolume(id) /
-                    total_stored_volume);
+                    total_available_volume);
 
         /// Calculate demand allocated to a given source.
         double source_demand = restricted_demand * demand_fraction;
@@ -582,20 +588,18 @@ void Utility::setWaterSourceOnline(unsigned int source_id) {
     /// Updates total storage and treatment variables.
     total_storage_capacity = 0;
     total_treatment_capacity = 0;
-    total_stored_volume = 0;
+    total_available_volume = 0;
     for (WaterSource *ws : water_sources)
         if (ws &&
             (find(priority_draw_water_source.begin(),
                   priority_draw_water_source.end(),
-                  ws->id) !=
-             priority_draw_water_source.end() ||
+                  ws->id) != priority_draw_water_source.end() ||
              find(non_priority_draw_water_source.begin(),
                   non_priority_draw_water_source.end(),
-                  ws->id) !=
-             non_priority_draw_water_source.end())) {
+                  ws->id) != non_priority_draw_water_source.end())) {
             total_storage_capacity += ws->getAllocatedCapacity(id);
             total_treatment_capacity += ws->getAllocatedTreatmentCapacity(id);
-            total_stored_volume += ws->getAvailableAllocatedVolume(id);
+            total_available_volume += ws->getAvailableAllocatedVolume(id);
         }
 }
 
@@ -741,8 +745,8 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
         week > WEEKS_IN_YEAR) { // if there is anything to be built
 
         double average_demand =
-                std::accumulate(demand_series_realization + week - (int) WEEKS_IN_YEAR,
-                                demand_series_realization + week,
+                std::accumulate(demand_series_realization.get() + week - (int) WEEKS_IN_YEAR,
+                                demand_series_realization.get() + week,
                                 0.0) / WEEKS_IN_YEAR;
 
 
@@ -918,7 +922,7 @@ Utility::setDemand_offset(double demand_offset, double offset_rate_per_volume) {
  */
 void Utility::setRealization(unsigned long r, vector<vector<double>> *rdm_factors) {
     unsigned long n_weeks = demands_all_realizations->at(r).size();
-    demand_series_realization = new double[n_weeks]();
+    demand_series_realization = unique_ptr<double[]>(new double[n_weeks]());
 
     /// Apply demand multiplier and copy demands pertaining to current realization.
     double delta_demand = demands_all_realizations->at(r)[0] * (1. - rdm_factors->at(r)[0]);
@@ -984,6 +988,14 @@ void Utility::checkErrorsAddWaterSourceOnline(WaterSource *water_source) {
 
 double Utility::getStorageToCapacityRatio() const {
     return total_stored_volume / total_storage_capacity;
+}
+
+double Utility::getTotal_available_volume() const {
+    return total_available_volume;
+}
+
+double Utility::getTotal_stored_volume() const {
+    return total_stored_volume;
 }
 
 double Utility::getTotal_storage_capacity() const {
@@ -1089,10 +1101,6 @@ const vector<WaterSource *> &Utility::getWater_sources() const {
 
 double Utility::getWaste_water_discharge() const {
     return waste_water_discharge;
-}
-
-double Utility::getTotal_stored_volume() const {
-    return total_stored_volume;
 }
 
 void Utility::resetTotal_storage_capacity() {

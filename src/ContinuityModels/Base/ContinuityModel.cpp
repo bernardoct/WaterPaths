@@ -133,14 +133,29 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
     }
 }
 
-ContinuityModel::~ContinuityModel() = default;
+ContinuityModel::~ContinuityModel() {
+    /// Delete water sources
+    for (auto ws : continuity_water_sources) {
+        delete ws;
+    }
+    continuity_water_sources.clear();
+
+    /// Delete utilities
+    for (auto u : continuity_utilities) {
+        delete u;
+    }
+
+    continuity_utilities.clear();
+}
 
 ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) :
         realization_id(continuity_model.realization_id),
         water_sources_online_to_utilities(
                 continuity_model.water_sources_online_to_utilities),
         n_utilities(continuity_model.n_utilities),
-        n_sources(continuity_model.n_sources) {}
+        n_sources(continuity_model.n_sources),
+        utilities_rdm(continuity_model.utilities_rdm),
+        water_sources_rdm(continuity_model.water_sources_rdm) {}
 
 /**
  * Calculates continuity for one week time step for streamflows of id_rof years
@@ -202,7 +217,7 @@ void ContinuityModel::continuityStep(
 
     /// updates combined storage for utilities.
     for (Utility *u : continuity_utilities) {
-        u->updateTotalStoredVolume();
+        u->updateTotalAvailableVolume();
     }
 }
 

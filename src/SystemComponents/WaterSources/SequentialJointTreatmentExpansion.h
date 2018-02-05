@@ -68,6 +68,8 @@ public:
     double calculateNetPresentConstructionCost(int week, int utility_id, double discount_rate,
                                                    double *level_debt_service_payment, double bond_term,
                                                    double bond_interest_rate) const override;
+
+    virtual ~SequentialJointTreatmentExpansion();
 };
 
 

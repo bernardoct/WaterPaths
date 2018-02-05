@@ -5,14 +5,13 @@
 #include <algorithm>
 #include <iostream>
 #include <numeric>
-#include <zconf.h>
 #include "AllocatedReservoir.h"
 
 
 AllocatedReservoir::AllocatedReservoir(
         const char *name, const int id, const vector<Catchment *> &catchments,
         const double capacity, const double max_treatment_capacity,
-        EvaporationSeries *evaporation_series, DataSeries *storage_area_curve,
+        EvaporationSeries &evaporation_series, DataSeries *storage_area_curve,
         vector<int> *utilities_with_allocations,
         vector<double> *allocated_fractions, vector<double>
         *allocated_treatment_fractions)
@@ -33,7 +32,7 @@ AllocatedReservoir::AllocatedReservoir(
 AllocatedReservoir::AllocatedReservoir(
         const char *name, const int id, const vector<Catchment *> &catchments,
         const double capacity, const double max_treatment_capacity,
-        EvaporationSeries *evaporation_series, DataSeries *storage_area_curve,
+        EvaporationSeries &evaporation_series, DataSeries *storage_area_curve,
         const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double construction_cost,
         vector<int> *utilities_with_allocations,
@@ -59,7 +58,7 @@ AllocatedReservoir::AllocatedReservoir(
 AllocatedReservoir::AllocatedReservoir(
         const char *name, const int id, const vector<Catchment *> &catchments,
         const double capacity, const double max_treatment_capacity,
-        EvaporationSeries *evaporation_series, double storage_area,
+        EvaporationSeries &evaporation_series, double storage_area,
         vector<int> *utilities_with_allocations,
         vector<double> *allocated_fractions, vector<double>
         *allocated_treatment_fractions)
@@ -80,7 +79,7 @@ AllocatedReservoir::AllocatedReservoir(
 AllocatedReservoir::AllocatedReservoir(
         const char *name, const int id, const vector<Catchment *> &catchments,
         const double capacity, const double max_treatment_capacity,
-        EvaporationSeries *evaporation_series, double storage_area,
+        EvaporationSeries &evaporation_series, double storage_area,
         const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double construction_cost,
         vector<int> *utilities_with_allocations,
@@ -147,14 +146,14 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
 
     /// Calculate total runoff inflow reaching reservoir from its watershed.
     upstream_catchment_inflow = 0;
-    for (Catchment *c : catchments)
-        upstream_catchment_inflow += c->getStreamflow(week);
+    for (Catchment &c : catchments)
+        upstream_catchment_inflow += c.getStreamflow(week);
 
     /// Calculates water lost through evaporation.
     evaporated_volume =
-            (fixed_area ? area * evaporation_series->getEvaporation(week) :
+            (fixed_area ? area * evaporation_series.getEvaporation(week) :
              storage_area_curve->get_dependent_variable(available_volume) *
-             evaporation_series->getEvaporation(week));
+             evaporation_series.getEvaporation(week));
 
     /// Calculate new stored volume and outflow based on continuity.
     double available_volume_new = available_volume

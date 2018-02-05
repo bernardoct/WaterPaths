@@ -7,6 +7,7 @@
 
 
 #include <map>
+#include <bits/unique_ptr.h>
 #include "WaterSources/Reservoir.h"
 #include "../Utils/Constants.h"
 #include "../Controls/WwtpDischargeRule.h"
@@ -24,6 +25,7 @@ private:
     double short_term_risk_of_failure = 0;
     double long_term_risk_of_failure = 0;
     double total_storage_capacity = 0;
+    double total_available_volume = 0;
     double total_stored_volume = 0;
     double total_treatment_capacity = 0;
     double waste_water_discharge = 0;
@@ -34,7 +36,7 @@ private:
     vector<WaterSource *> water_sources;
     WwtpDischargeRule wwtp_discharge_rule;
     vector<vector<double>> *demands_all_realizations;
-    double *demand_series_realization;
+    unique_ptr<double[]> demand_series_realization;
     double *rdm_factors_realization;
 
     /// Drought mitigation
@@ -118,7 +120,7 @@ public:
 
     void setRisk_of_failure(double risk_of_failure);
 
-    void updateTotalStoredVolume();
+    void updateTotalAvailableVolume();
 
     void calculateWastewater_releases(int week, double *discharges);
 
@@ -232,13 +234,16 @@ public:
                             const vector<int> &rof_infra_construction_order,
                             const vector<int> &demand_infra_construction_order);
 
-    double getTotal_stored_volume() const;
+    double getTotal_available_volume() const;
 
     void resetTotal_storage_capacity();
 
     double getUnfulfilled_demand() const;
 
     double getNet_stream_inflow() const;
+
+    double getTotal_stored_volume() const;
+
 };
 
 

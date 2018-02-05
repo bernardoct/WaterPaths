@@ -18,13 +18,13 @@ WaterReuse::WaterReuse(const char *name, const int id, const double capacity)
 
 
 WaterReuse::WaterReuse(
-        const char *name, const int id, const double capacity,
+        const char *name, const int id, const double treatment_capacity,
         const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double permitting_period,
-        double construction_cost_of_capital) : WaterSource(name, id, vector<Catchment *>(), capacity, capacity, WATER_REUSE,
-                                                 construction_time_range, permitting_period,
-                                                 construction_cost_of_capital) {
-    available_volume = capacity;
+        double construction_cost_of_capital) : WaterSource(name, id, vector<Catchment *>(), NONE, treatment_capacity,
+                                                           WATER_REUSE, construction_time_range, permitting_period,
+                                                           construction_cost_of_capital) {
+    available_volume = treatment_capacity;
 }
 
 void WaterReuse::applyContinuity(int week, double upstream_source_inflow,
@@ -35,14 +35,13 @@ void WaterReuse::applyContinuity(int week, double upstream_source_inflow,
                                           demand_outflow.end(),
                                           0.);
 
-    treated_volume = min(total_demand,
-                         capacity);
+    treated_volume = min(total_demand, total_treatment_capacity);
 }
 
 
 WaterReuse &WaterReuse::operator=(const WaterReuse &water_reuse) {
     WaterSource::operator=(water_reuse);
-    available_volume = water_reuse.capacity;
+    available_volume = water_reuse.available_volume;
     return *this;
 }
 

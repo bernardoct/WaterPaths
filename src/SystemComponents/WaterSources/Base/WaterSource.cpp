@@ -24,13 +24,18 @@ WaterSource::WaterSource(
         const char *name, const int id,
         const vector<Catchment *> &catchments, const double capacity,
         double treatment_capacity, const int source_type)
-        : name(name), capacity(capacity), catchments(catchments),
+        : name(name), capacity(capacity),
           online(ONLINE), available_volume(capacity), id(id),
           total_treatment_capacity(treatment_capacity),
           source_type(source_type),
           construction_time(NON_INITIALIZED),
           construction_cost_of_capital(NON_INITIALIZED),
-          permitting_time(NON_INITIALIZED), highest_alloc_id(NOT_ALLOCATED) {}
+          permitting_time(NON_INITIALIZED), highest_alloc_id(NOT_ALLOCATED) {
+
+    for (Catchment *c : catchments) {
+        this->catchments.push_back(Catchment(*c));
+    }
+}
 
 /**
  * Constructor for when water source does not exist in the beginning of the simulation.
@@ -49,7 +54,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
                          const double capacity, double treatment_capacity, const int source_type,
                          const vector<double> construction_time_range, double permitting_period,
                          double construction_cost_of_capital)
-        : name(name), capacity(capacity), catchments(catchments),
+        : name(name), capacity(capacity),
           online(OFFLINE), available_volume(capacity), id(id),
           total_treatment_capacity(treatment_capacity),
           source_type(source_type),
@@ -59,7 +64,12 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
                    construction_time_range[0]) *
                   (rand() % (int) WEEKS_IN_YEAR)),
           permitting_time(permitting_period),
-          construction_cost_of_capital(construction_cost_of_capital), highest_alloc_id(NOT_ALLOCATED) {}
+          construction_cost_of_capital(construction_cost_of_capital), highest_alloc_id(NOT_ALLOCATED) {
+
+    for (Catchment *c : catchments) {
+        this->catchments.push_back(Catchment(*c));
+    }
+}
 
 
 /**
@@ -79,7 +89,7 @@ WaterSource::WaterSource(
         vector<double> *allocated_treatment_fractions,
         vector<double> *allocated_fractions,
         vector<int> *utilities_with_allocations)
-        : name(name), capacity(capacity), catchments(catchments),
+        : name(name), capacity(capacity),
           online(ONLINE), available_volume(capacity), id(id),
           source_type(source_type),
           total_treatment_capacity(treatment_capacity),
@@ -91,6 +101,10 @@ WaterSource::WaterSource(
     setAllocations(utilities_with_allocations,
                    allocated_fractions,
                    allocated_treatment_fractions);
+
+    for (Catchment *c : catchments) {
+        this->catchments.push_back(Catchment(*c));
+    }
 }
 
 /**
@@ -111,7 +125,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
                          vector<double> *allocated_treatment_fractions, vector<double> *allocated_fractions,
                          vector<int> *utilities_with_allocations, const vector<double> construction_time_range,
                          double permitting_period, double construction_cost_of_capital)
-        : name(name), capacity(capacity), catchments(catchments),
+        : name(name), capacity(capacity),
           online(OFFLINE), available_volume(capacity), id(id),
           total_treatment_capacity(treatment_capacity),
           source_type(source_type),
@@ -127,6 +141,10 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
     setAllocations(utilities_with_allocations,
                    allocated_fractions,
                    allocated_treatment_fractions);
+
+    for (Catchment *c : catchments) {
+        this->catchments.push_back(Catchment(*c));
+    }
 }
 
 /**
@@ -171,17 +189,15 @@ WaterSource::WaterSource(const WaterSource &water_source) :
     }
 
     catchments.clear();
-    for (Catchment *c : water_source.catchments) {
-        catchments.push_back(new Catchment(*c));
+    for (int i = 0; i < water_source.catchments.size(); ++i) {
+        catchments.push_back(Catchment(water_source.catchments[i]));
     }
 }
 
 /**
  * Destructor.
  */
-WaterSource::~WaterSource() {
-    catchments.clear();
-}
+WaterSource::~WaterSource() {}
 
 /**
  * Copy assignment operator.
@@ -210,8 +226,8 @@ WaterSource &WaterSource::operator=(const WaterSource &water_source) {
     } 
 
     catchments.clear();
-    for (Catchment *c : water_source.catchments) {
-        catchments.push_back(new Catchment(*c));
+    for (Catchment &c : catchments) {
+        this->catchments.push_back(Catchment(c));
     }
 
     return *this;
@@ -364,8 +380,8 @@ void WaterSource::continuityWaterSource(int week, double upstream_source_inflow,
 void WaterSource::bypass(int week, double total_upstream_inflow) {
 
     upstream_catchment_inflow = 0;
-    for (Catchment *c : catchments) {
-        upstream_catchment_inflow += c->getStreamflow((week));
+    for (Catchment &c : catchments) {
+        upstream_catchment_inflow += c.getStreamflow((week));
     }
 
     total_demand = NONE;
@@ -440,18 +456,18 @@ void WaterSource::addTreatmentCapacity(
  * permitting time and construction cost.
  */
 void WaterSource::setRealization(unsigned long r, vector<vector<double>> *rdm_factors) {
-    for (Catchment *c : catchments)
-        c->setRealization(r, rdm_factors);
+    for (Catchment &c : catchments)
+        c.setRealization(r, rdm_factors);
 
     /// Update total catchment inflow, demand, and available water volume for
     /// week 0;
     this->upstream_catchment_inflow = 0;
-    for (Catchment *c : catchments) {
-        this->upstream_catchment_inflow = c->getStreamflow(0);
+    for (Catchment &c : catchments) {
+        this->upstream_catchment_inflow = c.getStreamflow(0);
     }
 
     /// Set permitting times and construction cost overruns according to corresponding rdm factors.
-  permitting_time *= rdm_factors->at(r)[1 + 2 * id];
+    permitting_time *= rdm_factors->at(r)[1 + 2 * id];
     construction_cost_of_capital *= rdm_factors->at(r)[1 + 2 * id + 1];
 }
 

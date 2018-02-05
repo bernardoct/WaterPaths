@@ -3,8 +3,11 @@
 //
 
 #include <algorithm>
+#include <numeric>
+#include <iostream>
+#include <iterator>
+#include <fstream>
 #include "Triangle.h"
-#include "../Utils/Utils.h"
 #include "../Controls/SeasonalMinEnvFlowControl.h"
 #include "../Controls/Custom/FallsLakeMinEnvFlowControl.h"
 #include "../Controls/StorageMinEnvFlowControl.h"
@@ -19,7 +22,6 @@
 #include "../SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
 #include "../DroughtMitigationInstruments/InsuranceStorageToROF.h"
-#include "../DataCollector/MasterDataCollector.h"
 #include "../Simulation/Simulation.h"
 
 /**
@@ -34,6 +36,7 @@
  * infrastructure).
  */
 void Triangle::functionEvaluation(const double *vars, double *objs, double *consts) {
+    cout << "Building Triangle Problem." << endl;
     //srand(0);//(unsigned int) time(nullptr));
 
     // ===================== SET UP DECISION VARIABLES  =====================
@@ -65,6 +68,12 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
     double owasa_inftrigger = vars[24];
     double raleigh_inftrigger = vars[25];
     double cary_inftrigger = vars[26];
+    if (import_export_rof_tables == EXPORT_ROF_TABLES) {
+        durham_inftrigger = 1.1;
+        owasa_inftrigger = 1.1;
+        raleigh_inftrigger = 1.1;
+        cary_inftrigger = 1.1;
+    }
     double university_lake_expansion_ranking = vars[27]; // 14
     double Cane_creek_expansion_ranking = vars[28]; // 24
     double Stone_quarry_reservoir_expansion_shallow_ranking = vars[29]; // 12
@@ -202,55 +211,6 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
 
     /// In case a vector containing realizations numbers to be calculated is passed, set
     /// number of realizations to number of realizations in that vector.
-    unsigned long max_lines = n_realizations;
-    vector<unsigned long> realizations_to_read;
-    if (!realizations.empty()) {
-        realizations_to_read = this->realizations;
-        n_realizations = (int) realizations_to_read.size();
-    } else
-        realizations_to_read = vector<unsigned long>();
-
-    vector<vector<double>> streamflows_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/durham_inflows.csv", max_lines, realizations_to_read);
-    vector<vector<double>> streamflows_flat = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/falls_lake_inflows.csv", max_lines, realizations_to_read);
-    vector<vector<double>> streamflows_swift = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/lake_wb_inflows.csv", max_lines, realizations_to_read);
-    vector<vector<double>> streamflows_llr = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/little_river_raleigh_inflows.csv", max_lines, realizations_to_read);
-    vector<vector<double>> streamflows_crabtree = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/crabtree_inflows.csv", max_lines, realizations_to_read);
-    vector<vector<double>> streamflows_phils = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/stone_quarry_inflows.csv", max_lines, realizations_to_read);
-    vector<vector<double>> streamflows_cane = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/cane_creek_inflows.csv", max_lines, realizations_to_read);
-    vector<vector<double>> streamflows_morgan = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/university_lake_inflows.csv", max_lines, realizations_to_read);
-    vector<vector<double>> streamflows_haw = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/jordan_lake_inflows.csv", max_lines, realizations_to_read);
-    vector<vector<double>> streamflows_clayton = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/clayton_inflows.csv", max_lines, realizations_to_read);
-    vector<vector<double>> streamflows_lillington = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/lillington_inflows.csv", max_lines, realizations_to_read);
-
-    //cout << "Reading demands." << endl;
-    vector<vector<double>> demand_cary = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/cary_demand.csv", max_lines, realizations_to_read);
-    vector<vector<double>> demand_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/durham_demand.csv", max_lines, realizations_to_read);
-    vector<vector<double>> demand_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/raleigh_demand.csv", max_lines, realizations_to_read);
-    vector<vector<double>> demand_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/owasa_demand.csv", max_lines, realizations_to_read);
-
-    //cout << "Reading evaporations." << endl;
-    vector<vector<double>> evap_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/durham_evap.csv", max_lines, realizations_to_read);
-    vector<vector<double>> evap_falls_lake = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/falls_lake_evap.csv", max_lines, realizations_to_read);
-    vector<vector<double>> evap_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/owasa_evap.csv", max_lines, realizations_to_read);
-    vector<vector<double>> evap_little_river = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/little_river_raleigh_evap.csv", max_lines, realizations_to_read);
-    vector<vector<double>> evap_wheeler_benson = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/wb_evap.csv", max_lines, realizations_to_read);
-    vector<vector<double>> evap_jordan_lake = evap_owasa;
-
-    //cout << "Reading others." << endl;
-    vector<vector<double>> demand_to_wastewater_fraction_owasa_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
-    vector<vector<double>> demand_to_wastewater_fraction_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_durham.csv");
-//
-    vector<vector<double>> caryDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/caryDemandClassesFractions.csv");
-    vector<vector<double>> durhamDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/durhamDemandClassesFractions.csv");
-    vector<vector<double>> raleighDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/raleighDemandClassesFractions.csv");
-    vector<vector<double>> owasaDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/owasaDemandClassesFractions.csv");
-
-    vector<vector<double>> caryUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/caryUserClassesWaterPrices.csv");
-    vector<vector<double>> durhamUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/durhamUserClassesWaterPrices.csv");
-    vector<vector<double>> raleighUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/raleighUserClassesWaterPrices.csv");
-    vector<vector<double>> owasaUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/owasaUserClassesWaterPrices.csv");
-
-    vector<vector<double>> owasaPriceSurcharges = Utils::parse2DCsvFile(output_directory + "/TestFiles/owasaPriceRestMultipliers.csv");
 
 //    vector<double> sewageFractions = Utils::parse1DCsvFile(
 //            output_directory + "/TestFiles/sewageFractions.csv");
@@ -327,9 +287,9 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
     gage_lillington.push_back(&cape_fear_river_at_lillington);
 
     /// Storage vs. area reservoir curves.
-    vector<double> falls_lake_storage = {0, 23266, 34700};
+    vector<double> falls_lake_storage = {0, 23266 * table_gen_storage_multiplier, 34700 * table_gen_storage_multiplier};
     vector<double> falls_lake_area = {0.32 * 5734, 0.32 * 29000, 0.28 * 40434};
-    vector<double> wheeler_benson_storage = {0, 2789.66};
+    vector<double> wheeler_benson_storage = {0, 2789.66 * table_gen_storage_multiplier};
     vector<double> wheeler_benson_area = {0, 0.3675 * 2789.66};
     vector<double> teer_storage = {0, 1315.0};
     vector<double> teer_area = {20, 50};
@@ -415,8 +375,8 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
     double discount_rate = 0.05;
 
     /// Jordan Lake parameters
-    double jl_supply_capacity = 14924.0;
-    double jl_wq_capacity = 30825.0;
+    double jl_supply_capacity = 14924.0 * table_gen_storage_multiplier;
+    double jl_wq_capacity = 30825.0 * table_gen_storage_multiplier;
     double jl_storage_capacity = jl_wq_capacity + jl_supply_capacity;
     vector<int> jl_allocations_ids = {0, 1, 2, 3, WATER_QUALITY_ALLOCATION};
     vector<double> jl_allocation_fractions = {
@@ -428,8 +388,8 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
     vector<double> jl_treatment_allocation_fractions = {0.0, 0.0, 1.0, 0.0};
 
     /// Jordan Lake parameters
-    double fl_supply_capacity = 14700.0;
-    double fl_wq_capacity = 20000.0;
+    double fl_supply_capacity = 14700.0 * table_gen_storage_multiplier;
+    double fl_wq_capacity = 20000.0 * table_gen_storage_multiplier;
     double fl_storage_capacity = fl_wq_capacity + fl_supply_capacity;
     vector<int> fl_allocations_ids = {3, WATER_QUALITY_ALLOCATION};
     vector<double> fl_allocation_fractions = {
@@ -441,9 +401,9 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
     Reservoir durham_reservoirs("Lake Michie & Little River Res. (Durham)",
                                 0,
                                 catchment_durham,
-                                6349.0,
+                                6349.0 * table_gen_storage_multiplier,
                                 ILLIMITED_TREATMENT_CAPACITY,
-                                &evaporation_durham, 1069);
+                                evaporation_durham, 1069);
 //    Reservoir falls_lake("Falls Lake", 1, catchment_flat,
 //                         34700.0, 99999,
 //                         &evaporation_falls_lake, &falls_lake_storage_area);
@@ -452,42 +412,42 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                   catchment_flat,
                                   fl_storage_capacity,
                                   ILLIMITED_TREATMENT_CAPACITY,
-                                  &evaporation_falls_lake,
+                                  evaporation_falls_lake,
                                   &falls_lake_storage_area,
                                   &fl_allocations_ids,
                                   &fl_allocation_fractions,
                                   &fl_treatment_allocation_fractions);
 
     Reservoir wheeler_benson_lakes("Wheeler-Benson Lakes", 2, catchment_swift,
-                                   2789.66,
+                                   2789.66 * table_gen_storage_multiplier,
                                    ILLIMITED_TREATMENT_CAPACITY,
-                                   &evaporation_wheeler_benson,
+                                   evaporation_wheeler_benson,
                                    &wheeler_benson_storage_area);
     Reservoir stone_quarry("Stone Quarry",
                            3,
                            catchment_phils,
-                           200.0,
+                           200.0 * table_gen_storage_multiplier,
                            ILLIMITED_TREATMENT_CAPACITY,
-                           &evaporation_owasa,
+                           evaporation_owasa,
                            10);
     Reservoir ccr("Cane Creek Reservoir",
                   4,
                   catchment_cane,
-                  2909.0,
+                  2909.0 * table_gen_storage_multiplier,
                   ILLIMITED_TREATMENT_CAPACITY,
-                  &evaporation_owasa,
+                  evaporation_owasa,
                   500);
     Reservoir university_lake("University Lake", 5, catchment_morgan,
-                              449.0,
+                              449.0 * table_gen_storage_multiplier,
                               ILLIMITED_TREATMENT_CAPACITY,
-                              &evaporation_owasa,
+                              evaporation_owasa,
                               212);
     AllocatedReservoir jordan_lake("Jordan Lake",
                                    6,
                                    catchment_haw,
                                    jl_storage_capacity,
                                    448,
-                                   &evaporation_jordan_lake,
+                                   evaporation_jordan_lake,
                                    13940,
                                    &jl_allocations_ids,
                                    &jl_allocation_fractions,
@@ -508,7 +468,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                      catchment_little_river_raleigh,
                                      3700.0,
                                      ILLIMITED_TREATMENT_CAPACITY,
-                                     &evaporation_little_river,
+                                     evaporation_little_river,
 //                                     &little_river_storage_area);
                                      &little_river_storage_area,
                                      city_infrastructure_rof_triggers[3],
@@ -523,7 +483,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                  gage_clayton,
                                  4000.0,
                                  ILLIMITED_TREATMENT_CAPACITY,
-                                 &evaporation_falls_lake,
+                                 evaporation_falls_lake,
                                  100.,
                                  city_infrastructure_rof_triggers[3],
                                  construction_time_interval,
@@ -541,7 +501,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                        vector<Catchment *>(),
                        1315.0,
                        ILLIMITED_TREATMENT_CAPACITY,
-                       &evaporation_falls_lake,
+                       evaporation_falls_lake,
                        &teer_storage_area,
                        city_infrastructure_rof_triggers[1],
                        construction_time_interval,
@@ -550,11 +510,11 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                        22.6,
                        15 * 7); //FIXME: MAX PUMPING CAPACITY?
     //Reservoir rNeuseRiverIntake("rNeuseRiverIntake", 10, 0, catchment_flat, 16.0, 99999, city_infrastructure_rof_triggers[3], construction_time_interval, 5000, 20, 0.05);
-    Intake neuse_river_intake("Neuse River Intake", 10, catchment_flat, 16 * 7);//,
-//                              city_infrastructure_rof_triggers[3],
-//                              construction_time_interval,
-//                              17 * WEEKS_IN_YEAR,
-//                              225.5);
+    Intake neuse_river_intake("Neuse River Intake", 10, catchment_flat, 16 * 7,
+                              city_infrastructure_rof_triggers[3],
+                              construction_time_interval,
+                              17 * WEEKS_IN_YEAR,
+                              225.5);
     auto it10 = std::find(rof_triggered_infra_order_raleigh.begin(),
                          rof_triggered_infra_order_raleigh.end(), 10);
     rof_triggered_infra_order_raleigh.erase(it10);
@@ -691,7 +651,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                                       316.8 / 2);
 
     Reservoir dummy_endpoint("Dummy Node", 11, vector<Catchment *>(), 1., 0,
-                             &evaporation_durham, 1, 1,
+                             evaporation_durham, 1, 1,
                              construction_time_interval,
                              0,
                              0);
@@ -837,6 +797,12 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
             {1, 2,  6, 7,  8,  17, 10, 20, 21}  //Raleigh
     };
 
+    auto table_storage_shift = vector<vector<double>>(4, vector<double>(24, 0.));
+    table_storage_shift[3][17] = 2500.;
+    table_storage_shift[1][14] = 100.;
+    table_storage_shift[1][20] = 500.;
+    table_storage_shift[1][21] = 500.;
+
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
     /// Restriction policies
     vector<double> initial_restriction_triggers = {OWASA_restriction_trigger,
@@ -927,18 +893,14 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                cary_insurance_payment,
                                raleigh_insurance_payment};
     vector<int> insured_utilities = {0, 1, 2, 3};
-    InsuranceStorageToROF in(5,
-                             water_sources,
-                             g,
-                             reservoir_utility_connectivity_matrix,
-                             utilities, min_env_flow_controls,
-                             &utilities_rdm,
-                             &water_sources_rdm,
-                             insurance_triggers, 1.2, fixed_payouts);
+    InsuranceStorageToROF in(5, water_sources, g, reservoir_utility_connectivity_matrix, utilities,
+                             min_env_flow_controls, &utilities_rdm, &water_sources_rdm, insurance_triggers, 1.2,
+                             fixed_payouts, n_weeks);
 
     drought_mitigation_policies.push_back(&in);
 
     if (utilities_rdm.empty()) {
+        /// All matrices below have dimensions n_realizations x nr_rdm_factors
         utilities_rdm = std::vector<vector<double>>(n_realizations, vector<double>(4, 1.));
         water_sources_rdm = std::vector<vector<double>>(n_realizations, vector<double>(49, 1.));
         policies_rdm = std::vector<vector<double>>(n_realizations, vector<double>(4, 1.));
@@ -954,28 +916,46 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                  &utilities_rdm,
                  &water_sources_rdm,
                  &policies_rdm,
+                 import_export_rof_tables,
                  n_weeks,
-                 n_realizations);
-    cout << "Beginning simulation." << endl;
-    auto* mdc = s.runFullSimulation(n_threads, EXPORT_ROF_TABLES, DO_NOT_USE_PRE_CALCULATED_ROF_TABLES);
-    this->master_data_collector = mdc;
-    cout << "Ending simulation" << endl;
+                 realizations_to_run);
 
-    vector<double> obj_not_jla = calculateObjectivesAndPrintOutput();
-/*
-    int i = 0;
-    objs[i] = min(min(obj_not_jla[i*4], obj_not_jla[i*4+5]), min(obj_not_jla[i*4+10], obj_not_jla[i*4+15]));
-    for (i = 1; i < 5; ++i) {
-        objs[i] = max(max(obj_not_jla[i*4], obj_not_jla[i*4+5]), max(obj_not_jla[i*4+10], obj_not_jla[i*4+15]));
+    if (import_export_rof_tables == IMPORT_ROF_TABLES)
+        s.setPrecomputed_rof_tables(rof_tables, table_storage_shift);
+
+    cout << "Beginning simulation." << endl;
+    this->master_data_collector = s.runFullSimulation(n_threads);
+
+    if (import_export_rof_tables != EXPORT_ROF_TABLES) {
+        objectives = calculateAndPrintObjectives(false);
+
+        int i = 0;
+        objs[i] = min(min(objectives[i * 4], objectives[i * 4 + 5]),
+                      min(objectives[i * 4 + 10], objectives[i * 4 + 15]));
+        for (i = 1; i < 5; ++i) {
+            objs[i] = max(max(objectives[i * 4], objectives[i * 4 + 5]),
+                          max(objectives[i * 4 + 10], objectives[i * 4 + 15]));
+        }
+
+        objs[5] = max(max(OWASA_JLA, Durham_JLA), max(Cary_JLA, Raleigh_JLA));
+
+        objectives.push_back(objs[5]);
+        cout << "objectives returned" << endl;
+        objectives.clear();
     }
 
-    objs[5] = max(max(OWASA_JLA, Durham_JLA), max(Cary_JLA, Raleigh_JLA));*/
-
-    cout << "objectives returned" << endl;
+//    delete master_data_collector;
 }
 
-Triangle::Triangle(int solution_no, int rdm_no, bool use_precomp_rof_tables)
-        : use_precomp_rof_tables(use_precomp_rof_tables) {
+Triangle::~Triangle() {}
+
+Triangle::Triangle(unsigned long n_weeks, int import_export_rof_table)
+        : Problem(n_weeks) {
+    if (import_export_rof_table == EXPORT_ROF_TABLES) {
+        table_gen_storage_multiplier = BASE_STORAGE_CAPACITY_MULTIPLIER;
+    } else {
+        table_gen_storage_multiplier = 1.;
+    }
 }
 
 /**
@@ -985,28 +965,118 @@ Triangle::Triangle(int solution_no, int rdm_no, bool use_precomp_rof_tables)
  * @param n_weeks number of weeks.
  */
 void
-Triangle::setRofTables(const string &folder, int n_realizations, int n_weeks,
-                       vector<vector<double>> &infra_table_shift) {
+Triangle::setRofTables(unsigned long n_realizations, int n_weeks, int n_utilities) {
 
-    auto table0 = Utils::parse2DCsvFile(folder + "/tables_r0_w0.csv");
-    int n_utilities = (int) table0.size();
-    int n_tiers = (int) table0[0].size();
-    this->infra_table_shift = infra_table_shift;
+    cout << "Loading ROF tables" << endl;
 
+    string folder = "rof_tables";
+    int n_tiers = NO_OF_INSURANCE_STORAGE_TIERS + 1;
+    rof_tables = vector<Matrix3D<double>>(
+            n_realizations, Matrix3D<double>(n_weeks, n_utilities, n_tiers));
+
+//    double start_loading = omp_get_wtime();
+//#pragma omp parallel for
     for (int r = 0; r < n_realizations; ++r) {
-        auto realization_table = Matrix3D<double>(
-                n_realizations, n_utilities, n_tiers);
-        for (int w = 0; w < n_weeks; ++w) {
-            string file = folder + "/tables_r" + to_string(r) +
-                    "_w" + to_string(w) + ".csv";
-            auto table_week = Utils::parse2DCsvFile(file);
-            for (int u = 0; u < n_utilities; ++u) {
-                for (int t = 0; t < n_tiers; ++t) {
-                    realization_table(w, u, t) = table_week[u][t];
-                }
+//        double start_realization = omp_get_wtime();
+        string file_name = folder + "/tables_r" + to_string(r);
+        ifstream in(file_name, ios_base::binary);
+        if (!in.good()) {
+            string error_table_file = "Tables file not found: " + file_name;
+            __throw_invalid_argument(error_table_file.c_str());
+        }
+
+        unsigned stringsize;
+        in.read(reinterpret_cast<char *>(&stringsize), sizeof(unsigned));
+
+        double data[stringsize];
+        in.read(reinterpret_cast<char *>(&data),
+                stringsize * sizeof(double));
+
+        rof_tables[r].setData(data, stringsize);
+
+        for (int i = 0; i < stringsize; ++i) {
+            double d = data[i];
+            if (std::isnan(d) || d > 1.01 || d < 0) {
+                string error_m = "nan or out of [0,1] rof imported "
+                                         "tables. Realization " +
+                                 to_string(r);
+		printf("%s", error_m.c_str());
+                __throw_logic_error(error_m.c_str());
             }
         }
 
-        rof_tables.push_back(realization_table);
+        in.close();
+
+//        printf("Tables for realization %d loaded in %f s.\n", r,
+//               omp_get_wtime () - start_realization);
+    }
+//    printf("ROF Tables loaded in %f s.\n",
+//           omp_get_wtime () - start_loading);
+}
+
+void Triangle::readInputData(){
+
+    cout << "Reading input data." << endl;
+
+// #pragma omp parallel {
+    // #pragma omp single {
+    streamflows_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/durham_inflows.csv", n_realizations);
+    streamflows_flat = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/falls_lake_inflows.csv", n_realizations);
+    streamflows_swift = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/lake_wb_inflows.csv", n_realizations);
+    streamflows_llr = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/little_river_raleigh_inflows.csv", n_realizations);
+    // }
+    streamflows_crabtree = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/crabtree_inflows.csv", n_realizations);
+    streamflows_phils = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/stone_quarry_inflows.csv", n_realizations);
+    streamflows_cane = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/cane_creek_inflows.csv", n_realizations);
+    streamflows_morgan = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/university_lake_inflows.csv", n_realizations);
+    streamflows_haw = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/jordan_lake_inflows.csv", n_realizations);
+    streamflows_clayton = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/clayton_inflows.csv", n_realizations);
+    streamflows_lillington = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/lillington_inflows.csv", n_realizations);
+// };
+    //cout << "Reading evaporations." << endl;
+    evap_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/durham_evap.csv", n_realizations);
+    evap_falls_lake = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/falls_lake_evap.csv", n_realizations);
+    evap_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/owasa_evap.csv", n_realizations);
+    evap_little_river = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/little_river_raleigh_evap.csv", n_realizations);
+    evap_wheeler_benson = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/wb_evap.csv", n_realizations);
+    evap_jordan_lake = evap_owasa;
+
+    //cout << "Reading demands." << endl;
+    demand_cary = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/cary_demand.csv", n_realizations);
+    demand_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/durham_demand.csv", n_realizations);
+    demand_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/raleigh_demand.csv", n_realizations);
+    demand_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/owasa_demand.csv", n_realizations);
+
+    //cout << "Reading others." << endl;
+    demand_to_wastewater_fraction_owasa_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
+    demand_to_wastewater_fraction_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_durham.csv");
+//
+    caryDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/caryDemandClassesFractions.csv");
+    durhamDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/durhamDemandClassesFractions.csv");
+    raleighDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/raleighDemandClassesFractions.csv");
+    owasaDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/owasaDemandClassesFractions.csv");
+
+    caryUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/caryUserClassesWaterPrices.csv");
+    durhamUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/durhamUserClassesWaterPrices.csv");
+    raleighUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/raleighUserClassesWaterPrices.csv");
+    owasaUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/owasaUserClassesWaterPrices.csv");
+
+    owasaPriceSurcharges = Utils::parse2DCsvFile(output_directory + "/TestFiles/owasaPriceRestMultipliers.csv");
+
+    cout << "Done reading input data." << endl;
+    
+}
+
+void Triangle::setImport_export_rof_tables(int import_export_rof_tables, int n_weeks) {
+    if (std::abs(import_export_rof_tables) > 1)
+        __throw_invalid_argument("Import/export ROF tables can be assigned as:\n"
+                                         "-1 - import tables\n"
+                                         "0 - ignore tables\n"
+                                         "1 - export tables.\n"
+                                         "The value entered is invalid.");
+    Triangle::import_export_rof_tables = import_export_rof_tables;
+
+    if (import_export_rof_tables == IMPORT_ROF_TABLES) {
+        Triangle::setRofTables(n_realizations, n_weeks, n_utilities);
     }
 }

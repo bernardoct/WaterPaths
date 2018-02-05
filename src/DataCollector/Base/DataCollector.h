@@ -20,6 +20,8 @@ public:
     explicit DataCollector(int id, const char *name, unsigned long realization,
                            int type, int table_width);
 
+    virtual ~DataCollector();
+
     virtual string printTabularString(int week) = 0;
 
     virtual string printCompactString(int week) = 0;

@@ -13,7 +13,7 @@ EvaporationSeries::EvaporationSeries(
  * Copy constructor.
  * @param catchment
  */
-EvaporationSeries::EvaporationSeries(EvaporationSeries &evaporation_series)
+EvaporationSeries::EvaporationSeries(const EvaporationSeries &evaporation_series)
         : Catchment(evaporation_series) {}
 
 /**
@@ -41,7 +41,7 @@ double EvaporationSeries::getEvaporation(int week) {
 void EvaporationSeries::setRealization(unsigned long r, vector<vector<double>> *rdm_factors) {
     Catchment::setRealization(r, rdm_factors);
 
-    for (int w = 0; w < streamflows_all->at(r).size(); ++w) {
+    for (int w = 0; w < streamflows_realization.size(); ++w) {
         streamflows_realization[w] *= rdm_factors->at(r)[0];
     }
 }

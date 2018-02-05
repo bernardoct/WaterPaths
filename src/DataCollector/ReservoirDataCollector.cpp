@@ -51,7 +51,7 @@ string ReservoirDataCollector::printCompactString(int week) {
             << stored_volume[week] << ",";
 
     if (reservoir->fixed_area)
-        outStream << area[week] << ",";
+        outStream << reservoir->fixed_area << ",";
 
     outStream
             << demands[week] << ","

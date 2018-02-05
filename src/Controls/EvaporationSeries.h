@@ -13,7 +13,7 @@ public:
     EvaporationSeries(
             vector<vector<double>> *evaporation_series, int series_length);
 
-    EvaporationSeries(EvaporationSeries &evaporation_series);
+    EvaporationSeries(const EvaporationSeries &evaporation_series);
 
     EvaporationSeries &operator=(const EvaporationSeries &evaporation_series);
 

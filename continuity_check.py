@@ -1,6 +1,6 @@
+import fnmatch
 import numpy as np
 import pandas as pd
-import fnmatch
 
 folder = 'TestFiles/output/'
 <<<<<<< HEAD

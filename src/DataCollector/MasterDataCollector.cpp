@@ -420,7 +420,9 @@ void MasterDataCollector::addRealization(
                  water_sources_realization[ws]->source_type ==
                  NEW_WATER_TREATMENT_PLANT ||
                  water_sources_realization[ws]->source_type ==
-                 SOURCE_RELOCATION)
+                 SOURCE_RELOCATION ||
+                 water_sources_realization[ws]->source_type ==
+                 ALLOCATED_RESERVOIR_EXPANSION)
             water_source_collectors[ws].push_back(
                     new EmptyDataCollector());
         else

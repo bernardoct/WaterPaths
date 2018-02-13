@@ -14,6 +14,7 @@
 #include "../ContinuityModels/ContinuityModelROF.h"
 #include "../Controls/Base/MinEnvironFlowControl.h"
 #include "../DataCollector/MasterDataCollector.h"
+#include "../Controls/AllocationModifier.h"
 #include <vector>
 
 using namespace Constants;

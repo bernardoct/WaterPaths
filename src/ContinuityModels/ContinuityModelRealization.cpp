@@ -56,6 +56,11 @@ void ContinuityModelRealization::setLongTermROFs(const vector<double> &risks_of_
     vector<int> new_infra_triggered;
     int nit; // new infrastruction triggered - id.
 
+    /// At the beginning of each year, modify allocations in shared reservoirs as desired
+    for (unsigned long ws = 0; ws < continuity_water_sources.size(); ++ws) {
+        continuity_water_sources[ws]->updateTreatmentAndCapacityAllocations(week);
+    }
+
     /// Loop over utilities to see if any of them will build new infrastructure.
     for (unsigned long u = 0; u < continuity_utilities.size(); ++u) {
         /// Runs utility's infrastructure construction handler and get the id

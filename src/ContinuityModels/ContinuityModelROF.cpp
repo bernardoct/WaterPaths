@@ -53,7 +53,8 @@ ContinuityModelROF::ContinuityModelROF(
 
 ContinuityModelROF::ContinuityModelROF(ContinuityModelROF &continuity_model_rof)
         : ContinuityModel(continuity_model_rof.continuity_water_sources, continuity_model_rof.continuity_utilities,
-                          continuity_model_rof.min_env_flow_controls, continuity_model_rof.water_sources_graph,
+                          continuity_model_rof.min_env_flow_controls,
+                          continuity_model_rof.water_sources_graph,
                           continuity_model_rof.water_sources_to_utilities,
                           continuity_model_rof.utilities_rdm,
                           continuity_model_rof.water_sources_rdm,
@@ -126,6 +127,7 @@ vector<double> ContinuityModelROF::calculateShortTermROF(int week) {
 
                 if (continuity_utilities[u]->getStorageToCapacityRatio() <= STORAGE_CAPACITY_RATIO_FAIL)
                     year_failure[u] = FAILURE;
+            }
 
             /// calculated week of storage-rof table
             updateStorageToROFTable(INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD,
@@ -157,6 +159,9 @@ vector<double> ContinuityModelROF::calculateShortTermROF(int week) {
          else
              break;
      }
+
+//    storage_to_rof_table->print(week_of_the_year);
+//    cout << endl;
 
 //    cout << "Week " << week_of_the_year << " B. Tier " << beginning_tier << endl;
 //    storage_to_rof_table->print(week_of_the_year);
@@ -287,28 +292,29 @@ void ContinuityModelROF::updateStorageToROFTable(double storage_percent_decremen
             }
         }
 
-        for (unsigned int u = 0; u < n_utilities; ++u) {
-            /// CHECK FOR CONTINUITY FALIURES
-
-            if (utilities_storages[u]/utilities_capacities[u] > 1) {
-
-                cout << "Utility (name and ID): " << continuity_utilities[u]->name << ", "
-                     << continuity_utilities[u]->id << endl;
-                cout << "Storage: " << utilities_storages[u] << endl;
-                cout << "Capacity: " << utilities_capacities[u] << endl;
-
-                for (int ws : water_sources_online_to_utilities[u]) {
-                    cout << "Member Source: " << continuity_water_sources[ws]->name << ", (Allocated) Storage: "
-                         << continuity_water_sources[ws]->getAvailableAllocatedVolume(u) << ", (Allocated) Capacity: "
-                         << continuity_water_sources[ws]->getAllocatedCapacity(u) << ", Assigned Storage during Calc: "
-                         << available_volumes[topo_sorted_to_all_sources[ws]]*
-                            continuity_water_sources[ws]->getAllocatedFraction(u) *
-                            (continuity_water_sources[ws]->getAllocatedTreatmentCapacity(u) > 0) << endl;
-                }
-                __throw_out_of_range("Storage-to-Capacity ratio for Utility is greater than 1 "
-                                             "within Storage-to-ROF table calculations.");
-            }
-        }
+//        for (unsigned int u = 0; u < n_utilities; ++u) {
+//            /// CHECK FOR CONTINUITY FAILURES
+//
+//            if (utilities_storages[u]/utilities_capacities[u] > 1.01) {
+//                /// if there is more than a 1% error in continuity
+//
+//                cout << "Utility (name and ID): " << continuity_utilities[u]->name << ", "
+//                     << continuity_utilities[u]->id << endl;
+//                cout << "Storage: " << utilities_storages[u] << endl;
+//                cout << "Capacity: " << utilities_capacities[u] << endl;
+//
+//                for (int ws : water_sources_online_to_utilities[u]) {
+//                    cout << "Member Source: " << continuity_water_sources[ws]->name << ", (Allocated) Storage: "
+//                         << continuity_water_sources[ws]->getAvailableAllocatedVolume(u) << ", (Allocated) Capacity: "
+//                         << continuity_water_sources[ws]->getAllocatedCapacity(u) << ", Assigned Storage during Calc: "
+//                         << available_volumes[topo_sorted_to_all_sources[ws]]*
+//                            continuity_water_sources[ws]->getAllocatedFraction(u) *
+//                            (continuity_water_sources[ws]->getAllocatedTreatmentCapacity(u) > 0) << endl;
+//                }
+//                __throw_out_of_range("Storage-to-Capacity ratio for Utility is greater than 1 "
+//                                             "within Storage-to-ROF table calculations.");
+//            }
+//        }
 
         /// If all utilities have failed, stop dropping storage level
         if (count_fails == n_utilities) {

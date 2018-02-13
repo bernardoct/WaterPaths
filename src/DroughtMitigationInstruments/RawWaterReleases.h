@@ -37,6 +37,7 @@ private:
 
 public:
     RawWaterReleases(const int id,
+                     const char *name,
                      const int upstream_utility_id,
                      const int downstream_utility_id,
                      const int upstream_reservoir_id,
@@ -52,10 +53,10 @@ public:
                              vector<WaterSource *> water_sources,
                              vector<MinEnvironFlowControl *> min_env_flow_controls) override;
 
-    void setRealization(unsigned int realization_id) override;
+    void setRealization(unsigned int realization_id, vector<vector<double>> *utilities_rdm,
+                        vector<vector<double>> *water_sources_rdm, vector<vector<double>> *policy_rdm) override;
 
-    const double getUtilityStorageFromROF(int week, const Matrix3D<double> *storage_to_rof_table,
-                                          const int u_id);
+    const double getUtilityStorageFromROF(int week, const Matrix3D<double> *storage_to_rof_table, const int u_id);
 
     const double &getRawWaterTransferVolume() const;
 

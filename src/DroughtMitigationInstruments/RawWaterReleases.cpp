@@ -6,7 +6,7 @@
 #include "RawWaterReleases.h"
 #include "../Utils/Utils.h"
 
-RawWaterReleases::RawWaterReleases(const int id,
+RawWaterReleases::RawWaterReleases(const int id, const char *name,
                                    const int upstream_utility_id,
                                    const int downstream_utility_id,
                                    const int upstream_reservoir_id,
@@ -175,7 +175,8 @@ const double RawWaterReleases::getUtilityStorageFromROF(
     }
 }
 
-void RawWaterReleases::setRealization(unsigned int realization_id) {}
+void RawWaterReleases::setRealization(unsigned int realization_id, vector<vector<double>> *utilities_rdm,
+                                  vector<vector<double>> *water_sources_rdm, vector<vector<double>> *policy_rdm) {}
 
 const double &RawWaterReleases::getRawWaterTransferVolume() const {
     return raw_water_transfer_volume;

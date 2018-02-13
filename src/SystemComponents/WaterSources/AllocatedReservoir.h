@@ -43,6 +43,19 @@ public:
             *allocated_treatment_fractions);
 
     AllocatedReservoir(
+            const char *name,
+            const int id,
+            const vector<Catchment *> &catchments,
+            const double capacity,
+            const double max_treatment_capacity,
+            EvaporationSeries *evaporation_series,
+            double storage_area,
+            vector<int> *utilities_with_allocations,
+            vector<double> *allocated_fractions,
+            vector<double> *allocated_treatment_fractions,
+            AllocationModifier *allocation_modifier);
+
+    AllocatedReservoir(
             const char *name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
             const double max_treatment_capacity,
@@ -53,6 +66,19 @@ public:
             vector<int> *utilities_with_allocations,
             vector<double> *allocated_fractions, vector<double>
             *allocated_treatment_fractions);
+
+    AllocatedReservoir(
+            const char *name, const int id,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
+            EvaporationSeries *evaporation_series, double storage_area,
+            const double construction_rof_or_demand,
+            const vector<double> &construction_time_range,
+            double construction_cost,
+            vector<int> *utilities_with_allocations,
+            vector<double> *allocated_fractions, vector<double>
+            *allocated_treatment_fractions,
+            AllocationModifier *allocation_modifier);
 
     AllocatedReservoir &operator=(
             const AllocatedReservoir

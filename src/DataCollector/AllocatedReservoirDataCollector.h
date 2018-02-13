@@ -5,13 +5,14 @@
 #ifndef TRIANGLEMODEL_ALLOCATEDRESERVOIRDATACOLLECTOR_H
 #define TRIANGLEMODEL_ALLOCATEDRESERVOIRDATACOLLECTOR_H
 
-
 #include "ReservoirDataCollector.h"
 #include "../SystemComponents/WaterSources/AllocatedReservoir.h"
 
 class AllocatedReservoirDataCollector : public ReservoirDataCollector {
     AllocatedReservoir *allocated_reservoir;
     vector<vector<double>> allocated_stored_volumes;
+    vector<double> current_week_allocated_stored_volumes;
+    vector<int> utility_ids;
 
 public:
     AllocatedReservoirDataCollector(

@@ -21,6 +21,9 @@
 #include "../DroughtMitigationInstruments/InsuranceStorageToROF.h"
 #include "../DataCollector/MasterDataCollector.h"
 #include "../Simulation/Simulation.h"
+#include "../DroughtMitigationInstruments/RawWaterReleases.h"
+#include "../SystemComponents/WaterSources/AllocatedReservoirExpansion.h"
+#include "../Controls/AllocationModifier.h"
 
 /**
  * Runs carolina problem.
@@ -96,6 +99,11 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
     double raleigh_inf_buffer = vars[55];
     double cary_inf_buffer = vars[56];
 
+    double durham_raw_water_transfer_trigger = 0.04;
+    double raleigh_raw_water_transfer_trigger = 0.04;
+    double cary_raw_water_transfer_trigger = 2;
+    double owasa_raw_water_transfer_trigger = 2;
+
     vector<infraRank> durham_infra_order_raw = {
             infraRank(9, Teer_quarry_expansion_ranking),
             infraRank(15, lake_michie_expansion_ranking_low),
@@ -119,6 +127,8 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
             infraRank(7, little_river_reservoir_ranking),
             infraRank(8, richland_creek_quarry_rank),
             infraRank(10, neuse_river_intake_rank),
+            infraRank(15, lake_michie_expansion_ranking_low),
+            infraRank(16, lake_michie_expansion_ranking_high),
             infraRank(17, reallocate_falls_lake_rank),
             infraRank(20, western_wake_treatment_plant_rank_raleigh_low),
             infraRank(21, western_wake_treatment_plant_rank_raleigh_high)
@@ -404,6 +414,18 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
     min_env_flow_controls.push_back(&teer_min_env_control);
     min_env_flow_controls.push_back(&neuse_intake_min_env_control);
 
+    vector<int> allocation_adjustment_weeks = {52,104,156};
+    vector<vector<double>> jl_new_capacity_allocations {{0.1,0.2,0.3,0.2,0.2},
+                                                        {0.2,0.1,0.4,0.1,0.2},
+                                                        {0.3,0.0,0.4,0.1,0.2}};
+    vector<vector<double>> jl_new_treatment_allocations {{0.1,0.2,0.3,0.2,0.2},
+                                                        {0.2,0.1,0.4,0.1,0.2},
+                                                        {0.3,0.0,0.4,0.1,0.2}};
+
+    AllocationModifier jordan_lake_allocation_modifier(&allocation_adjustment_weeks,
+                                                       &jl_new_capacity_allocations,
+                                                       &jl_new_treatment_allocations);
+
     /// Create reservoirs and corresponding vector
     vector<double> construction_time_interval = {3.0, 5.0};
     vector<double> city_infrastructure_rof_triggers = {owasa_inftrigger,
@@ -427,7 +449,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
             jl_wq_capacity / jl_storage_capacity};
     vector<double> jl_treatment_allocation_fractions = {0.0, 0.0, 1.0, 0.0};
 
-    /// Jordan Lake parameters
+    /// Falls Lake parameters
     double fl_supply_capacity = 14700.0;
     double fl_wq_capacity = 20000.0;
     double fl_storage_capacity = fl_wq_capacity + fl_supply_capacity;
@@ -437,13 +459,29 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
             fl_wq_capacity / fl_storage_capacity};
     vector<double> fl_treatment_allocation_fractions = {0.0, 0.0, 0.0, 1.0};
 
+    /// Lake Michie & Durham Little River Reservoir Parameters
+    /// (when treating as an allocated reservoir)
+    vector<int> lm_allocations_ids = {1, 3}; // Durham and Raleigh
+    vector<double> lm_initial_allocation_fractions = {1.0, 0.0}; // No initial Raleigh storage
+    vector<double> lm_initial_treatment_allocation_fractions = {0.0, 1.0, 0.0, 0.0};
+
     // Existing Sources
-    Reservoir durham_reservoirs("Lake Michie & Little River Res. (Durham)",
-                                0,
-                                catchment_durham,
-                                6349.0,
-                                ILLIMITED_TREATMENT_CAPACITY,
-                                &evaporation_durham, 1069);
+//    Reservoir durham_reservoirs("Lake Michie & Little River Res. (Durham)",
+//                                0,
+//                                catchment_durham,
+//                                6349.0,
+//                                ILLIMITED_TREATMENT_CAPACITY,
+//                                &evaporation_durham, 1069);
+    AllocatedReservoir durham_reservoirs("Lake Michie & LRR (Durham)",
+                                         0,
+                                         catchment_durham,
+                                         6349.0,
+                                         ILLIMITED_TREATMENT_CAPACITY,
+                                         &evaporation_durham, 1069.0,
+                                         &lm_allocations_ids,
+                                         &lm_initial_allocation_fractions,
+                                         &lm_initial_treatment_allocation_fractions);
+
 //    Reservoir falls_lake("Falls Lake", 1, catchment_flat,
 //                         34700.0, 99999,
 //                         &evaporation_falls_lake, &falls_lake_storage_area);
@@ -490,7 +528,8 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                    13940,
                                    &jl_allocations_ids,
                                    &jl_allocation_fractions,
-                                   &jl_treatment_allocation_fractions);
+                                   &jl_treatment_allocation_fractions,
+                                   &jordan_lake_allocation_modifier);
 
     // other than Cary WTP for Jordan Lake, assume no WTP constraints - each
     // city can meet its daily demands with available treatment infrastructure
@@ -589,22 +628,51 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                            construction_time_interval,
                                            17 * WEEKS_IN_YEAR,
                                            107.0);
-    ReservoirExpansion low_michie_expansion("Low Lake Michie Expansion",
-                                            15,
-                                            0,
-                                            added_storage_michie_expansion_low,
-                                            city_infrastructure_rof_triggers[1],
-                                            construction_time_interval,
-                                            17 * WEEKS_IN_YEAR,
-                                            158.3);
-    ReservoirExpansion high_michie_expansion("High Lake Michie Expansion",
-                                             16,
-                                             0,
-                                             added_storage_michie_expansion_high,
-                                             city_infrastructure_rof_triggers[1],
-                                             construction_time_interval,
-                                             17 * WEEKS_IN_YEAR,
-                                             203.3);
+//    ReservoirExpansion low_michie_expansion("Low Lake Michie Expansion",
+//                                            15,
+//                                            0,
+//                                            added_storage_michie_expansion_low,
+//                                            city_infrastructure_rof_triggers[1],
+//                                            construction_time_interval,
+//                                            17 * WEEKS_IN_YEAR,
+//                                            158.3);
+//    ReservoirExpansion high_michie_expansion("High Lake Michie Expansion",
+//                                             16,
+//                                             0,
+//                                             added_storage_michie_expansion_high,
+//                                             city_infrastructure_rof_triggers[1],
+//                                             construction_time_interval,
+//                                             17 * WEEKS_IN_YEAR,
+//                                             203.3);
+    /// Lake Michie Allocated Expansion Parameters
+    double lm_total_new_capacity_low = 6349.0 + added_storage_michie_expansion_low;
+    double lm_total_new_capacity_high = 6349.0 + added_storage_michie_expansion_high;
+    vector <double> lm_new_allocation_fractions = {0.6,0.4};
+    vector <double> lm_new_treatment_fractions = {0.0,0.6,0.0,0.4};
+
+    AllocatedReservoirExpansion low_michie_expansion("Low Lake Michie Expansion (Allocated)",
+                                                     15,
+                                                     0,
+                                                     lm_total_new_capacity_low,
+                                                     &lm_allocations_ids,
+                                                     &lm_new_allocation_fractions,
+                                                     &lm_new_treatment_fractions,
+                                                     city_infrastructure_rof_triggers[1],
+                                                     construction_time_interval,
+                                                     17 * WEEKS_IN_YEAR,
+                                                     158.3);
+    AllocatedReservoirExpansion high_michie_expansion("High Lake Michie Expansion (Allocated)",
+                                                      16,
+                                                      0,
+                                                      lm_total_new_capacity_high,
+                                                      &lm_allocations_ids,
+                                                      &lm_new_allocation_fractions,
+                                                      &lm_new_treatment_fractions,
+                                                      city_infrastructure_rof_triggers[1],
+                                                      construction_time_interval,
+                                                      17 * WEEKS_IN_YEAR,
+                                                      203.3);
+
     WaterReuse low_reclaimed("Low Reclaimed Water System",
                              18,
                              reclaimed_capacity_low,
@@ -820,7 +888,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
             {3, 4,  5, 6,  12, 13, 14, 20, 21, 24}, //OWASA
             {0, 6,  9, 15, 16, 18, 19, 20, 21}, //Durham
             {6, 22, 23},                    //Cary
-            {1, 2,  6, 7,  8,  17, 10, 20, 21}  //Raleigh
+            {0, 1, 2,  6, 7,  8, 15, 16, 17, 10, 20, 21}  //Raleigh
     };
 
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
@@ -904,6 +972,43 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                 vector<double>(),
                 vector<int>());
     drought_mitigation_policies.push_back(&t);
+
+    /// Raw Water Transfer policy
+    ///     utility ids: 0 OWASA, 1 Durham, 2 Cary, 3 Raleigh
+    ///     reservoir ids (in parentheses)
+    cout << "Assign raw water transfer/release policies." << endl;
+    /*
+     *      1(0)-->-->--3(1)
+     *
+     *      0(x)        2(y)
+     */
+
+    /// Utility IDs for party's of each raw water transfer agreement (only 2 partys per agreement)
+    int upstream_party_id0 = 1;
+    int downstream_party_id0 = 3;
+    int upstream_reservoir_id0 = 0;
+    int downstream_reservoir_id0 = 1;
+
+    /// other necessary arguments
+    double raw_water_transfer_weekly_volume_cap = 500; // cap in MG
+    double raw_water_transfer_downstream_allocation_ratio = 0.423;
+    double raw_water_transfer_cost_per_MG = 0.0035; // cost in millions of dollars per MG
+
+    /// raw water transfer triggers for ALL regional utilities (in order of their ids)
+    vector<double> party_raw_water_transfer_triggers = {owasa_raw_water_transfer_trigger,
+                                                        durham_raw_water_transfer_trigger,
+                                                        cary_raw_water_transfer_trigger,
+                                                        raleigh_raw_water_transfer_trigger};
+
+    RawWaterReleases flat_river_raw_water_transfer(0, "Flat River RWT",
+                                                   upstream_party_id0, downstream_party_id0,
+                                                   upstream_reservoir_id0, downstream_reservoir_id0,
+                                                   raw_water_transfer_weekly_volume_cap,
+                                                   party_raw_water_transfer_triggers,
+                                                   raw_water_transfer_downstream_allocation_ratio,
+                                                   raw_water_transfer_cost_per_MG);
+
+    drought_mitigation_policies.push_back(&flat_river_raw_water_transfer);
 
     double insurance_triggers[4] = {owasa_insurance_use,
                                     durham_insurance_use, cary_insurance_use,

@@ -8,12 +8,18 @@
 #include <string>
 #include "../../Catchment.h"
 #include "../../../Utils/Constants.h"
+#include "../../../Controls/AllocationModifier.h"
 
 using namespace std;
 using namespace Constants;
 const int BOND_INTEREST_PAYMENTS_PER_YEAR = 1;
 
 class WaterSource {
+private:
+
+    AllocationModifier *allocation_modifier;
+    bool modified_allocations;
+
 protected:
 
     double available_volume = 0;
@@ -51,21 +57,21 @@ protected:
 public:
     const int id;
     const char *name;
-    const int source_type;
+    int source_type;
     const double construction_time;
 
     WaterSource(
             const char *name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
-            double treatment_capacity, const int source_type);
+            double treatment_capacity, int source_type);
 
     WaterSource(const char *source_name, const int id, const vector<Catchment *> &catchments,
-                    const double capacity, double treatment_capacity, const int source_type,
+                    const double capacity, double treatment_capacity, int source_type,
                     const vector<double> construction_time_range, double permitting_period,
                     double construction_cost_of_capital);
 
     WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
-                    const double capacity, double treatment_capacity, const int source_type,
+                    const double capacity, double treatment_capacity, int source_type,
                     vector<double> *allocated_treatment_fractions, vector<double> *allocated_fractions,
                     vector<int> *utilities_with_allocations, const vector<double> construction_time_range,
                     double permitting_period, double construction_cost_of_capital);
@@ -73,10 +79,21 @@ public:
     WaterSource(
             const char *name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
-            double treatment_capacity, const int source_type,
+            double treatment_capacity, int source_type,
             vector<double> *allocated_treatment_fractions,
             vector<double> *allocated_fractions,
             vector<int> *utilities_with_allocations);
+
+    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
+                double treatment_capacity, int source_type, vector<double> *allocated_treatment_fractions,
+                vector<double> *allocated_fractions, vector<int> *utilities_with_allocations,
+                AllocationModifier *allocation_modifier);
+
+    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
+                double treatment_capacity, int source_type, vector<double> *allocated_treatment_fractions,
+                vector<double> *allocated_fractions, vector<int> *utilities_with_allocations,
+                const vector<double> construction_time_range, double permitting_period,
+                double construction_cost_of_capital, AllocationModifier *allocation_modifier);
 
     WaterSource(const WaterSource &water_source);
 
@@ -147,7 +164,7 @@ public:
 
     double getTotal_treatment_capacity(int utility_id) const;
 
-    void setAllocations(
+    virtual void setAllocations(
             vector<int> *utilities_with_allocations,
             vector<double> *allocated_fractions,
             vector<double> *allocated_treatment_fractions);
@@ -173,6 +190,12 @@ public:
 
 
     virtual void addWater(int allocation_id, double volume);
+
+    void setCapacity(double new_capacity);
+
+    void resetTreatmentAllocations(const vector<double> *new_allocated_treatment_fractions);
+
+    void updateTreatmentAndCapacityAllocations(int week);
 };
 
 

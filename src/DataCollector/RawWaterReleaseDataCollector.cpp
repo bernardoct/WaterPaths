@@ -7,10 +7,8 @@
 #include "RawWaterReleaseDataCollector.h"
 
 RawWaterReleaseDataCollector::RawWaterReleaseDataCollector(RawWaterReleases *raw_water_releases_policy)
-        : DataCollector(raw_water_releases_policy->id,
-                        nullptr,
-                        RAW_WATER_TRANSFERS,
-                        N_COLUMNS * COLUMN_WIDTH),
+        : DataCollector(raw_water_releases_policy->id, nullptr, realization,
+                        RAW_WATER_TRANSFERS, N_COLUMNS * COLUMN_WIDTH),
           utilities_ids(raw_water_releases_policy->getUtilities_ids()),
           raw_water_releases_policy(raw_water_releases_policy) {
 

@@ -8,6 +8,7 @@
 
 #include "Base/ContinuityModel.h"
 #include "../DroughtMitigationInstruments/Base/DroughtMitigationPolicy.h"
+#include "../Controls/AllocationModifier.h"
 
 class ContinuityModelRealization : public ContinuityModel {
 private:

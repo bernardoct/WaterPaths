@@ -4,6 +4,7 @@
 
 #include "Simulation.h"
 #include "../Utils/Utils.h"
+#include "../Controls/AllocationModifier.h"
 #include <ctime>
 #include <algorithm>
 #include <omp.h>
@@ -195,8 +196,7 @@ MasterDataCollector *Simulation::runFullSimulation() {
             // DO NOT change the order of the steps. This would mess up
             // important dependencies.
             if (Utils::isFirstWeekOfTheYear(w))
-                realization_models[r]->setLongTermROFs(rof_models[r]->calculateLongTermROF
-                                                  (w), w);
+                realization_models[r]->setLongTermROFs(rof_models[r]->calculateLongTermROF(w), w);
             realization_models[r]->setShortTermROFs(rof_models[r]->calculateShortTermROF(w));
             realization_models[r]->applyDroughtMitigationPolicies(w);
             realization_models[r]->continuityStep(w);

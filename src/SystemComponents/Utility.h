@@ -70,7 +70,7 @@ private:
     vector<bool> under_construction;
 
 public:
-    const int id;
+    static const int id;
     const int number_of_week_demands;
     const char *name;
     const double percent_contingency_fund_contribution;
@@ -246,6 +246,8 @@ public:
     double getUnfulfilled_demand() const;
 
     double getNet_stream_inflow() const;
+
+    void allocatedReservoirExpansionConstructionHandler(unsigned int source_id);
 };
 
 

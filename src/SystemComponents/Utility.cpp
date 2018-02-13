@@ -10,6 +10,7 @@
 #include "WaterSources/ReservoirExpansion.h"
 #include "WaterSources/SequentialJointTreatmentExpansion.h"
 #include "WaterSources/Relocation.h"
+#include "WaterSources/AllocatedReservoirExpansion.h"
 
 /**
  * Main constructor for the Utility class.
@@ -570,9 +571,10 @@ void Utility::setWaterSourceOnline(unsigned int source_id) {
     /// capacity to the corresponding existing reservoir.
     if (water_sources.at(source_id)->source_type == NEW_WATER_TREATMENT_PLANT) {
         waterTreatmentPlantConstructionHandler(source_id);
-    } else if (water_sources.at(source_id)->source_type ==
-               RESERVOIR_EXPANSION) {
+    } else if (water_sources.at(source_id)->source_type == RESERVOIR_EXPANSION) {
         reservoirExpansionConstructionHandler(source_id);
+    } else if (water_sources.at(source_id)->source_type == ALLOCATED_RESERVOIR_EXPANSION) {
+        allocatedReservoirExpansionConstructionHandler(source_id);
     } else if (water_sources.at(source_id)->source_type == SOURCE_RELOCATION) {
         sourceRelocationConstructionHandler(source_id);
     } else {
@@ -648,6 +650,20 @@ void Utility::reservoirExpansionConstructionHandler(unsigned int source_id) {
 
     water_sources.at(re.parent_reservoir_ID)->
             addCapacity(re.getAllocatedCapacity(id));
+    water_sources.at(source_id)->setOnline();
+}
+
+void Utility::allocatedReservoirExpansionConstructionHandler(unsigned int source_id) {
+    AllocatedReservoirExpansion are = *dynamic_cast<AllocatedReservoirExpansion *>(water_sources.at(source_id));
+
+    water_sources.at(are.parent_reservoir_ID)->setCapacity(are.getCapacity());
+
+    const vector<double> *new_allocated_fractions = are.getNewAllocationFractions(id); // this vector is incorrect
+    water_sources.at(are.parent_reservoir_ID)->resetAllocations(new_allocated_fractions);
+
+    const vector<double> *new_allocated_treatment_fractions = are.getNewTreatmentAllocationFractions(id);
+    water_sources.at(are.parent_reservoir_ID)->resetTreatmentAllocations(new_allocated_treatment_fractions);
+
     water_sources.at(source_id)->setOnline();
 }
 

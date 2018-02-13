@@ -12,6 +12,7 @@
 #include "../SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
 #include "../SystemComponents/WaterSources/Relocation.h"
 #include "../DroughtMitigationInstruments/RawWaterReleases.h"
+#include "../SystemComponents/WaterSources/AllocatedReservoirExpansion.h"
 #include <fstream>
 #include <algorithm>
 #include <climits>
@@ -138,6 +139,10 @@ vector<WaterSource *> Utils::copyWaterSourceVector(
             water_sources_new.push_back(
                     new AllocatedReservoir(
                             *dynamic_cast<AllocatedReservoir *>(ws)));
+        else if (ws->source_type == ALLOCATED_RESERVOIR_EXPANSION)
+            water_sources_new.push_back(
+                    new AllocatedReservoirExpansion(
+                            *dynamic_cast<AllocatedReservoirExpansion *>(ws)));
         else if (ws->source_type == NEW_WATER_TREATMENT_PLANT)
             water_sources_new.push_back(
                     new SequentialJointTreatmentExpansion(

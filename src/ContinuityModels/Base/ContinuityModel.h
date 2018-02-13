@@ -10,6 +10,7 @@
 #include "../../SystemComponents/Utility.h"
 #include "../../Utils/Graph/Graph.h"
 #include "../../Controls/Base/MinEnvironFlowControl.h"
+#include "../../Controls/AllocationModifier.h"
 #include <vector>
 
 using namespace Constants;

@@ -14,13 +14,15 @@ using namespace std;
 class AllocationModifier : public ControlRules {
 public:
 
-    const vector<int> *allocation_adjustment_weeks;
-    const vector<vector<double>> *new_capacity_allocations;
-    const vector<vector<double>> *new_treatment_allocations;
+    vector<int> *allocation_adjustment_weeks;
+    vector<vector<double>> *new_capacity_allocations;
+    vector<vector<double>> *new_treatment_capacities;
 
-    AllocationModifier(const vector<int> *allocation_adjustment_weeks,
-                       const vector<vector<double>> *new_capacity_allocations,
-                       const vector<vector<double>> *new_treatment_allocations);
+    AllocationModifier(vector<int> *allocation_adjustment_weeks,
+                       vector<vector<double>> *new_capacity_allocations,
+                       vector<vector<double>> *new_treatment_capacities);
+
+    AllocationModifier(const AllocationModifier &allocation_modifier);
 
     double get_dependent_variable(double water_source_ID) override;
 

@@ -414,17 +414,19 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
     min_env_flow_controls.push_back(&teer_min_env_control);
     min_env_flow_controls.push_back(&neuse_intake_min_env_control);
 
-    vector<int> allocation_adjustment_weeks = {52,104,156};
-    vector<vector<double>> jl_new_capacity_allocations {{0.1,0.2,0.3,0.2,0.2},
+    vector<int> allocation_adjustment_weeks = {156, 313, 469};
+    vector<vector<double>> jl_new_capacity_fractions   {{0.05,0.1,0.3,0.15,0.4},
                                                         {0.2,0.1,0.4,0.1,0.2},
                                                         {0.3,0.0,0.4,0.1,0.2}};
-    vector<vector<double>> jl_new_treatment_allocations {{0.1,0.2,0.3,0.2,0.2},
-                                                        {0.2,0.1,0.4,0.1,0.2},
-                                                        {0.3,0.0,0.4,0.1,0.2}};
+    vector<vector<double>> jl_new_treatment_capacities {{33*3,33*2,448,0,0}, // OWASA, Durham, Cary, Raleigh, WQ
+                                                        {33*5,33*1,448,0,0},
+                                                        {54*2,54*4,448,54*1,0}};
+        // need to build a catch to make sure these dont exceed existing total capacity
+        // what about dealing with dead capacity? how will this financing component change
 
     AllocationModifier jordan_lake_allocation_modifier(&allocation_adjustment_weeks,
-                                                       &jl_new_capacity_allocations,
-                                                       &jl_new_treatment_allocations);
+                                                       &jl_new_capacity_fractions,
+                                                       &jl_new_treatment_capacities);
 
     /// Create reservoirs and corresponding vector
     vector<double> construction_time_interval = {3.0, 5.0};
@@ -523,7 +525,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                    6,
                                    catchment_haw,
                                    jl_storage_capacity,
-                                   448,
+                                   (448),
                                    &evaporation_jordan_lake,
                                    13940,
                                    &jl_allocations_ids,
@@ -690,11 +692,12 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
 
     WEEKS_IN_YEAR = Constants::WEEKS_IN_YEAR;
 
+    // FIXME: TEMPORARY SCALAR MULTIPLIERS HERE TO TEST IF TREATMENT PLANT CAPACITY IS PROPERLY ACCOUNTED FOR
     vector<double> wjlwtp_treatment_capacity_fractions =
-            {western_wake_treatment_plant_owasa_frac,
-             western_wake_treatment_frac_durham,
+            {western_wake_treatment_plant_owasa_frac * 0.8,
+             western_wake_treatment_frac_durham * 0.8,
              0.,
-             western_wake_treatment_plant_raleigh_frac,
+             western_wake_treatment_plant_raleigh_frac * 0.8,
              0.};
     vector<double> cary_upgrades_treatment_capacity_fractions = {0., 0., 1.,
                                                                  0., 0.};
@@ -711,7 +714,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                                  shared_added_wjlwtp_price,
                                                  city_infrastructure_rof_triggers[1],
                                                  construction_time_interval,
-                                                 12 * WEEKS_IN_YEAR,
+                                                 NONE, // was 12 years
                                                  243.3);
     SequentialJointTreatmentExpansion high_wjlwtp("High WJLWTP",
                                                   21,
@@ -723,7 +726,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                                   shared_added_wjlwtp_price,
                                                   city_infrastructure_rof_triggers[1],
                                                   construction_time_interval,
-                                                  12 * WEEKS_IN_YEAR,
+                                                  NONE, // was 12 years
                                                   316.8);
     SequentialJointTreatmentExpansion caryWtpUpgrade1("Cary WTP upgrade 1",
                                                       22,

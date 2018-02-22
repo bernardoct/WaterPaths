@@ -11,11 +11,13 @@
 class SequentialJointTreatmentExpansion : public WaterSource {
 private:
     double total_treatment_capacity;
+    double implemented_treatment_capacity = 0.0;
     vector<double> *max_sequential_added_capacity = nullptr;
     vector<double> *max_sequential_added_construction_cost = nullptr;
 
 public:
     const int expansion_sequence_id;
+    double unallocated_treatment_capacity = 0.0;
 
     SequentialJointTreatmentExpansion(
             const char *name, const int id, const int parent_reservoir_ID,
@@ -68,6 +70,8 @@ public:
     double calculateNetPresentConstructionCost(int week, int utility_id, double discount_rate,
                                                    double *level_debt_service_payment, double bond_term,
                                                    double bond_interest_rate) const override;
+
+    double getTotal_treatment_capacity(int utility_id) const;
 };
 
 

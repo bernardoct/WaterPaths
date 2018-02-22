@@ -8,7 +8,6 @@
 #include <string>
 #include "../../Catchment.h"
 #include "../../../Utils/Constants.h"
-#include "../../../Controls/AllocationModifier.h"
 
 using namespace std;
 using namespace Constants;
@@ -16,9 +15,6 @@ const int BOND_INTEREST_PAYMENTS_PER_YEAR = 1;
 
 class WaterSource {
 private:
-
-    AllocationModifier *allocation_modifier;
-    bool modified_allocations;
 
 protected:
 
@@ -84,16 +80,16 @@ public:
             vector<double> *allocated_fractions,
             vector<int> *utilities_with_allocations);
 
-    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
-                double treatment_capacity, int source_type, vector<double> *allocated_treatment_fractions,
-                vector<double> *allocated_fractions, vector<int> *utilities_with_allocations,
-                AllocationModifier *allocation_modifier);
-
-    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
-                double treatment_capacity, int source_type, vector<double> *allocated_treatment_fractions,
-                vector<double> *allocated_fractions, vector<int> *utilities_with_allocations,
-                const vector<double> construction_time_range, double permitting_period,
-                double construction_cost_of_capital, AllocationModifier *allocation_modifier);
+//    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
+//                double treatment_capacity, int source_type, vector<double> *allocated_treatment_fractions,
+//                vector<double> *allocated_fractions, vector<int> *utilities_with_allocations,
+//                AllocationModifier *allocation_modifier);
+//
+//    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
+//                double treatment_capacity, int source_type, vector<double> *allocated_treatment_fractions,
+//                vector<double> *allocated_fractions, vector<int> *utilities_with_allocations,
+//                const vector<double> construction_time_range, double permitting_period,
+//                double construction_cost_of_capital, AllocationModifier *allocation_modifier);
 
     WaterSource(const WaterSource &water_source);
 
@@ -195,7 +191,7 @@ public:
 
     void resetTreatmentAllocations(const vector<double> *new_allocated_treatment_fractions);
 
-    void updateTreatmentAndCapacityAllocations(int week);
+    virtual void updateTreatmentAndCapacityAllocations(int week);
 };
 
 

@@ -26,7 +26,9 @@ AllocatedReservoir::AllocatedReservoir(
                     allocated_treatment_fractions,
                     allocated_fractions,
                     utilities_with_allocations,
-                    ALLOCATED_RESERVOIR) {
+                    ALLOCATED_RESERVOIR),
+          modified_allocations(false), allocation_modifier(nullptr) {
+
 }
 
 AllocatedReservoir::AllocatedReservoir(
@@ -51,7 +53,9 @@ AllocatedReservoir::AllocatedReservoir(
                     construction_rof_or_demand,
                     construction_time_range,
                     construction_cost,
-                    ALLOCATED_RESERVOIR) {
+                    ALLOCATED_RESERVOIR),
+          modified_allocations(false), allocation_modifier(nullptr) {
+
 }
 
 AllocatedReservoir::AllocatedReservoir(
@@ -71,7 +75,9 @@ AllocatedReservoir::AllocatedReservoir(
                     allocated_treatment_fractions,
                     allocated_fractions,
                     utilities_with_allocations,
-                    ALLOCATED_RESERVOIR) {
+                    ALLOCATED_RESERVOIR),
+          modified_allocations(false), allocation_modifier(nullptr) {
+
 }
 
 AllocatedReservoir::AllocatedReservoir(const char *name, const int id, const vector<Catchment *> &catchments,
@@ -90,7 +96,10 @@ AllocatedReservoir::AllocatedReservoir(const char *name, const int id, const vec
                     allocated_treatment_fractions,
                     allocated_fractions,
                     utilities_with_allocations,
-                    ALLOCATED_RESERVOIR) {}
+                    ALLOCATED_RESERVOIR),
+          modified_allocations(true), allocation_modifier(allocation_modifier) {
+
+}
 
 AllocatedReservoir::AllocatedReservoir(
         const char *name, const int id, const vector<Catchment *> &catchments,
@@ -99,8 +108,7 @@ AllocatedReservoir::AllocatedReservoir(
         const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double construction_cost,
         vector<int> *utilities_with_allocations,
-        vector<double> *allocated_fractions, vector<double>
-        *allocated_treatment_fractions)
+        vector<double> *allocated_fractions, vector<double> *allocated_treatment_fractions)
         : Reservoir(name,
                     id,
                     catchments,
@@ -114,7 +122,9 @@ AllocatedReservoir::AllocatedReservoir(
                     construction_rof_or_demand,
                     construction_time_range,
                     construction_cost,
-                    ALLOCATED_RESERVOIR) {
+                    ALLOCATED_RESERVOIR),
+          modified_allocations(false), allocation_modifier(nullptr) {
+
 }
 
 AllocatedReservoir::AllocatedReservoir(const char *name, const int id, const vector<Catchment *> &catchments,
@@ -138,11 +148,17 @@ AllocatedReservoir::AllocatedReservoir(const char *name, const int id, const vec
                     construction_rof_or_demand,
                     construction_time_range,
                     construction_cost,
-                    ALLOCATED_RESERVOIR) {}
+                    ALLOCATED_RESERVOIR),
+          modified_allocations(true), allocation_modifier(allocation_modifier) {
 
-AllocatedReservoir::AllocatedReservoir(
-        const AllocatedReservoir &allocated_reservoir)
-        : Reservoir(allocated_reservoir) {}
+}
+
+AllocatedReservoir::AllocatedReservoir(const AllocatedReservoir &allocated_reservoir)
+        : Reservoir(allocated_reservoir),
+          allocation_modifier(allocated_reservoir.allocation_modifier),
+          modified_allocations(allocated_reservoir.modified_allocations) {
+    //allocation_modifier = new AllocationModifier(*allocation_modifier);
+}
 
 /**
  * Copy assignment operator
@@ -168,6 +184,12 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
                                          vector<double> &demand_outflow) {
 
     double total_upstream_inflow;
+
+//    if (id == 6 & (week == 156 | week == 312 | week == 468)) {
+//        cout << "Check 1" << endl;
+//        cout << "Utility: " << name << ", Reservoir: " << id << endl;
+//        cout << "Week: " << week << ", Total Demand: " << total_demand << endl;
+//    }
 
     total_upstream_inflow = upstream_source_inflow +
             wastewater_inflow;
@@ -222,6 +244,16 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
             available_allocated_volumes[u] = this->capacity *
                                              allocated_fractions[u];
 
+            /// FIX: treatment capacity is re-allocated, but reduces Cary stake, capping demand at capacity
+            /// meanwhile, no demand is allocated to the other utilities??? even though they have capacity
+            /// even the water quality pool. total demand is also capped at 134.4......
+//            if (id == 6 & (week == 156 | week == 312 | week == 468)) {
+//                cout << "Week: " << week << ", Utility: " << u << ", Allocated Demand: " << demand_outflow[u] << endl;
+//                cout << "Week: " << week << ", Utility: " << u
+//                     << ", Allocated Treatment Capacity: " << allocated_treatment_capacities[u] << endl;
+//                cout << "Week: " << week << ", Utility: " << u
+//                     << ", Allocated Capacity: " << allocated_capacities[u] << endl;
+//            }
         }
         total_outflow = outflow_new + available_volume_new - capacity;
         available_volume = capacity;
@@ -263,6 +295,13 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
 //                    cout << week << ", " << u << ", " << demand_outflow[u] << endl;
             }
 
+//            if (id == 6 & (week == 156 | week == 312 | week == 468)) {
+//                cout << "Week: " << week << ", Utility: " << u << ", Allocated Demand: " << demand_outflow[u] << endl;
+//                cout << "Week: " << week << ", Utility: " << u
+//                     << ", Allocated Treatment Capacity: " << allocated_treatment_capacities[u] << endl;
+//                cout << "Week: " << week << ", Utility: " << u
+//                     << ", Allocated Capacity: " << allocated_capacities[u] << endl;
+//            }
 
 
             /// Flag the occurrence of an allocation exceeding its capacity
@@ -399,6 +438,7 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
                                       "If you cannot find the problem, please "
                                       "report this to bct52@cornell.edu");
     }
+
 }
 
 void AllocatedReservoir::addCapacity(double capacity) {
@@ -421,16 +461,13 @@ void AllocatedReservoir::addTreatmentCapacity(
         const double added_plant_treatment_capacity,
         double allocated_fraction_of_total_capacity,
         int utility_id) {
-    WaterSource::addTreatmentCapacity(
-            added_plant_treatment_capacity *
-            allocated_fraction_of_total_capacity,
-            allocated_fraction_of_total_capacity,
-            utility_id);
 
     /// Add capacity to respective treatment allocation.
-    allocated_treatment_capacities[utility_id] +=
-            added_plant_treatment_capacity *
-            allocated_fraction_of_total_capacity;
+    allocated_treatment_capacities[utility_id] += added_plant_treatment_capacity; //*
+            //allocated_fraction_of_total_capacity; // this variable is misleading, should be frac of added cap
+
+    WaterSource::addTreatmentCapacity(added_plant_treatment_capacity,
+                                      allocated_fraction_of_total_capacity, utility_id);
 
     /// Update treatment allocation fractions based on new allocated amounts
     /// and new total treatment capacity.
@@ -478,3 +515,54 @@ double AllocatedReservoir::getAllocatedTreatmentCapacity(int utility_id) const {
     return allocated_treatment_capacities[utility_id];
 }
 
+void AllocatedReservoir::updateTreatmentAndCapacityAllocations(int week) {
+
+    if (modified_allocations) {
+        cout << "Checking allocations for modification at " << name << " in week "<< week << endl;
+
+        for (unsigned long i = 0; i < allocation_modifier->allocation_adjustment_weeks->size(); ++i) {
+            double temp = accumulate((allocation_modifier->new_treatment_capacities->at(i)).begin(),
+                                     (allocation_modifier->new_treatment_capacities->at(i)).end(), 0.0);
+
+            cout << "Current treatment capacity: " << total_treatment_capacity
+                 << ", Modified capacity: " << temp
+                 << ", Current treatment allocations: "
+                 << "OWASA " << allocated_treatment_capacities[0]
+                 << ", Durham " << allocated_treatment_capacities[1]
+                 << ", Cary " << allocated_treatment_capacities[2]
+                 << ", Raleigh " << allocated_treatment_capacities[3]
+                 << ", WQ Pool " << allocated_treatment_capacities[4] << endl; /// SET UP FOR JORDAN LAKE
+
+            if (allocation_modifier->allocation_adjustment_weeks->at(i) == week &
+                    temp < (total_treatment_capacity + 1))
+                    /// only change allocations and treatment capacity if it is time and if treatment capacities
+                    /// have been expanded already to allow it
+            {
+                cout << "Allocations to be modified..." << endl;
+                double capacity_sums = 0.0;
+                for (unsigned long ii = 0; ii < utilities_with_allocations->size(); ++ii) {
+                    int u = utilities_with_allocations->at(ii);
+                    u = (u == WATER_QUALITY_ALLOCATION ? wq_pool_id : u);
+
+                    allocated_fractions[u] = (allocation_modifier->new_capacity_allocations->at(i))[u];
+                    allocated_treatment_capacities[u] = (allocation_modifier->new_treatment_capacities->at(i))[u];
+
+                    capacity_sums += (allocation_modifier->new_treatment_capacities->at(i))[u];
+
+                    (*this->utilities_with_allocations)[ii] = u;
+
+                    allocated_capacities[u] = capacity * allocated_fractions[u];
+                    allocated_treatment_fractions[u] =  allocated_treatment_capacities[u]/total_treatment_capacity;
+
+                    available_allocated_volumes[u] = available_volume * allocated_fractions[u];
+                }
+
+                if (capacity_sums > total_treatment_capacity) {
+                    //cout << "ERROR in ModifiedAllocations" << endl;
+                    __throw_out_of_range("When treatment capacity is adjusted, the changes"
+                                                 "cannot exceed total capacity in place");
+                }
+            }
+        }
+    }
+}

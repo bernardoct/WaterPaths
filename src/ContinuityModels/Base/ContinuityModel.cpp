@@ -176,6 +176,7 @@ void ContinuityModel::continuityStep(
         u->splitDemands(week, demands, apply_demand_buffer);
     }
 
+
     /**
      * Set minimum environmental flows for water sources based on their
      * individual controls.
@@ -204,6 +205,7 @@ void ContinuityModel::continuityStep(
                 week - delta_realization_weeks[rof_realization],
                 upstream_spillage[i], wastewater_discharges[i], demands[i]);
     }
+
 
     /// updates combined storage for utilities.
     for (Utility *u : continuity_utilities) {

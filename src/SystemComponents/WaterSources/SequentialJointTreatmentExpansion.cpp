@@ -61,6 +61,8 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
                     total_treatment_capacity * alloc);
             max_sequential_added_construction_cost->push_back(
                     construction_cost * alloc);
+
+            implemented_treatment_capacity += total_treatment_capacity * alloc;
         }
     } else {
         for (int u = 0; u < n_allocations; ++u) {
@@ -71,8 +73,13 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
             (*max_sequential_added_construction_cost)[u] = max
                     ((*max_sequential_added_construction_cost)[u],
                      construction_cost * alloc);
+
+            implemented_treatment_capacity += (*max_sequential_added_capacity)[u];
         }
     }
+
+    unallocated_treatment_capacity = total_treatment_capacity - implemented_treatment_capacity;
+
 }
 
 /**
@@ -80,9 +87,7 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
  * @param reservoir
  */
 SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
-        const
-        SequentialJointTreatmentExpansion
-        &joint_water_treatment_plant) :
+        const SequentialJointTreatmentExpansion &joint_water_treatment_plant) :
         WaterSource(joint_water_treatment_plant),
         parent_reservoir_ID(joint_water_treatment_plant.parent_reservoir_ID),
         total_treatment_capacity
@@ -91,7 +96,8 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
                 (joint_water_treatment_plant
                          .added_treatment_capacity_fractions),
         expansion_sequence_id(
-                joint_water_treatment_plant.expansion_sequence_id) {
+                joint_water_treatment_plant.expansion_sequence_id),
+        unallocated_treatment_capacity(joint_water_treatment_plant.unallocated_treatment_capacity) {
 
     if (joint_water_treatment_plant.max_sequential_added_capacity) {
         max_sequential_added_capacity = new vector<double>
@@ -131,6 +137,7 @@ void SequentialJointTreatmentExpansion::applyContinuity(int week, double upstrea
  */
 double
 SequentialJointTreatmentExpansion::implementTreatmentCapacity(int utility_id) {
+
     if (max_sequential_added_capacity) {
         double alloc = (*added_treatment_capacity_fractions)[utility_id];
         double capacity_to_implement = min
@@ -140,6 +147,7 @@ SequentialJointTreatmentExpansion::implementTreatmentCapacity(int utility_id) {
         return capacity_to_implement;
     } else
         return total_treatment_capacity;
+
 }
 
 
@@ -164,6 +172,10 @@ double SequentialJointTreatmentExpansion::payConstructionCost(int utility_id) {
 vector<double> *
 SequentialJointTreatmentExpansion::getMax_sequential_added_capacity() const {
     return max_sequential_added_capacity;
+}
+
+double SequentialJointTreatmentExpansion::getTotal_treatment_capacity(int utility_id) const {
+    return total_treatment_capacity;
 }
 
 void SequentialJointTreatmentExpansion::setMax_sequential_added_capacity(

@@ -16,6 +16,9 @@
 
 class Utility {
 private:
+    int wk_cnt = 0;
+    int current_wk = 0;
+
     double *weekly_average_volumetric_price;
     vector<int> priority_draw_water_source;
     vector<int> non_priority_draw_water_source;
@@ -70,7 +73,7 @@ private:
     vector<bool> under_construction;
 
 public:
-    static const int id;
+    const int id;
     const int number_of_week_demands;
     const char *name;
     const double percent_contingency_fund_contribution;
@@ -78,7 +81,7 @@ public:
     const vector<vector<int>> *infra_if_built_remove;
 
     Utility(
-            const char *name, int id,
+            const char *name, const int id,
             vector<vector<double>> *demands_all_realizations,
             int number_of_week_demands,
             const double percent_contingency_fund_contribution,
@@ -87,7 +90,7 @@ public:
             WwtpDischargeRule wwtp_discharge_rule,
             double demand_buffer);
 
-    Utility(const char *name, int id, vector<vector<double>> *demands_all_realizations,
+    Utility(const char *name, const int id, vector<vector<double>> *demands_all_realizations,
                 int number_of_week_demands, const double percent_contingency_fund_contribution,
                 const vector<vector<double>> *typesMonthlyDemandFraction,
                 const vector<vector<double>> *typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,
@@ -96,7 +99,7 @@ public:
                 const vector<double> &infra_construction_triggers, double infra_discount_rate,
                 const vector<vector<int>> *infra_if_built_remove, double bond_term, double bond_interest_rate);
 
-    Utility(const char *name, int id, vector<vector<double>> *demands_all_realizations,
+    Utility(const char *name, const int id, vector<vector<double>> *demands_all_realizations,
                 int number_of_week_demands, const double percent_contingency_fund_contribution,
                 const vector<vector<double>> *typesMonthlyDemandFraction,
                 const vector<vector<double>> *typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,

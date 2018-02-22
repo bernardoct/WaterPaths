@@ -79,29 +79,29 @@ public:
             vector<int> *utilities_with_allocations,
             int source_type = RESERVOIR);
 
-    Reservoir(
-            const char *name, const int id,
-            const vector<Catchment *> &catchments, const double capacity,
-            const double max_treatment_capacity,
-            EvaporationSeries *evaporation_series,
-            DataSeries *storage_area_curve,
-            AllocationModifier *allocation_modifier,
-            vector<double> *allocated_treatment_fractions,
-            vector<double> *allocated_fractions,
-            vector<int> *utilities_with_allocations,
-            int source_type = RESERVOIR);
-
-    Reservoir(
-            const char *name, const int id,
-            const vector<Catchment *> &catchments, const double capacity,
-            const double max_treatment_capacity,
-            EvaporationSeries *evaporation_series,
-            AllocationModifier *allocation_modifier,
-            double storage_area,
-            vector<double> *allocated_treatment_fractions,
-            vector<double> *allocated_fractions,
-            vector<int> *utilities_with_allocations,
-            int source_type = RESERVOIR);
+//    Reservoir(
+//            const char *name, const int id,
+//            const vector<Catchment *> &catchments, const double capacity,
+//            const double max_treatment_capacity,
+//            EvaporationSeries *evaporation_series,
+//            DataSeries *storage_area_curve,
+//            AllocationModifier *allocation_modifier,
+//            vector<double> *allocated_treatment_fractions,
+//            vector<double> *allocated_fractions,
+//            vector<int> *utilities_with_allocations,
+//            int source_type = RESERVOIR);
+//
+//    Reservoir(
+//            const char *name, const int id,
+//            const vector<Catchment *> &catchments, const double capacity,
+//            const double max_treatment_capacity,
+//            EvaporationSeries *evaporation_series,
+//            AllocationModifier *allocation_modifier,
+//            double storage_area,
+//            vector<double> *allocated_treatment_fractions,
+//            vector<double> *allocated_fractions,
+//            vector<int> *utilities_with_allocations,
+//            int source_type = RESERVOIR);
 
     Reservoir(
             const char *name, const int id,
@@ -130,35 +130,35 @@ public:
             double permitting_period,
             double construction_cost, int source_type = RESERVOIR);
 
-    Reservoir(
-            const char *name, const int id,
-            const vector<Catchment *> &catchments, const double capacity,
-            const double max_treatment_capacity,
-            EvaporationSeries *evaporation_series,
-            DataSeries *storage_area_curve,
-            AllocationModifier *allocation_modifier,
-            vector<double> *allocated_treatment_fractions,
-            vector<double> *allocated_fractions,
-            vector<int> *utilities_with_allocations,
-            const double construction_rof_or_demand,
-            const vector<double> &construction_time_range,
-            double permitting_period,
-            double construction_cost, int source_type = RESERVOIR);
-
-    Reservoir(
-            const char *name, const int id,
-            const vector<Catchment *> &catchments, const double capacity,
-            const double max_treatment_capacity,
-            EvaporationSeries *evaporation_series,
-            AllocationModifier *allocation_modifier,
-            double storage_area,
-            vector<double> *allocated_treatment_fractions,
-            vector<double> *allocated_fractions,
-            vector<int> *utilities_with_allocations,
-            const double construction_rof_or_demand,
-            const vector<double> &construction_time_range,
-            double permitting_period,
-            double construction_cost, int source_type = RESERVOIR);
+//    Reservoir(
+//            const char *name, const int id,
+//            const vector<Catchment *> &catchments, const double capacity,
+//            const double max_treatment_capacity,
+//            EvaporationSeries *evaporation_series,
+//            DataSeries *storage_area_curve,
+//            AllocationModifier *allocation_modifier,
+//            vector<double> *allocated_treatment_fractions,
+//            vector<double> *allocated_fractions,
+//            vector<int> *utilities_with_allocations,
+//            const double construction_rof_or_demand,
+//            const vector<double> &construction_time_range,
+//            double permitting_period,
+//            double construction_cost, int source_type = RESERVOIR);
+//
+//    Reservoir(
+//            const char *name, const int id,
+//            const vector<Catchment *> &catchments, const double capacity,
+//            const double max_treatment_capacity,
+//            EvaporationSeries *evaporation_series,
+//            AllocationModifier *allocation_modifier,
+//            double storage_area,
+//            vector<double> *allocated_treatment_fractions,
+//            vector<double> *allocated_fractions,
+//            vector<int> *utilities_with_allocations,
+//            const double construction_rof_or_demand,
+//            const vector<double> &construction_time_range,
+//            double permitting_period,
+//            double construction_cost, int source_type = RESERVOIR);
 
     Reservoir(const Reservoir &reservoir);
 
@@ -175,6 +175,8 @@ public:
     void setRealization(unsigned long r, vector<vector<double>> *rdm_factors) override;
 
     double getArea() const;
+
+    void updateTreatmentAndCapacityAllocations(int week) override;
 };
 
 

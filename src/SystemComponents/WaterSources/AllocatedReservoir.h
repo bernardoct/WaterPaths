@@ -7,8 +7,18 @@
 
 
 #include "Reservoir.h"
+#include "../../Controls/AllocationModifier.h"
 
 class AllocatedReservoir : public Reservoir {
+private:
+
+    int count;
+
+protected:
+
+    AllocationModifier *allocation_modifier;
+    bool modified_allocations;
+
 public:
     AllocatedReservoir(
             const char *name, const int id,
@@ -114,6 +124,7 @@ public:
     double getAllocatedTreatmentCapacity(int utility_id) const override;
 
 
+    void updateTreatmentAndCapacityAllocations(int week) override;
 };
 
 

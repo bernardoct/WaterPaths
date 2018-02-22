@@ -77,6 +77,7 @@ namespace Constants {
     const int NO_OF_INSURANCE_STORAGE_TIERS = (int) std::round(1. / INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD);
 
     const int WATER_QUALITY_ALLOCATION = -1;
+
 };
 
 #endif //TRIANGLEMODEL_CONSTANTS_H

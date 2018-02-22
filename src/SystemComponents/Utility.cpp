@@ -31,7 +31,7 @@
  */
 
 Utility::Utility(
-        const char *name, int id,
+        const char *name, const int id,
         vector<vector<double>> *demands_all_realizations,
         int number_of_week_demands,
         const double percent_contingency_fund_contribution,
@@ -76,7 +76,7 @@ Utility::Utility(
  * @param infra_if_built_remove if infra option in position 0 of a row is
  * built, remove infra options of IDs in remaining positions of the same row.
  */
-Utility::Utility(const char *name, int id, vector<vector<double>> *demands_all_realizations,
+Utility::Utility(const char *name, const int id, vector<vector<double>> *demands_all_realizations,
                  int number_of_week_demands, const double percent_contingency_fund_contribution,
                  const vector<vector<double>> *typesMonthlyDemandFraction,
                  const vector<vector<double>> *typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,
@@ -141,7 +141,7 @@ Utility::Utility(const char *name, int id, vector<vector<double>> *demands_all_r
  * @param rof_infra_construction_order
  * @param infra_discount_rate
  */
-Utility::Utility(const char *name, int id, vector<vector<double>> *demands_all_realizations,
+Utility::Utility(const char *name, const int id, vector<vector<double>> *demands_all_realizations,
                  int number_of_week_demands, const double percent_contingency_fund_contribution,
                  const vector<vector<double>> *typesMonthlyDemandFraction,
                  const vector<vector<double>> *typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,
@@ -185,8 +185,8 @@ Utility::Utility(const char *name, int id, vector<vector<double>> *demands_all_r
 }
 
 Utility::Utility(Utility &utility) :
-        id(utility.id),
         name(utility.name),
+        id(utility.id),
         number_of_week_demands(utility.number_of_week_demands),
         total_storage_capacity(utility.total_storage_capacity),
         total_stored_volume(utility.total_stored_volume),
@@ -407,6 +407,14 @@ void Utility::splitDemands(
     bool over_allocation_ws[n_sources];
 //    memset(over_allocation_ws, false, (size_t) n_sources);
 
+//    if (week < 53 & week > 50) {
+//        wk_cnt += 1;
+//        if (current_wk != week)
+//            wk_cnt = 1;
+//        current_wk = week;
+//    }
+
+
     /// Allocates demand to intakes and reuse based on allocated volume to
     /// this utility.
     for (int ws : priority_draw_water_source) {
@@ -424,6 +432,14 @@ void Utility::splitDemands(
     for (int ws : non_priority_draw_water_source) {
         over_allocation_ws[ws] = false;
 
+//        if (week > 50 & ws == 6 & week < 53 & wk_cnt == 1) {
+//            cout << "Source: " << water_sources[ws]->name << endl;
+//            cout << "Total Demand: " << water_sources[ws]->getDemand() << endl;
+//            cout << "Restricted Demand: " << restricted_demand << endl;
+//            cout << "Utility, Available allocated volume: " << name << ", "
+//                 << water_sources[ws]->getAvailableAllocatedVolume(id) << endl;
+//        }
+
         /// Calculate allocation based on sources' available volumes.
         double demand_fraction =
                 max(1.0e-6,
@@ -434,11 +450,22 @@ void Utility::splitDemands(
         double source_demand = restricted_demand * demand_fraction;
         demands[ws][id] = source_demand;
 
+//        if (week > 50 & ws == 6 & week < 53 & wk_cnt == 1) {
+//            cout << "Week: " << week << ", Utility: " << id << ", Allocated Demand: " << source_demand << endl;
+//        }
+
         /// Check if allocated demand was greater than treatment capacity.
         double over_allocated_demand_ws =
                 max(source_demand -
                     water_sources[ws]->getAllocatedTreatmentCapacity(id),
                     0.0);
+
+//        if (week > 50 & ws == 6 & week < 54 & wk_cnt == 1) {
+//            cout << "Week: " << week << ", Utility: " << id
+//                 << ", Over-allocated Demand: " << over_allocated_demand_ws << endl;
+//            cout << "Week: " << week << ", Utility: " << id
+//                 << ", Allocated Treatment Capacity: " << water_sources[ws]->getAllocatedTreatmentCapacity(id) << endl;
+//        }
 
         /// Set reallocation variables for the sake of reallocating demand.
         if (over_allocated_demand_ws > 0.) {
@@ -451,6 +478,12 @@ void Utility::splitDemands(
 
         unallocated_reservoirs_demand -=
                 source_demand - over_allocated_demand_ws;
+
+//        if (week > 50 & ws == 6 & week < 53 & wk_cnt == 1) {
+//            cout << "Week: " << week << ", Utility: " << id
+//                 << ", Unallocated Demand: " << unallocated_reservoirs_demand << endl;
+//
+//        }
     }
 
     /// Do one iteration of demand reallocation among sources whose treatment
@@ -481,6 +514,10 @@ void Utility::splitDemands(
         else
             unfulfilled_demand = 0;
     }
+
+//    if (week > 313 & week < 316 & wk_cnt == 1) {
+//        cout << "Week: " << week << ", Utility: " << id << ", Unfulfilled Demand: " << unfulfilled_demand << endl;
+//    }
 
     //FIXME: IMPROVE CONTINUITY ERROR CHECKING HERE TO DETECT POORLY SPLIT DEMANDS WITHOUT CAPTURING UNFULFILLED DEMAND DUE TO LACK OF STORED WATER.
 //    if (abs(unallocated_reservoirs_demand) > 1e-4)
@@ -602,17 +639,20 @@ void Utility::setWaterSourceOnline(unsigned int source_id) {
 }
 
 void Utility::waterTreatmentPlantConstructionHandler(unsigned int source_id) {
-    auto wtp = dynamic_cast<SequentialJointTreatmentExpansion *>
-    (water_sources.at(source_id));
+    auto wtp = dynamic_cast<SequentialJointTreatmentExpansion *>(water_sources.at(source_id));
 
     /// Add treatment capacity to source
     double added_capacity = wtp->implementTreatmentCapacity(id);
-    water_sources.at(wtp->parent_reservoir_ID)
-            ->addTreatmentCapacity(
-                    added_capacity,
-                    wtp->added_treatment_capacity_fractions
-                            ->at((unsigned long) id),
+    double dead_storage_component = wtp->unallocated_treatment_capacity /
+            3; // HOW DO I MAKE THIS THREE LINK TO THE UTILITIES THAT DEVELOP THE JOINT PROJECTS
+
+    water_sources.at(wtp->parent_reservoir_ID)->addTreatmentCapacity(added_capacity,
+                    wtp->added_treatment_capacity_fractions->at((unsigned long) id),
                     id);
+    water_sources.at(wtp->parent_reservoir_ID)->
+            addTreatmentCapacity(dead_storage_component,
+                                 wtp->added_treatment_capacity_fractions->at((unsigned long) id),
+                                 id);
 
     /// If source is intake or reuse and is not in the list of active
     /// sources, add it to the priority list.
@@ -648,8 +688,7 @@ void Utility::reservoirExpansionConstructionHandler(unsigned int source_id) {
     ReservoirExpansion re =
             *dynamic_cast<ReservoirExpansion *>(water_sources.at(source_id));
 
-    water_sources.at(re.parent_reservoir_ID)->
-            addCapacity(re.getAllocatedCapacity(id));
+    water_sources.at(re.parent_reservoir_ID)->addCapacity(re.getAllocatedCapacity(id));
     water_sources.at(source_id)->setOnline();
 }
 
@@ -658,13 +697,11 @@ void Utility::allocatedReservoirExpansionConstructionHandler(unsigned int source
 
     water_sources.at(are.parent_reservoir_ID)->setCapacity(are.getCapacity());
 
-    const vector<double> *new_allocated_fractions = are.getNewAllocationFractions(id); // this vector is incorrect
-    water_sources.at(are.parent_reservoir_ID)->resetAllocations(new_allocated_fractions);
-
-    const vector<double> *new_allocated_treatment_fractions = are.getNewTreatmentAllocationFractions(id);
-    water_sources.at(are.parent_reservoir_ID)->resetTreatmentAllocations(new_allocated_treatment_fractions);
+    water_sources.at(are.parent_reservoir_ID)->resetAllocations(are.getNewAllocationFractions(id));
+    water_sources.at(are.parent_reservoir_ID)->resetTreatmentAllocations(are.getNewTreatmentAllocationFractions(id));
 
     water_sources.at(source_id)->setOnline();
+
 }
 
 void Utility::sourceRelocationConstructionHandler(unsigned int source_id) {

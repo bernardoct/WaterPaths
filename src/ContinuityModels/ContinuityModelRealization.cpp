@@ -56,6 +56,7 @@ void ContinuityModelRealization::setLongTermROFs(const vector<double> &risks_of_
     vector<int> new_infra_triggered;
     int nit; // new infrastruction triggered - id.
 
+
     /// At the beginning of each year, modify allocations in shared reservoirs as desired
     for (unsigned long ws = 0; ws < continuity_water_sources.size(); ++ws) {
         continuity_water_sources[ws]->updateTreatmentAndCapacityAllocations(week);
@@ -91,6 +92,7 @@ void ContinuityModelRealization::setLongTermROFs(const vector<double> &risks_of_
             u->forceInfrastructureConstruction(week,
                                                new_infra_triggered);
         }
+
 }
 
 void ContinuityModelRealization::applyDroughtMitigationPolicies(int week) {

@@ -7,11 +7,10 @@
 
 FallsLakeMinEnvFlowControl::FallsLakeMinEnvFlowControl(
         int water_source_id, int neuse_river_intake_id,
-        const int *week_interval, const double *base_min_env_flows,
-        const double *base_gage_flows, Catchment crabtree)
-        : MinEnvironFlowControl(water_source_id,
-                                vector<int>(1,
-                                            neuse_river_intake_id),
+        const vector<int> week_interval, const vector<double> base_min_env_flows,
+        const vector<double> base_gage_flows, Catchment &crabtree)
+        : MinEnvFlowControl(water_source_id,
+                                vector<int>(1, neuse_river_intake_id),
                                 vector<int>(),
                                 FALLS_CONTROLS),
           neuse_river_intake_id(neuse_river_intake_id),
@@ -19,6 +18,16 @@ FallsLakeMinEnvFlowControl::FallsLakeMinEnvFlowControl(
           base_min_env_flows(base_min_env_flows),
           base_min_gage_flows(base_gage_flows), crabtree(crabtree) {}
 
+FallsLakeMinEnvFlowControl::~FallsLakeMinEnvFlowControl() = default;
+
+FallsLakeMinEnvFlowControl::FallsLakeMinEnvFlowControl(
+        const FallsLakeMinEnvFlowControl &min_env_control) :
+        MinEnvFlowControl(min_env_control),
+        neuse_river_intake_id(min_env_control.neuse_river_intake_id),
+        crabtree(Catchment(min_env_control.crabtree)),
+        base_min_gage_flows(min_env_control.base_min_gage_flows),
+        week_interval(min_env_control.week_interval) ,
+        base_min_env_flows(min_env_control.base_min_env_flows) {}
 
 double FallsLakeMinEnvFlowControl::getRelease(int week) {
 
@@ -41,6 +50,6 @@ double FallsLakeMinEnvFlowControl::getRelease(int week) {
                crabtree.getStreamflow(week));
 }
 
-void FallsLakeMinEnvFlowControl::setRealization(unsigned int r, vector<vector<double>> *rdm_factors) {
+void FallsLakeMinEnvFlowControl::setRealization(unsigned int r, vector<double> &rdm_factors) {
     crabtree.setRealization(r, rdm_factors);
 }

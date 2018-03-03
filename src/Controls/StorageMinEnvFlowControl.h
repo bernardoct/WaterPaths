@@ -6,15 +6,18 @@
 #define TRIANGLEMODEL_STORAGEMINENVFLOWCONTROL_H
 
 
-#include "Base/MinEnvironFlowControl.h"
+#include "Base/MinEnvFlowControl.h"
 
-class StorageMinEnvFlowControl : public MinEnvironFlowControl {
+class StorageMinEnvFlowControl : public MinEnvFlowControl {
 public:
     StorageMinEnvFlowControl(
             int water_source_id, const vector<int> &aux_water_sources_ids,
-            vector<double> *storages, vector<double> *releases);
-    const vector<double> *storages;
-    const vector<double> *releases;
+            vector<double>& storages, vector<double>& releases);
+
+    StorageMinEnvFlowControl(const StorageMinEnvFlowControl &min_env_control);
+
+    const vector<double> &storages;
+    const vector<double> &releases;
 
 private:
     double getRelease(int week);

@@ -12,7 +12,7 @@
 #include "../ContinuityModels/Base/ContinuityModel.h"
 #include "../ContinuityModels/ContinuityModelRealization.h"
 #include "../ContinuityModels/ContinuityModelROF.h"
-#include "../Controls/Base/MinEnvironFlowControl.h"
+#include "../Controls/Base/MinEnvFlowControl.h"
 #include "../DataCollector/MasterDataCollector.h"
 #include <vector>
 
@@ -29,8 +29,9 @@ private:
     vector<unsigned long> realizations_to_run;
 
     const int import_export_rof_tables;
-    vector<Matrix3D<double>> precomputed_rof_tables;
+    vector<vector<Matrix2D<double>>> precomputed_rof_tables;
     vector<vector<double>> table_storage_shift;
+    string rof_tables_folder;
 
 public:
 
@@ -39,10 +40,10 @@ public:
             const vector<vector<int>> &water_sources_to_utilities,
             vector<Utility *> &utilities,
             const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
-            vector<MinEnvironFlowControl *> &min_env_flow_controls,
-            vector<vector<double>> *utilities_rdm,
-            vector<vector<double>> *water_sources_rdm,
-            vector<vector<double>> *policies_rdm,
+            vector<MinEnvFlowControl *> &min_env_flow_controls,
+            vector<vector<double>>& utilities_rdm,
+            vector<vector<double>>& water_sources_rdm,
+            vector<vector<double>>& policies_rdm,
             int import_export_rof_tables,
             const unsigned long total_simulation_time,
             vector<unsigned long> &realizations_to_run);
@@ -53,12 +54,10 @@ public:
 
     MasterDataCollector* runFullSimulation(unsigned long n_threads);
 
-    void setPrecomputed_rof_tables(const vector<Matrix3D<double>> &precomputed_rof_tables,
+    void setPrecomputed_rof_tables(const vector<vector<Matrix2D<double>>> &precomputed_rof_tables,
                                    vector<vector<double>> &table_storage_shift);
 
-    void setRealizations_to_run(const vector<unsigned long> &realizations_to_run);
-
-
+    void setRof_tables_folder(const string &rof_tables_folder);
 };
 
 

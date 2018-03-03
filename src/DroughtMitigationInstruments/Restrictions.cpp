@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <vector>
 #include "Restrictions.h"
 #include "../Utils/Utils.h"
 
@@ -64,7 +65,7 @@ void Restrictions::applyPolicy(int week) {
 
     /// Apply demand multiplier and price surcharge, the latter if applicable.
     realization_utilities[0]->setDemand_multiplier(current_multiplier);
-    if (restricted_weekly_average_volumetric_price && stage > 0) {
+    if (!restricted_weekly_average_volumetric_price.empty() && stage > 0) {
         int week_of_year = Utils::weekOfTheYear(week);
         realization_utilities[0]->setRestricted_price(
                 restricted_weekly_average_volumetric_price[stage][week_of_year]);
@@ -77,7 +78,7 @@ double Restrictions::getCurrent_multiplier() const {
 
 void Restrictions::addSystemComponents(vector<Utility *> systems_utilities,
                                        vector<WaterSource *> water_sources,
-                                       vector<MinEnvironFlowControl *> min_env_flow_controls) {
+                                       vector<MinEnvFlowControl *> min_env_flow_controls) {
     /// Get utility whose IDs correspond to restriction policy ID.
     for (Utility *u : systems_utilities) {
         if (u->id == id) {
@@ -103,12 +104,14 @@ void Restrictions::calculateWeeklyAverageWaterPrices(
 
     if (priceMultipliers) {
         int n_tiers = static_cast<int>(typesMonthlyWaterPrice->at(0).size());
-        restricted_weekly_average_volumetric_price = new
-                double *[priceMultipliers->size()];
+        restricted_weekly_average_volumetric_price =
+                std::vector<std::vector<double>>();
 
         for (int s = 0; s < priceMultipliers->size(); ++s) { // stages loop
-            restricted_weekly_average_volumetric_price[s] =
-                    new double[(int) WEEKS_IN_YEAR + 1]();
+//            restricted_weekly_average_volumetric_price[s] =
+//                    new double[(int) WEEKS_IN_YEAR + 1]();
+            restricted_weekly_average_volumetric_price.emplace_back(
+                    (int) WEEKS_IN_YEAR + 1, 0.);
             double monthly_average_price[NUMBER_OF_MONTHS] = {};
 
             for (int m = 0; m < NUMBER_OF_MONTHS; ++m) // monthly loop
@@ -126,9 +129,9 @@ void Restrictions::calculateWeeklyAverageWaterPrices(
     }
 }
 
-void Restrictions::setRealization(unsigned int realization_id, vector<vector<double>> *utilities_rdm,
-                                  vector<vector<double>> *water_sources_rdm, vector<vector<double>> *policy_rdm) {
+void Restrictions::setRealization(unsigned int realization_id, vector<double> &utilities_rdm,
+                                  vector<double> &water_sources_rdm, vector<double> &policy_rdm) {
     for (double& sm : stage_multipliers) {
-        sm *= policy_rdm->at(realization_id)[id];
+        sm *= policy_rdm.at((unsigned long) id);
     }
 }

@@ -19,11 +19,11 @@
  * @param supply_capacity
  */
 JordanLakeMinEnvFlowControl::JordanLakeMinEnvFlowControl(
-            int jordan_lake_id, Catchment *lillington_gage_catchment,
+            int jordan_lake_id, Catchment& lillington_gage_catchment,
             double rel02, double rel04, double rel06_up, double min_rel_llt06,
             double min_rel_llt08, double min_rel_llt08_up,
             double quality_capacity, double supply_capacity)
-        : MinEnvironFlowControl(jordan_lake_id, vector<int>(1, jordan_lake_id),
+        : MinEnvFlowControl(jordan_lake_id, vector<int>(1, jordan_lake_id),
                                 vector<int>(),
                                 JORDAN_CONTROLS),
           lillington_gage_catchment(lillington_gage_catchment), rel02(rel02),
@@ -32,22 +32,31 @@ JordanLakeMinEnvFlowControl::JordanLakeMinEnvFlowControl(
           quality_capacity(quality_capacity),
           supply_capacity(supply_capacity) {}
 
-JordanLakeMinEnvFlowControl::JordanLakeMinEnvFlowControl(
-        const JordanLakeMinEnvFlowControl &jl_min_flow_control)
-        : MinEnvironFlowControl(jl_min_flow_control),
-          lillington_gage_catchment(new Catchment(*jl_min_flow_control
-                                             .lillington_gage_catchment)) {
-    int i = 1;
+JordanLakeMinEnvFlowControl::~JordanLakeMinEnvFlowControl() {
+//    delete lillington_gage_catchment;
 }
 
+JordanLakeMinEnvFlowControl::JordanLakeMinEnvFlowControl(
+        const JordanLakeMinEnvFlowControl &jl_min_flow_control)
+        : MinEnvFlowControl(jl_min_flow_control),
+          lillington_gage_catchment(Catchment(jl_min_flow_control
+                  .lillington_gage_catchment)),
+          rel02(jl_min_flow_control.rel02),
+          rel04(jl_min_flow_control.rel04),
+          rel06_up(jl_min_flow_control.rel06_up),
+          min_rel_llt06(jl_min_flow_control.min_rel_llt06),
+          min_rel_llt08(jl_min_flow_control.min_rel_llt08),
+          min_rel_llt08_up(jl_min_flow_control.min_rel_llt08_up),
+          quality_capacity(jl_min_flow_control.quality_capacity),
+          supply_capacity(jl_min_flow_control.supply_capacity) {}
+
 JordanLakeMinEnvFlowControl &JordanLakeMinEnvFlowControl::operator=
-        (const JordanLakeMinEnvFlowControl jl_min_flow_control) {
-    lillington_gage_catchment = new Catchment(*jl_min_flow_control
+        (const JordanLakeMinEnvFlowControl& jl_min_flow_control) {
+    lillington_gage_catchment = Catchment(jl_min_flow_control
             .lillington_gage_catchment);
 
     return *this;
 }
-
 
 double JordanLakeMinEnvFlowControl::getRelease(int week) {
     double water_quality_storage =
@@ -55,7 +64,7 @@ double JordanLakeMinEnvFlowControl::getRelease(int week) {
                 quality_capacity);
     double lillington_flow_rate =
             water_sources[water_source_id]->getTotal_outflow() +
-                    lillington_gage_catchment->getStreamflow(week);
+                    lillington_gage_catchment.getStreamflow(week);
 
     if (water_quality_storage < 0.2)
         return rel02;
@@ -71,6 +80,6 @@ double JordanLakeMinEnvFlowControl::getRelease(int week) {
         return rel06_up;
 }
 
-void JordanLakeMinEnvFlowControl::setRealization(unsigned int r, vector<vector<double>> *rdm_factors) {
-    lillington_gage_catchment->setRealization(r, rdm_factors);
+void JordanLakeMinEnvFlowControl::setRealization(unsigned int r, vector<double> &rdm_factors) {
+    lillington_gage_catchment.setRealization(r, rdm_factors);
 }

@@ -6,16 +6,14 @@
 #include <iomanip>
 #include "ReservoirDataCollector.h"
 
-ReservoirDataCollector::ReservoirDataCollector(Reservoir *reservoir,
-                                               unsigned long realization)
-        : DataCollector(reservoir->id, reservoir->name, realization, RESERVOIR,
-                        7 * COLUMN_WIDTH), reservoir(reservoir) {}
+ReservoirDataCollector::ReservoirDataCollector(Reservoir *reservoir, unsigned long realization)
+        : DataCollector(reservoir->id, reservoir->name, realization, RESERVOIR, 7 * COLUMN_WIDTH), reservoir(reservoir) {
+}
 
-ReservoirDataCollector::ReservoirDataCollector(Reservoir *reservoir,
-                                               int type, int table_width,
+ReservoirDataCollector::ReservoirDataCollector(Reservoir *reservoir, int type, int table_width,
                                                unsigned long realization)
-        : DataCollector(reservoir->id, reservoir->name, realization, type,
-                        table_width), reservoir(reservoir) {}
+        : DataCollector(reservoir->id, reservoir->name, realization, type, table_width), reservoir(reservoir) {
+}
 
 string ReservoirDataCollector::printTabularString(int week) {
     stringstream outStream;

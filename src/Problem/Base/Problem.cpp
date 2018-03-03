@@ -8,7 +8,7 @@
 
 vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
 
-    string fo = "/TestFiles/output/Objectives";
+    string fo = output_directory + "/TestFiles/output/Objectives";
     objectives = this->master_data_collector->calculatePrintObjectives(
             fo + "_s" + std::to_string(solution_no) + fname_sufix, print_files);
 
@@ -27,17 +27,18 @@ void Problem::printTimeSeriesAndPathways() {
 
     //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
     cout << "Printing Pathways" << endl;
-    this->master_data_collector->printPathways(fpw + "_s" + std::to_string(solution_no) + fname_sufix);
+    this->master_data_collector->printPathways(
+            fpw + "_s" + std::to_string(solution_no) + fname_sufix);
     cout << "Printing time series" << endl;
-    this->master_data_collector->printUtilitiesOutputCompact(0, (int) n_weeks, fu + "_s"
-                                                                               + std::to_string(solution_no) +
-                                                                               fname_sufix);
-    this->master_data_collector->printWaterSourcesOutputCompact(0, (int) n_weeks, fws + "_s"
-                                                                                  + std::to_string(solution_no) +
-                                                                                  fname_sufix);
-    this->master_data_collector->printPoliciesOutputCompact(0, (int) n_weeks, fp + "_s"
-                                                                              + std::to_string(solution_no) +
-                                                                              fname_sufix);
+    this->master_data_collector->printUtilitiesOutputCompact(
+            0, (int) n_weeks, fu + "_s" + std::to_string(solution_no) +
+                    fname_sufix);
+    this->master_data_collector->printWaterSourcesOutputCompact(
+            0, (int) n_weeks, fws + "_s" + std::to_string(solution_no) +
+                    fname_sufix);
+    this->master_data_collector->printPoliciesOutputCompact(
+            0, (int) n_weeks, fp + "_s" + std::to_string(solution_no) +
+                    fname_sufix);
 //    data_collector->printUtilitesOutputTabular(0,
 //                                               n_weeks,
 //                                               fu + "_s"
@@ -94,6 +95,7 @@ void Problem::setSol_number(unsigned long sol_number) {
 }
 
 void Problem::setOutput_directory(const string &output_directory) {
+    cout << "Output will be printed in " << output_directory << endl;
     Problem::output_directory = output_directory;
 }
 
@@ -141,7 +143,7 @@ void Problem::setN_realizations(unsigned long n_realizations) {
     iota(begin(realizations_to_run), end(realizations_to_run), 0);
 }
 
-void Problem::setRealizationsToRun(vector<unsigned long> realizations_to_run) {
+void Problem::setRealizationsToRun(vector<unsigned long>& realizations_to_run) {
     this->realizations_to_run = realizations_to_run;
 }
 

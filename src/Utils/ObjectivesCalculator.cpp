@@ -16,8 +16,7 @@ double ObjectivesCalculator::calculateReliabilityObjective(
     vector<vector<int>> realizations_year_reliabilities(n_realizations,
                                                         vector<int>(n_years,
                                                                     0));
-    vector<int> year_reliabilities(n_years,
-                                   0);
+    vector<int> year_reliabilities(n_years, 0);
 
     /// Creates a table with years that failed in each realization.
     for (int r = 0; r < n_realizations; ++r) {
@@ -51,12 +50,21 @@ double ObjectivesCalculator::calculateReliabilityObjective(
                                        0.0);
 
     /// Returns year with most realization failures, divided by the number of realizations (reliability objective).
-    if (check_non_zero > 0)
-        return 1. - (double) *max_element(year_reliabilities.begin(),
-                                          year_reliabilities.end()) /
-                    n_realizations;
-    else
+    if (check_non_zero > 0) {
+        double obj_value =
+                1. - (double) *max_element(year_reliabilities.begin(),
+                                           year_reliabilities.end()) /
+                     n_realizations;
+
+        if (std::isinf(obj_value)) {
+            string error_inf = "Infinite reliability.";
+            __throw_logic_error(error_inf.c_str());
+        } else {
+            return obj_value;
+        }
+    } else {
         return 1.;
+    }
 }
 
 double ObjectivesCalculator::calculateRestrictionFrequencyObjective(
@@ -90,7 +98,14 @@ double ObjectivesCalculator::calculateRestrictionFrequencyObjective(
             }
         }
 
-        return restriction_frequency / (n_realizations * n_years);
+        double obj_value = restriction_frequency / (n_realizations * n_years);
+
+        if (std::isinf(obj_value)) {
+            string error_inf = "Infinite restriction frequency.";
+            __throw_logic_error(error_inf.c_str());
+        } else {
+            return obj_value;
+        }
     } else
         return NONE;
 }
@@ -99,11 +114,24 @@ double ObjectivesCalculator::calculateNetPresentCostInfrastructureObjective(
         vector<UtilitiesDataCollector>& utility_data) {
 
     double infrastructure_npc = 0;
-    for (const auto &r : utility_data)
+//    for (const auto &r : utility_data) {
+    for (int i = 0; i < utility_data.size(); ++i) {
+	auto r = utility_data[i];
         infrastructure_npc += accumulate(
                 r.getNet_present_infrastructure_cost().begin(),
                 r.getNet_present_infrastructure_cost().end(),
-                0.0);
+                0.);
+	//for (int j = 0; j < r.getNet_present_infrastructure_cost().size(); ++j) {
+	//    auto week_NPV = r.getNet_present_infrastructure_cost()[j];
+	//    infrastructure_npc += r.getNet_present_infrastructure_cost()[j];
+	//    if (week_NPV > 1e10) {
+	//	__throw_logic_error("Infrastructure NPC > 1 trillion dollars");
+	//        printf("Warning: utility %d, realization %d, week %d returned infrastructure NPV of %f.\n", r.id, i, j, week_NPV);
+	//    }
+	//}
+//	if (infrastructure_npc > 1e10)
+//	    printf("Warning: utility %d in realization %d returned infrastructure NPV higher than a trillion dollars.\n", r.id, i);
+    }
 
     return infrastructure_npc / utility_data.size();
 }
@@ -116,7 +144,7 @@ double ObjectivesCalculator::calculatePeakFinancialCostsObjective(
 
     double realizations_year_debt_payment = 0;
     double realizations_year_cont_fund_contribution = 0;
-    double realizations_year_gross_revenue = 0;
+    double realizations_year_gross_revenue = 1e-6;
     double realizations_year_insurance_contract_cost = 0;
     vector<double> year_financial_costs;
     vector<double> realization_financial_costs(n_realizations, 0);
@@ -124,8 +152,7 @@ double ObjectivesCalculator::calculatePeakFinancialCostsObjective(
     /// Creates a table with years that failed in each realization.
     int y;
     for (int r = 0; r < n_realizations; ++r) {
-        year_financial_costs.assign(n_years,
-                                    0.0);
+        year_financial_costs.assign(n_years,  0.0);
         y = 0;
         for (int w = 0; w < n_weeks; ++w) {
             /// accumulate year's info by summing weekly amounts.
@@ -152,7 +179,7 @@ double ObjectivesCalculator::calculatePeakFinancialCostsObjective(
                 /// reset accounts.
                 realizations_year_debt_payment = 0;
                 realizations_year_cont_fund_contribution = 0;
-                realizations_year_gross_revenue = 0;
+                realizations_year_gross_revenue = 1e-6;
                 realizations_year_insurance_contract_cost = 0;
             }
         }
@@ -160,12 +187,26 @@ double ObjectivesCalculator::calculatePeakFinancialCostsObjective(
         realization_financial_costs[r] =
                 *max_element(year_financial_costs.begin(),
                              year_financial_costs.end());
+        if (realization_financial_costs[r] > 1e10) {
+            printf("Absurdly high financial cost in realization %d.\n", r);
+        }
     }
 
     /// returns average of realizations' costs.
-    return accumulate(realization_financial_costs.begin(),
-                      realization_financial_costs.end(),
-                      0.0) / n_realizations;
+//    return accumulate(realization_financial_costs.begin(),
+//                      realization_financial_costs.end(),
+//                      0.0) / n_realizations;
+
+    double obj_value = accumulate(realization_financial_costs.begin(),
+                                  realization_financial_costs.end(),
+                                  0.0) / n_realizations;
+
+    if (std::isinf(obj_value)) {
+        string error_inf = "Infinite peak financial cost.";
+        __throw_logic_error(error_inf.c_str());
+    } else {
+        return obj_value;
+    }
 }
 
 double ObjectivesCalculator::calculateWorseCaseCostsObjective(
@@ -178,7 +219,7 @@ double ObjectivesCalculator::calculateWorseCaseCostsObjective(
                                               0);
     vector<double> year_financial_costs;
     double year_drought_mitigation_cost = 0;
-    double year_gross_revenue = 0;
+    double year_gross_revenue = 1e-6;
 
     /// Creates a table with years that failed in each realization.
     int y;
@@ -199,7 +240,7 @@ double ObjectivesCalculator::calculateWorseCaseCostsObjective(
                             0.0)
                         / year_gross_revenue;
 
-                year_gross_revenue = 0;
+                year_gross_revenue = 1e-6;
                 year_drought_mitigation_cost = 0;
                 /// update year count.
                 y++;
@@ -215,6 +256,13 @@ double ObjectivesCalculator::calculateWorseCaseCostsObjective(
     sort(worse_year_financial_costs.begin(),
          worse_year_financial_costs.end());
 
-    return worse_year_financial_costs.at(
+    double obj_value = worse_year_financial_costs.at(
             (unsigned long) floor(WORSE_CASE_COST_PERCENTILE * n_realizations));
+
+    if (std::isinf(obj_value)) {
+        string error_inf = "Infinite worse case cost.";
+        __throw_logic_error(error_inf.c_str());
+    } else {
+        return obj_value;
+    }
 }

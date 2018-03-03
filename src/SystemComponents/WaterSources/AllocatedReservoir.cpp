@@ -271,25 +271,27 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
                                         available_allocated_volumes.end(),
                                         0.f);
     if ((int) abs(sum_allocations - available_volume) > 1) {
-        cout << endl;
-        cout << "week: " << week << endl;
-        cout << "sum_allocations " << sum_allocations << endl;
-        cout << "available volume old: " << available_volume_old << endl;
-        cout << "available_volume " << available_volume << endl << endl;
-        cout << "total_upstream_inflow: " << total_upstream_inflow << endl;
-        cout << "upstream_catchment_inflow: " << upstream_catchment_inflow << endl;
-        cout << "evaporation: " << evaporated_volume << endl;
-        cout << "total_demand: " << total_demand << endl;
-        cout << "policy_added_demand: " << policy_added_demand << endl;
-        cout << "total_outflow: " << total_outflow << endl;
-        cout << "continuity error: " << available_volume_old +
-                total_upstream_inflow + upstream_catchment_inflow -
-                evaporated_volume - total_demand - total_outflow -
-                available_volume << endl;
-        __throw_runtime_error("Sum of allocated volumes in a reservoir must "
-                                      "total current storage minus unallocated "
-                                      "volume.Please report this error to "
-                                      "bct52@cornell.edu.");
+        char error[4000];
+        double cont_error = available_volume_old +
+                            total_upstream_inflow + upstream_catchment_inflow -
+                            evaporated_volume - total_demand - total_outflow -
+                            available_volume;
+        sprintf(error, "Sum of allocated volumes in a reservoir must \n"
+                        "total current storage minus unallocated \n"
+                        "volume.Please report this error to \n"
+                        "bct52@cornell.edu.\n\n"
+                        "week: %d\nsum_allocations %f\n"
+                        "available volume old: %f\navailable_volume %f\n"
+                        "total_upstream_inflow: %f\n"
+                        "upstream_catchment_inflow: %f\nevaporation: %f\n"
+                        "total_demand: %f\npolicy_added_demand: %f\n"
+                        "total_outflow: %f\ncontinuity error: %f\n",
+                week, sum_allocations, available_volume_old, available_volume,
+                total_upstream_inflow, upstream_catchment_inflow,
+                evaporated_volume, total_demand, policy_added_demand,
+                total_outflow, cont_error);
+
+        throw_with_nested(runtime_error(error));
     }
 
     double cont_error = abs(available_volume_old - direct_demand + total_upstream_inflow +
@@ -297,13 +299,18 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
                            total_outflow - available_volume);
 //    if (cont_error > abs(available_volume) * 1e-4) {
     if (cont_error > 1.f) {
-        cout << "Source " << name << endl;
-        cout << "available_volume " << available_volume << endl;
-        cout << "Error " << cont_error << endl;
-        cout << "Week " << week << endl;
-        __throw_runtime_error("Continuity error in allocated water source. "
-                                      "If you cannot find the problem, please "
-                                      "report this to bct52@cornell.edu");
+        char error[4000];
+        sprintf(error, "Continuity error in %s\n\n"
+                        "week: %d\nsum_allocations %f\n"
+                        "available volume old: %f\navailable_volume %f\n"
+                        "total_upstream_inflow: %f\n"
+                        "upstream_catchment_inflow: %f\nevaporation: %f\n"
+                        "total_demand: %f\npolicy_added_demand: %f\n"
+                        "total_outflow: %f\ncontinuity error: %f\n",
+                name, week, sum_allocations, available_volume_old, available_volume,
+                total_upstream_inflow, upstream_catchment_inflow,
+                evaporated_volume, total_demand, policy_added_demand,
+                total_outflow, cont_error);
     }
 }
 

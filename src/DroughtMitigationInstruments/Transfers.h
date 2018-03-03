@@ -16,13 +16,14 @@ private:
     const double source_treatment_buffer;
     double average_pipe_capacity = 0;
     int transfer_water_source_id;
-    map<int, int>* util_id_to_vertex_id = new map<int, int>();
+//    map<int, int> util_id_to_vertex_id;
+    vector<int> util_id_to_vertex_id;
     vector<int> buyers_ids;
     vector<double> allocations;
     vector<double> conveyed_volumes;
     vector<double> buyers_transfer_triggers;
     vector<double> flow_rates_and_allocations;
-    Utility *source_utility;
+    Utility *source_utility = nullptr;
     WaterSource *transfer_water_source = nullptr;
     Matrix<double> H, Aeq, A;
     Vector<double> f, beq, b, allocations_aux, lb, ub;
@@ -48,14 +49,14 @@ public:
 
     void addSystemComponents(vector<Utility *> system_utilities,
                                  vector<WaterSource *> water_sources,
-                                 vector<MinEnvironFlowControl *> min_env_flow_controls) override;
+                                 vector<MinEnvFlowControl *> min_env_flow_controls) override;
 
     vector<double>
     solve_QP(vector<double> allocation_requests, double available_transfer_volume, double min_transfer_volume,
                  int week);
 
-    void setRealization(unsigned int realization_id, vector<vector<double>> *utilities_rdm,
-                        vector<vector<double>> *water_sources_rdm, vector<vector<double>> *policy_rdm) override;
+    void setRealization(unsigned int realization_id, vector<double> &utilities_rdm,
+                        vector<double> &water_sources_rdm, vector<double> &policy_rdm) override;
 
 };
 

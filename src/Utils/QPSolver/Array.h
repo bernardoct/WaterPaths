@@ -95,8 +95,7 @@ Vector<T>::Vector(const Vector<T>& rhs)
 template <typename T>
 Vector<T>::~Vector()
 {
-//    if (v != 0)
-//        delete[] (v);
+    delete[] v;
 }
 
 template <typename T>
@@ -104,9 +103,10 @@ void Vector<T>::resize(const unsigned int n)
 {
     if (n == this->n)
         return;
-    if (v != 0)
-        delete[] (v);
+
+    delete[] (v);
     v = new T[n];
+
     this->n = n;
 }
 

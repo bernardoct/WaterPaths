@@ -56,7 +56,7 @@ public:
 
     virtual ~Problem();
 
-    virtual void functionEvaluation(const double* vars, double* objs, double* consts)=0;
+    virtual void functionEvaluation(double* vars, double* objs, double* consts)=0;
 
     void setN_weeks(unsigned long n_weeks);
 
@@ -80,7 +80,7 @@ public:
 
     void setN_realizations(unsigned long n_realizations);
 
-    void setRealizationsToRun(vector<unsigned long> realizations_to_run);
+    void setRealizationsToRun(vector<unsigned long>& realizations_to_run);
 
     void setEvap_inflows_suffix(const string &evap_inflows_suffix);
 

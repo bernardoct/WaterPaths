@@ -2,9 +2,9 @@
 // Created by bct52 on 6/28/17.
 //
 
-#include "MinEnvironFlowControl.h"
+#include "MinEnvFlowControl.h"
 
-MinEnvironFlowControl::MinEnvironFlowControl(int water_source_id,
+MinEnvFlowControl::MinEnvFlowControl(int water_source_id,
                                              const vector<int> &water_sources_ids,
                                              const vector<int> &aux_utilities_ids, int type)
         : water_source_id(water_source_id),
@@ -12,15 +12,17 @@ MinEnvironFlowControl::MinEnvironFlowControl(int water_source_id,
           utilities_ids(aux_utilities_ids),
           type(type) {}
 
-MinEnvironFlowControl::MinEnvironFlowControl(
-        const MinEnvironFlowControl &min_env_control) :
-        water_source_id(min_env_control.water_source_id), water_sources_ids
-        (min_env_control.water_sources_ids),
+MinEnvFlowControl::MinEnvFlowControl(
+        const MinEnvFlowControl &min_env_control) :
+        water_source_id(min_env_control.water_source_id),
+        water_sources_ids(min_env_control.water_sources_ids),
         utilities_ids(min_env_control.utilities_ids),
-        type(min_env_control.type){
+        type(min_env_control.type),
+        water_sources(vector<WaterSource *>()),
+        utilities(vector<Utility *>()) {
 }
 
-void MinEnvironFlowControl::addComponents(
+void MinEnvFlowControl::addComponents(
         vector<WaterSource *> water_sources, vector<Utility *> utilities) {
     this->water_sources = vector<WaterSource *>(water_sources.size());
 
@@ -35,6 +37,8 @@ void MinEnvironFlowControl::addComponents(
     }
 }
 
-void MinEnvironFlowControl::setRealization(unsigned int r, vector<double> &rdm_factors) {
+void MinEnvFlowControl::setRealization(unsigned int r, vector<double> &rdm_factors) {
 
 }
+
+MinEnvFlowControl::~MinEnvFlowControl() = default;

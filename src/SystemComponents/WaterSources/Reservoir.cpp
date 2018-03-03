@@ -301,9 +301,6 @@ void Reservoir::applyContinuity(int week, double upstream_source_inflow,
     /// Calculate total runoff inflow reaching reservoir from its watershed.
     double catchment_inflow = 0;
     for (Catchment &c : catchments) {
-        /*if (c == nullptr) {
-            cout << "not right\n";
-        }*/
         catchment_inflow += c.getStreamflow(week);
     }
 
@@ -321,6 +318,7 @@ void Reservoir::applyContinuity(int week, double upstream_source_inflow,
                                + total_upstream_inflow + catchment_inflow
                                - total_demand - min_environmental_outflow
                                - evaporated_volume;
+
     double outflow_new = min_environmental_outflow;
 
 
@@ -348,7 +346,7 @@ void Reservoir::setOnline() {
     available_volume = NONE;
 }
 
-void Reservoir::setRealization(unsigned long r, vector<vector<double>> *rdm_factors) {
+void Reservoir::setRealization(unsigned long r, vector<double> &rdm_factors) {
     WaterSource::setRealization(r, rdm_factors);
 
     /// Set evaporation time series and cut off access to series set by setting

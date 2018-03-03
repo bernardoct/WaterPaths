@@ -33,7 +33,7 @@ public:
 
     double getStreamflow(int week);
 
-    virtual void setRealization(unsigned long r, vector<vector<double>> *rdm_factors);
+    virtual void setRealization(unsigned long r, vector<double> &rdm_factors);
 };
 
 

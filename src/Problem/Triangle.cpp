@@ -7,6 +7,10 @@
 #include <iostream>
 #include <iterator>
 #include <fstream>
+#include <omp.h>
+#ifdef  PARALLEL
+#include <mpi.h>
+#endif
 #include "Triangle.h"
 #include "../Controls/SeasonalMinEnvFlowControl.h"
 #include "../Controls/Custom/FallsLakeMinEnvFlowControl.h"
@@ -35,8 +39,8 @@
  * on Jordan Lake (or any generic lake) but still pay for joint treatment
  * infrastructure).
  */
-void Triangle::functionEvaluation(const double *vars, double *objs, double *consts) {
-    cout << "Building Triangle Problem." << endl;
+void Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
+//    cout << "Building Triangle Problem." << endl;
     //srand(0);//(unsigned int) time(nullptr));
 
     // ===================== SET UP DECISION VARIABLES  =====================
@@ -104,6 +108,16 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
     double owasa_inf_buffer = vars[54];
     double raleigh_inf_buffer = vars[55];
     double cary_inf_buffer = vars[56];
+
+    if (utilities_rdm.empty()) {
+        /// All matrices below have dimensions n_realizations x nr_rdm_factors
+        utilities_rdm = std::vector<vector<double>>(
+                n_realizations, vector<double>(4, 1.));
+        water_sources_rdm = std::vector<vector<double>>(
+                n_realizations, vector<double>(51, 1.));
+        policies_rdm = std::vector<vector<double>>(
+                n_realizations, vector<double>(4, 1.));
+    }
 
     vector<infraRank> durham_infra_order_raw = {
             infraRank(9, Teer_quarry_expansion_ranking),
@@ -184,17 +198,23 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
     /// Normalize Jordan Lake Allocations in case they exceed 1.
     double sum_jla_allocations = OWASA_JLA + Durham_JLA + Cary_JLA +
                                  Raleigh_JLA;
-    if (sum_jla_allocations > 1.) {
-        OWASA_JLA /= sum_jla_allocations;
-        Durham_JLA /= sum_jla_allocations;
-        Cary_JLA /= sum_jla_allocations;
-        Raleigh_JLA /= sum_jla_allocations;
+    if (sum_jla_allocations == 0.)
+        __throw_invalid_argument("JLA allocations cannot be all "
+                                         "zero.");
+    if (sum_jla_allocations > 0.69) { // At the time this study was done, 31% of JL had been allocated to other utilities.
+        OWASA_JLA /= sum_jla_allocations / 0.69;
+        Durham_JLA /= sum_jla_allocations / 0.69;
+        Cary_JLA /= sum_jla_allocations / 0.69;
+        Raleigh_JLA /= sum_jla_allocations / 0.69;
     }
 
     /// Normalize West Jordan Lake WTP allocations.
     double sum_wjlwtp = western_wake_treatment_frac_durham +
                         western_wake_treatment_plant_owasa_frac +
                         western_wake_treatment_plant_raleigh_frac;
+    if (sum_wjlwtp == 0.)
+        __throw_invalid_argument("Treatment fractions for WJLWTP cannot be all "
+                                         "zero.");
     western_wake_treatment_frac_durham /= sum_wjlwtp;
     western_wake_treatment_plant_owasa_frac /= sum_wjlwtp;
     western_wake_treatment_plant_raleigh_frac /= sum_wjlwtp;
@@ -313,12 +333,12 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                   1.797 * 7};
     vector<double> ccr_releases = {0.1422 * 7, 0.5 * 7, 1 * 7, 1.5 * 7,
                                    1.797 * 7};
-    int falls_controls_weeks[2] = {13, 43};
-    double falls_base_releases[2] = {64.64 * 7, 38.78 * 7};
-    double falls_min_gage[2] = {180 * 7, 130 * 7};
+    vector<int> falls_controls_weeks = {13, 43};
+    vector<double> falls_base_releases = {64.64 * 7, 38.78 * 7};
+    vector<double> falls_min_gage = {180 * 7, 130 * 7};
 
-    SeasonalMinEnvFlowControl durham_min_env_control(0, &dlr_weeks,
-                                                     &dlr_releases);
+    SeasonalMinEnvFlowControl durham_min_env_control(0, dlr_weeks,
+                                                     dlr_releases);
 //    FixedMinEnvFlowControl falls_min_env_control(1, 38.78 * 7);
     FallsLakeMinEnvFlowControl falls_min_env_control(1,
                                                      10,
@@ -329,20 +349,20 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
 
     StorageMinEnvFlowControl wheeler_benson_min_env_control(2,
                                                             vector<int>(1, 2),
-                                                            &wb_storage,
-                                                            &wb_releases);
+                                                            wb_storage,
+                                                            wb_releases);
     FixedMinEnvFlowControl sq_min_env_control(3, 0);
     InflowMinEnvFlowControl ccr_min_env_control(4, vector<int>(1, 4),
-                                                &ccr_inflows,
-                                                &ccr_releases);
+                                                ccr_inflows,
+                                                ccr_releases);
     FixedMinEnvFlowControl university_min_env_control(5, 0);
 //    FixedMinEnvFlowControl jordan_min_env_control(6,
 //                                                  25.8527 * 7);
     JordanLakeMinEnvFlowControl jordan_min_env_control(
-            6, &cape_fear_river_at_lillington, 64.63, 129.26, 25.85, 193.89,
+            6, cape_fear_river_at_lillington, 64.63, 129.26, 25.85, 193.89,
             290.84, 387.79, 30825.0, 14924.0);
-    SeasonalMinEnvFlowControl little_river_min_env_control(7, &dlr_weeks,
-                                                           &dlr_releases);
+    SeasonalMinEnvFlowControl little_river_min_env_control(7, dlr_weeks,
+                                                           dlr_releases);
     FixedMinEnvFlowControl richland_min_env_control(8, 0);
     FixedMinEnvFlowControl teer_min_env_control(9, 0);
     FixedMinEnvFlowControl neuse_intake_min_env_control(10, 38.78 * 7);
@@ -351,7 +371,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
 //    vector<double> eno_releases = {6.49 * 7, 19.48 * 7, 6.49 * 7};
 //    SeasonalMinEnvFlowControl eno_min_env_control(&eno_weeks, &eno_releases);
 
-    vector<MinEnvironFlowControl *> min_env_flow_controls;
+    vector<MinEnvFlowControl *> min_env_flow_controls;
     min_env_flow_controls.push_back(&durham_min_env_control);
     min_env_flow_controls.push_back(&falls_min_env_control);
     min_env_flow_controls.push_back(&wheeler_benson_min_env_control);
@@ -605,14 +625,14 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
     vector<double> cary_upgrades_treatment_capacity_fractions = {0., 0., 1.,
                                                                  0., 0.};
 
-    auto *shared_added_wjlwtp_treatment_pool = new vector<double>();
-    auto *shared_added_wjlwtp_price = new vector<double>();
+    vector<double> shared_added_wjlwtp_treatment_pool;
+    vector<double> shared_added_wjlwtp_price;
     SequentialJointTreatmentExpansion low_wjlwtp("Low WJLWTP",
                                                  20,
                                                  6,
                                                  0,
                                                  33 * 7,
-                                                 &wjlwtp_treatment_capacity_fractions,
+                                                 wjlwtp_treatment_capacity_fractions,
                                                  shared_added_wjlwtp_treatment_pool,
                                                  shared_added_wjlwtp_price,
                                                  city_infrastructure_rof_triggers[1],
@@ -624,7 +644,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                                   6,
                                                   0,
                                                   54 * 7,
-                                                  &wjlwtp_treatment_capacity_fractions,
+                                                  wjlwtp_treatment_capacity_fractions,
                                                   shared_added_wjlwtp_treatment_pool,
                                                   shared_added_wjlwtp_price,
                                                   city_infrastructure_rof_triggers[1],
@@ -635,7 +655,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                                       22,
                                                       6,
                                                       56, // (72*7 - 448 = 56)
-                                                      &cary_upgrades_treatment_capacity_fractions,
+                                                      cary_upgrades_treatment_capacity_fractions,
                                                       caryupgrades_2 * 7,
                                                       construction_time_interval,
                                                       NONE,
@@ -644,7 +664,7 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                                                       23,
                                                       6,
                                                       56, // (7*80 - 72*7 = 56)
-                                                      &cary_upgrades_treatment_capacity_fractions,
+                                                      cary_upgrades_treatment_capacity_fractions,
                                                       caryupgrades_3 * 7,
                                                       construction_time_interval,
                                                       NONE,
@@ -742,45 +762,44 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
 
     auto demand_n_weeks = (int) round(46 * WEEKS_IN_YEAR);
 
-    vector<int> cary_ws_return_id = {};
-    auto *cary_discharge_fraction_series =
-            new vector<vector<double>>();
+    vector<int> cary_ws_return_id;
+    vector<vector<double>> cary_discharge_fraction_series;
     WwtpDischargeRule wwtp_discharge_cary(
             cary_discharge_fraction_series,
-            &cary_ws_return_id);
+            cary_ws_return_id);
     vector<int> owasa_ws_return_id = {6};
     WwtpDischargeRule wwtp_discharge_owasa(
-            &demand_to_wastewater_fraction_owasa_raleigh,
-            &owasa_ws_return_id);
+            demand_to_wastewater_fraction_owasa_raleigh,
+            owasa_ws_return_id);
     vector<int> raleigh_ws_return_id = {8};
     WwtpDischargeRule wwtp_discharge_raleigh(
-            &demand_to_wastewater_fraction_owasa_raleigh,
-            &raleigh_ws_return_id);
+            demand_to_wastewater_fraction_owasa_raleigh,
+            raleigh_ws_return_id);
     vector<int> durham_ws_return_id = {1, 6};
     WwtpDischargeRule wwtp_discharge_durham(
-            &demand_to_wastewater_fraction_durham,
-            &durham_ws_return_id);
+            demand_to_wastewater_fraction_durham,
+            durham_ws_return_id);
 
     vector<vector<int>> wjlwtp_remove_from_to_build_list;// = {{21, 20}};
 
 
     vector<int> demand_triggered_infra_order_cary = {22, 23};
     vector<double> demand_infra_cary = {caryupgrades_2 * 7, caryupgrades_3 * 7};
-    Utility cary((char *) "Cary", 2, &demand_cary, demand_n_weeks, cary_annual_payment, &caryDemandClassesFractions,
+    Utility cary((char *) "Cary", 2, demand_cary, demand_n_weeks, cary_annual_payment, &caryDemandClassesFractions,
                  &caryUserClassesWaterPrices, wwtp_discharge_cary, cary_inf_buffer, vector<int>(),
                  demand_triggered_infra_order_cary, demand_infra_cary, discount_rate, bond_term[0], bond_rate[0]);
-    Utility durham((char *) "Durham", 1, &demand_durham, demand_n_weeks, durham_annual_payment,
+    Utility durham((char *) "Durham", 1, demand_durham, demand_n_weeks, durham_annual_payment,
                    &durhamDemandClassesFractions, &durhamUserClassesWaterPrices, wwtp_discharge_durham,
                    durham_inf_buffer, rof_triggered_infra_order_durham,
-                   vector<int>(), rofs_infra_durham, discount_rate, &wjlwtp_remove_from_to_build_list, bond_term[1], bond_rate[1]);
-    Utility owasa((char *) "OWASA", 0, &demand_owasa, demand_n_weeks, owasa_annual_payment,
+                   vector<int>(), rofs_infra_durham, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[1], bond_rate[1]);
+    Utility owasa((char *) "OWASA", 0, demand_owasa, demand_n_weeks, owasa_annual_payment,
                   &owasaDemandClassesFractions, &owasaUserClassesWaterPrices, wwtp_discharge_owasa, owasa_inf_buffer,
                   rof_triggered_infra_order_owasa,
-                  vector<int>(), rofs_infra_owasa, discount_rate, &wjlwtp_remove_from_to_build_list, bond_term[2], bond_rate[2]);
-    Utility raleigh((char *) "Raleigh", 3, &demand_raleigh, demand_n_weeks, raleigh_annual_payment,
+                  vector<int>(), rofs_infra_owasa, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[2], bond_rate[2]);
+    Utility raleigh((char *) "Raleigh", 3, demand_raleigh, demand_n_weeks, raleigh_annual_payment,
                     &raleighDemandClassesFractions, &raleighUserClassesWaterPrices, wwtp_discharge_raleigh,
                     raleigh_inf_buffer, rof_triggered_infra_order_raleigh,
-                    vector<int>(), rofs_infra_raleigh, discount_rate, &wjlwtp_remove_from_to_build_list, bond_term[3], bond_rate[3]);
+                    vector<int>(), rofs_infra_raleigh, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[3], bond_rate[3]);
 
     vector<Utility *> utilities;
     utilities.push_back(&cary);
@@ -797,11 +816,14 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
             {1, 2,  6, 7,  8,  17, 10, 20, 21}  //Raleigh
     };
 
-    auto table_storage_shift = vector<vector<double>>(4, vector<double>(24, 0.));
-    table_storage_shift[3][17] = 2500.;
+    auto table_storage_shift = vector<vector<double>>(4, vector<double>(25, 0.));
+    table_storage_shift[3][17] = 2000.;
+    table_storage_shift[3][8] = 5000.;
     table_storage_shift[1][14] = 100.;
     table_storage_shift[1][20] = 500.;
     table_storage_shift[1][21] = 500.;
+    table_storage_shift[1][15] = 700.;
+    table_storage_shift[1][9] = 700.;
 
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
     /// Restriction policies
@@ -888,23 +910,16 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
     vector<double> insurance_triggers = {owasa_insurance_use,
                                          durham_insurance_use, cary_insurance_use,
                                          raleigh_insurance_use}; //FIXME: Change per solution
-    double fixed_payouts[4] = {owasa_insurance_payment,
+    vector<double> fixed_payouts = {owasa_insurance_payment,
                                durham_insurance_payment,
                                cary_insurance_payment,
                                raleigh_insurance_payment};
     vector<int> insured_utilities = {0, 1, 2, 3};
     InsuranceStorageToROF in(5, water_sources, g, reservoir_utility_connectivity_matrix, utilities,
-                             min_env_flow_controls, &utilities_rdm, &water_sources_rdm, insurance_triggers, 1.2,
+                             min_env_flow_controls, utilities_rdm, water_sources_rdm, insurance_triggers, 1.2,
                              fixed_payouts, n_weeks);
 
     drought_mitigation_policies.push_back(&in);
-
-    if (utilities_rdm.empty()) {
-        /// All matrices below have dimensions n_realizations x nr_rdm_factors
-        utilities_rdm = std::vector<vector<double>>(n_realizations, vector<double>(4, 1.));
-        water_sources_rdm = std::vector<vector<double>>(n_realizations, vector<double>(49, 1.));
-        policies_rdm = std::vector<vector<double>>(n_realizations, vector<double>(4, 1.));
-    }
 
     /// Creates simulation object
     Simulation s(water_sources,
@@ -913,41 +928,66 @@ void Triangle::functionEvaluation(const double *vars, double *objs, double *cons
                  utilities,
                  drought_mitigation_policies,
                  min_env_flow_controls,
-                 &utilities_rdm,
-                 &water_sources_rdm,
-                 &policies_rdm,
+                 utilities_rdm,
+                 water_sources_rdm,
+                 policies_rdm,
                  import_export_rof_tables,
                  n_weeks,
                  realizations_to_run);
 
+    if (import_export_rof_tables != DO_NOT_EXPORT_OR_IMPORT_ROF_TABLES)
+        s.setRof_tables_folder(rof_tables_directory);
     if (import_export_rof_tables == IMPORT_ROF_TABLES)
         s.setPrecomputed_rof_tables(rof_tables, table_storage_shift);
 
-    cout << "Beginning simulation." << endl;
-    this->master_data_collector = s.runFullSimulation(n_threads);
+    try {
+        double realization_start = omp_get_wtime();
+        this->master_data_collector = s.runFullSimulation(n_threads);
+        double realization_end = omp_get_wtime();
+        std::cout << "Simulation took  " << realization_end - realization_start
+              << "s" << std::endl;
 
-    if (import_export_rof_tables != EXPORT_ROF_TABLES) {
-        objectives = calculateAndPrintObjectives(false);
+        if (import_export_rof_tables != EXPORT_ROF_TABLES) {
+            objectives = calculateAndPrintObjectives(false);
 
-        int i = 0;
-        objs[i] = min(min(objectives[i * 4], objectives[i * 4 + 5]),
-                      min(objectives[i * 4 + 10], objectives[i * 4 + 15]));
-        for (i = 1; i < 5; ++i) {
-            objs[i] = max(max(objectives[i * 4], objectives[i * 4 + 5]),
-                          max(objectives[i * 4 + 10], objectives[i * 4 + 15]));
+            int i = 0;
+            objs[i] = -min(min(objectives[i], objectives[5 + i]),
+                           min(objectives[10 + i], objectives[15 + i]));
+            for (i = 1; i < 5; ++i) {
+                objs[i] = max(max(objectives[i], objectives[5 + i]),
+                              max(objectives[10 + i], objectives[15 + i]));
+            }
+
+            objs[5] = max(max(OWASA_JLA, Durham_JLA), max(Cary_JLA, Raleigh_JLA));
+
+            objectives.push_back(objs[5]);
+//            cout << "objectives returned" << endl;
+//            objectives.clear();
         }
+//	printf("Objectives calculations took %f s.\n", realization_end - omp_get_wtime());
+    } catch (const std::exception& e) {
+        int num_dec_var = 57;
+//        printf("Exception called during calculations. Decision variables are below:\n");
+        ofstream sol;
+	    int world_rank;
+#ifdef  PARALLEL
+        MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+#else
+        world_rank = 0;
+#endif
+	    string error_file = "sol_error_rank_" + to_string(world_rank) + ".csv";
+        sol.open(error_file.c_str());
+        for (int i = 0; i < num_dec_var; ++i) {
+            sol << vars[i] << ",";
+        }
+        sol << flush;
+        sol.close();
 
-        objs[5] = max(max(OWASA_JLA, Durham_JLA), max(Cary_JLA, Raleigh_JLA));
-
-        objectives.push_back(objs[5]);
-        cout << "objectives returned" << endl;
-        objectives.clear();
+        Utils::print_exception(e);
     }
-
-//    delete master_data_collector;
 }
 
-Triangle::~Triangle() {}
+Triangle::~Triangle() = default;
 
 Triangle::Triangle(unsigned long n_weeks, int import_export_rof_table)
         : Problem(n_weeks) {
@@ -965,92 +1005,112 @@ Triangle::Triangle(unsigned long n_weeks, int import_export_rof_table)
  * @param n_weeks number of weeks.
  */
 void
-Triangle::setRofTables(unsigned long n_realizations, int n_weeks, int n_utilities) {
+Triangle::setRofTables(unsigned long n_realizations, int n_weeks, int n_utilities, string rof_tables_directory) {
 
     cout << "Loading ROF tables" << endl;
-
-    string folder = "rof_tables";
     int n_tiers = NO_OF_INSURANCE_STORAGE_TIERS + 1;
-    rof_tables = vector<Matrix3D<double>>(
-            n_realizations, Matrix3D<double>(n_weeks, n_utilities, n_tiers));
+    rof_tables = vector<vector<Matrix2D<double>>>(n_realizations,
+                                                  vector<Matrix2D<double>>((unsigned long) n_utilities,
+                                                                           Matrix2D<double>(n_weeks, n_tiers)));
 
-//    double start_loading = omp_get_wtime();
+    this->rof_tables_directory = rof_tables_directory;
+
 //#pragma omp parallel for
     for (int r = 0; r < n_realizations; ++r) {
-//        double start_realization = omp_get_wtime();
-        string file_name = folder + "/tables_r" + to_string(r);
-        ifstream in(file_name, ios_base::binary);
-        if (!in.good()) {
-            string error_table_file = "Tables file not found: " + file_name;
-            __throw_invalid_argument(error_table_file.c_str());
-        }
-
-        unsigned stringsize;
-        in.read(reinterpret_cast<char *>(&stringsize), sizeof(unsigned));
-
-        double data[stringsize];
-        in.read(reinterpret_cast<char *>(&data),
-                stringsize * sizeof(double));
-
-        rof_tables[r].setData(data, stringsize);
-
-        for (int i = 0; i < stringsize; ++i) {
-            double d = data[i];
-            if (std::isnan(d) || d > 1.01 || d < 0) {
-                string error_m = "nan or out of [0,1] rof imported "
-                                         "tables. Realization " +
-                                 to_string(r);
-		printf("%s", error_m.c_str());
-                __throw_logic_error(error_m.c_str());
+        for (int u = 0; u < n_utilities; ++u) {
+            string file_name = rof_tables_directory + "/tables_r" + to_string(r) + "_u" + to_string(u);
+            ifstream in(file_name, ios_base::binary);
+            if (!in.good()) {
+                string error_table_file = "Tables file not found: " + file_name;
+                __throw_invalid_argument(error_table_file.c_str());
             }
+
+            unsigned stringsize;
+            in.read(reinterpret_cast<char *>(&stringsize), sizeof(unsigned));
+
+            double data[stringsize];
+            in.read(reinterpret_cast<char *>(&data),
+                    stringsize * sizeof(double));
+
+            rof_tables[r][u].setData(data, stringsize);
+
+            for (int i = 0; i < stringsize; ++i) {
+                double d = data[i];
+                if (std::isnan(d) || d > 1.01 || d < 0) {
+                    string error_m = "nan or out of [0,1] rof imported "
+                                             "tables. Realization " +
+                                     to_string(r) + "\n";
+                    printf("%s", error_m.c_str());
+                    __throw_logic_error(error_m.c_str());
+                }
+            }
+
+            in.close();
         }
-
-        in.close();
-
-//        printf("Tables for realization %d loaded in %f s.\n", r,
-//               omp_get_wtime () - start_realization);
     }
-//    printf("ROF Tables loaded in %f s.\n",
-//           omp_get_wtime () - start_loading);
 }
 
 void Triangle::readInputData(){
 
     cout << "Reading input data." << endl;
 
-// #pragma omp parallel {
-    // #pragma omp single {
+#pragma omp parallel num_threads(20) 
+    {
+#pragma omp single
     streamflows_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/durham_inflows.csv", n_realizations);
+#pragma omp single
     streamflows_flat = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/falls_lake_inflows.csv", n_realizations);
+#pragma omp single
     streamflows_swift = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/lake_wb_inflows.csv", n_realizations);
+#pragma omp single
     streamflows_llr = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/little_river_raleigh_inflows.csv", n_realizations);
     // }
+#pragma omp single
     streamflows_crabtree = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/crabtree_inflows.csv", n_realizations);
+#pragma omp single
     streamflows_phils = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/stone_quarry_inflows.csv", n_realizations);
+#pragma omp single
     streamflows_cane = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/cane_creek_inflows.csv", n_realizations);
+#pragma omp single
     streamflows_morgan = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/university_lake_inflows.csv", n_realizations);
+#pragma omp single
     streamflows_haw = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/jordan_lake_inflows.csv", n_realizations);
+#pragma omp single
     streamflows_clayton = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/clayton_inflows.csv", n_realizations);
+#pragma omp single
     streamflows_lillington = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/lillington_inflows.csv", n_realizations);
 // };
     //cout << "Reading evaporations." << endl;
+#pragma omp single
     evap_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/durham_evap.csv", n_realizations);
+#pragma omp single
     evap_falls_lake = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/falls_lake_evap.csv", n_realizations);
+#pragma omp single
     evap_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/owasa_evap.csv", n_realizations);
+#pragma omp single
     evap_little_river = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/little_river_raleigh_evap.csv", n_realizations);
+#pragma omp single
+{
     evap_wheeler_benson = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/wb_evap.csv", n_realizations);
     evap_jordan_lake = evap_owasa;
+}
 
     //cout << "Reading demands." << endl;
+#pragma omp single
     demand_cary = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/cary_demand.csv", n_realizations);
+#pragma omp single
     demand_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/durham_demand.csv", n_realizations);
+#pragma omp single
     demand_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/raleigh_demand.csv", n_realizations);
+#pragma omp single
     demand_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/owasa_demand.csv", n_realizations);
 
     //cout << "Reading others." << endl;
+#pragma omp single
+{
     demand_to_wastewater_fraction_owasa_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
     demand_to_wastewater_fraction_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_durham.csv");
-//
+    
     caryDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/caryDemandClassesFractions.csv");
     durhamDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/durhamDemandClassesFractions.csv");
     raleighDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/raleighDemandClassesFractions.csv");
@@ -1062,12 +1122,13 @@ void Triangle::readInputData(){
     owasaUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/owasaUserClassesWaterPrices.csv");
 
     owasaPriceSurcharges = Utils::parse2DCsvFile(output_directory + "/TestFiles/owasaPriceRestMultipliers.csv");
-
+}
     cout << "Done reading input data." << endl;
+    }
     
 }
 
-void Triangle::setImport_export_rof_tables(int import_export_rof_tables, int n_weeks) {
+void Triangle::setImport_export_rof_tables(int import_export_rof_tables, int n_weeks, string rof_tables_directory) {
     if (std::abs(import_export_rof_tables) > 1)
         __throw_invalid_argument("Import/export ROF tables can be assigned as:\n"
                                          "-1 - import tables\n"
@@ -1075,8 +1136,12 @@ void Triangle::setImport_export_rof_tables(int import_export_rof_tables, int n_w
                                          "1 - export tables.\n"
                                          "The value entered is invalid.");
     Triangle::import_export_rof_tables = import_export_rof_tables;
+    this->rof_tables_directory = output_directory + "/TestFiles/" + rof_tables_directory;
 
     if (import_export_rof_tables == IMPORT_ROF_TABLES) {
-        Triangle::setRofTables(n_realizations, n_weeks, n_utilities);
+        Triangle::setRofTables(n_realizations, n_weeks, n_utilities, this->rof_tables_directory);
+    } else {
+        const string mkdir_command = "mkdir";
+        system((mkdir_command + " " + this->rof_tables_directory).c_str());
     }
 }

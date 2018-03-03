@@ -28,8 +28,7 @@ Catchment::Catchment(const Catchment &catchment) :
         series_length(catchment.series_length),
         streamflows_all(catchment.streamflows_all),
         streamflows_realization(catchment.streamflows_realization),
-        parent(false) {
-}
+        parent(false) {}
 
 /**
  * Copy assignment operator.
@@ -61,7 +60,7 @@ double Catchment::getStreamflow(int week) {
  * data set.
  * @param r
  */
-void Catchment::setRealization(unsigned long r, vector<vector<double>> *rdm_factors) {
+void Catchment::setRealization(unsigned long r, vector<double> &rdm_factors) {
     streamflows_realization = vector<double>(streamflows_all->at(r));
 }
 

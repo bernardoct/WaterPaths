@@ -10,7 +10,7 @@
 
 class WaterReuse : public WaterSource {
 private:
-    double treated_volume;
+    double treated_volume = NON_INITIALIZED;
 public:
     WaterReuse(const char *name, const int id, const double capacity);
 

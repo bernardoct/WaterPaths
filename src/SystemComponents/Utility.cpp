@@ -31,7 +31,7 @@
 
 Utility::Utility(
         const char *name, int id,
-        vector<vector<double>> *demands_all_realizations,
+        vector<vector<double>>& demands_all_realizations,
         int number_of_week_demands,
         const double percent_contingency_fund_contribution,
         const vector<vector<double>> *typesMonthlyDemandFraction,
@@ -75,14 +75,16 @@ Utility::Utility(
  * @param infra_if_built_remove if infra option in position 0 of a row is
  * built, remove infra options of IDs in remaining positions of the same row.
  */
-Utility::Utility(const char *name, int id, vector<vector<double>> *demands_all_realizations,
+Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations,
                  int number_of_week_demands, const double percent_contingency_fund_contribution,
                  const vector<vector<double>> *typesMonthlyDemandFraction,
-                 const vector<vector<double>> *typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,
+                 const vector<vector<double>> *typesMonthlyWaterPrice,
+                 WwtpDischargeRule wwtp_discharge_rule,
                  double demand_buffer, const vector<int> &rof_infra_construction_order,
                  const vector<int> &demand_infra_construction_order,
                  const vector<double> &infra_construction_triggers, double infra_discount_rate,
-                 const vector<vector<int>> *infra_if_built_remove, double bond_term, double bond_interest_rate) :
+                 const vector<vector<int>>& infra_if_built_remove, double
+                 bond_term, double bond_interest_rate) :
         name(name), id(id), demands_all_realizations(demands_all_realizations),
         number_of_week_demands(number_of_week_demands),
         percent_contingency_fund_contribution
@@ -140,7 +142,7 @@ Utility::Utility(const char *name, int id, vector<vector<double>> *demands_all_r
  * @param rof_infra_construction_order
  * @param infra_discount_rate
  */
-Utility::Utility(const char *name, int id, vector<vector<double>> *demands_all_realizations,
+Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations,
                  int number_of_week_demands, const double percent_contingency_fund_contribution,
                  const vector<vector<double>> *typesMonthlyDemandFraction,
                  const vector<vector<double>> *typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,
@@ -159,7 +161,7 @@ Utility::Utility(const char *name, int id, vector<vector<double>> *demands_all_r
         demand_buffer(demand_buffer),
         total_available_volume(NONE),
         total_storage_capacity(NONE),
-        infra_if_built_remove(new vector<vector<int>>()),
+        infra_if_built_remove(vector<vector<int>>()),
         bond_term(bond_term),
         bond_interest_rate(bond_interest_rate) {
 
@@ -209,6 +211,7 @@ Utility::Utility(Utility &utility) :
 
 Utility::~Utility() {
     water_sources.clear();
+
 }
 
 Utility &Utility::operator=(const Utility &utility) {
@@ -285,7 +288,7 @@ void Utility::calculateWeeklyAverageWaterPrices(
     priceCalculationErrorChecking(typesMonthlyDemandFraction,
                                   typesMonthlyWaterPrice);
 
-    weekly_average_volumetric_price = new double[(int) WEEKS_IN_YEAR + 1]();
+    weekly_average_volumetric_price = vector<double>((int) WEEKS_IN_YEAR + 1, 0.);
     double monthly_average_price[NUMBER_OF_MONTHS] = {};
     int n_tiers = static_cast<int>(typesMonthlyWaterPrice->at(0).size());
 
@@ -409,8 +412,7 @@ void Utility::splitDemands(
                           weekly_peaking_factor[Utils::weekOfTheYear(week)];
     restricted_demand = unrestricted_demand * demand_multiplier - demand_offset;
     double unallocated_reservoirs_demand = restricted_demand;
-    bool over_allocation_ws[n_sources];
-//    memset(over_allocation_ws, false, (size_t) n_sources);
+    double over_allocation_ws[water_sources.size()];
 
     /// Allocates demand to intakes and reuse based on allocated volume to
     /// this utility.
@@ -613,7 +615,7 @@ void Utility::waterTreatmentPlantConstructionHandler(unsigned int source_id) {
             ->addTreatmentCapacity(
                     added_capacity,
                     wtp->added_treatment_capacity_fractions
-                            ->at((unsigned long) id),
+                            .at((unsigned long) id),
                     id);
 
     /// If source is intake or reuse and is not in the list of active
@@ -818,8 +820,8 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
  * @param next_construction
  */
 void Utility::removeRelatedSourcesFromQueue(int next_construction) {
-    if (infra_if_built_remove)
-        for (auto v : *infra_if_built_remove)
+    if (!infra_if_built_remove.empty())
+        for (auto v : infra_if_built_remove)
             if (v[0] == next_construction)
                 for (int i : v) {
                     Utils::removeIntFromVector(rof_infra_construction_order, i);
@@ -867,10 +869,15 @@ void Utility::beginConstruction(int week, int infra_id) {
 
     /// Add water source construction cost to the books.
     double level_debt_service_payments;
-    infra_net_present_cost +=
+    double infra_net_present_cost_add =
             water_sources[infra_id]->
-                    calculateNetPresentConstructionCost(week, id, infra_discount_rate, &level_debt_service_payments,
-                                                        bond_term, bond_interest_rate);
+                    calculateNetPresentConstructionCost(
+                    week, id, infra_discount_rate, level_debt_service_payments,
+                    bond_term, bond_interest_rate);
+    infra_net_present_cost += infra_net_present_cost_add;
+
+    if (std::isnan(infra_net_present_cost))
+        __throw_runtime_error("NPV error.");
 
     /// Create stream of level debt service payments for water source.
     debt_payment_streams.emplace_back(
@@ -890,7 +897,7 @@ void Utility::calculateWastewater_releases(int week, double *discharges) {
     double discharge;
     waste_water_discharge = 0;
 
-    for (int id : *wwtp_discharge_rule.discharge_to_source_ids) {
+    for (int &id : wwtp_discharge_rule.discharge_to_source_ids) {
         discharge = restricted_demand * wwtp_discharge_rule
                 .get_dependent_variable(id, Utils::weekOfTheYear(week));
         discharges[id] += discharge;
@@ -920,24 +927,26 @@ Utility::setDemand_offset(double demand_offset, double offset_rate_per_volume) {
  * comprehensive demand data set.
  * @param r
  */
-void Utility::setRealization(unsigned long r, vector<vector<double>> *rdm_factors) {
-    unsigned long n_weeks = demands_all_realizations->at(r).size();
+void Utility::setRealization(unsigned long r, vector<double>& rdm_factors) {
+    unsigned long n_weeks = demands_all_realizations.at(r).size();
     demand_series_realization = unique_ptr<double[]>(new double[n_weeks]());
 
     /// Apply demand multiplier and copy demands pertaining to current realization.
-    double delta_demand = demands_all_realizations->at(r)[0] * (1. - rdm_factors->at(r)[0]);
+    double delta_demand = demands_all_realizations.at(r)[0] * (1. -
+            rdm_factors.at(0));
     for (int w = 0; w < n_weeks; ++w) {
-        demand_series_realization[w] = demands_all_realizations->at(r)[w] * rdm_factors->at(r)[0]
+        demand_series_realization[w] = demands_all_realizations.at(r)[w] *
+                                               rdm_factors.at(0)
                                        + delta_demand;
     }
 
-    bond_term *= rdm_factors->at(r)[1];
-    bond_interest_rate *= rdm_factors->at(r)[2];
-    infra_discount_rate *= rdm_factors->at(r)[3];
+    bond_term *= rdm_factors.at(1);
+    bond_interest_rate *= rdm_factors.at(2);
+    infra_discount_rate *= rdm_factors.at(3);
 
     /// Set peaking demand factor.
     weekly_peaking_factor = calculateWeeklyPeakingFactor
-            (&demands_all_realizations->at(r));
+            (&demands_all_realizations.at(r));
 }
 
 vector<double> Utility::calculateWeeklyPeakingFactor(vector<double> *demands) {

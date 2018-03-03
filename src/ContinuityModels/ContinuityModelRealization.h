@@ -20,16 +20,14 @@ public:
             const vector<vector<int>> &water_sources_to_utilities,
             vector<Utility *> &utilities,
             const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
-            vector<MinEnvironFlowControl *> &min_env_flow_control,
-            vector<vector<double>> *utilities_rdm,
-            vector<vector<double>> *water_sources_rdm,
-            vector<vector<double>> *policy_rdm,
+            vector<MinEnvFlowControl *> &min_env_flow_control,
+            vector<double>& utilities_rdm,
+            vector<double>& water_sources_rdm,
+            vector<double>& policy_rdm,
             const unsigned int realization_index);
 
     ContinuityModelRealization(
             ContinuityModelRealization &continuity_model_realization);
-
-    vector<WaterSource *> getWater_sources();
 
     void setShortTermROFs(const vector<double> &risks_of_failure);
 

@@ -69,6 +69,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
     for (Catchment *c : catchments) {
         this->catchments.push_back(Catchment(*c));
     }
+    checkForInputErrorsConstruction();
 }
 
 
@@ -144,6 +145,26 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
 
     for (Catchment *c : catchments) {
         this->catchments.push_back(Catchment(*c));
+    }
+
+    checkForInputErrorsConstruction();
+}
+
+void WaterSource::checkForInputErrorsConstruction() {
+
+    if (std::isnan(permitting_time) || permitting_time < 0) {
+        string error = "Invalid permitting period for water source " + to_string(id);
+        __throw_invalid_argument(error.c_str());
+    }
+
+    if (std::isnan(construction_time) || construction_time < 0) {
+        string error = "Invalid construction time for water source " + to_string(id);
+        __throw_invalid_argument(error.c_str());
+    }
+
+    if (std::isnan(construction_cost_of_capital) || construction_cost_of_capital < 0) {
+        string error = "Invalid construction cost of capital for water source " + to_string(id);
+        __throw_invalid_argument(error.c_str());
     }
 }
 
@@ -398,9 +419,10 @@ void WaterSource::bypass(int week, double total_upstream_inflow) {
  * @param discount_rate
  * @return Net present cost
  */
-double WaterSource::calculateNetPresentConstructionCost(int week, int utility_id, double discount_rate,
-                                                        double *level_debt_service_payment, double bond_term,
-                                                        double bond_interest_rate)
+double WaterSource::calculateNetPresentConstructionCost(
+        int week, int utility_id, double discount_rate,
+        double& level_debt_service_payment, double bond_term,
+        double bond_interest_rate)
 const {
     double rate = bond_interest_rate / BOND_INTEREST_PAYMENTS_PER_YEAR;
     double principal = construction_cost_of_capital *
@@ -408,15 +430,30 @@ const {
     double n_payments = bond_term * BOND_INTEREST_PAYMENTS_PER_YEAR;
 
     /// Level debt service payment value
-    *level_debt_service_payment = principal * (rate * pow(1 + rate, n_payments)) /
-                                  (pow(1 + rate, n_payments) - 1);
+    level_debt_service_payment = principal * (rate * pow(1. + rate, n_payments)) /
+                                  (pow(1. + rate, n_payments) - 1.);
 
     /// Net present cost of stream of level debt service payments for the whole
     /// bond term, at the time of issuance.
     double net_present_cost_at_issuance =
-            *level_debt_service_payment *
+            level_debt_service_payment *
             (1. - pow(1. + discount_rate,
                      -n_payments)) / discount_rate;
+
+    /// Check for errors.
+    if (std::isnan(net_present_cost_at_issuance) || std::isnan(level_debt_service_payment)) {
+        char *error = nullptr;
+        sprintf(error, "rate: %f\n"
+                       "principal: %f\n"
+                       "# of payments: %f\n"
+                       "level debt service payment: %f\n"
+                       "net present cost at issuance: %f\n"
+                       "week: %d\n"
+                       "utility ID: %d\n",
+               rate, principal, n_payments, level_debt_service_payment,
+               net_present_cost_at_issuance, week, utility_id);
+        throw_with_nested(runtime_error(error));
+    }
 
     /// Return NPC discounted from the time of issuance to the present.
     return net_present_cost_at_issuance;// / pow(1 + discount_rate, week / WEEKS_IN_YEAR);
@@ -455,7 +492,7 @@ void WaterSource::addTreatmentCapacity(
  * is the evaporation multiplier, followed by pairs of values for each source representing
  * permitting time and construction cost.
  */
-void WaterSource::setRealization(unsigned long r, vector<vector<double>> *rdm_factors) {
+void WaterSource::setRealization(unsigned long r, vector<double> &rdm_factors) {
     for (Catchment &c : catchments)
         c.setRealization(r, rdm_factors);
 
@@ -467,8 +504,8 @@ void WaterSource::setRealization(unsigned long r, vector<vector<double>> *rdm_fa
     }
 
     /// Set permitting times and construction cost overruns according to corresponding rdm factors.
-    permitting_time *= rdm_factors->at(r)[1 + 2 * id];
-    construction_cost_of_capital *= rdm_factors->at(r)[1 + 2 * id + 1];
+    permitting_time *= rdm_factors.at((unsigned int) 1 + 2 * id);
+    construction_cost_of_capital *= rdm_factors.at((unsigned int) 1 + 2 * id + 1);
 }
 
 double WaterSource::getAvailableVolume() const {

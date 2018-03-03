@@ -5,10 +5,9 @@
 #include <iomanip>
 #include "IntakeDataCollector.h"
 
-IntakeDataCollector::IntakeDataCollector(Intake *intake,
-                                         unsigned long realization)
-        : DataCollector(intake->id, intake->name, realization, INTAKE, 5 *
-        COLUMN_WIDTH), intake(intake) {}
+IntakeDataCollector::IntakeDataCollector(Intake *intake, unsigned long realization)
+        : DataCollector(intake->id, intake->name, realization, INTAKE, 5 * COLUMN_WIDTH), intake(intake) {
+}
 
 string IntakeDataCollector::printTabularString(int week) {
     stringstream outStream;

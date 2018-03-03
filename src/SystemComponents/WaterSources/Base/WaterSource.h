@@ -23,10 +23,10 @@ protected:
     double upstream_catchment_inflow = 0;
     double total_demand = 0;
     double policy_added_demand = 0;
-    double permitting_time;
-    double construction_cost_of_capital;
-    double upstream_min_env_inflow;
-    double capacity;
+    double permitting_time = NON_INITIALIZED;
+    double construction_cost_of_capital = NON_INITIALIZED;
+    double upstream_min_env_inflow = 0;
+    double capacity = NON_INITIALIZED;
 
     vector<double> available_allocated_volumes;
     vector<double> allocated_capacities;
@@ -40,9 +40,9 @@ protected:
     double total_allocated_fraction = NON_INITIALIZED;
     bool online;
     vector<Catchment> catchments;
-    double min_environmental_outflow;
+    double min_environmental_outflow = 0;
     double evaporated_volume = 0;
-    double total_treatment_capacity;
+    double total_treatment_capacity = 0;
     int highest_alloc_id = NON_INITIALIZED;
 
     virtual void applyContinuity(int week, double upstream_source_inflow,
@@ -103,7 +103,8 @@ public:
             int utility_id);
 
     virtual double calculateNetPresentConstructionCost(int week, int utility_id, double discount_rate,
-                                                           double *level_debt_service_payment, double bond_term,
+                                                           double&
+                                                           level_debt_service_payment, double bond_term,
                                                            double bond_interest_rate) const;
 
     virtual void removeWater(int allocation_id, double volume);
@@ -138,7 +139,7 @@ public:
 
     static bool compare(WaterSource *lhs, WaterSource *rhs);
 
-    virtual void setRealization(unsigned long r, vector<vector<double>> *rdm_factors);
+    virtual void setRealization(unsigned long r, vector<double> &rdm_factors);
 
     virtual double getAllocatedCapacity(int utility_id);
 
@@ -179,6 +180,8 @@ public:
     double getAllocatedInflow(int utility_id) const;
 
     virtual double getSupplyAllocatedFraction(int utility_id);
+
+    void checkForInputErrorsConstruction();
 };
 
 

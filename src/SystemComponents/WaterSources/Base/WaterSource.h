@@ -14,8 +14,6 @@ using namespace Constants;
 const int BOND_INTEREST_PAYMENTS_PER_YEAR = 1;
 
 class WaterSource {
-private:
-
 protected:
 
     double available_volume = 0;
@@ -29,16 +27,19 @@ protected:
     double construction_cost_of_capital;
     double upstream_min_env_inflow;
     double capacity;
-    double *available_allocated_volumes = nullptr;
-    double *allocated_capacities = nullptr;
-    double *allocated_treatment_capacities = nullptr;
-    double *allocated_treatment_fractions = nullptr;
-    double *allocated_fractions = nullptr;
+
+    vector<double> available_allocated_volumes;
+    vector<double> allocated_capacities;
+    vector<double> allocated_treatment_capacities;
+    vector<double> allocated_treatment_fractions;
+    vector<double> allocated_fractions;
+    vector<double> supply_allocated_fractions;
+
     vector<int> *utilities_with_allocations = nullptr;
     int wq_pool_id = NON_INITIALIZED;
     double total_allocated_fraction = NON_INITIALIZED;
     bool online;
-    vector<Catchment *> catchments;
+    vector<Catchment> catchments;
     double min_environmental_outflow;
     double evaporated_volume = 0;
     double total_treatment_capacity;
@@ -128,7 +129,7 @@ public:
 
     void setMin_environmental_outflow(double min_environmental_outflow);
 
-    double getAvailable_volume() const;
+    double getAvailableVolume() const;
 
     double getTotal_outflow() const;
 
@@ -138,7 +139,7 @@ public:
 
     void setOutflow_previous_week(double outflow_previous_week);
 
-    virtual double getCapacity();
+    virtual double getSupplyCapacity();
 
     double getUpstream_source_inflow() const;
 
@@ -168,9 +169,9 @@ public:
     void resetAllocations(const vector<double> *new_allocated_fractions);
 
     void setAvailableAllocatedVolumes(
-            double *available_allocated_volumes, double available_volume);
+            vector<double> available_allocated_volumes, double available_volume);
 
-    double *getAvailable_allocated_volumes() const;
+    vector<double> getAvailable_allocated_volumes() const;
 
     vector<int> *getUtilities_with_allocations() const;
 
@@ -184,6 +185,11 @@ public:
 
     void setConstruction_cost_of_capital(double construction_cost_of_capital);
 
+    double getAvailableSupplyVolume() const;
+
+    double getAllocatedInflow(int utility_id) const;
+
+    virtual double getSupplyAllocatedFraction(int utility_id);
 
     virtual void addWater(int allocation_id, double volume);
 

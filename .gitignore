@@ -1,0 +1,5 @@
+*.optrpt
+*.o
+TestFiles/*
+Borg/*
+core*

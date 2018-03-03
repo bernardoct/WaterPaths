@@ -21,14 +21,14 @@ public:
             const char *name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
             const double max_treatment_capacity,
-            EvaporationSeries *evaporation_series,
+            EvaporationSeries &evaporation_series,
             DataSeries *storage_area_curve, double max_diversion);
 
     Quarry(
             const char *name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
             const double max_treatment_capacity,
-            EvaporationSeries *evaporation_series,
+            EvaporationSeries &evaporation_series,
             DataSeries *storage_area_curve,
             const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
@@ -39,14 +39,14 @@ public:
             const char *name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
             const double max_treatment_capacity,
-            EvaporationSeries *evaporation_series, double storage_area,
+            EvaporationSeries &evaporation_series, double storage_area,
             double max_diversion);
 
     Quarry(
             const char *name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
             const double max_treatment_capacity,
-            EvaporationSeries *evaporation_series, double storage_area,
+            EvaporationSeries &evaporation_series, double storage_area,
             const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
             double permitting_period,

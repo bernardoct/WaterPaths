@@ -203,76 +203,14 @@ Utils::copyDroughtMitigationPolicyVector(
 }
 
 bool Utils::isFirstWeekOfTheYear(int week) {
-    return ((week + 1) / WEEKS_IN_YEAR - (int) ((week + 1) / WEEKS_IN_YEAR)) * WEEKS_IN_YEAR < 1.0 || week == 0;
+//    return ((week + 1) / WEEKS_IN_YEAR - (int) ((week + 1) / WEEKS_IN_YEAR)) * WEEKS_IN_YEAR < 1.0 || week == 0;
+    return WEEK_OF_YEAR[week] == 0;
 }
 
 int Utils::weekOfTheYear(int week) {
-    return (int) (((week + 0.99) / WEEKS_IN_YEAR - (int) ((week + 0.99) / WEEKS_IN_YEAR)) *
-                  WEEKS_IN_YEAR);
-}
-
-/**
- * distance between 2 points.
- * @param v1
- * @param v2
- * @return
- */
-double Utils::l2distanceSquare(vector<double> v1, vector<double> v2) {
-    double result = 0;
-    vector<double> difference;
-    std::transform(v1.begin(), v1.end(), v2.begin(), std::back_inserter(difference),
-                   [&](double l, double r) { return std::abs(l - r); });
-    for (double &d : difference) result += d * d;
-    return result;
-}
-
-/**
- * Gets the indexes of elements in an array that correspond to a given quantile.
- * @param v1
- * @param quantile
- * @return
- */
-vector<int> Utils::getQuantileIndeces(vector<double> v1, double quantile) {
-    vector<double> sorted_v1(v1);
-    vector<int> indeces_quantile;
-    std::sort(sorted_v1.begin(), sorted_v1.end());
-    double quantile_threshold = sorted_v1[(int) ceil(v1.size() * quantile)];
-
-    for (int i = 0; i < v1.size(); ++i) {
-        if (v1[i] < quantile_threshold) indeces_quantile.push_back(i);
-    }
-
-    return indeces_quantile;
-}
-
-/**
- * Calculates the distance^2 between all data points in a matrix.
- * @param data_points
- * @return
- */
-vector<vector<double>> Utils::calculateDistances(vector<vector<double>> data_points) {
-    vector<vector<double>> distances(data_points.size(), vector<double>(data_points.size(), 0.0));
-    for (int i = 0; i < data_points.size(); ++i) {
-        for (int j = i; j < data_points.size(); ++j) {
-            distances[i][j] = Utils::l2distanceSquare(data_points[i], data_points[j]);
-            distances[j][i] = distances[i][j];
-        }
-    }
-
-    return distances;
-}
-
-
-std::string Utils::getexepath() {
-    char result[PATH_MAX];
-    #ifdef _WIN32
-        ssize_t count = GetModuleFileName(NULL, result, PATH_MAX);
-    #else
-        //ssize_t count = GetModuleFileName("/proc/self/exe", result, PATH_MAX);
-        ssize_t count = GetModuleFileName(NULL, result, PATH_MAX);
-    #endif
-
-    return std::string(result, (unsigned long) ((count > 0) ? count : 0));
+//    return (int) (((week + 0.99) / WEEKS_IN_YEAR - (int) ((week + 0.99) / WEEKS_IN_YEAR)) *
+//                  WEEKS_IN_YEAR);
+    return WEEK_OF_YEAR[week];
 }
 
 void Utils::removeIntFromVector(vector<int>& vec, int el) {
@@ -280,4 +218,16 @@ void Utils::removeIntFromVector(vector<int>& vec, int el) {
     auto vbeg = vec.begin();
     auto vend = vec.end();
     vec.erase(std::remove(vbeg, vend, el), vend);
+}
+
+std::string Utils::getexepath() {
+    char result[PATH_MAX];
+#ifdef _WIN32
+    ssize_t count = GetModuleFileName(NULL, result, PATH_MAX);
+#else
+    //ssize_t count = GetModuleFileName("/proc/self/exe", result, PATH_MAX);
+    ssize_t count = GetModuleFileName(NULL, result, PATH_MAX);
+#endif
+
+    return std::string(result, (unsigned long) ((count > 0) ? count : 0));
 }

@@ -9,3 +9,5 @@ DataCollector::DataCollector(int id, const char *name, unsigned long realization
         : id(id), name(name),
           type(type), table_width(table_width) {}
 
+DataCollector::~DataCollector() {}
+

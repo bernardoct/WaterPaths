@@ -61,6 +61,8 @@ public:
 
     void setRealization(unsigned int realization, vector<vector<double>> *utilities_rdm,
                         vector<vector<double>> *water_sources_rdm);
+
+    vector<int> getOnlineDownstreamSources();
 };
 
 

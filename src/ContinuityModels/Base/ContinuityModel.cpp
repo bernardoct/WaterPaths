@@ -105,7 +105,7 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
 
         if (online)
             water_sources_capacities.push_back(
-                    water_source->getCapacity());
+                    water_source->getSupplyCapacity());
         else
             water_sources_capacities.push_back((double) NONE);
     }
@@ -113,6 +113,7 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
     for (Utility *u : continuity_utilities)
         utilities_capacities.push_back(u->getTotal_storage_capacity());
 
+    /// Populate vector indicating the downstream source from each source.
     for (vector<int> ds : water_sources_graph.getDownSources())
         if (ds.empty())
             downstream_sources.push_back(NON_INITIALIZED);
@@ -139,14 +140,29 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
     }
 }
 
-ContinuityModel::~ContinuityModel() = default;
+ContinuityModel::~ContinuityModel() {
+    /// Delete water sources
+    for (auto ws : continuity_water_sources) {
+        delete ws;
+    }
+    continuity_water_sources.clear();
+
+    /// Delete utilities
+    for (auto u : continuity_utilities) {
+        delete u;
+    }
+
+    continuity_utilities.clear();
+}
 
 ContinuityModel::ContinuityModel(ContinuityModel &continuity_model) :
         realization_id(continuity_model.realization_id),
         water_sources_online_to_utilities(
                 continuity_model.water_sources_online_to_utilities),
         n_utilities(continuity_model.n_utilities),
-        n_sources(continuity_model.n_sources) {}
+        n_sources(continuity_model.n_sources),
+        utilities_rdm(continuity_model.utilities_rdm),
+        water_sources_rdm(continuity_model.water_sources_rdm) {}
 
 /**
  * Calculates continuity for one week time step for streamflows of id_rof years
@@ -194,9 +210,10 @@ void ContinuityModel::continuityStep(
      * rof calculation but an actual simulation instead, rof_realization will
      * be equal to -1 (see header file) so that there is no week shift.
      */
+    auto& upstream_sources_ids = water_sources_graph.getUpstream_sources();
     for (int i : sources_topological_order) {
         /// Sum spillage from all sources upstream source i.
-        for (int ws : water_sources_graph.getUpstream_sources()[i])
+        for (int ws : upstream_sources_ids[i])
             upstream_spillage[i] +=
                     continuity_water_sources[ws]->getTotal_outflow();
 
@@ -209,7 +226,7 @@ void ContinuityModel::continuityStep(
 
     /// updates combined storage for utilities.
     for (Utility *u : continuity_utilities) {
-        u->updateTotalStoredVolume();
+        u->updateTotalAvailableVolume();
     }
 }
 
@@ -227,4 +244,23 @@ void ContinuityModel::setRealization(unsigned int realization, vector<vector<dou
         for (MinEnvironFlowControl *mef : min_env_flow_controls)
             mef->setRealization(realization, water_sources_rdm);
     }
+}
+
+/*
+ * Get list of next online downstream sources for each source.
+ * @return vector with downstream water sources.
+ */
+vector<int> ContinuityModel::getOnlineDownstreamSources() {
+    vector<int> online_downstream_sources(n_sources, NON_INITIALIZED);
+    for (int ws : sources_topological_order) {
+        int downstream_source_online = ws;
+        do {
+            downstream_source_online = downstream_sources[downstream_source_online];
+        } while (downstream_source_online != NON_INITIALIZED &&
+                !continuity_water_sources[downstream_source_online]->isOnline() &&
+                continuity_water_sources[ws]->getSupplyCapacity() == 0);
+        online_downstream_sources[ws] = downstream_source_online;
+    }
+
+    return online_downstream_sources;
 }

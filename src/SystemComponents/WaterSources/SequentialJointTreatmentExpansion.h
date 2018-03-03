@@ -72,6 +72,8 @@ public:
                                                    double bond_interest_rate) const override;
 
     double getTotal_treatment_capacity(int utility_id) const;
+
+    virtual ~SequentialJointTreatmentExpansion();
 };
 
 

@@ -13,6 +13,7 @@ class AllocatedReservoirDataCollector : public ReservoirDataCollector {
     vector<vector<double>> allocated_stored_volumes;
     vector<double> current_week_allocated_stored_volumes;
     vector<int> utility_ids;
+    vector<int> utilities_with_allocations;
 
 public:
     AllocatedReservoirDataCollector(

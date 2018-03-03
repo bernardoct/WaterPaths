@@ -12,28 +12,31 @@
 
 class ContinuityModelROF : public ContinuityModel {
 private:
-    Matrix3D<double> *storage_to_rof_table;
-    Matrix3D<double> storage_to_rof_realization;
-//    __declspec(aligned(64)) double *capacities_toposorted;
-    double *capacities_toposorted __attribute__ ((aligned(64)));
-    int *downstream_sources_toposort;
-    int *topo_sorted_to_all_sources;
+    Matrix3D<double> storage_to_rof_table;
+    Matrix3D<double> storage_to_rof_rof_realization;
+    vector<int> online_downstream_sources;
+    bool *storage_wout_downstream;
     const int n_topo_sources;
+    const bool use_precomputed_rof_tables;
 
 protected:
     int beginning_tier = 0;
     vector<WaterSource *> realization_water_sources;
+    vector<Utility *> realization_utilities;
+
+    Matrix3D<double> precomputed_rof_tables;
+    vector<vector<double>> table_storage_shift;
+    vector<double> utility_base_storage_capacity;;
+    vector<double> utility_base_delta_capacity_table;
+    vector<double> current_and_base_storage_capacity_ratio;
+    vector<double> current_storage_table_shift;
 
 public:
-    ContinuityModelROF(
-            vector<WaterSource *> water_sources,
-            const Graph &water_sources_graph,
-            const vector<vector<int>> &water_sources_to_utilities,
-            vector<Utility *> utilities,
-            vector<MinEnvironFlowControl *> &min_env_flow_controls,
-            vector<vector<double>> *utilities_rdm,
-            vector<vector<double>> *water_sources_rdm,
-            unsigned int realization_id);
+    ContinuityModelROF(vector<WaterSource *> water_sources, const Graph &water_sources_graph,
+                       const vector<vector<int>> &water_sources_to_utilities, vector<Utility *> utilities,
+                       vector<MinEnvironFlowControl *> &min_env_flow_controls, vector<vector<double>> *utilities_rdm,
+                       vector<vector<double>> *water_sources_rdm, unsigned long total_weeks_simulation,
+                       const bool use_precomputed_rof_tables, const unsigned int realization_id);
 
     ContinuityModelROF(ContinuityModelROF &continuity_model_rof);
 
@@ -43,26 +46,29 @@ public:
 
     void resetUtilitiesAndReservoirs(int rof_type);
 
-    void connectRealizationWaterSources(const vector<WaterSource *> &water_sources_realization);
+    void connectRealizationWaterSources(const vector<WaterSource *> &realization_water_sources);
+
+    void connectRealizationUtilities(const vector<Utility *> &realization_utilities);
 
     void updateOnlineInfrastructure(int week);
 
     virtual ~ContinuityModelROF();
 
-    void updateStorageToROFTable(double storage_percent_decrement, int week_of_the_year,
+    void updateStorageToROFTable(double storage_percent_decrement,
+                                 int week_of_the_year,
                                  const double *to_full_toposort);
 
-    void shiftStorages(double *storages, const double *deltas, const double *spillage);
-
-    void shiftStorages(double* available_volumes, const double* spillage);
-
-    void updateStorageToROFTable(int week_of_the_year);
-
-    void shiftStorages(double *storages);
-
-    void setRealization_water_sources(const vector<WaterSource *> &water_sources_realization);
-
     const Matrix3D<double> *getStorage_to_rof_table() const;
+
+    void shiftStorages(double *available_volumes_shifted, const double
+    *delta_storage);
+
+    void printROFTable(const string &folder);
+
+    void setROFTablesAndShifts(const Matrix3D<double> &storage_to_rof_table,
+                               const vector<vector<double>> &table_storage_shift);
+
+    vector<double> calculateShortTermROFTable(int week);
 };
 
 

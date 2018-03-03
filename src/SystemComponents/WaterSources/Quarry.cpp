@@ -9,7 +9,7 @@ Quarry::Quarry(
         const char *name, const int id,
         const vector<Catchment *> &catchments, const double capacity,
         const double max_treatment_capacity,
-        EvaporationSeries *evaporation_series,
+        EvaporationSeries &evaporation_series,
         DataSeries *storage_area_curve, double max_diversion)
         : Reservoir(name,
                     id,
@@ -25,7 +25,7 @@ Quarry::Quarry(
         const char *name, const int id,
         const vector<Catchment *> &catchments, const double capacity,
         const double max_treatment_capacity,
-        EvaporationSeries *evaporation_series,
+        EvaporationSeries &evaporation_series,
         DataSeries *storage_area_curve, const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double permitting_period,
         double construction_cost, double max_diversion)
@@ -46,7 +46,7 @@ Quarry::Quarry(
         const char *name, const int id,
         const vector<Catchment *> &catchments, const double capacity,
         const double max_treatment_capacity,
-        EvaporationSeries *evaporation_series, double storage_area,
+        EvaporationSeries &evaporation_series, double storage_area,
         double max_diversion) : Reservoir(name,
                                           id,
                                           catchments,
@@ -61,7 +61,7 @@ Quarry::Quarry(
         const char *name, const int id,
         const vector<Catchment *> &catchments, const double capacity,
         const double max_treatment_capacity,
-        EvaporationSeries *evaporation_series, double storage_area,
+        EvaporationSeries &evaporation_series, double storage_area,
         const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double permitting_period,
         double construction_cost, double max_diversion)
@@ -117,8 +117,8 @@ void Quarry::applyContinuity(int week, double upstream_source_inflow,
     }
 
     double catchment_inflow = 0.0;
-    for (Catchment *c : catchments) {
-        catchment_inflow += c->getStreamflow((week));
+    for (Catchment c : catchments) {
+        catchment_inflow += c.getStreamflow((week));
     }
 
     double total_inflow = total_upstream_inflow + catchment_inflow;

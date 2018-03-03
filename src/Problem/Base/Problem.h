@@ -8,6 +8,7 @@
 #include <vector>
 #include "../../DataCollector/Base/DataCollector.h"
 #include "../../DataCollector/MasterDataCollector.h"
+#include "../../Utils/Utils.h"
 
 struct infraRank {
     int id;
@@ -30,19 +31,15 @@ protected:
     unsigned long n_realizations;
     unsigned long  n_weeks;
     unsigned long  solution_no;
+    unsigned long n_threads;
     string output_directory;
     string fname_sufix;
     string evap_inflows_suffix;
-public:
-    void setEvap_inflows_suffix(const string &evap_inflows_suffix);
 
-public:
-    void setFname_sufix(const string &fname_sufix);
-
-protected:
-    vector<unsigned long > realizations;
-    vector<unsigned long > bootstrap_sample;
+    vector<unsigned long > realizations_to_run;
     MasterDataCollector* master_data_collector;
+    vector<double> objectives;
+    bool print_output_files = true;
 
     unsigned long  rdm_no;
     vector<vector<double>> utilities_rdm;
@@ -55,11 +52,11 @@ protected:
     vector<int> vecInfraRankToVecInt(vector<infraRank> v);
 
 public:
+    Problem(unsigned long n_weeks);
+
+    virtual ~Problem();
+
     virtual void functionEvaluation(const double* vars, double* objs, double* consts)=0;
-
-    void setBootstrap_sample(const vector<unsigned long> &bootstrap_sample);
-
-    void setN_realizations(unsigned long n_realizations);
 
     void setN_weeks(unsigned long n_weeks);
 
@@ -67,15 +64,33 @@ public:
 
     void setOutput_directory(const string &output_directory);
 
-    void setRealizations(const vector<unsigned long> &realizations);
+    const vector<double> &getObjectives() const;
 
-    double* calculateObjectivesAndPrintOutput();
+    vector<double> calculateAndPrintObjectives(bool print_files);
 
     void setRDMOptimization(vector<vector<double>> &utilities_rdm, vector<vector<double>> &water_sources_rdm,
                             vector<vector<double>> &policies_rdm);
 
     void setRDMReevaluation(unsigned long rdm_no, vector<vector<double>> &utilities_rdm,
                                 vector<vector<double>> &water_sources_rdm, vector<vector<double>> &policies_rdm);
+
+    void setN_threads(unsigned long n_threads);
+
+    void setPrint_output_files(bool print_output_files);
+
+    void setN_realizations(unsigned long n_realizations);
+
+    void setRealizationsToRun(vector<unsigned long> realizations_to_run);
+
+    void setEvap_inflows_suffix(const string &evap_inflows_suffix);
+
+    void setFname_sufix(const string &fname_sufix);
+
+    const MasterDataCollector* getMaster_data_collector();
+
+    void destroyDataCollector();
+
+    void printTimeSeriesAndPathways();
 };
 
 

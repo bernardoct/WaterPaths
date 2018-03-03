@@ -1,12 +1,13 @@
 #include "SystemComponents/WaterSources/Reservoir.h"
-#include "Utils/Utils.h"
 #include "Utils/QPSolver/QuadProg++.h"
 #include "Utils/Solutions.h"
 #include "Problem/Triangle.h"
+#include "Utils/Utils.h"
 // #include "../Borg/borgmm.h"
 // #include "../Borg/borgProblemDefinition.h"
 
 #include <getopt.h>
+#include <fstream>
 // #include <mpi.h>
 
 #define NUM_OBJECTIVES 6;
@@ -35,9 +36,11 @@ int main(int argc, char *argv[]) {
     string water_sources_rdm_file = "-1";
     string inflows_evap_directory_suffix = "-1";
     unsigned long standard_solution = 0;
+    int n_threads;// = omp_get_num_procs();
     int standard_rdm = 0;
     int first_solution = -1;
     int last_solution = -1;
+    int import_export_rof_table = 0;
     bool verbose = false;
     bool tabular = false;
     bool plotting = true;
@@ -48,15 +51,13 @@ int main(int argc, char *argv[]) {
     unsigned long output_frequency = 200;
     unsigned long seed = 0;
     int rdm_no = -1;
-    vector<unsigned long> bootstrap_sample = vector<unsigned long>();
+    vector<vector<int>> realizations_to_run;
     vector<vector<double>> utilities_rdm;
     vector<vector<double>> water_sources_rdm;
     vector<vector<double>> policies_rdm;
 
-    Triangle triangle(standard_solution, standard_rdm);
-
     int c;
-    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:R:U:P:W:I:")) != -1) {
+    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:R:U:P:W:I:C:")) != -1) {
         switch (c) {
             case '?':
                 fprintf(stdout,
@@ -84,13 +85,14 @@ int main(int argc, char *argv[]) {
                                 "\t-U: Utilities RDM file\n"
                                 "\t-P: Policies RDM file\n"
                                 "\t-W: Water sources RDM file\n"
-                                "\t-I: Inflows and evaporation folder suffix to be added to \"inflows\" and \"evaporation\" (e.g., _high for inflows_high)\n",
+                                "\t-I: Inflows and evaporation folder suffix to be added to \"inflows\" and "
+                                       "\"evaporation\" (e.g., _high for inflows_high)\n"
+                                "\t-C: Import/export rof tables (-1: export, 0: do nothing (standard), 1: import)",
                         argv[0], n_realizations, n_weeks, system_io.c_str());
                 return -1;
             case 's': solution_file = optarg; break;
             case 'u': uncertainty_file = optarg; break;
-            // case 'T': omp_set_num_threads(atoi(optarg)); break;
-            case 'T': break;
+            case 'T': n_threads = atoi(optarg); break;
             case 'r': n_realizations = (unsigned long)atoi(optarg); break;
             case 't': n_weeks = (unsigned long)atoi(optarg); break;
             case 'd': system_io = optarg; break;
@@ -111,23 +113,36 @@ int main(int argc, char *argv[]) {
             case 'P': policies_rdm_file = optarg; break;
             case 'W': water_sources_rdm_file = optarg; break;
             case 'I': inflows_evap_directory_suffix = optarg; break;
+            case 'C': import_export_rof_table = atoi(optarg); break;
             default:
                 fprintf(stderr, "Unknown option (-%c)\n", c);
                 return -1;
         }
     }
 
+
+    Triangle triangle(n_weeks, import_export_rof_table);
+
     /// Set basic realization parameters.
-    triangle.setN_realizations(n_realizations);
     triangle.setN_weeks(n_weeks);
     triangle.setOutput_directory(system_io);
+    triangle.setN_threads((unsigned long) n_threads);
+    triangle.setN_realizations(n_realizations);
+    triangle.setImport_export_rof_tables(import_export_rof_table, (int) n_weeks);
+    triangle.readInputData();
+
+    /// Load bootstrap samples if necessary.
     if (strlen(bootstrap_file.c_str()) > 2) {
-        vector<double> v = Utils::parse1DCsvFile(system_io + bootstrap_file);
-        bootstrap_sample = vector<unsigned long>(v.begin(), v.end());
+        auto bootstrap_samples_double = Utils::parse2DCsvFile(system_io + bootstrap_file);
+        for (auto v : bootstrap_samples_double)
+            realizations_to_run.push_back(vector<int>(v.begin(), v.end()));
+        triangle.setPrint_output_files(false);
     }
 
+    /// If Borg is not called, run in simulation mode
     if (!run_optimization) {
         vector<int> sol_range;
+        /// Check for basic input errors.
         if ((first_solution == -1 && last_solution != -1) ||
             (first_solution != -1 && last_solution == -1))
             __throw_invalid_argument("If you set a first or last solution, you "
@@ -145,6 +160,7 @@ int main(int argc, char *argv[]) {
             printf("You must specify a solutions file.\n");
         }
 
+        /// Set up input/output suffix, if necessary.
         if (strlen(inflows_evap_directory_suffix.c_str()) > 2)
             triangle.setEvap_inflows_suffix(inflows_evap_directory_suffix);
 
@@ -172,29 +188,69 @@ int main(int argc, char *argv[]) {
                 triangle.setRDMReevaluation((unsigned long) rdm_no, utilities_rdm,
                                             water_sources_rdm, policies_rdm);
             }
+
             if (strlen(inflows_evap_directory_suffix.c_str()) > 2)
-                triangle.setFname_sufix("_RDM" + std::to_string(rdm_no) + "_infevap" + inflows_evap_directory_suffix);
+                triangle.setFname_sufix("_RDM" + std::to_string(rdm_no) +
+                                                "_infevap" + inflows_evap_directory_suffix);
             else
                 triangle.setFname_sufix("_RDM" + std::to_string(rdm_no));
         }
 
-        if (first_solution == -1) {
+        /// Run model
+        if (realizations_to_run.empty()) {
+            if (first_solution == -1) {
+                cout << endl << endl << endl << "Running solution "
+                     << standard_solution << endl;
+                triangle.setSol_number(standard_solution);
+                triangle.functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
+                triangle.calculateAndPrintObjectives(true);
+                triangle.printTimeSeriesAndPathways();
+                triangle.destroyDataCollector();
+            } else {
+                for (int s = first_solution; s < last_solution; ++s) {
+                    cout << endl << endl << endl << "Running solution "
+                         << s << endl;
+                    triangle.setSol_number((unsigned long) s);
+                    triangle.functionEvaluation(solutions[s].data(), c_obj, c_constr);
+                    triangle.calculateAndPrintObjectives(true);
+                    triangle.printTimeSeriesAndPathways();
+                    triangle.destroyDataCollector();
+                }
+            }
+        } else {
             cout << endl << endl << endl << "Running solution "
                  << standard_solution << endl;
+            ofstream bootstrap_output;
+	        string bootstrap_output_name = system_io +
+		    bootstrap_file.substr(0, bootstrap_file.length()-4) + "_s" + 
+		    to_string(standard_solution) + "_out.csv";
+	        cout << bootstrap_output_name << endl;
+	    
+            bootstrap_output.open(bootstrap_output_name);
+            string line;
+
             triangle.setSol_number(standard_solution);
-            triangle.setBootstrap_sample(bootstrap_sample);
-            triangle.functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
-            triangle.calculateObjectivesAndPrintOutput();
-        } else {
-            for (int s = first_solution; s < last_solution; ++s) {
-                cout << endl << endl << endl << "Running solution "
-                     << s << endl;
-                triangle.setSol_number(s);
-                triangle.setBootstrap_sample(bootstrap_sample);
-                triangle.functionEvaluation(solutions[s].data(), c_obj, c_constr);
-                triangle.calculateObjectivesAndPrintOutput();
+            for (auto &sample : realizations_to_run) {
+                auto sample_unsigned_long = vector<unsigned long>(sample.begin(), sample.end());
+                triangle.setRealizationsToRun(sample_unsigned_long);
+                triangle.functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
+                auto objs = triangle.calculateAndPrintObjectives(false);
+                line = "";
+                int nobjs = NUM_OBJECTIVES;
+                for (int ii = 0; ii < nobjs; ii++) {
+                    line.append(to_string(c_obj[ii]));
+                    line.append(",");
+                }
+                line.pop_back();
+                bootstrap_output << line << endl;
+		        bootstrap_output.flush();
+		        triangle.destroyDataCollector();
             }
+            bootstrap_output.close();
+	        cout << "Objectives written in " << bootstrap_output_name << endl;
         }
+
+
         return 0;
     } else {
 
@@ -254,5 +310,4 @@ int main(int argc, char *argv[]) {
 
         return 0;
     }
-
 }

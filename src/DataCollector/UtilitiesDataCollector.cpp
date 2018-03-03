@@ -3,6 +3,7 @@
 //
 
 #include <iomanip>
+//#include <cmath>
 #include "UtilitiesDataCollector.h"
 
 
@@ -11,6 +12,14 @@ UtilitiesDataCollector::UtilitiesDataCollector(const Utility *utility,
         : DataCollector(utility->id, utility->name, realization, UTILITY,
                         12 * COLUMN_WIDTH),
           utility(utility) {}
+
+/**
+ * Copy assignment operator.
+ * @param catchment
+ * @return
+ */
+UtilitiesDataCollector &UtilitiesDataCollector::operator=(const UtilitiesDataCollector &utility_data_collector) {}
+
 
 string UtilitiesDataCollector::printTabularString(int week) {
 
@@ -138,7 +147,7 @@ string UtilitiesDataCollector::printCompactStringHeader() {
 void UtilitiesDataCollector::collect_data() {
     vector<int> infra_built;
 
-    combined_storage.push_back(utility->getTotal_stored_volume());
+    combined_storage.push_back(utility->getTotal_available_volume());
     lt_rof.push_back(utility->getLong_term_risk_of_failure());
     st_rof.push_back(utility->getRisk_of_failure());
     unrestricted_demand.push_back(utility->getUnrestrictedDemand());
@@ -166,26 +175,26 @@ void UtilitiesDataCollector::collect_data() {
             pathways.push_back(infra_built);
 }
 
-const void UtilitiesDataCollector::checkForNans() const {
+void UtilitiesDataCollector::checkForNans() const {
     string error = "nan in combined_storage in week " + to_string(lt_rof.size
             ()) + ", realization " + to_string(realization);
-    if (isnan(unrestricted_demand.back())) __throw_runtime_error(error.c_str());
-    if (isnan(restricted_demand.back())) __throw_runtime_error(error.c_str());
-    if (isnan(combined_storage.back())) __throw_runtime_error(error.c_str());
-    if (isnan(lt_rof.back())) __throw_runtime_error(error.c_str());
-    if (isnan(st_rof.back())) __throw_runtime_error(error.c_str());
-    if (isnan(contingency_fund_size.back())) __throw_runtime_error(error.c_str());
-    if (isnan(net_present_infrastructure_cost.back())) __throw_runtime_error(error.c_str());
-    if (isnan(gross_revenues.back())) __throw_runtime_error(error.c_str());
-    if (isnan(debt_service_payments.back())) __throw_runtime_error(error.c_str());
-    if (isnan(contingency_fund_contribution.back())) __throw_runtime_error(error.c_str());
-    if (isnan(drought_mitigation_cost.back())) __throw_runtime_error(error.c_str());
-    if (isnan(insurance_contract_cost.back())) __throw_runtime_error(error.c_str());
-    if (isnan(insurance_payout.back())) __throw_runtime_error(error.c_str());
-    if (isnan(capacity.back())) __throw_runtime_error(error.c_str());
-    if (isnan(waste_water_discharge.back())) __throw_runtime_error(error.c_str());
-    if (isnan(unfulfilled_demand.back())) __throw_runtime_error(error.c_str());
-    if (isnan(net_stream_inflow.back())) __throw_runtime_error(error.c_str());
+    if (std::isnan(unrestricted_demand.back())) __throw_runtime_error(error.c_str());
+    if (std::isnan(restricted_demand.back())) __throw_runtime_error(error.c_str());
+    if (std::isnan(combined_storage.back())) __throw_runtime_error(error.c_str());
+    if (std::isnan(lt_rof.back())) __throw_runtime_error(error.c_str());
+    if (std::isnan(st_rof.back())) __throw_runtime_error(error.c_str());
+    if (std::isnan(contingency_fund_size.back())) __throw_runtime_error(error.c_str());
+    if (std::isnan(net_present_infrastructure_cost.back())) __throw_runtime_error(error.c_str());
+    if (std::isnan(gross_revenues.back())) __throw_runtime_error(error.c_str());
+    if (std::isnan(debt_service_payments.back())) __throw_runtime_error(error.c_str());
+    if (std::isnan(contingency_fund_contribution.back())) __throw_runtime_error(error.c_str());
+    if (std::isnan(drought_mitigation_cost.back())) __throw_runtime_error(error.c_str());
+    if (std::isnan(insurance_contract_cost.back())) __throw_runtime_error(error.c_str());
+    if (std::isnan(insurance_payout.back())) __throw_runtime_error(error.c_str());
+    if (std::isnan(capacity.back())) __throw_runtime_error(error.c_str());
+    if (std::isnan(waste_water_discharge.back())) __throw_runtime_error(error.c_str());
+    if (std::isnan(unfulfilled_demand.back())) __throw_runtime_error(error.c_str());
+    if (std::isnan(net_stream_inflow.back())) __throw_runtime_error(error.c_str());
 }
 
 const vector<double> &UtilitiesDataCollector::getCombined_storage() const {

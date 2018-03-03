@@ -23,7 +23,9 @@ Graph::Graph(int V) : V(V) {
     downstream_sources = vector<vector<int>>((unsigned long) V);
 }
 
-Graph::~Graph() {}
+Graph::~Graph() {
+//    delete adj;
+}
 
 Graph::Graph() {}
 

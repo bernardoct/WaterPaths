@@ -13,21 +13,21 @@ class ObjectivesCalculator {
 
 public:
     static double calculateReliabilityObjective(
-            vector<UtilitiesDataCollector *>
+            vector<UtilitiesDataCollector>&
             utility_collector);
 
     static double calculateRestrictionFrequencyObjective(
-            vector<RestrictionsDataCollector *> restriction_data);
+            vector<RestrictionsDataCollector>& restriction_data);
 
     static double calculateNetPresentCostInfrastructureObjective(
-            vector<UtilitiesDataCollector *>
+            vector<UtilitiesDataCollector>&
             utility_data);
 
     static double calculatePeakFinancialCostsObjective(
-            vector<UtilitiesDataCollector *> utility_data);
+            vector<UtilitiesDataCollector>& utility_data);
 
     static double calculateWorseCaseCostsObjective(
-            vector<UtilitiesDataCollector *> utility_data);
+            vector<UtilitiesDataCollector>& utility_data);
 
 };
 

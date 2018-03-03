@@ -6,7 +6,7 @@ CFLAGS=-std=c++14 -O0 -march=native -Wall
 
 #the following is for using gprof:
 #CFLAGS=-g -c -O0 -Wall
-#LDFLAGS=-pg 
+#LDFLAGS=-pg
 
 # List of sources and objects (include all .cpp files)
 SOURCES=$(shell find ./src -name "*.cpp")

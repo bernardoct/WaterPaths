@@ -40,7 +40,10 @@ ContinuityModelRealization::ContinuityModelRealization(ContinuityModelRealizatio
                           continuity_model_realization.realization_id) {
 }
 
-ContinuityModelRealization::~ContinuityModelRealization() {}
+ContinuityModelRealization::~ContinuityModelRealization() {
+    for (auto dmp : drought_mitigation_policies)
+        delete dmp;
+}
 
 vector<WaterSource *> ContinuityModelRealization::getWater_sources() {
     return continuity_water_sources;

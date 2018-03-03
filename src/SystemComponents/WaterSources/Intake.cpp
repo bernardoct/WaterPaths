@@ -4,6 +4,8 @@
 
 #include <numeric>
 #include "../../Utils/Constants.h"
+#include "../Catchment.h"
+#include "Base/WaterSource.h"
 #include "Intake.h"
 
 Intake::Intake(
@@ -92,13 +94,13 @@ void Intake::applyContinuity(int week, double upstream_source_inflow,
 
     /// Get all upstream catchment inflow.
     upstream_catchment_inflow = 0;
-    for (Catchment *c : catchments)
-        upstream_catchment_inflow += c->getStreamflow(week);
+    for (Catchment c : catchments)
+        upstream_catchment_inflow += c.getStreamflow(week);
 
     /// Water availability for next ime step.
     double next_upstream_catchment_inflow = 0;
-    for (Catchment *c : catchments)
-        next_upstream_catchment_inflow += c->getStreamflow(week + 1);
+    for (Catchment c : catchments)
+        next_upstream_catchment_inflow += c.getStreamflow(week + 1);
 
     /// The available volume for the following week will be next week's gain
     /// - this week's minimum environmental outflow (assuming next week's

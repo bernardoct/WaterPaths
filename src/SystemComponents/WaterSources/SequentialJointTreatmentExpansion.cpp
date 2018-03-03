@@ -82,6 +82,13 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
 
 }
 
+SequentialJointTreatmentExpansion::~SequentialJointTreatmentExpansion() {
+//    if (max_sequential_added_capacity != nullptr)
+//        delete max_sequential_added_capacity;
+//    if (max_sequential_added_construction_cost != nullptr)
+//        delete max_sequential_added_construction_cost;
+}
+
 /**
  * Copy constructor.
  * @param reservoir

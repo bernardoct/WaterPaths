@@ -33,15 +33,7 @@ public:
 
     static bool isFirstWeekOfTheYear(int week);
 
-    static double l2distanceSquare(vector<double> v1, vector<double> v2);
-
-    static vector<int> getQuantileIndeces(vector<double> v1, double quantile);
-
-    static vector<vector<double>> calculateDistances(vector<vector<double>> data_points);
-
     static int weekOfTheYear(int week);
-
-    static string getexepath();
 
     static void removeIntFromVector(vector<int> &vec, int el);
 };

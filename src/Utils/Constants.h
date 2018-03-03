@@ -30,8 +30,8 @@ namespace Constants {
 
     const bool APPLY_DEMAND_BUFFER = true;
 
-    const bool USE_PRE_CALCULATED_ROF_TABLES = true;
-    const bool DO_NOT_USE_PRE_CALCULATED_ROF_TABLES = false;
+    const bool USE_PRE_CALCULATED_ROF_TABLES = false;
+    const bool DO_NOT_USE_PRE_CALCULATED_ROF_TABLES = true;
 
     const int EXPORT_ROF_TABLES = 1;
     const int DO_NOT_EXPORT_OR_IMPORT_ROF_TABLES = 0;

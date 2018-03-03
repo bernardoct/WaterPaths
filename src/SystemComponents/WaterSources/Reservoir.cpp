@@ -181,7 +181,9 @@ Reservoir::Reservoir(
                     allocated_fractions,
                     utilities_with_allocations),
         evaporation_series(evaporation_series),
-        storage_area_curve(nullptr), fixed_area(true), area(storage_area) {}
+        storage_area_curve(nullptr), fixed_area(true), area(storage_area) {
+
+}
 
 /**
  * Constructor for when Reservoir does not exist in the beginning of the simulation.

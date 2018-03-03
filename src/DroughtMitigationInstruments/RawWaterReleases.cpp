@@ -54,9 +54,9 @@ void RawWaterReleases::applyPolicy(int week) {
 
     /// Determine storage deficit for downstream utility and available capacity for
     /// upstream utility. Do this in EVERY week so that I can plot ROF guide curves
-    storage_targets[UPSTREAM_UTILITY] = getUtilityStorageFromROF(Utils::weekOfTheYear(week),
+    storage_targets[UPSTREAM_UTILITY] = getUtilityStorageFromROF(week,
                                                                  storage_to_rof_table_, upstream_utility_id);
-    storage_targets[DOWNSTREAM_UTILITY] = getUtilityStorageFromROF(Utils::weekOfTheYear(week),
+    storage_targets[DOWNSTREAM_UTILITY] = getUtilityStorageFromROF(week,
                                                                    storage_to_rof_table_, downstream_utility_id);
 
     /// Raw water transfers are calculated if upstream storage is above the ROF target
@@ -149,15 +149,15 @@ void RawWaterReleases::applyPolicy(int week) {
                     getAvailableAllocatedVolume(downstream_utility_id) << endl;
             cout << "Recipient Allocation Capacity: " << downstream_reservoir->
                     getAllocatedCapacity(downstream_utility_id) << endl;
-            cout << "Recipient Reservoir Final Volume: " << downstream_reservoir->getAvailable_volume() << endl;
-            cout << "Recipient Reservoir Capacity: " << downstream_reservoir->getCapacity() << endl;
+            cout << "Recipient Reservoir Final Volume: " << downstream_reservoir->getAvailableVolume() << endl;
+            cout << "Recipient Reservoir Capacity: " << downstream_reservoir->getSupplyCapacity() << endl;
         }
     }
 }
 
 /**
  * calculates the targeted storage level of a utility according to ROF triggers
- * @param week week of the year.
+ * @param week week of the year. NOW WEEK OF ENTIRE REALIZATION
  * @param storage_to_rof_table table correlating storage capacities to rof
  * @param utility ID
  * @return
@@ -168,9 +168,11 @@ const double RawWaterReleases::getUtilityStorageFromROF(
         const int u_id) {
 
     /// Determine the storage associated with an ROF level
-    for (int s = NO_OF_STORAGE_TO_ROF_TABLE_TIERS - 1; s > -1; --s) {
-        if ((*storage_to_rof_table)(u_id, s, week) >= rof_triggers[u_id]) {
-            return (((double)s + 1) / (double)NO_OF_STORAGE_TO_ROF_TABLE_TIERS);
+    for (int s = NO_OF_INSURANCE_STORAGE_TIERS - 1; s > -1; --s) {
+//        double temp = *storage_to_rof_table->getPointerToElement(week,u_id,s);
+        if (*storage_to_rof_table->getPointerToElement(week,u_id,s) >= rof_triggers[u_id]) {
+                // ERROR IS HERE, table has changed shape, adjustment made Feb 28,2018
+            return (((double)s + 1) / (double)NO_OF_INSURANCE_STORAGE_TIERS);
         }
     }
 }

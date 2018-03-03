@@ -3,6 +3,7 @@
 #include "Utils/Solutions.h"
 #include "Problem/Triangle.h"
 #include "Utils/Utils.h"
+#include "Problem/DurhamModel.h"
 // #include "../Borg/borgmm.h"
 // #include "../Borg/borgProblemDefinition.h"
 
@@ -55,9 +56,10 @@ int main(int argc, char *argv[]) {
     vector<vector<double>> utilities_rdm;
     vector<vector<double>> water_sources_rdm;
     vector<vector<double>> policies_rdm;
+    int scenario = 1;
 
     int c;
-    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:R:U:P:W:I:C:")) != -1) {
+    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:R:U:P:W:I:C:S:")) != -1) {
         switch (c) {
             case '?':
                 fprintf(stdout,
@@ -87,7 +89,8 @@ int main(int argc, char *argv[]) {
                                 "\t-W: Water sources RDM file\n"
                                 "\t-I: Inflows and evaporation folder suffix to be added to \"inflows\" and "
                                        "\"evaporation\" (e.g., _high for inflows_high)\n"
-                                "\t-C: Import/export rof tables (-1: export, 0: do nothing (standard), 1: import)",
+                                "\t-C: Import/export rof tables (-1: export, 0: do nothing (standard), 1: import)"
+                                "\t-S: Scenario (Durham Model ONLY)",
                         argv[0], n_realizations, n_weeks, system_io.c_str());
                 return -1;
             case 's': solution_file = optarg; break;
@@ -114,6 +117,7 @@ int main(int argc, char *argv[]) {
             case 'W': water_sources_rdm_file = optarg; break;
             case 'I': inflows_evap_directory_suffix = optarg; break;
             case 'C': import_export_rof_table = atoi(optarg); break;
+            case 'S': scenario = atoi(optarg); break;
             default:
                 fprintf(stderr, "Unknown option (-%c)\n", c);
                 return -1;
@@ -121,7 +125,9 @@ int main(int argc, char *argv[]) {
     }
 
 
-    Triangle triangle(n_weeks, import_export_rof_table);
+    //Triangle triangle(n_weeks, import_export_rof_table);
+    DurhamModel triangle(n_weeks, import_export_rof_table); // set up cube for runs
+    triangle.setScenario(scenario);
 
     /// Set basic realization parameters.
     triangle.setN_weeks(n_weeks);
@@ -140,7 +146,7 @@ int main(int argc, char *argv[]) {
     }
 
     /// If Borg is not called, run in simulation mode
-    if (!run_optimization) {
+    if (!run_optimization) { // ASSIGNING ANY INPUT VALUE TO THIS MAKES IT TRUE
         vector<int> sol_range;
         /// Check for basic input errors.
         if ((first_solution == -1 && last_solution != -1) ||

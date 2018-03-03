@@ -71,8 +71,6 @@ public:
                                                    double *level_debt_service_payment, double bond_term,
                                                    double bond_interest_rate) const override;
 
-    double getTotal_treatment_capacity(int utility_id) const;
-
     virtual ~SequentialJointTreatmentExpansion();
 };
 

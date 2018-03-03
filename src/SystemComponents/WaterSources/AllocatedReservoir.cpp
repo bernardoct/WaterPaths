@@ -131,15 +131,9 @@ AllocatedReservoir::AllocatedReservoir(
 
 }
 
-AllocatedReservoir::AllocatedReservoir(
-        const AllocatedReservoir &allocated_reservoir)
-        : Reservoir(allocated_reservoir),
-          has_water_quality_pool(allocated_reservoir.has_water_quality_pool) {
-}
-
 AllocatedReservoir::AllocatedReservoir(const char *name, const int id, const vector<Catchment *> &catchments,
                                        const double capacity, const double max_treatment_capacity,
-                                       EvaporationSeries *evaporation_series, double storage_area,
+                                       EvaporationSeries &evaporation_series, double storage_area,
                                        const double construction_rof_or_demand,
                                        const vector<double> &construction_time_range, double construction_cost,
                                        vector<int> *utilities_with_allocations, vector<double> *allocated_fractions,
@@ -167,7 +161,8 @@ AllocatedReservoir::AllocatedReservoir(const char *name, const int id, const vec
 AllocatedReservoir::AllocatedReservoir(const AllocatedReservoir &allocated_reservoir)
         : Reservoir(allocated_reservoir),
           allocation_modifier(allocated_reservoir.allocation_modifier),
-          modified_allocations(allocated_reservoir.modified_allocations) {
+          modified_allocations(allocated_reservoir.modified_allocations),
+          has_water_quality_pool(allocated_reservoir.has_water_quality_pool) {
     //allocation_modifier = new AllocationModifier(*allocation_modifier);
 }
 
@@ -231,7 +226,6 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
                                   - evaporated_volume;
     double outflow_new = min_environmental_outflow;
     total_outflow = outflow_new;
-
 
     /// Check if spillage is needed and, if so, correct stored volume and
     /// calculate spillage and set all allocations to full. Otherwise,
@@ -371,6 +365,7 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
                 total_upstream_inflow + upstream_catchment_inflow -
                 evaporated_volume - total_demand - total_outflow -
                 available_volume << endl;
+
         __throw_runtime_error("Sum of allocated volumes in a reservoir must "
                                       "total current storage minus unallocated "
                                       "volume.Please report this error to "
@@ -390,7 +385,6 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
                                       "If you cannot find the problem, please "
                                       "report this to bct52@cornell.edu");
     }
-
 }
 
 void AllocatedReservoir::addCapacity(double capacity) {
@@ -581,4 +575,5 @@ void AllocatedReservoir::updateTreatmentAndCapacityAllocations(int week) {
             }
         }
     }
+
 }

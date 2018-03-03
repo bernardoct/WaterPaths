@@ -8,6 +8,7 @@
 #include <ctime>
 #include <algorithm>
 #include <numeric>
+#include <w32api/fileapi.h>
 
 Simulation::Simulation(
         vector<WaterSource *> &water_sources, Graph &water_sources_graph,
@@ -182,7 +183,13 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
     } else {
         folder = "rof_tables";
         const string mkdir_command = "mkdir";
-        int output = system((mkdir_command + " " + folder).c_str());
+//        if (GetFileAttributes(folder.c_str()) & FILE_ATTRIBUTE_DIRECTORY) {
+//            int output = 0;
+//        } else {
+            int output = system((mkdir_command + " " + folder).c_str());
+//        }
+
+
     }
 
     /// Run realizations.
@@ -197,6 +204,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
 		//printf("r %d  w %d\n", r, w);
                 // DO NOT change the order of the steps. This would mess up
                 // important dependencies.
+                //cout << "Week: " << w << endl;
                 /// Calculate long-term risk-of-failre if current week is first week of the year.
                 if (Utils::isFirstWeekOfTheYear(w))
                     realization_models[r]->setLongTermROFs(rof_models[r]->calculateLongTermROF(w), w);
@@ -212,6 +220,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                 /// Collect system data for output printing and objective calculations.
                 if (import_export_rof_tables != EXPORT_ROF_TABLES)
                     master_data_collector->collectData(r);
+
             }
             /// Export ROF tables for future simulations of the same problem with the same states-of-the-world.
             if (import_export_rof_tables == EXPORT_ROF_TABLES)

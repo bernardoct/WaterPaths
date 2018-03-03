@@ -23,8 +23,8 @@ using namespace std;
 WaterSource::WaterSource(
         const char *name, const int id,
         const vector<Catchment *> &catchments, const double capacity,
-        double treatment_capacity, int source_type)
-        : name(name), capacity(capacity), catchments(catchments),
+        double treatment_capacity, const int source_type)
+        : name(name), capacity(capacity),
           online(ONLINE), available_volume(capacity), id(id),
           total_treatment_capacity(treatment_capacity),
           source_type(source_type),
@@ -98,6 +98,7 @@ WaterSource::WaterSource(
           available_allocated_volumes(),
           utilities_with_allocations(utilities_with_allocations),
           wq_pool_id(NON_INITIALIZED), permitting_time(NON_INITIALIZED) {
+
     setAllocations(utilities_with_allocations,
                    allocated_fractions,
                    allocated_treatment_fractions);
@@ -174,7 +175,8 @@ WaterSource::WaterSource(const WaterSource &water_source) :
         utilities_with_allocations(water_source.utilities_with_allocations),
         permitting_time(water_source.permitting_time),
         highest_alloc_id(water_source.highest_alloc_id),
-        supply_allocated_fractions(water_source.supply_allocated_fractions) {
+        supply_allocated_fractions(water_source.supply_allocated_fractions),
+        wq_pool_locator(water_source.wq_pool_locator) {
 
     if (water_source.wq_pool_id != NON_INITIALIZED) {
         wq_pool_id = water_source.wq_pool_id;
@@ -308,6 +310,12 @@ void WaterSource::setAllocations(
     highest_alloc_id = wq_pool_id;
     unsigned int length = wq_pool_id + 1;
 
+    if (id == 0) {
+        cout << "Source: " << name << ", WQ Pool ID: " << wq_pool_id << endl;
+        cout << "Number of allocated supply fractions: " << allocated_fractions->size() << endl;
+        cout << "Number of allocated treatment fractions: " << allocated_treatment_fractions->size() << endl;
+    }
+
     this->available_allocated_volumes.reserve(length);
     this->available_allocated_volumes.assign(length, 0.0);
 
@@ -326,21 +334,37 @@ void WaterSource::setAllocations(
     this->supply_allocated_fractions.reserve(length - 1);
     this->supply_allocated_fractions.assign(length - 1, 0.0);
 
+    if (id == 0) {
+        cout << "Number of utilities w/allocations: " << utilities_with_allocations->size() << endl;
+        cout << "Number of allocated fractions: " << this->allocated_fractions.size() << endl;
+    }
+
     /// Populate vectors.
     for (unsigned long i = 0; i < utilities_with_allocations->size(); ++i) {
         auto u = (unsigned int) utilities_with_allocations->at(i);
 
+        if (id == 0) {
+            cout << "Loop index: " << i << ", Utility (before wq check): " << u << endl;
+        }
+
         /// Replace the -1 in the utilities_with_allocations vector with the
         /// ID assigned to the water quality pool.
         u = (u == WATER_QUALITY_ALLOCATION ? wq_pool_id : u);
+
+        if (id == 0) {
+            cout << "Loop index: " << i << ", Utility (after wq check): " << u << endl;
+            cout << "Is current iteration the WQ pool? " << u << " same as " << wq_pool_id << endl;
+        }
 
         if (u != wq_pool_id) {
             this->allocated_treatment_fractions[u] =
                     allocated_treatment_fractions->at(u);
             this->allocated_treatment_capacities[u] = total_treatment_capacity *
                                                       this->allocated_treatment_fractions[u];
-        } else
+        } else {
             (*this->utilities_with_allocations)[i] = u;
+            wq_pool_locator = true;
+        }
 
         this->allocated_fractions[u] = (*allocated_fractions)[i];
         (*this->utilities_with_allocations)[i] = u;
@@ -351,6 +375,13 @@ void WaterSource::setAllocations(
     for (unsigned int i = 0; i < wq_pool_id; ++i) {
         supply_allocated_fractions[i] = this->allocated_fractions[i] /
                 (1. - this->allocated_fractions[wq_pool_id]);
+
+    }
+
+    /// if none of the allocations looped over above are the WQ pool, the reservoir does not have one
+    /// and the WQ pool ID should be returned to non-initialized status.
+    if (!wq_pool_locator) {
+        wq_pool_id = NON_INITIALIZED;
     }
 }
 
@@ -409,9 +440,22 @@ const {
                        (allocated_fractions.empty() ? 1.: allocated_fractions[utility_id]);
     double n_payments = bond_term * BOND_INTEREST_PAYMENTS_PER_YEAR;
 
+//    if (week == 52) {
+//        cout << "check NPC calculation" << endl;
+//        cout << principal << endl;
+//        cout << bond_interest_rate << endl;
+//        cout << BOND_INTEREST_PAYMENTS_PER_YEAR << endl;
+//    }
+
     /// Level debt service payment value
     *level_debt_service_payment = principal * (rate * pow(1 + rate, n_payments)) /
                                   (pow(1 + rate, n_payments) - 1);
+
+//    if (week == 52) {
+//        cout << pow(1 + rate, n_payments) << endl;
+//        cout << n_payments << endl;
+//        cout << *level_debt_service_payment << endl;
+//    }
 
     /// Net present cost of stream of level debt service payments for the whole
     /// bond term, at the time of issuance.
@@ -419,6 +463,10 @@ const {
             *level_debt_service_payment *
             (1. - pow(1. + discount_rate,
                      -n_payments)) / discount_rate;
+
+//    if (week == 52) {
+//        cout << net_present_cost_at_issuance << endl;
+//    }
 
     /// Return NPC discounted from the time of issuance to the present.
     return net_present_cost_at_issuance;// / pow(1 + discount_rate, week / WEEKS_IN_YEAR);

@@ -439,10 +439,13 @@ void MasterDataCollector::collectData(unsigned long r) {
 
     for (vector<UtilitiesDataCollector> &uc : utility_collectors)
         uc[r].collect_data();
+
     for (vector<DataCollector *> dmp : drought_mitigation_policy_collectors)
         dmp[r]->collect_data();
+
     for (vector<DataCollector *> ws : water_source_collectors)
         ws[r]->collect_data();
+
 }
 
 MasterDataCollector::~MasterDataCollector() {

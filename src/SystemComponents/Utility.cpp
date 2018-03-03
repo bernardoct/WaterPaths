@@ -31,7 +31,7 @@
  */
 
 Utility::Utility(
-        const char *name, const int id,
+        const char *name, int id,
         vector<vector<double>> *demands_all_realizations,
         int number_of_week_demands,
         const double percent_contingency_fund_contribution,
@@ -76,7 +76,7 @@ Utility::Utility(
  * @param infra_if_built_remove if infra option in position 0 of a row is
  * built, remove infra options of IDs in remaining positions of the same row.
  */
-Utility::Utility(const char *name, const int id, vector<vector<double>> *demands_all_realizations,
+Utility::Utility(const char *name, int id, vector<vector<double>> *demands_all_realizations,
                  int number_of_week_demands, const double percent_contingency_fund_contribution,
                  const vector<vector<double>> *typesMonthlyDemandFraction,
                  const vector<vector<double>> *typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,
@@ -141,7 +141,7 @@ Utility::Utility(const char *name, const int id, vector<vector<double>> *demands
  * @param rof_infra_construction_order
  * @param infra_discount_rate
  */
-Utility::Utility(const char *name, const int id, vector<vector<double>> *demands_all_realizations,
+Utility::Utility(const char *name, int id, vector<vector<double>> *demands_all_realizations,
                  int number_of_week_demands, const double percent_contingency_fund_contribution,
                  const vector<vector<double>> *typesMonthlyDemandFraction,
                  const vector<vector<double>> *typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,
@@ -550,6 +550,10 @@ void Utility::updateContingencyFund(
     double unrestricted_price = weekly_average_volumetric_price[week_of_year];
     double current_price;
 
+//    if (week == 52) {
+//        cout << "Check" << endl;
+//    }
+
     /// Clear yearly updated data collecting variables.
     if (week_of_year == 0) {
         insurance_purchase = 0.;
@@ -647,12 +651,14 @@ void Utility::waterTreatmentPlantConstructionHandler(unsigned int source_id) {
 
     /// Add treatment capacity to source
     double added_capacity = wtp->implementTreatmentCapacity(id);
-    double dead_storage_component = wtp->unallocated_treatment_capacity /
-            3; // HOW DO I MAKE THIS THREE LINK TO THE UTILITIES THAT DEVELOP THE JOINT PROJECTS
+    double dead_storage_component = wtp->unallocated_treatment_capacity;
+        // HOW DO I MAKE THIS THREE LINK TO THE UTILITIES THAT DEVELOP THE JOINT PROJECTS
+        // DIVIDE BY THREE FOR COMPLETE TRIANGLE MODEL, DIVIDE BY 1 IMPLICITLY FOR DURHAM MODEL
 
     water_sources.at(wtp->parent_reservoir_ID)->addTreatmentCapacity(added_capacity,
                     wtp->added_treatment_capacity_fractions->at((unsigned long) id),
                     id);
+
     water_sources.at(wtp->parent_reservoir_ID)->
             addTreatmentCapacity(dead_storage_component,
                                  wtp->added_treatment_capacity_fractions->at((unsigned long) id),
@@ -681,9 +687,11 @@ void Utility::waterTreatmentPlantConstructionHandler(unsigned int source_id) {
     if (is_priority_source && is_not_in_priority_list) {
         priority_draw_water_source.push_back((int) wtp->parent_reservoir_ID);
         total_storage_capacity +=
-                water_sources.at(wtp->parent_reservoir_ID)->getAllocatedCapacity(id);
+                water_sources.at(wtp->parent_reservoir_ID)
+                        ->getAllocatedCapacity(id);
     } else if (is_not_in_non_priority_list) {
-        non_priority_draw_water_source.push_back((int) wtp->parent_reservoir_ID);
+        non_priority_draw_water_source
+                .push_back((int) wtp->parent_reservoir_ID);
     }
     water_sources.at(source_id)->setOnline();
 }
@@ -692,14 +700,15 @@ void Utility::reservoirExpansionConstructionHandler(unsigned int source_id) {
     ReservoirExpansion re =
             *dynamic_cast<ReservoirExpansion *>(water_sources.at(source_id));
 
-    water_sources.at(re.parent_reservoir_ID)->addCapacity(re.getAllocatedCapacity(id));
+    water_sources.at(re.parent_reservoir_ID)->
+            addCapacity(re.getAllocatedCapacity(id));
     water_sources.at(source_id)->setOnline();
 }
 
 void Utility::allocatedReservoirExpansionConstructionHandler(unsigned int source_id) {
     AllocatedReservoirExpansion are = *dynamic_cast<AllocatedReservoirExpansion *>(water_sources.at(source_id));
 
-    water_sources.at(are.parent_reservoir_ID)->setCapacity(are.getCapacity());
+    water_sources.at(are.parent_reservoir_ID)->setCapacity(are.getSupplyCapacity());
 
     water_sources.at(are.parent_reservoir_ID)->resetAllocations(are.getNewAllocationFractions(id));
     water_sources.at(are.parent_reservoir_ID)->resetTreatmentAllocations(are.getNewTreatmentAllocationFractions(id));
@@ -916,12 +925,20 @@ double Utility::updateCurrent_debt_payment(int week) {
  */
 void Utility::beginConstruction(int week, int infra_id) {
 
+//    if (week == 52) {
+//        cout << "Check construction" << endl;
+//    }
+
     /// Add water source construction cost to the books.
     double level_debt_service_payments;
     infra_net_present_cost +=
             water_sources[infra_id]->
                     calculateNetPresentConstructionCost(week, id, infra_discount_rate, &level_debt_service_payments,
                                                         bond_term, bond_interest_rate);
+
+//    if (week == 52) {
+//        cout << infra_net_present_cost << endl;
+//    }
 
     /// Create stream of level debt service payments for water source.
     debt_payment_streams.emplace_back(
@@ -1174,9 +1191,4 @@ double Utility::getUnfulfilled_demand() const {
 
 double Utility::getNet_stream_inflow() const {
     return net_stream_inflow;
-}
-
-
-vector<int> Utility::getNon_Priority_Utility_Water_Sources() {
-    return non_priority_draw_water_source;
 }

@@ -1,10 +1,10 @@
 #!/bin/bash
-#PBS -N test_mm
-#PBS -l nodes=1:ppn=16
+#PBS -N test_durham
+#PBS -l nodes=1:ppn=1
 #PBS -l walltime=01:00:00
-#PBS -o ./output/test_mm.out
-#PBS -e ./error/test_mm.err
+#PBS -o ./error/test_durham.out
+#PBS -e ./error/test_durham.err
 #PBS -m bea
-# #PBS -M bct52@cornell.edu
+# #PBS -M degorelick@unc.edu
 cd $PBS_O_WORKDIR
-time ./triangleSimulation -r 1000 -t 2400 -d /scratch/bct52/ -s decvars_hb.csv
+time ./src/main -r 144 -t 2392 -f 0 -l 1 -d ./ -s TestFiles/sols16.txt -C 0 -T 1 -S 1

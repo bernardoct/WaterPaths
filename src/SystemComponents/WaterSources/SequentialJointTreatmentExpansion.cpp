@@ -181,10 +181,6 @@ SequentialJointTreatmentExpansion::getMax_sequential_added_capacity() const {
     return max_sequential_added_capacity;
 }
 
-double SequentialJointTreatmentExpansion::getTotal_treatment_capacity(int utility_id) const {
-    return total_treatment_capacity;
-}
-
 void SequentialJointTreatmentExpansion::setMax_sequential_added_capacity(
         vector<double> *max_sequential_added_capacity) {
     this->max_sequential_added_capacity = max_sequential_added_capacity;

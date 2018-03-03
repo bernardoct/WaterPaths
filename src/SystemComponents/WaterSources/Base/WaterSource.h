@@ -37,6 +37,7 @@ protected:
 
     vector<int> *utilities_with_allocations = nullptr;
     int wq_pool_id = NON_INITIALIZED;
+    bool wq_pool_locator = false;
     double total_allocated_fraction = NON_INITIALIZED;
     bool online;
     vector<Catchment> catchments;

@@ -219,15 +219,3 @@ void Utils::removeIntFromVector(vector<int>& vec, int el) {
     auto vend = vec.end();
     vec.erase(std::remove(vbeg, vend, el), vend);
 }
-
-std::string Utils::getexepath() {
-    char result[PATH_MAX];
-#ifdef _WIN32
-    ssize_t count = GetModuleFileName(NULL, result, PATH_MAX);
-#else
-    //ssize_t count = GetModuleFileName("/proc/self/exe", result, PATH_MAX);
-    ssize_t count = GetModuleFileName(NULL, result, PATH_MAX);
-#endif
-
-    return std::string(result, (unsigned long) ((count > 0) ? count : 0));
-}

@@ -173,18 +173,19 @@ void UtilitiesDataCollector::collect_data() {
     else
         if (!infra_built.empty() && infra_built[2] != pathways.back()[2])
             pathways.push_back(infra_built);
+
 }
 
 void UtilitiesDataCollector::checkForNans() const {
-    string error = "nan in combined_storage in week " + to_string(lt_rof.size
-            ()) + ", realization " + to_string(realization);
+    string error = "nan in combined_storage in week " + to_string(lt_rof.size()) + ", realization " + to_string(realization);
+
     if (std::isnan(unrestricted_demand.back())) __throw_runtime_error(error.c_str());
     if (std::isnan(restricted_demand.back())) __throw_runtime_error(error.c_str());
     if (std::isnan(combined_storage.back())) __throw_runtime_error(error.c_str());
     if (std::isnan(lt_rof.back())) __throw_runtime_error(error.c_str());
     if (std::isnan(st_rof.back())) __throw_runtime_error(error.c_str());
     if (std::isnan(contingency_fund_size.back())) __throw_runtime_error(error.c_str());
-    if (std::isnan(net_present_infrastructure_cost.back())) __throw_runtime_error(error.c_str());
+    if (std::isnan(net_present_infrastructure_cost.back())) __throw_runtime_error(error.c_str()); // error here
     if (std::isnan(gross_revenues.back())) __throw_runtime_error(error.c_str());
     if (std::isnan(debt_service_payments.back())) __throw_runtime_error(error.c_str());
     if (std::isnan(contingency_fund_contribution.back())) __throw_runtime_error(error.c_str());
@@ -195,6 +196,7 @@ void UtilitiesDataCollector::checkForNans() const {
     if (std::isnan(waste_water_discharge.back())) __throw_runtime_error(error.c_str());
     if (std::isnan(unfulfilled_demand.back())) __throw_runtime_error(error.c_str());
     if (std::isnan(net_stream_inflow.back())) __throw_runtime_error(error.c_str());
+
 }
 
 const vector<double> &UtilitiesDataCollector::getCombined_storage() const {

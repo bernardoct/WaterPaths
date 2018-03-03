@@ -1,12 +1,10 @@
-CC=g++
-PCC=mpiCC
+#CC=g++
+CC=icc
 
 #the following is for normal use:
-CFLAGS=-std=c++14 -O0 -march=native -Wall
+CFLAGS=-std=c++14 -O0 -march=native -qopt-report=5 -g #-check-pointers=rw
+#CFLAGS=-std=c++14 -O0 -march=native -Wall -Wextra -flto-report#-check-pointers=rw
 
-#the following is for using gprof:
-#CFLAGS=-g -c -O0 -Wall
-#LDFLAGS=-pg
 
 # List of sources and objects (include all .cpp files)
 SOURCES=$(shell find ./src -name "*.cpp")

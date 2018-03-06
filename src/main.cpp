@@ -271,7 +271,7 @@ int main(int argc, char *argv[]) {
                 line.pop_back();
                 bootstrap_output << line << endl;
                 bootstrap_output.flush();
-                triangle.printTimeSeriesAndPathways();
+		//triangle.printTimeSeriesAndPathways();
                 triangle.destroyDataCollector();
             }
             bootstrap_output.close();
@@ -310,9 +310,9 @@ int main(int argc, char *argv[]) {
         char outputFilename[256];
         char runtime[256];
         FILE* outputFile = nullptr;
-        sprintf(outputFilename, "/work/03253/tg825524/stampede2/TestFiles/output/NC_output_MM_S%lu.set", seed);
+        sprintf(outputFilename, "%c/TestFiles/output/NC_output_MM_S%lu.set", system_io.c_str(), seed);
         // output path (make sure this exists)
-        sprintf(runtime, "/work/03253/tg825524/stampede2/TestFiles/output/NC_runtime_MM_S%lu_M%%d.runtime", seed); // runtime
+        sprintf(runtime, "%c/TestFiles/output/NC_runtime_MM_S%lu_M%%d.runtime", system_io.c_str(), seed); // runtime
         // path (make sure this exists)
 
         BORG_Algorithm_output_runtime(runtime);

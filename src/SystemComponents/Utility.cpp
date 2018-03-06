@@ -571,7 +571,7 @@ void Utility::updateContingencyFund(
     this->demand_offset = NONE;
 }
 
-void Utility::setWaterSourceOnline(unsigned int source_id) {
+void Utility::setWaterSourceOnline(unsigned int source_id, int week) {
 
     /// Sets water source online and add its ID to appropriate
     /// priority/non-priority ID vector. If reservoir expansion, add its
@@ -587,6 +587,24 @@ void Utility::setWaterSourceOnline(unsigned int source_id) {
         water_sources.at(source_id)->setOnline();
         addWaterSourceToOnlineLists(source_id);
     }
+
+    /// Add water source construction cost to the books.
+    double level_debt_service_payments;
+    double infra_net_present_cost_add =
+            water_sources[source_id]->
+                    calculateNetPresentConstructionCost(
+                    week, id, infra_discount_rate, level_debt_service_payments,
+                    bond_term, bond_interest_rate);
+    infra_net_present_cost += infra_net_present_cost_add;
+
+    if (std::isnan(infra_net_present_cost))
+        __throw_runtime_error("NPV error.");
+
+    /// Create stream of level debt service payments for water source.
+    debt_payment_streams.emplace_back(
+            (unsigned long) bond_term,
+            level_debt_service_payments);
+
     /// Updates total storage and treatment variables.
     total_storage_capacity = 0;
     total_treatment_capacity = 0;
@@ -609,14 +627,13 @@ void Utility::waterTreatmentPlantConstructionHandler(unsigned int source_id) {
     auto wtp = dynamic_cast<SequentialJointTreatmentExpansion *>
     (water_sources.at(source_id));
 
+    /// Calculate construction cost for current expansion and previous ones not yet built.
+    wtp->calculateConstructionCost(id);
+
     /// Add treatment capacity to source
     double added_capacity = wtp->implementTreatmentCapacity(id);
     water_sources.at(wtp->parent_reservoir_ID)
-            ->addTreatmentCapacity(
-                    added_capacity,
-                    wtp->added_treatment_capacity_fractions
-                            .at((unsigned long) id),
-                    id);
+            ->addTreatmentCapacity(added_capacity, id);
 
     /// If source is intake or reuse and is not in the list of active
     /// sources, add it to the priority list.
@@ -716,24 +733,18 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
 
         /// Selects next water source whose permitting period is passed.
         int next_construction = NON_INITIALIZED;
-        for (int ws : rof_infra_construction_order)
-            if (week > water_sources[ws]->getPermitting_period()) {
+        for (int ws : rof_infra_construction_order) {
+            if (week > water_sources[ws]->getPermitting_period() && !water_sources[ws]->skipConstruction()) {
                 next_construction = ws;
                 break;
             }
+        }
 
         /// Checks if ROF threshold for next infrastructure in line has been
         /// reached and if there is already infrastructure being built.
         if (next_construction != NON_INITIALIZED &&
                 long_term_rof > infra_construction_triggers[next_construction]) {
             new_infra_triggered = next_construction;
-
-            /// Checks is piece of infrastructure to be built next prevents
-            /// another one from being build and, if so, removes the latter
-            /// from the queue. E.g. if the large expansion of a reservoir is
-            /// triggered the small expansion must be removed from the to
-            /// build list.
-            removeRelatedSourcesFromQueue(next_construction);
 
             /// Begin construction.
             beginConstruction(week, next_construction);
@@ -765,13 +776,6 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
                 average_demand >infra_construction_triggers[next_construction]) {
             new_infra_triggered = next_construction;
 
-            /// Checks is piece of infrastructure to be built next prevents
-            /// another one from being build and, if so, removes the latter
-            /// from the queue. E.g. if the large expansion of a reservoir is
-            /// triggered the small expansion must be removed from the to
-            /// build list.
-            removeRelatedSourcesFromQueue(next_construction);
-
             /// Begin construction.
             beginConstruction(week, next_construction);
         }
@@ -785,7 +789,7 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
         /// could be made more efficient but it is not a bottle neck of model.
         for (int ws = 0; ws < under_construction.size(); ++ws)
             if (under_construction[ws] && week > construction_end_date[ws]) {
-                setWaterSourceOnline((unsigned int) ws);
+                setWaterSourceOnline((unsigned int) ws, week);
 
                 /// Record ID of and when infrastructure option construction was
                 /// completed. (utility_id, week, new source id)
@@ -820,13 +824,16 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
  * @param next_construction
  */
 void Utility::removeRelatedSourcesFromQueue(int next_construction) {
-    if (!infra_if_built_remove.empty())
-        for (auto v : infra_if_built_remove)
-            if (v[0] == next_construction)
+    if (!infra_if_built_remove.empty()) {
+        for (auto v : infra_if_built_remove) {
+            if (v[0] == next_construction) {
                 for (int i : v) {
                     Utils::removeIntFromVector(rof_infra_construction_order, i);
                     Utils::removeIntFromVector(demand_infra_construction_order, i);
                 }
+            }
+        }
+    }
 }
 
 /**
@@ -867,22 +874,12 @@ double Utility::updateCurrent_debt_payment(int week) {
  */
 void Utility::beginConstruction(int week, int infra_id) {
 
-    /// Add water source construction cost to the books.
-    double level_debt_service_payments;
-    double infra_net_present_cost_add =
-            water_sources[infra_id]->
-                    calculateNetPresentConstructionCost(
-                    week, id, infra_discount_rate, level_debt_service_payments,
-                    bond_term, bond_interest_rate);
-    infra_net_present_cost += infra_net_present_cost_add;
-
-    if (std::isnan(infra_net_present_cost))
-        __throw_runtime_error("NPV error.");
-
-    /// Create stream of level debt service payments for water source.
-    debt_payment_streams.emplace_back(
-            (unsigned long) bond_term,
-            level_debt_service_payments);
+    /// Checks is piece of infrastructure to be built next prevents
+    /// another one from being build and, if so, removes the latter
+    /// from the queue. E.g. if the large expansion of a reservoir is
+    /// triggered the small expansion must be removed from the to
+    /// build list.
+    removeRelatedSourcesFromQueue(infra_id);
 
     /// Make water utility as under construction and determine construction
     /// end date (I wish that was how it worked in real constructions...)

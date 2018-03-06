@@ -622,35 +622,40 @@ void Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
              0.,
              western_wake_treatment_plant_raleigh_frac,
              0.};
-    vector<double> cary_upgrades_treatment_capacity_fractions = {0., 0., 1.,
-                                                                 0., 0.};
+    vector<double> cary_upgrades_treatment_capacity_fractions = {0., 0., 1., 0., 0.};
 
-    vector<double> shared_added_wjlwtp_treatment_pool;
-    vector<double> shared_added_wjlwtp_price;
+    vector<vector<double>> sequential_treatment_capacity = {
+            {33 * 7 * western_wake_treatment_plant_owasa_frac, (54 * 7 - 33 * 7) * western_wake_treatment_plant_owasa_frac},
+            {33 * 7 * western_wake_treatment_frac_durham, (54 * 7 - 33 * 7) * western_wake_treatment_frac_durham},
+            {0., 0.},
+            {33 * 7 * western_wake_treatment_plant_raleigh_frac, (54 * 7 - 33 * 7) * western_wake_treatment_plant_raleigh_frac}
+    };
+    vector<vector<double>> sequential_cost = {
+            {243.3 * western_wake_treatment_plant_owasa_frac, (316.8 - 243.3) * western_wake_treatment_plant_owasa_frac},
+            {243.3 * western_wake_treatment_frac_durham, (316.8 - 243.3) * western_wake_treatment_frac_durham},
+            {0., 0.},
+            {243.3 * western_wake_treatment_plant_raleigh_frac, (316.8 - 243.3) * western_wake_treatment_plant_raleigh_frac}
+    };
     SequentialJointTreatmentExpansion low_wjlwtp("Low WJLWTP",
                                                  20,
                                                  6,
                                                  0,
                                                  33 * 7,
-                                                 wjlwtp_treatment_capacity_fractions,
-                                                 shared_added_wjlwtp_treatment_pool,
-                                                 shared_added_wjlwtp_price,
+                                                 sequential_treatment_capacity,
+                                                 sequential_cost,
                                                  city_infrastructure_rof_triggers[1],
                                                  construction_time_interval,
-                                                 12 * WEEKS_IN_YEAR,
-                                                 243.3);
+                                                 12 * WEEKS_IN_YEAR);
     SequentialJointTreatmentExpansion high_wjlwtp("High WJLWTP",
                                                   21,
                                                   6,
-                                                  0,
+                                                  1,
                                                   54 * 7,
-                                                  wjlwtp_treatment_capacity_fractions,
-                                                  shared_added_wjlwtp_treatment_pool,
-                                                  shared_added_wjlwtp_price,
+                                                  sequential_treatment_capacity,
+                                                  sequential_cost,
                                                   city_infrastructure_rof_triggers[1],
                                                   construction_time_interval,
-                                                  12 * WEEKS_IN_YEAR,
-                                                  316.8);
+                                                  12 * WEEKS_IN_YEAR);
     SequentialJointTreatmentExpansion caryWtpUpgrade1("Cary WTP upgrade 1",
                                                       22,
                                                       6,
@@ -940,7 +945,7 @@ void Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
     if (import_export_rof_tables == IMPORT_ROF_TABLES)
         s.setPrecomputed_rof_tables(rof_tables, table_storage_shift);
 
-    try {
+//    try {
         double realization_start = omp_get_wtime();
         this->master_data_collector = s.runFullSimulation(n_threads);
         double realization_end = omp_get_wtime();
@@ -965,26 +970,26 @@ void Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 //            objectives.clear();
         }
 //	printf("Objectives calculations took %f s.\n", realization_end - omp_get_wtime());
-    } catch (const std::exception& e) {
-        int num_dec_var = 57;
-//        printf("Exception called during calculations. Decision variables are below:\n");
-        ofstream sol;
-	    int world_rank;
-#ifdef  PARALLEL
-        MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-#else
-        world_rank = 0;
-#endif
-	    string error_file = "sol_error_rank_" + to_string(world_rank) + ".csv";
-        sol.open(error_file.c_str());
-        for (int i = 0; i < num_dec_var; ++i) {
-            sol << vars[i] << ",";
-        }
-        sol << flush;
-        sol.close();
-
-        Utils::print_exception(e);
-    }
+//    } catch (const std::exception& e) {
+//        int num_dec_var = 57;
+////        printf("Exception called during calculations. Decision variables are below:\n");
+//        ofstream sol;
+//	    int world_rank;
+//#ifdef  PARALLEL
+//        MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+//#else
+//        world_rank = 0;
+//#endif
+//	    string error_file = "sol_error_rank_" + to_string(world_rank) + ".csv";
+//        sol.open(error_file.c_str());
+//        for (int i = 0; i < num_dec_var; ++i) {
+//            sol << vars[i] << ",";
+//        }
+//        sol << flush;
+//        sol.close();
+//
+//        Utils::print_exception(e);
+//    }
 }
 
 Triangle::~Triangle() = default;

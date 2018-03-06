@@ -194,7 +194,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
     string error_m = "Error in realizations ";
 #pragma omp parallel for num_threads(n_threads)// shared(had_catch)
     for (int r = 0; r < n_realizations; ++r) {
-        try {
+//        try {
             double start = omp_get_wtime();
             for (int w = 0; w < total_simulation_time; ++w) {
                 // DO NOT change the order of the steps. This would mess up
@@ -232,23 +232,23 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
 
             delete realization_models[r];
             delete rof_models[r];
-        } catch (...) {
-#pragma omp atomic
-                ++had_catch;
-            error_m += to_string(r) + " ";
-        }
+//        } catch (...) {
+//#pragma omp atomic
+//                ++had_catch;
+//            error_m += to_string(r) + " ";
+//        }
     }
     /// Handle exception from the OpenMP region and pass it up to the
     /// problem class.
     if (had_catch) {
-	int world_rank;
+	    int world_rank;
 #ifdef  PARALLEL
         MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 #else
         world_rank = 0;
 #endif
 	//printf(error_m.c_str());
-	error_m += ". Decision variables in sol_error_rank_" + to_string(world_rank) + ".";
+	    error_m += ". Decision variables in sol_error_rank_" + to_string(world_rank) + ".";
         throw_with_nested(runtime_error(error_m.c_str()));
     }
     return master_data_collector;

@@ -37,34 +37,6 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
     std::sort(continuity_utilities.begin(), continuity_utilities.end(), Utility::compById);
 #endif
 
-    /// Set pointer to vector with capacities to be built on parent reservoir
-    /// for each sequential joint treatment expansion with the same parent
-    /// reservoir to be the same, so that whenever on utility builds a level
-    /// of expansion, the next level add up the difference between levels to
-    /// the parent reservoir.
-    for (auto water_source : water_sources)
-        if (water_source->source_type == NEW_WATER_TREATMENT_PLANT)
-            for (auto ws : water_sources) {
-                if (ws->source_type == NEW_WATER_TREATMENT_PLANT) {
-                    auto *sjte1 =
-                            dynamic_cast<SequentialJointTreatmentExpansion *>(ws);
-                    auto *sjte2 =
-                            dynamic_cast<SequentialJointTreatmentExpansion *>(water_source);
-                    if (sjte1->parent_reservoir_ID ==
-                        sjte2->parent_reservoir_ID
-                        &&
-                        sjte1->expansion_sequence_id ==
-                        sjte2->expansion_sequence_id
-                        &&
-                        sjte1->expansion_sequence_id != NON_INITIALIZED) {
-                        sjte1->setMax_sequential_added_capacity(
-                                sjte2->getMax_sequential_added_capacity());
-                        sjte1->setMax_sequential_added_construction_cost(
-                                sjte2->getMax_sequential_added_construction_cost());
-                    }
-                }
-            }
-
     /// Link water sources to utilities by passing pointers of the former to
     /// the latter.
     for (int u = 0; u < utilities.size(); ++u) {

@@ -174,7 +174,7 @@ public:
 
     void beginConstruction(int week, int infra_id);
 
-    void setWaterSourceOnline(unsigned int source_id);
+    void setWaterSourceOnline(unsigned int source_id, int week);
 
     double updateCurrent_debt_payment(int week);
 

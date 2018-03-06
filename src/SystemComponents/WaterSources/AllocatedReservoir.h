@@ -81,9 +81,7 @@ public:
 
     void addCapacity(double capacity) override;
 
-    void addTreatmentCapacity(
-            const double added_plant_treatment_capacity,
-            double allocated_fraction_of_total_capacity, int utility_id)
+    void addTreatmentCapacity(const double added_plant_treatment_capacity, int utility_id)
     override;
 
     double getAllocatedTreatmentCapacity(int utility_id) const override;

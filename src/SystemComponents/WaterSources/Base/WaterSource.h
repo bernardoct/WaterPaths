@@ -15,7 +15,6 @@ const int BOND_INTEREST_PAYMENTS_PER_YEAR = 1;
 
 class WaterSource {
 protected:
-
     double available_volume = 0;
     double total_outflow = 0;
     double upstream_source_inflow = 0;
@@ -97,10 +96,7 @@ public:
                                    double wastewater_inflow,
                                    vector<double> &demand_outflow);
 
-    virtual void addTreatmentCapacity(
-            const double added_treatment_capacity,
-            double allocations_added_treatment_capacity,
-            int utility_id);
+    virtual void addTreatmentCapacity(const double added_treatment_capacity, int utility_id);
 
     virtual double calculateNetPresentConstructionCost(int week, int utility_id, double discount_rate,
                                                            double&
@@ -112,6 +108,8 @@ public:
     virtual void addCapacity(double capacity);
 
     virtual void setOnline();
+
+    virtual bool skipConstruction() const;
 
     virtual double getAvailableAllocatedVolume(int utility_id);
 

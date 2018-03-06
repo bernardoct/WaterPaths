@@ -2,6 +2,7 @@
 // Created by bernardoct on 7/18/17.
 //
 
+#include <numeric>
 #include "SequentialJointTreatmentExpansion.h"
 
 SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
@@ -12,7 +13,7 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
         const vector<double> &construction_time_range, double permitting_period,
         double construction_cost)
         : WaterSource(name, id, vector<Catchment *>(), NONE, NON_INITIALIZED, NEW_WATER_TREATMENT_PLANT,
-                      construction_time_range, parent_reservoir_ID, construction_cost),
+                      construction_time_range, permitting_period, construction_cost),
           parent_reservoir_ID((unsigned int) parent_reservoir_ID),
           added_treatment_capacity_fractions
                   (added_treatment_capacity_fractions),
@@ -24,93 +25,43 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
         const char *name, const int id, const int parent_reservoir_ID,
         const int expansion_sequence_id,
         double total_treatment_capacity,
-        const vector<double>& added_treatment_capacity_fractions,
-        vector<double>& max_sequential_added_capacity,
-        vector<double>& max_sequential_added_construction_cost,
+        vector<vector<double>>& sequential_treatment_capacity,
+        vector<vector<double>>& sequential_cost,
         const double construction_rof_or_demand,
-        const vector<double> &construction_time_range, double permitting_period,
-        double construction_cost)
+        const vector<double> &construction_time_range, double permitting_period)
         : WaterSource(name, id, vector<Catchment *>(), NONE, NON_INITIALIZED, NEW_WATER_TREATMENT_PLANT,
-                      construction_time_range, permitting_period, construction_cost),
+                      construction_time_range, permitting_period, NONE),
           parent_reservoir_ID((unsigned int) parent_reservoir_ID),
-          added_treatment_capacity_fractions
-                  (added_treatment_capacity_fractions),
           total_treatment_capacity(total_treatment_capacity),
-          max_sequential_added_capacity(max_sequential_added_capacity),
-          max_sequential_added_construction_cost(max_sequential_added_construction_cost),
+          sequential_treatment_capacity(sequential_treatment_capacity),
+          sequential_cost(sequential_cost),
           expansion_sequence_id(expansion_sequence_id) {
 
-    if (max_sequential_added_capacity.empty() &&
-        !this->max_sequential_added_capacity.empty())
+    if (sequential_treatment_capacity.empty())
         __throw_invalid_argument("max_sequential_capacity is initialized "
                                          "within "
                                          "SequentialJointTreatmentExpansion "
                                          "and must be an empty vector.");
-
-    int n_allocations = (int) added_treatment_capacity_fractions.size();
-
-    /// Set pointer to vector with capacities to be built on parent reservoir
-    /// for each sequential joint treatment expansion with the same parent
-    /// reservoir to be the same, so that whenever on utility builds a level
-    /// of expansion, the next level add up the difference between levels to
-    /// the parent reservoir.
-    if (max_sequential_added_capacity.empty()) {
-        for (int u = 0; u < n_allocations; ++u) {
-            double alloc = added_treatment_capacity_fractions[u];
-            max_sequential_added_capacity.push_back(
-                    total_treatment_capacity * alloc);
-            max_sequential_added_construction_cost.push_back(
-                    construction_cost * alloc);
-        }
-    } else {
-        for (int u = 0; u < n_allocations; ++u) {
-            double alloc = added_treatment_capacity_fractions[u];
-            max_sequential_added_capacity[u] = max
-                    (max_sequential_added_capacity[u],
-                     total_treatment_capacity * alloc);
-            max_sequential_added_construction_cost[u] = max
-                    (max_sequential_added_construction_cost[u],
-                     construction_cost * alloc);
-        }
-    }
 }
 
-SequentialJointTreatmentExpansion::~SequentialJointTreatmentExpansion() {
-//    if (max_sequential_added_capacity != nullptr)
-//        delete max_sequential_added_capacity;
-//    if (max_sequential_added_construction_cost != nullptr)
-//        delete max_sequential_added_construction_cost;
-}
+SequentialJointTreatmentExpansion::~SequentialJointTreatmentExpansion() = default;
 
 /**
  * Copy constructor.
  * @param reservoir
  */
 SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
-        const
-        SequentialJointTreatmentExpansion
-        &joint_water_treatment_plant) :
+        const SequentialJointTreatmentExpansion &joint_water_treatment_plant) :
         WaterSource(joint_water_treatment_plant),
         parent_reservoir_ID(joint_water_treatment_plant.parent_reservoir_ID),
-        total_treatment_capacity
-                (joint_water_treatment_plant.total_treatment_capacity),
-        added_treatment_capacity_fractions
-                (joint_water_treatment_plant
-                         .added_treatment_capacity_fractions),
+        total_treatment_capacity(
+                joint_water_treatment_plant.total_treatment_capacity),
         expansion_sequence_id(
-                joint_water_treatment_plant.expansion_sequence_id) {
-
-    if (!joint_water_treatment_plant.max_sequential_added_capacity.empty()) {
-        max_sequential_added_capacity = vector<double>
-                (joint_water_treatment_plant.max_sequential_added_capacity);
-
-        max_sequential_added_construction_cost = vector<double>
-                (joint_water_treatment_plant
-                        .max_sequential_added_construction_cost);
-    }
-
-
-}
+                joint_water_treatment_plant.expansion_sequence_id),
+        sequential_treatment_capacity(
+                joint_water_treatment_plant.sequential_treatment_capacity),
+        sequential_cost(
+                joint_water_treatment_plant.sequential_cost) {}
 
 /**
  * Copy assignment operator
@@ -140,15 +91,20 @@ void SequentialJointTreatmentExpansion::applyContinuity(int week, double upstrea
  */
 double
 SequentialJointTreatmentExpansion::implementTreatmentCapacity(int utility_id) {
-    if (!max_sequential_added_capacity.empty()) {
-        double alloc = added_treatment_capacity_fractions[utility_id];
-        double capacity_to_implement = min
-                (max_sequential_added_capacity[utility_id],
-                 total_treatment_capacity * alloc);
-        max_sequential_added_capacity[utility_id] -= capacity_to_implement;
-        return capacity_to_implement;
-    } else
+    if (!sequential_treatment_capacity.empty()) {
+        /// Build capacity of current and previous expansion stages.
+        double capacity_to_build = accumulate(sequential_treatment_capacity[utility_id].begin(),
+                                              sequential_treatment_capacity[utility_id].begin() +
+                                              expansion_sequence_id + 1, 0.);
+        /// Set capacity to be built of previous stages to 0 so that they are not built again.
+        for (int i = 0; i <= expansion_sequence_id; ++i) {
+            sequential_treatment_capacity[utility_id][i] = 0.;
+        }
+
+        return capacity_to_build;
+    } else {
         return total_treatment_capacity;
+    }
 }
 
 
@@ -158,53 +114,38 @@ SequentialJointTreatmentExpansion::implementTreatmentCapacity(int utility_id) {
  * @param utility_id
  * @return
  */
-double SequentialJointTreatmentExpansion::payConstructionCost(int utility_id) {
-    if (!max_sequential_added_construction_cost.empty()) {
-        double alloc = added_treatment_capacity_fractions[utility_id];
-        double price_to_pay = min
-                (max_sequential_added_construction_cost[utility_id],
-                 construction_cost_of_capital * alloc);
-        max_sequential_added_construction_cost[utility_id] -= price_to_pay;
+double SequentialJointTreatmentExpansion::calculateConstructionCost(int utility_id) {
+    if (!sequential_cost.empty()) {
+        /// Pay for capacity of current and previous expansion stages.
+        double price_to_pay = accumulate(sequential_cost[utility_id].begin(),
+                                         sequential_cost[utility_id].begin() +
+                                         expansion_sequence_id + 1, 0.);
+        /// Set cost of previous stages to 0 so that they are not built again.
+        for (int i = 0; i <= expansion_sequence_id; ++i) {
+            sequential_cost[utility_id][i] = 0.;
+        }
+
+        construction_cost_of_capital = price_to_pay;
         return price_to_pay;
     } else
         return construction_cost_of_capital;
 }
 
-const vector<double>&
-SequentialJointTreatmentExpansion::getMax_sequential_added_capacity() const {
-    return max_sequential_added_capacity;
-}
-
-void SequentialJointTreatmentExpansion::setMax_sequential_added_capacity(
-        const vector<double> &max_sequential_added_capacity) {
-    this->max_sequential_added_capacity = max_sequential_added_capacity;
-}
-
-const vector<double>&
-SequentialJointTreatmentExpansion::getMax_sequential_added_construction_cost() const {
-    return max_sequential_added_construction_cost;
-}
-
-void
-SequentialJointTreatmentExpansion::setMax_sequential_added_construction_cost(
-        const vector<double> &max_sequential_added_construction_cost) {
-    this->max_sequential_added_capacity = max_sequential_added_construction_cost;
-}
-
-double SequentialJointTreatmentExpansion::calculateNetPresentConstructionCost(int week, int utility_id, double discount_rate,
-                                                                              double& level_debt_service_payment, double bond_term,
-                                                                              double bond_interest_rate) const {
-    double combined_price = WaterSource::calculateNetPresentConstructionCost
+double SequentialJointTreatmentExpansion::calculateNetPresentConstructionCost(
+        int week, int utility_id, double discount_rate,
+        double& level_debt_service_payment, double bond_term,
+        double bond_interest_rate) const {
+    double construction_cost_this_expansion = WaterSource::calculateNetPresentConstructionCost
             (week, utility_id, discount_rate, level_debt_service_payment,
              bond_term, bond_interest_rate);
-    double alloc = added_treatment_capacity_fractions[utility_id];
 
-    /// Return yearly payments proportional to treatment allocation.
-    level_debt_service_payment *= alloc;
-
-    if (std::isnan(combined_price * alloc))
+    if (std::isnan(construction_cost_this_expansion))
         __throw_runtime_error("NPV calc error SJTE.");
 
     /// Return net present cost proportional to treatment allocation.
-    return combined_price * alloc;
+    return construction_cost_this_expansion;
+}
+
+bool SequentialJointTreatmentExpansion::skipConstruction() const {
+    return sequential_treatment_capacity[0][expansion_sequence_id] == 0.;
 }

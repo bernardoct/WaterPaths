@@ -330,20 +330,12 @@ void AllocatedReservoir::addCapacity(double capacity) {
  * @param allocated_fraction_of_total_capacity
  * @param utility_id
  */
-void AllocatedReservoir::addTreatmentCapacity(
-        const double added_plant_treatment_capacity,
-        double allocated_fraction_of_total_capacity,
-        int utility_id) {
-    WaterSource::addTreatmentCapacity(
-            added_plant_treatment_capacity *
-            allocated_fraction_of_total_capacity,
-            allocated_fraction_of_total_capacity,
-            utility_id);
+void AllocatedReservoir::addTreatmentCapacity(const double added_plant_treatment_capacity, int utility_id) {
+    WaterSource::addTreatmentCapacity(added_plant_treatment_capacity, utility_id);
 
     /// Add capacity to respective treatment allocation.
     allocated_treatment_capacities[utility_id] +=
-            added_plant_treatment_capacity *
-            allocated_fraction_of_total_capacity;
+            added_plant_treatment_capacity;
 
     /// Update treatment allocation fractions based on new allocated amounts
     /// and new total treatment capacity.

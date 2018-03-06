@@ -422,8 +422,7 @@ void WaterSource::bypass(int week, double total_upstream_inflow) {
 double WaterSource::calculateNetPresentConstructionCost(
         int week, int utility_id, double discount_rate,
         double& level_debt_service_payment, double bond_term,
-        double bond_interest_rate)
-const {
+        double bond_interest_rate) const {
     double rate = bond_interest_rate / BOND_INTEREST_PAYMENTS_PER_YEAR;
     double principal = construction_cost_of_capital *
                        (allocated_fractions.empty() ? 1.: allocated_fractions[utility_id]);
@@ -478,10 +477,7 @@ void WaterSource::addCapacity(double capacity) {
     WaterSource::capacity += capacity;
 }
 
-void WaterSource::addTreatmentCapacity(
-        const double added_treatment_capacity,
-        double allocations_added_treatment_capacity,
-        int utility_id) {
+void WaterSource::addTreatmentCapacity(const double added_treatment_capacity, int utility_id) {
     total_treatment_capacity += added_treatment_capacity;
 }
 
@@ -672,4 +668,8 @@ double WaterSource::getConstruction_cost_of_capital() const {
 
 void WaterSource::setConstruction_cost_of_capital(double construction_cost_of_capital) {
     WaterSource::construction_cost_of_capital = construction_cost_of_capital;
+}
+
+bool WaterSource::skipConstruction() const {
+    return false;
 }

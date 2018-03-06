@@ -10,9 +10,10 @@
 
 class SequentialJointTreatmentExpansion : public WaterSource {
 private:
+
     double total_treatment_capacity;
-    vector<double> max_sequential_added_capacity;
-    vector<double> max_sequential_added_construction_cost;
+    vector<vector<double>> sequential_treatment_capacity;
+    vector<vector<double>> sequential_cost;
 
 public:
     const int expansion_sequence_id;
@@ -30,13 +31,11 @@ public:
             const char *name, const int id, const int parent_reservoir_ID,
             const int expansion_sequence_id,
             double total_treatment_capacity,
-            const vector<double>& added_treatment_capacity_fractions,
-            vector<double>& max_sequential_added_capacity,
-            vector<double>& max_sequential_added_construction_cost,
+            vector<vector<double>>& sequential_treatment_capacity,
+            vector<vector<double>>& sequential_cost,
             const double construction_rof_or_demand,
             const vector<double> &construction_time_range,
-            double permitting_period,
-            double construction_cost);
+            double permitting_period);
 
     SequentialJointTreatmentExpansion(
             const SequentialJointTreatmentExpansion &joint_water_treatment_plant);
@@ -53,17 +52,7 @@ public:
 
     double implementTreatmentCapacity(int utility_id);
 
-    const vector<double>& getMax_sequential_added_capacity() const;
-
-    void setMax_sequential_added_capacity(
-            const vector<double> &max_sequential_added_capacity);
-
-    const vector<double>& getMax_sequential_added_construction_cost() const;
-
-    void setMax_sequential_added_construction_cost(
-            const vector<double> &max_sequential_added_construction_cost);
-
-    double payConstructionCost(int utility_id);
+    double calculateConstructionCost(int utility_id);
 
     double calculateNetPresentConstructionCost(
             int week, int utility_id, double discount_rate,
@@ -71,6 +60,8 @@ public:
             double bond_interest_rate) const override;
 
     virtual ~SequentialJointTreatmentExpansion();
+
+    bool skipConstruction() const override;
 };
 
 

@@ -28,6 +28,7 @@ private:
     vector<double> waste_water_discharge;
     vector<double> unfulfilled_demand;
     vector<double> net_stream_inflow;
+    vector<double> total_treatment_capacity;
     vector<vector<int>> pathways;
     const Utility *utility;
 

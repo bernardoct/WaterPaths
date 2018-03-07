@@ -484,57 +484,28 @@ void Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
     // the capacity for both is relative to current conditions - if Lake Michie is expanded small it will gain 2.5BG,
     // and a high expansion will provide 7.7BG more water than current. if small expansion happens, followed by a large
     // expansion, the maximum capacity through expansion is 7.7BG, NOT 2.5BG + 7.7BG.
-    Reservoir little_river_reservoir("Little River Reservoir (Raleigh)", 7,
-                                     catchment_little_river_raleigh,
-                                     3700.0,
-                                     ILLIMITED_TREATMENT_CAPACITY,
-                                     evaporation_little_river,
-//                                     &little_river_storage_area);
-                                     &little_river_storage_area,
-                                     city_infrastructure_rof_triggers[3],
-                                     construction_time_interval,
-                                     17 *
-                                     WEEKS_IN_YEAR,
-                                     263.0);
+    Reservoir little_river_reservoir("Little River Reservoir (Raleigh)", 7, catchment_little_river_raleigh, 3700.0,
+                                     ILLIMITED_TREATMENT_CAPACITY, evaporation_little_river, &little_river_storage_area,
+                                     construction_time_interval, 17 * WEEKS_IN_YEAR, 263.0);
 //    auto it7 = std::find(rof_triggered_infra_order_raleigh.begin(),
 //                         rof_triggered_infra_order_raleigh.end(), 7);
 //    rof_triggered_infra_order_raleigh.erase(it7);
-    Quarry richland_creek_quarry("Richland Creek Quarry", 8,
-                                 gage_clayton,
-                                 4000.0,
-                                 ILLIMITED_TREATMENT_CAPACITY,
-                                 evaporation_falls_lake,
-                                 100.,
-                                 city_infrastructure_rof_triggers[3],
-                                 construction_time_interval,
-                                 17 *
-                                 WEEKS_IN_YEAR,
-                                 400.0,
+    Quarry richland_creek_quarry("Richland Creek Quarry", 8, gage_clayton, 4000.0, ILLIMITED_TREATMENT_CAPACITY,
+                                 evaporation_falls_lake, 100., construction_time_interval, 17 *
+                                                                                           WEEKS_IN_YEAR, 400.0,
                                  50. * 7);
     // diversions to Richland Creek Quarry based on ability to meet downstream flow target at Clayton, NC
 //    auto it8 = std::find(rof_triggered_infra_order_raleigh.begin(),
 //                         rof_triggered_infra_order_raleigh.end(), 8);
 //    rof_triggered_infra_order_raleigh.erase(it8);
 
-    Quarry teer_quarry("Teer Quarry",
-                       9,
-                       vector<Catchment *>(),
-                       1315.0,
-                       ILLIMITED_TREATMENT_CAPACITY,
-                       evaporation_falls_lake,
-                       &teer_storage_area,
-                       city_infrastructure_rof_triggers[1],
-                       construction_time_interval,
-                       7 *
-                       WEEKS_IN_YEAR,
-                       22.6,
+    Quarry teer_quarry("Teer Quarry", 9, vector<Catchment *>(), 1315.0, ILLIMITED_TREATMENT_CAPACITY,
+                       evaporation_falls_lake, &teer_storage_area, construction_time_interval, 7 *
+                                                                                               WEEKS_IN_YEAR, 22.6,
                        15 * 7); //FIXME: MAX PUMPING CAPACITY?
     //Reservoir rNeuseRiverIntake("rNeuseRiverIntake", 10, 0, catchment_flat, 16.0, 99999, city_infrastructure_rof_triggers[3], construction_time_interval, 5000, 20, 0.05);
-    Intake neuse_river_intake("Neuse River Intake", 10, catchment_flat, 16 * 7,
-                              city_infrastructure_rof_triggers[3],
-                              construction_time_interval,
-                              17 * WEEKS_IN_YEAR,
-                              225.5);
+    Intake neuse_river_intake("Neuse River Intake", 10, catchment_flat, 16 * 7, construction_time_interval,
+                              17 * WEEKS_IN_YEAR, 225.5);
     auto it10 = std::find(rof_triggered_infra_order_raleigh.begin(),
                          rof_triggered_infra_order_raleigh.end(), 10);
     rof_triggered_infra_order_raleigh.erase(it10);
@@ -546,73 +517,24 @@ void Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
             (fl_supply_capacity + falls_lake_reallocation) /
             fl_storage_capacity,
             (fl_wq_capacity - falls_lake_reallocation) / fl_storage_capacity};
-    Relocation fl_reallocation("Falls Lake Reallocation",
-                               17,
-                               1,
-                               &fl_relocation_fractions,
-                               &fl_allocations_ids,
-                               city_infrastructure_rof_triggers[3],
-                               construction_time_interval,
-                               12 * WEEKS_IN_YEAR,
-                               68.2);
-    ReservoirExpansion ccr_expansion("Cane Creek Reservoir Expansion",
-                                     24,
-                                     4,
-                                     3000.0,
-                                     city_infrastructure_rof_triggers[2],
-                                     construction_time_interval,
-                                     17 * WEEKS_IN_YEAR,
-                                     127.0);
-    ReservoirExpansion low_sq_expansion("Low Stone Quarry Expansion", 12, 3,
-                                        1500.0,
-                                        city_infrastructure_rof_triggers[2],
-                                        construction_time_interval,
-                                        23 * WEEKS_IN_YEAR,
-                                        1.4);
-    ReservoirExpansion high_sq_expansion("High Stone Quarry Expansion", 13, 3,
-                                         2200.0,
-                                         city_infrastructure_rof_triggers[2],
-                                         construction_time_interval,
-                                         23 * WEEKS_IN_YEAR,
-                                         64.6);
-    ReservoirExpansion univ_lake_expansion("University Lake Expansion",
-                                           14,
-                                           5,
-                                           2550.0,
-                                           city_infrastructure_rof_triggers[2],
-                                           construction_time_interval,
-                                           17 * WEEKS_IN_YEAR,
-                                           107.0);
-    ReservoirExpansion low_michie_expansion("Low Lake Michie Expansion",
-                                            15,
-                                            0,
-                                            added_storage_michie_expansion_low,
-                                            city_infrastructure_rof_triggers[1],
-                                            construction_time_interval,
-                                            17 * WEEKS_IN_YEAR,
-                                            158.3);
-    ReservoirExpansion high_michie_expansion("High Lake Michie Expansion",
-                                             16,
-                                             0,
-                                             added_storage_michie_expansion_high,
-                                             city_infrastructure_rof_triggers[1],
-                                             construction_time_interval,
-                                             17 * WEEKS_IN_YEAR,
-                                             203.3);
-    WaterReuse low_reclaimed("Low Reclaimed Water System",
-                             18,
-                             reclaimed_capacity_low,
-                             city_infrastructure_rof_triggers[1],
-                             construction_time_interval,
-                             7 * WEEKS_IN_YEAR,
-                             27.5);
-    WaterReuse high_reclaimed("High Reclaimed Water System",
-                              19,
-                              reclaimed_capacity_high,
-                              city_infrastructure_rof_triggers[1],
-                              construction_time_interval,
-                              7 * WEEKS_IN_YEAR,
-                              104.4);
+    Relocation fl_reallocation("Falls Lake Reallocation", 17, 1, &fl_relocation_fractions, &fl_allocations_ids,
+                               construction_time_interval, 12 * WEEKS_IN_YEAR, 68.2);
+    ReservoirExpansion ccr_expansion("Cane Creek Reservoir Expansion", 24, 4, 3000.0, construction_time_interval,
+                                     17 * WEEKS_IN_YEAR, 127.0);
+    ReservoirExpansion low_sq_expansion("Low Stone Quarry Expansion", 12, 3, 1500.0, construction_time_interval,
+                                        23 * WEEKS_IN_YEAR, 1.4);
+    ReservoirExpansion high_sq_expansion("High Stone Quarry Expansion", 13, 3, 2200.0, construction_time_interval,
+                                         23 * WEEKS_IN_YEAR, 64.6);
+    ReservoirExpansion univ_lake_expansion("University Lake Expansion", 14, 5, 2550.0, construction_time_interval,
+                                           17 * WEEKS_IN_YEAR, 107.0);
+    ReservoirExpansion low_michie_expansion("Low Lake Michie Expansion", 15, 0, added_storage_michie_expansion_low,
+                                            construction_time_interval, 17 * WEEKS_IN_YEAR, 158.3);
+    ReservoirExpansion high_michie_expansion("High Lake Michie Expansion", 16, 0, added_storage_michie_expansion_high,
+                                             construction_time_interval, 17 * WEEKS_IN_YEAR, 203.3);
+    WaterReuse low_reclaimed("Low Reclaimed Water System", 18, reclaimed_capacity_low, construction_time_interval,
+                             7 * WEEKS_IN_YEAR, 27.5);
+    WaterReuse high_reclaimed("High Reclaimed Water System", 19, reclaimed_capacity_high, construction_time_interval,
+                              7 * WEEKS_IN_YEAR, 104.4);
 
     WEEKS_IN_YEAR = Constants::WEEKS_IN_YEAR;
 
@@ -624,62 +546,45 @@ void Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
              0.};
     vector<double> cary_upgrades_treatment_capacity_fractions = {0., 0., 1., 0., 0.};
 
-    vector<vector<double>> sequential_treatment_capacity = {
-            {33 * 7 * western_wake_treatment_plant_owasa_frac, (54 * 7 - 33 * 7) * western_wake_treatment_plant_owasa_frac},
-            {33 * 7 * western_wake_treatment_frac_durham, (54 * 7 - 33 * 7) * western_wake_treatment_frac_durham},
-            {0., 0.},
-            {33 * 7 * western_wake_treatment_plant_raleigh_frac, (54 * 7 - 33 * 7) * western_wake_treatment_plant_raleigh_frac}
+    vector<double> capacities_wjlwtp_upgrade_1 = {
+            33 * 7 * western_wake_treatment_plant_owasa_frac,
+            33 * 7 * western_wake_treatment_frac_durham,
+            0.,
+            33 * 7 * western_wake_treatment_plant_raleigh_frac,
     };
-    vector<vector<double>> sequential_cost = {
-            {243.3 * western_wake_treatment_plant_owasa_frac, (316.8 - 243.3) * western_wake_treatment_plant_owasa_frac},
-            {243.3 * western_wake_treatment_frac_durham, (316.8 - 243.3) * western_wake_treatment_frac_durham},
-            {0., 0.},
-            {243.3 * western_wake_treatment_plant_raleigh_frac, (316.8 - 243.3) * western_wake_treatment_plant_raleigh_frac}
+    vector<double> cost_wjlwtp_upgrade_1 = {
+            243.3 * western_wake_treatment_plant_owasa_frac,
+            243.3 * western_wake_treatment_frac_durham,
+            0.,
+            243.3 * western_wake_treatment_plant_raleigh_frac,
     };
-    SequentialJointTreatmentExpansion low_wjlwtp("Low WJLWTP",
-                                                 20,
-                                                 6,
-                                                 0,
-                                                 33 * 7,
-                                                 sequential_treatment_capacity,
-                                                 sequential_cost,
-                                                 city_infrastructure_rof_triggers[1],
-                                                 construction_time_interval,
-                                                 12 * WEEKS_IN_YEAR);
-    SequentialJointTreatmentExpansion high_wjlwtp("High WJLWTP",
-                                                  21,
-                                                  6,
-                                                  1,
-                                                  54 * 7,
-                                                  sequential_treatment_capacity,
-                                                  sequential_cost,
-                                                  city_infrastructure_rof_triggers[1],
-                                                  construction_time_interval,
-                                                  12 * WEEKS_IN_YEAR);
-    SequentialJointTreatmentExpansion caryWtpUpgrade1("Cary WTP upgrade 1",
-                                                      22,
-                                                      6,
-                                                      56, // (72*7 - 448 = 56)
-                                                      cary_upgrades_treatment_capacity_fractions,
-                                                      caryupgrades_2 * 7,
-                                                      construction_time_interval,
-                                                      NONE,
-                                                      243. / 2);
-    SequentialJointTreatmentExpansion caryWtpUpgrade2("Cary WTP upgrade 2",
-                                                      23,
-                                                      6,
-                                                      56, // (7*80 - 72*7 = 56)
-                                                      cary_upgrades_treatment_capacity_fractions,
-                                                      caryupgrades_3 * 7,
-                                                      construction_time_interval,
-                                                      NONE,
-                                                      316.8 / 2);
+    vector<double> capacities_wjlwtp_upgrade_2 = {
+            (54 * 7 - 33 * 7) * western_wake_treatment_plant_owasa_frac,
+            (54 * 7 - 33 * 7) * western_wake_treatment_frac_durham,
+            0.,
+            (54 * 7 - 33 * 7) * western_wake_treatment_plant_raleigh_frac
+    };
+    vector<double> cost_wjlwtp_upgrade_2 = {
+            (316.8 - 243.3) * western_wake_treatment_plant_owasa_frac,
+            (316.8 - 243.3) * western_wake_treatment_frac_durham,
+            0.,
+            (316.8 - 243.3) * western_wake_treatment_plant_raleigh_frac
+    };
+    SequentialJointTreatmentExpansion low_wjlwtp("Low WJLWTP", 20, 6, 0, {20, 21}, capacities_wjlwtp_upgrade_1,
+                                                 cost_wjlwtp_upgrade_1, construction_time_interval, 12 * WEEKS_IN_YEAR);
+    SequentialJointTreatmentExpansion high_wjlwtp("High WJLWTP", 21, 6, 1, {20, 21}, capacities_wjlwtp_upgrade_2,
+                                                  cost_wjlwtp_upgrade_2, construction_time_interval, 12 * WEEKS_IN_YEAR);
+    vector<double> capacity_cary_wtp_upgrades = {0, 0, 56, 0};
+    vector<double> cost_caty_wtp_upgrades = {0, 0, 243. / 2, 0};
+    SequentialJointTreatmentExpansion caryWtpUpgrade1("Cary WTP upgrade 1", 22, 6, 0, {22, 23},
+                                                      capacity_cary_wtp_upgrades, cost_caty_wtp_upgrades,
+                                                      construction_time_interval, NONE);
+    SequentialJointTreatmentExpansion caryWtpUpgrade2("Cary WTP upgrade 2", 23, 6, 1, {22, 23},
+                                                      capacity_cary_wtp_upgrades, cost_caty_wtp_upgrades,
+                                                      construction_time_interval, NONE);
 
-    Reservoir dummy_endpoint("Dummy Node", 11, vector<Catchment *>(), 1., 0,
-                             evaporation_durham, 1, 1,
-                             construction_time_interval,
-                             0,
-                             0);
+    Reservoir dummy_endpoint("Dummy Node", 11, vector<Catchment *>(), 1., 0, evaporation_durham, 1,
+                             construction_time_interval, 0, 0);
 
     vector<WaterSource *> water_sources;
     water_sources.push_back(&durham_reservoirs);

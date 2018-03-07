@@ -11,12 +11,7 @@
 Intake::Intake(
         const char *name, const int id, const vector<Catchment *> &catchments,
         const double max_treatment_capacity)
-        : WaterSource(name,
-                      id,
-                      catchments,
-                      NONE,
-                      max_treatment_capacity,
-                      INTAKE) {
+        : WaterSource(name, id, catchments, NONE, vector<int>(), max_treatment_capacity, INTAKE) {
 
     /// Update total catchment inflow, demand, and available water volume for week 0;
 //    upstream_catchment_inflow = 0;
@@ -28,13 +23,10 @@ Intake::Intake(
 //    stored_volume = upstream_catchment_inflow - min_environmental_outflow;
 }
 
-Intake::Intake(
-        const char *name, const int id, const vector<Catchment *> &catchments,
-        const double raw_water_main_capacity,
-        const double construction_rof_or_demand,
-        const vector<double> construction_time_range, double permitting_period,
-        double construction_npv_cost_of_capital) :
-        WaterSource(name, id, catchments, NONE, raw_water_main_capacity, INTAKE, construction_time_range,
+Intake::Intake(const char *name, const int id, const vector<Catchment *> &catchments,
+               const double raw_water_main_capacity, const vector<double> construction_time_range,
+               double permitting_period, double construction_npv_cost_of_capital) :
+        WaterSource(name, id, catchments, NONE, raw_water_main_capacity, vector<int>(), INTAKE, construction_time_range,
                     permitting_period, construction_npv_cost_of_capital) {
 
 //    /// Update total catchment inflow, total_demand, and available water volume for week 0;

@@ -19,14 +19,9 @@ public:
             const vector<Catchment *> &catchments,
             const double max_treatment_capacity);
 
-    Intake(
-            const char *name, const int id,
-            const vector<Catchment *> &catchments,
-            const double raw_water_main_capacity,
-            const double construction_rof_or_demand,
-            const vector<double> construction_time_range,
-            double permitting_period,
-            double construction_npv_cost_of_capital);
+    Intake(const char *name, const int id, const vector<Catchment *> &catchments,
+               const double raw_water_main_capacity, const vector<double> construction_time_range,
+               double permitting_period, double construction_npv_cost_of_capital);
 
     Intake(const Intake &intake);
 

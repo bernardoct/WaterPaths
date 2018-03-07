@@ -5,36 +5,31 @@
 #include <numeric>
 #include "SequentialJointTreatmentExpansion.h"
 
-SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
-        const char *name, const int id, const int parent_reservoir_ID,
-        double total_treatment_capacity,
-        const vector<double>& added_treatment_capacity_fractions,
-        const double construction_rof_or_demand,
-        const vector<double> &construction_time_range, double permitting_period,
-        double construction_cost)
-        : WaterSource(name, id, vector<Catchment *>(), NONE, NON_INITIALIZED, NEW_WATER_TREATMENT_PLANT,
-                      construction_time_range, permitting_period, construction_cost),
-          parent_reservoir_ID((unsigned int) parent_reservoir_ID),
-          added_treatment_capacity_fractions
-                  (added_treatment_capacity_fractions),
-          total_treatment_capacity(total_treatment_capacity),
-          expansion_sequence_id(NON_INITIALIZED) {}
-
-
-SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
-        const char *name, const int id, const int parent_reservoir_ID,
-        const int expansion_sequence_id,
-        double total_treatment_capacity,
-        vector<vector<double>>& sequential_treatment_capacity,
-        vector<vector<double>>& sequential_cost,
-        const double construction_rof_or_demand,
-        const vector<double> &construction_time_range, double permitting_period)
-        : WaterSource(name, id, vector<Catchment *>(), NONE, NON_INITIALIZED, NEW_WATER_TREATMENT_PLANT,
+/**
+ *
+ * @param name
+ * @param id
+ * @param parent_reservoir_ID
+ * @param expansion_sequence_id
+ *
+ * @param sequential_treatment_capacity
+ * @param sequential_cost
+ * @param construction_time_range
+ * @param permitting_period
+ */
+SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(const char *name, const int id,
+                                                                     const int parent_reservoir_ID,
+                                                                     const int expansion_sequence_id,
+                                                                     vector<int> connected_sources,
+                                                                     vector<double> &sequential_treatment_capacity,
+                                                                     vector<double> &sequential_cost,
+                                                                     const vector<double> &construction_time_range,
+                                                                     double permitting_period)
+        : WaterSource(name, id, vector<Catchment *>(), NONE, NON_INITIALIZED, connected_sources, NEW_WATER_TREATMENT_PLANT,
                       construction_time_range, permitting_period, NONE),
           parent_reservoir_ID((unsigned int) parent_reservoir_ID),
-          total_treatment_capacity(total_treatment_capacity),
-          sequential_treatment_capacity(sequential_treatment_capacity),
-          sequential_cost(sequential_cost),
+          added_treatment_capacities(sequential_treatment_capacity),
+          construction_costs(sequential_cost),
           expansion_sequence_id(expansion_sequence_id) {
 
     if (sequential_treatment_capacity.empty())
@@ -58,10 +53,9 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
                 joint_water_treatment_plant.total_treatment_capacity),
         expansion_sequence_id(
                 joint_water_treatment_plant.expansion_sequence_id),
-        sequential_treatment_capacity(
-                joint_water_treatment_plant.sequential_treatment_capacity),
-        sequential_cost(
-                joint_water_treatment_plant.sequential_cost) {}
+        added_treatment_capacities(joint_water_treatment_plant.added_treatment_capacities),
+        construction_costs(joint_water_treatment_plant.construction_costs) {
+}
 
 /**
  * Copy assignment operator
@@ -91,20 +85,7 @@ void SequentialJointTreatmentExpansion::applyContinuity(int week, double upstrea
  */
 double
 SequentialJointTreatmentExpansion::implementTreatmentCapacity(int utility_id) {
-    if (!sequential_treatment_capacity.empty()) {
-        /// Build capacity of current and previous expansion stages.
-        double capacity_to_build = accumulate(sequential_treatment_capacity[utility_id].begin(),
-                                              sequential_treatment_capacity[utility_id].begin() +
-                                              expansion_sequence_id + 1, 0.);
-        /// Set capacity to be built of previous stages to 0 so that they are not built again.
-        for (int i = 0; i <= expansion_sequence_id; ++i) {
-            sequential_treatment_capacity[utility_id][i] = 0.;
-        }
-
-        return capacity_to_build;
-    } else {
-        return total_treatment_capacity;
-    }
+    return added_treatment_capacities[utility_id];
 }
 
 
@@ -115,20 +96,8 @@ SequentialJointTreatmentExpansion::implementTreatmentCapacity(int utility_id) {
  * @return
  */
 double SequentialJointTreatmentExpansion::calculateConstructionCost(int utility_id) {
-    if (!sequential_cost.empty()) {
-        /// Pay for capacity of current and previous expansion stages.
-        double price_to_pay = accumulate(sequential_cost[utility_id].begin(),
-                                         sequential_cost[utility_id].begin() +
-                                         expansion_sequence_id + 1, 0.);
-        /// Set cost of previous stages to 0 so that they are not built again.
-        for (int i = 0; i <= expansion_sequence_id; ++i) {
-            sequential_cost[utility_id][i] = 0.;
-        }
-
-        construction_cost_of_capital = price_to_pay;
-        return price_to_pay;
-    } else
-        return construction_cost_of_capital;
+    construction_cost_of_capital = construction_costs[utility_id];;
+    return construction_costs[utility_id];
 }
 
 double SequentialJointTreatmentExpansion::calculateNetPresentConstructionCost(
@@ -144,8 +113,4 @@ double SequentialJointTreatmentExpansion::calculateNetPresentConstructionCost(
 
     /// Return net present cost proportional to treatment allocation.
     return construction_cost_this_expansion;
-}
-
-bool SequentialJointTreatmentExpansion::skipConstruction() const {
-    return sequential_treatment_capacity[0][expansion_sequence_id] == 0.;
 }

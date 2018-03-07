@@ -20,13 +20,13 @@ using namespace std;
  * @param treatment_capacity
  * @param source_type
  */
-WaterSource::WaterSource(
-        const char *name, const int id,
-        const vector<Catchment *> &catchments, const double capacity,
-        double treatment_capacity, const int source_type)
+WaterSource::WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
+                         const double capacity, vector<int> connected_sources, double treatment_capacity,
+                         const int source_type)
         : name(name), capacity(capacity),
           online(ONLINE), available_volume(capacity), id(id),
           total_treatment_capacity(treatment_capacity),
+          built_in_sequence(connected_sources),
           source_type(source_type),
           construction_time(NON_INITIALIZED),
           construction_cost_of_capital(NON_INITIALIZED),
@@ -51,12 +51,13 @@ WaterSource::WaterSource(
  * @param construction_cost_of_capital
  */
 WaterSource::WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
-                         const double capacity, double treatment_capacity, const int source_type,
-                         const vector<double> construction_time_range, double permitting_period,
-                         double construction_cost_of_capital)
+                         const double capacity, double treatment_capacity, vector<int> connected_sources,
+                         const int source_type, const vector<double> construction_time_range,
+                         double permitting_period, double construction_cost_of_capital)
         : name(name), capacity(capacity),
           online(OFFLINE), available_volume(capacity), id(id),
           total_treatment_capacity(treatment_capacity),
+          built_in_sequence(connected_sources),
           source_type(source_type),
           construction_time(
                   construction_time_range[0] * WEEKS_IN_YEAR +
@@ -83,17 +84,15 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
  * @param treatment_capacity
  * @param source_type
  */
-WaterSource::WaterSource(
-        const char *name, const int id,
-        const vector<Catchment *> &catchments, const double capacity,
-        double treatment_capacity, const int source_type,
-        vector<double> *allocated_treatment_fractions,
-        vector<double> *allocated_fractions,
-        vector<int> *utilities_with_allocations)
+WaterSource::WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
+                         const double capacity, double treatment_capacity, vector<int> connected_sources,
+                         const int source_type, vector<double> *allocated_treatment_fractions,
+                         vector<double> *allocated_fractions, vector<int> *utilities_with_allocations)
         : name(name), capacity(capacity),
           online(ONLINE), available_volume(capacity), id(id),
           source_type(source_type),
           total_treatment_capacity(treatment_capacity),
+          built_in_sequence(connected_sources),
           construction_time(NON_INITIALIZED),
           construction_cost_of_capital(NON_INITIALIZED),
           available_allocated_volumes(),
@@ -122,13 +121,15 @@ WaterSource::WaterSource(
  * @param construction_cost_of_capital
  */
 WaterSource::WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
-                         const double capacity, double treatment_capacity, const int source_type,
-                         vector<double> *allocated_treatment_fractions, vector<double> *allocated_fractions,
-                         vector<int> *utilities_with_allocations, const vector<double> construction_time_range,
-                         double permitting_period, double construction_cost_of_capital)
+                         const double capacity, double treatment_capacity, vector<int> built_in_sequence,
+                         const int source_type, vector<double> *allocated_treatment_fractions,
+                         vector<double> *allocated_fractions, vector<int> *utilities_with_allocations,
+                         const vector<double> construction_time_range, double permitting_period,
+                         double construction_cost_of_capital)
         : name(name), capacity(capacity),
           online(OFFLINE), available_volume(capacity), id(id),
           total_treatment_capacity(treatment_capacity),
+          built_in_sequence(built_in_sequence),
           source_type(source_type),
           available_allocated_volumes(),
           utilities_with_allocations(utilities_with_allocations),
@@ -194,7 +195,8 @@ WaterSource::WaterSource(const WaterSource &water_source) :
         utilities_with_allocations(water_source.utilities_with_allocations),
         permitting_time(water_source.permitting_time),
         highest_alloc_id(water_source.highest_alloc_id),
-        supply_allocated_fractions(water_source.supply_allocated_fractions) {
+        supply_allocated_fractions(water_source.supply_allocated_fractions),
+        built_in_sequence(water_source.built_in_sequence) {
 
     if (water_source.wq_pool_id != NON_INITIALIZED) {
         wq_pool_id = water_source.wq_pool_id;
@@ -481,6 +483,16 @@ void WaterSource::addTreatmentCapacity(const double added_treatment_capacity, in
     total_treatment_capacity += added_treatment_capacity;
 }
 
+bool WaterSource::skipConstruction(int utility_id) const {
+    return false;
+}
+
+void WaterSource::connectSource(WaterSource *water_source) {
+    char error[1024];
+    sprintf(error, "Water source %d is not a connecting type.\n", id);
+    throw_with_nested(invalid_argument(error));
+}
+
 /**
  * Set inflows, evaporation and rdm values for water source for a given utility r
  * @param r
@@ -670,6 +682,6 @@ void WaterSource::setConstruction_cost_of_capital(double construction_cost_of_ca
     WaterSource::construction_cost_of_capital = construction_cost_of_capital;
 }
 
-bool WaterSource::skipConstruction() const {
-    return false;
+const vector<int> &WaterSource::getBuilt_in_sequence() const {
+    return built_in_sequence;
 }

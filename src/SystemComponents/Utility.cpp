@@ -734,7 +734,7 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
         /// Selects next water source whose permitting period is passed.
         int next_construction = NON_INITIALIZED;
         for (int ws : rof_infra_construction_order) {
-            if (week > water_sources[ws]->getPermitting_period() && !water_sources[ws]->skipConstruction()) {
+            if (week > water_sources[ws]->getPermitting_period() && !water_sources[ws]->skipConstruction(id)) {
                 next_construction = ws;
                 break;
             }
@@ -789,25 +789,54 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
         /// could be made more efficient but it is not a bottle neck of model.
         for (int ws = 0; ws < under_construction.size(); ++ws)
             if (under_construction[ws] && week > construction_end_date[ws]) {
-                setWaterSourceOnline((unsigned int) ws, week);
+                vector<int> set_online_now;
 
-                /// Record ID of and when infrastructure option construction was
-                /// completed. (utility_id, week, new source id)
-                infra_built_last_week = {id, week, ws};
+                /// Check if water source to be set online is part of a series of expansions or constructions
+                /// That depend on previous water sources being built, in which case it's as if all of them had
+                /// been constructed at the same time. The total cost of building all at the same time is approximated
+                /// by the summation of their individual costs, and the construction time is approximated as that of the
+                /// source that was called -- both can be pretty rough approximations at times, so any improvement here
+                /// is welcome.
+                if (water_sources[ws]->getBuilt_in_sequence().empty()) {
+                    set_online_now.push_back(ws);
+                } else {
+                    for (const int &id_build : water_sources[ws]->getBuilt_in_sequence()) {
+                        /// Check if previous source/expansion is yet to be built.
+                        bool yet_to_be_built = find(rof_infra_construction_order.begin(),
+                                                         rof_infra_construction_order.end(), id_build)
+                                                    != rof_infra_construction_order.end() ||
+                                                    find(demand_infra_construction_order.begin(),
+                                                         demand_infra_construction_order.end(), id_build)
+                                                    != demand_infra_construction_order.end();
+                        if (yet_to_be_built)
+                            set_online_now.push_back(id_build);
+                        if (id_build == ws)
+                            break;
+                    }
+                }
 
-                /// Erase infrastructure option from both vectors of
-                /// infrastructure to be built.
-                if (!rof_infra_construction_order.empty())
-                    Utils::removeIntFromVector(rof_infra_construction_order, ws);
+                /// Set online all sources that at to be set online now.
+                for (const int &wss : set_online_now) {
+                    setWaterSourceOnline((unsigned int) wss, week);
 
-                else if (!demand_infra_construction_order.empty())
-                    Utils::removeIntFromVector(demand_infra_construction_order, ws);
-                else
-                    __throw_logic_error("Infrastructure option whose construction was"
-                                                " complete is not in the demand or "
-                                                "rof triggered construction lists.");
+                    /// Record ID of and when infrastructure option construction was
+                    /// completed. (utility_id, week, new source id)
+                    infra_built_last_week = {id, week, wss};
 
-                under_construction[ws] = false;
+                    /// Erase infrastructure option from both vectors of
+                    /// infrastructure to be built.
+                    if (!rof_infra_construction_order.empty())
+                        Utils::removeIntFromVector(rof_infra_construction_order, wss);
+
+                    else if (!demand_infra_construction_order.empty())
+                        Utils::removeIntFromVector(demand_infra_construction_order, wss);
+                    else
+                        __throw_logic_error("Infrastructure option whose construction was"
+                                                    " complete is not in the demand or "
+                                                    "rof triggered construction lists.");
+
+                    under_construction[wss] = false;
+                }
             }
     }
 

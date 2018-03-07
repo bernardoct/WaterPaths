@@ -29,29 +29,16 @@ AllocatedReservoir::AllocatedReservoir(
           has_water_quality_pool(wq_pool_id != NON_INITIALIZED) {
 }
 
-AllocatedReservoir::AllocatedReservoir(
-        const char *name, const int id, const vector<Catchment *> &catchments,
-        const double capacity, const double max_treatment_capacity,
-        EvaporationSeries &evaporation_series, DataSeries *storage_area_curve,
-        const double construction_rof_or_demand,
-        const vector<double> &construction_time_range, double construction_cost,
-        vector<int> *utilities_with_allocations,
-        vector<double> *allocated_fractions, vector<double>
-        *allocated_treatment_fractions)
-        : Reservoir(name,
-                    id,
-                    catchments,
-                    capacity,
-                    max_treatment_capacity,
-                    evaporation_series,
-                    storage_area_curve,
-                    allocated_treatment_fractions,
-                    allocated_fractions,
-                    utilities_with_allocations,
-                    construction_rof_or_demand,
-                    construction_time_range,
-                    construction_cost,
-                    ALLOCATED_RESERVOIR),
+AllocatedReservoir::AllocatedReservoir(const char *name, const int id, const vector<Catchment *> &catchments,
+                                       const double capacity, const double max_treatment_capacity,
+                                       EvaporationSeries &evaporation_series, DataSeries *storage_area_curve,
+                                       const vector<double> &construction_time_range, double construction_cost,
+                                       vector<int> *utilities_with_allocations, vector<double> *allocated_fractions,
+                                       vector<double> *allocated_treatment_fractions)
+        : Reservoir(name, id, catchments, capacity, max_treatment_capacity, evaporation_series, storage_area_curve,
+                    allocated_treatment_fractions, allocated_fractions, utilities_with_allocations,
+                    construction_time_range, construction_cost, ALLOCATED_RESERVOIR,
+                    0),
           has_water_quality_pool(wq_pool_id != NON_INITIALIZED) {
 }
 
@@ -76,29 +63,15 @@ AllocatedReservoir::AllocatedReservoir(
           has_water_quality_pool(wq_pool_id != NON_INITIALIZED) {
 }
 
-AllocatedReservoir::AllocatedReservoir(
-        const char *name, const int id, const vector<Catchment *> &catchments,
-        const double capacity, const double max_treatment_capacity,
-        EvaporationSeries &evaporation_series, double storage_area,
-        const double construction_rof_or_demand,
-        const vector<double> &construction_time_range, double construction_cost,
-        vector<int> *utilities_with_allocations,
-        vector<double> *allocated_fractions, vector<double>
-        *allocated_treatment_fractions)
-        : Reservoir(name,
-                    id,
-                    catchments,
-                    capacity,
-                    max_treatment_capacity,
-                    evaporation_series,
-                    storage_area,
-                    allocated_treatment_fractions,
-                    allocated_fractions,
-                    utilities_with_allocations,
-                    construction_rof_or_demand,
-                    construction_time_range,
-                    construction_cost,
-                    ALLOCATED_RESERVOIR),
+AllocatedReservoir::AllocatedReservoir(const char *name, const int id, const vector<Catchment *> &catchments,
+                                       const double capacity, const double max_treatment_capacity,
+                                       EvaporationSeries &evaporation_series, double storage_area,
+                                       const vector<double> &construction_time_range, double construction_cost,
+                                       vector<int> *utilities_with_allocations, vector<double> *allocated_fractions,
+                                       vector<double> *allocated_treatment_fractions)
+        : Reservoir(name, id, catchments, capacity, max_treatment_capacity, evaporation_series, storage_area,
+                    allocated_treatment_fractions, allocated_fractions, utilities_with_allocations,
+                    construction_time_range, construction_cost, ALLOCATED_RESERVOIR, 0),
           has_water_quality_pool(wq_pool_id != NON_INITIALIZED) {
 }
 
@@ -118,8 +91,7 @@ AllocatedReservoir &AllocatedReservoir::operator=(
     return *this;
 };
 
-AllocatedReservoir::~AllocatedReservoir() {
-}
+AllocatedReservoir::~AllocatedReservoir() = default;
 
 
 void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow,

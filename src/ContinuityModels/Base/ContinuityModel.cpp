@@ -49,8 +49,7 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
 
     /// Create table showing which utilities draw water from each water source.
     utilities_to_water_sources.assign(water_sources.size(), vector<int>(0));
-    water_sources_online_to_utilities.assign(water_sources.size(),
-                                             vector<int>(0));
+    water_sources_online_to_utilities.assign(water_sources.size(), vector<int>(0));
     for (int u = 0; u < utilities.size(); ++u) {
         for (const int &ws : water_sources_to_utilities[u]) {
             utilities_to_water_sources[ws].push_back(u);

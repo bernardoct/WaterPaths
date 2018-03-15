@@ -160,10 +160,10 @@ void UtilitiesDataCollector::collect_data() {
     vector<int> infra_built;
 
     combined_storage.push_back(utility->getTotal_available_volume());
-    //lt_rof.push_back(utility->getLong_term_risk_of_failure());
-    //st_rof.push_back(utility->getRisk_of_failure());
-    //unrestricted_demand.push_back(utility->getUnrestrictedDemand());
-    //restricted_demand.push_back(utility->getRestrictedDemand());
+    lt_rof.push_back(utility->getLong_term_risk_of_failure());
+    st_rof.push_back(utility->getRisk_of_failure());
+    unrestricted_demand.push_back(utility->getUnrestrictedDemand());
+    restricted_demand.push_back(utility->getRestrictedDemand());
     contingency_fund_size.push_back(utility->getContingency_fund());
     net_present_infrastructure_cost.push_back(utility->getInfrastructure_net_present_cost());
     gross_revenues.push_back(utility->getGrossRevenue());
@@ -173,10 +173,10 @@ void UtilitiesDataCollector::collect_data() {
     insurance_contract_cost.push_back(utility->getInsurance_purchase());
     insurance_payout.push_back(utility->getInsurance_payout());
     capacity.push_back(utility->getTotal_storage_capacity());
-    //waste_water_discharge.push_back(utility->getWaste_water_discharge());
-    //unfulfilled_demand.push_back(utility->getUnfulfilled_demand());
-    //net_stream_inflow.push_back(utility->getNet_stream_inflow());
-    //total_treatment_capacity.push_back(utility->getTotal_treatment_capacity());
+    waste_water_discharge.push_back(utility->getWaste_water_discharge());
+    unfulfilled_demand.push_back(utility->getUnfulfilled_demand());
+    net_stream_inflow.push_back(utility->getNet_stream_inflow());
+    total_treatment_capacity.push_back(utility->getTotal_treatment_capacity());
 
 //    checkForNans();
 

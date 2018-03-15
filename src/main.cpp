@@ -23,7 +23,7 @@ int failures = 0;
 
 void eval(double* vars, double* objs, double* consts) {
     failures += trianglePtr->functionEvaluation(vars, objs, consts);
-    //printf("%f %f %f\n", objs[0], objs[1], objs[2]);
+    trianglePtr->destroyDataCollector();
 }
 
 int main(int argc, char *argv[]) {
@@ -130,12 +130,13 @@ int main(int argc, char *argv[]) {
             case 'W': water_sources_rdm_file = optarg; break;
             case 'I': inflows_evap_directory_suffix = optarg; break;
             case 'C': import_export_rof_table = atoi(optarg); break;
-	    case 'O': rof_tables_directory = optarg; break;
+	        case 'O': rof_tables_directory = optarg; break;
             default:
                 fprintf(stderr, "Unknown option (-%c)\n", c);
                 return -1;
         }
     }
+
 
     Triangle triangle(n_weeks, import_export_rof_table);
 
@@ -230,7 +231,7 @@ int main(int argc, char *argv[]) {
                 triangle.functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
                 if (import_export_rof_table != EXPORT_ROF_TABLES) {
                     triangle.calculateAndPrintObjectives(true);
-                    triangle.printTimeSeriesAndPathways();
+//                    triangle.printTimeSeriesAndPathways();
                     triangle.destroyDataCollector();
                 }
             } else {
@@ -280,20 +281,16 @@ int main(int argc, char *argv[]) {
 
         return 0;
     } else {
-#ifdef  PARALLEL
-	if (seed > -1) {
-	        srand(seed);
-	}
 
+#ifdef  PARALLEL
         trianglePtr = &triangle;
         printf("Running Borg with:\n"
             "n_islands: %lu\n"
             "nfe: %lu\n"
             "output freq.: %lu\n"
             "n_weeks: %lu\n"
-            "n_realizations: %lu\n" 
-	    "seed:%d\n",
-            n_islands, nfe, output_frequency, n_weeks, n_realizations, seed);
+            "n_realizations: %lu\n\n",
+            n_islands, nfe, output_frequency, n_weeks, n_realizations);
 
 //        cout << "Defining problem" << endl;
         BORG_Algorithm_ms_startup(&argc, &argv);
@@ -309,6 +306,10 @@ int main(int argc, char *argv[]) {
 
         // Set all the parameter bounds and epsilons
         setProblemDefinition(problem);
+
+	if (seed > -1) {
+	        srand(seed);
+	}
         char outputFilename[256];
         char runtime[256];
         FILE* outputFile = nullptr;

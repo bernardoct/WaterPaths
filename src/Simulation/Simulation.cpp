@@ -314,12 +314,12 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
             /// Export ROF tables for future simulations of the same problem with the same states-of-the-world.
             if (import_export_rof_tables == EXPORT_ROF_TABLES)
                 rof_models[r]->printROFTable(rof_tables_folder);
-// #pragma omp critical
-// {
-//             double end = omp_get_wtime();
-//             std::cout << "Realization " << realizations_to_run[r] << ": "
-//                       << end - start << std::endl;
-// }
+#pragma omp critical
+{
+            double end = omp_get_wtime();
+            std::cout << "Realization " << realizations_to_run[r] << ": "
+                      << end - start << std::endl;
+}
 
             delete realization_models[r];
             delete rof_models[r];

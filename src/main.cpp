@@ -19,11 +19,10 @@ using namespace Constants;
 using namespace Solutions;
 
 Triangle* trianglePtr;
-int failures = 0;
 
 void eval(double* vars, double* objs, double* consts) {
-    failures += trianglePtr->functionEvaluation(vars, objs, consts);
-    //printf("%f %f %f\n", objs[0], objs[1], objs[2]);
+    trianglePtr->functionEvaluation(vars, objs, consts);
+    trianglePtr->destroyDataCollector();
 }
 
 int main(int argc, char *argv[]) {
@@ -59,7 +58,7 @@ int main(int argc, char *argv[]) {
     unsigned long n_islands = 2;
     unsigned long nfe = 1000;
     unsigned long output_frequency = 200;
-    int seed = -1;
+    int seed = 0;
     int rdm_no = -1;
     vector<vector<int>> realizations_to_run;
     vector<vector<double>> utilities_rdm;
@@ -281,11 +280,10 @@ int main(int argc, char *argv[]) {
 
         return 0;
     } else {
-
 #ifdef  PARALLEL
         trianglePtr = &triangle;
         printf("Running Borg with:\n"
-            "n_islands: %lu\n"
+            "n_islands: %d\n"
             "nfe: %lu\n"
             "output freq.: %lu\n"
             "n_weeks: %lu\n"
@@ -307,17 +305,14 @@ int main(int argc, char *argv[]) {
         // Set all the parameter bounds and epsilons
         setProblemDefinition(problem);
 
-	if (seed > -1) {
+	if (seed > -1)
 	        srand(seed);
-	}
         char outputFilename[256];
         char runtime[256];
         FILE* outputFile = nullptr;
-        sprintf(outputFilename, "%s/TestFiles/output/NC_output_MM_S%d_N%lu.set", system_io.c_str(), seed, nfe);
-	printf("Reference set will be in %s.\n", outputFilename);
+        sprintf(outputFilename, "%c/TestFiles/output/NC_output_MM_S%lu.set", system_io.c_str(), seed);
         // output path (make sure this exists)
-        sprintf(runtime, "%s/TestFiles/output/NC_runtime_MM_S%d_N%lu_M%%d.runtime", system_io.c_str(), seed, nfe); // runtime
-	printf("Runtime files will be in %s.\n", runtime);
+        sprintf(runtime, "%c/TestFiles/output/NC_runtime_MM_S%lu_M%%d.runtime", system_io.c_str(), seed); // runtime
         // path (make sure this exists)
 
         BORG_Algorithm_output_runtime(runtime);
@@ -338,8 +333,6 @@ int main(int argc, char *argv[]) {
             BORG_Archive_destroy(result);
             fclose(outputFile);
         }
-
-	printf("Number of failed function evaluations: %d.\n", failures);
 
         BORG_Algorithm_ms_shutdown();
         BORG_Problem_destroy(problem);

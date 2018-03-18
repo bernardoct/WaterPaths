@@ -93,7 +93,7 @@ void MasterDataCollector::printUtilitiesOutputCompact(
     for (int r = 0; r < utility_collectors[0].size(); ++r) {
         std::ofstream out_stream;
         out_stream.open(output_directory + "/" + file_name + "_r"
-                        + std::to_string(r) + ".out");
+                        + std::to_string(r) + "_table.out");
 
         string line = "";
         for (vector<UtilitiesDataCollector *> p : utility_collectors)
@@ -155,7 +155,6 @@ void MasterDataCollector::printUtilitesOutputTabular(
 void MasterDataCollector::printWaterSourcesOutputCompact(
         int week_i, int week_f, string file_name) {
 
-#pragma omp parallel for
     for (int r = 0; r < water_source_collectors[0].size(); ++r) {
         std::ofstream out_stream;
         out_stream.open(output_directory + "/" + file_name + "_r"
@@ -245,31 +244,48 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name,
                         utility_restrictions.push_back(
                                 dynamic_cast<RestrictionsDataCollector *>(rp));
 
+            /// Reliability
+            double reliability = ObjectivesCalculator::calculateReliabilityObjective(u);
+            /// Restriction Frequency
+            double restriction_freq = ObjectivesCalculator::
+            calculateRestrictionFrequencyObjective(utility_restrictions);
+            /// Infrastructure NPC
+            double inf_npc = ObjectivesCalculator::
+            calculateNetPresentCostInfrastructureObjective(u);
+            /// Peak Financial Cost
+            double financial_cost = ObjectivesCalculator::
+            calculatePeakFinancialCostsObjective(u);
+            /// Worse Case Costs
+            double worse_cost = ObjectivesCalculator::calculateWorseCaseCostsObjective(u);
+
             outStream << setw(COLUMN_WIDTH) << u[0]->name
                       /// Reliability
                       << setw(COLUMN_WIDTH * 2)
                       << setprecision(COLUMN_PRECISION)
-                      << ObjectivesCalculator::calculateReliabilityObjective(u)
+                      << reliability
                       /// Restriction Frequency
                       << setw(COLUMN_WIDTH * 2)
                       << setprecision(COLUMN_PRECISION)
-                      << ObjectivesCalculator::
-                      calculateRestrictionFrequencyObjective(utility_restrictions)
+                      << restriction_freq
                       /// Infrastructure NPC
                       << setw(COLUMN_WIDTH * 2)
                       << setprecision(COLUMN_PRECISION)
-                      << ObjectivesCalculator::
-                      calculateNetPresentCostInfrastructureObjective(u)
+                      << inf_npc
                       /// Peak Financial Cost
                       << setw(COLUMN_WIDTH * 2)
                       << setprecision(COLUMN_PRECISION)
-                      << ObjectivesCalculator::
-                      calculatePeakFinancialCostsObjective(u)
+                      << financial_cost
                       /// Worse Case Costs
                       << setw(COLUMN_WIDTH * 2)
                       << setprecision(COLUMN_PRECISION)
-                      << ObjectivesCalculator::calculateWorseCaseCostsObjective(u)
+                      << worse_cost
                       << endl;
+
+            objectives.push_back(reliability);
+            objectives.push_back(restriction_freq);
+            objectives.push_back(inf_npc);
+            objectives.push_back(financial_cost);
+            objectives.push_back(worse_cost);
         }
         outStream.close();
     } else {
@@ -332,7 +348,7 @@ void MasterDataCollector::addRealization(
         vector<WaterSource *> water_sources_realization,
         vector<DroughtMitigationPolicy *> drought_mitigation_policies_realization,
         vector<Utility *> utilities_realization,
-        int r) {
+        unsigned long r) {
 
     /// If collectors vectors have not yet been initialized, initialize them.
     if (water_source_collectors.empty()) {
@@ -348,7 +364,7 @@ void MasterDataCollector::addRealization(
     /// Create utilities data collectors
     for (int u = 0; u < utilities_realization.size(); ++u) {
         utility_collectors[u].push_back(new UtilitiesDataCollector
-                                                (utilities_realization[u]));
+                                                (utilities_realization[u], r));
     }
  //   cout << "done " << r << endl;
 
@@ -359,13 +375,15 @@ void MasterDataCollector::addRealization(
             drought_mitigation_policy_collectors[dmp].push_back(
                     new RestrictionsDataCollector
                             (dynamic_cast<Restrictions *>
-                             (drought_mitigation_policies_realization[dmp])));
+                                                         (drought_mitigation_policies_realization[dmp]),
+                             r));
         else if (drought_mitigation_policies_realization[dmp]->type ==
                  TRANSFERS)
             drought_mitigation_policy_collectors[dmp].push_back(
                     new TransfersDataCollector
                             (dynamic_cast<Transfers *>
-                             (drought_mitigation_policies_realization[dmp])));
+                                                         (drought_mitigation_policies_realization[dmp]),
+                             r));
         else if (drought_mitigation_policies_realization[dmp]->type
                  == INSURANCE_STORAGE_ROF)
             drought_mitigation_policy_collectors[dmp].push_back(
@@ -381,25 +399,30 @@ void MasterDataCollector::addRealization(
         if (water_sources_realization[ws]->source_type == RESERVOIR)
             water_source_collectors[ws].push_back(
                     new ReservoirDataCollector(dynamic_cast<Reservoir *>
-                                               (water_sources_realization[ws])));
+                                                                   (water_sources_realization[ws]),
+                                               r));
         else if (water_sources_realization[ws]->source_type == INTAKE)
             water_source_collectors[ws].push_back(
                     new IntakeDataCollector(dynamic_cast<Intake *>
-                                            (water_sources_realization[ws])));
+                                                                (water_sources_realization[ws]),
+                                            r));
         else if (water_sources_realization[ws]->source_type == QUARRY)
             water_source_collectors[ws].push_back(
                     new QuaryDataCollector(dynamic_cast<Quarry *>
-                                           (water_sources_realization[ws])));
+                                                               (water_sources_realization[ws]),
+                                           r));
         else if (water_sources_realization[ws]->source_type == WATER_REUSE)
             water_source_collectors[ws].push_back(
                     new WaterReuseDataCollector(dynamic_cast<WaterReuse *>
-                                                (water_sources_realization[ws])));
+                                                                    (water_sources_realization[ws]),
+                                                r));
         else if (water_sources_realization[ws]->source_type ==
                  ALLOCATED_RESERVOIR)
             water_source_collectors[ws].push_back(
                     new AllocatedReservoirDataCollector(
                             dynamic_cast<AllocatedReservoir *>
-                            (water_sources_realization[ws])));
+                                                (water_sources_realization[ws]),
+                            r));
         else if (water_sources_realization[ws]->source_type ==
                  RESERVOIR_EXPANSION ||
                  water_sources_realization[ws]->source_type ==
@@ -416,7 +439,7 @@ void MasterDataCollector::addRealization(
     }
 }
 
-void MasterDataCollector::collectData(int r) {
+void MasterDataCollector::collectData(unsigned long r) {
 
     for (vector<UtilitiesDataCollector *> uc : utility_collectors)
         uc[r]->collect_data();

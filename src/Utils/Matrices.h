@@ -46,11 +46,11 @@ public:
 
     void setPartialData(int i, T *data, int length);
 
-    void setData(T *data, unsigned long length);
+    void setData(T *data, int length);
 
     T *getPointerToElement(int i, int j) const;
 
-    void add_to_position(int i, int j, T *data, unsigned long length);
+    void add_to_position(int i, int j, T *data, int length);
 };
 
 template<typename T>
@@ -138,7 +138,7 @@ void Matrix2D<T>::print(int i) const {
 }
 
 template<typename T>
-void Matrix2D<T>::setData(T *data, unsigned long length) {
+void Matrix2D<T>::setData(T *data, int length) {
     if (length != di_ * dj_) {
         string er = "Size of data does not match that of matrix: " +
                     to_string(length) + " vs. " + to_string(di_*dj_);
@@ -181,7 +181,7 @@ bool Matrix2D<T>::empty() {
 
 template<typename T>
 void Matrix2D<T>::add_to_position(int i, int j, T *data,
-                                  unsigned long length) {
+                                  int length) {
     int pos0 = i * dj_ + j;
     for (int p = 0; p < length; ++p) {
         data_[pos0 + p] += data[p];
@@ -210,7 +210,7 @@ public:
 
     Matrix2D<T> get2D(int ijk, char dim);
 
-    void add_to_position(int i, int j, int k, T* data, unsigned long length);
+    void add_to_position(int i, int j, int k, T* data, int length);
 
     void setPartialData(int i, int j, T *data, int length);
 
@@ -220,7 +220,7 @@ public:
 
     void print(int i) const;
 
-    void setData(T *data, unsigned long length);
+    void setData(T *data, int length);
 
     int get_i() const;
 
@@ -312,7 +312,7 @@ T Matrix3D<T>::operator()(int i, int j, int k) const {
 }
 
 template<typename T>
-void Matrix3D<T>::setData(T *data, unsigned long length) {
+void Matrix3D<T>::setData(T *data, int length) {
     if (length != di_*dj_*dk_) {
         string er = "Size of data does not match that of matrix: " +
                 to_string(length) + " vs. " + to_string(di_*dj_*dk_);
@@ -415,7 +415,7 @@ T *Matrix3D<T>::getPointerToElement(int i, int j, int k) const {
 
 template<typename T>
 void Matrix3D<T>::add_to_position(int i, int j, int k, T *data,
-                                  unsigned long length) {
+                                  int length) {
     int pos0 = i * dj_ * dk_ + j * dk_ + k;
     for (int p = 0; p < length; ++p) {
         data_[pos0 + p] += data[p];

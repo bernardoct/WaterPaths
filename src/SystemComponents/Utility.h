@@ -13,8 +13,6 @@
 #include "../Controls/WwtpDischargeRule.h"
 //#include "../Utils/Matrix3D.h"
 
-//#define DOLLARS_PER_GAL_TO_DOLLARS_PER_MMGAL 1e-6
-
 class Utility {
 private:
     vector<double> weekly_average_volumetric_price;
@@ -36,7 +34,7 @@ private:
     vector<WaterSource *> water_sources = vector<WaterSource *>(50, nullptr);
     WwtpDischargeRule wwtp_discharge_rule;
     vector<vector<double>>& demands_all_realizations;
-    unique_ptr<double[]> demand_series_realization;
+    vector<double> demand_series_realization;
     double *rdm_factors_realization;
 
     /// Drought mitigation
@@ -62,8 +60,6 @@ private:
     vector<vector<double>> debt_payment_streams;
     double infra_net_present_cost = 0;
 
-    /// Infrastructure construction
-    vector<int> under_construction_id;
     vector<int> infra_built_last_week;
     vector<int> rof_infra_construction_order;
     vector<int> demand_infra_construction_order;
@@ -174,7 +170,7 @@ public:
 
     void beginConstruction(int week, int infra_id);
 
-    void setWaterSourceOnline(unsigned int source_id);
+    void setWaterSourceOnline(unsigned int source_id, int week);
 
     double updateCurrent_debt_payment(int week);
 

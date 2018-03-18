@@ -20,9 +20,7 @@ const vector<int> &DroughtMitigationPolicy::getUtilities_ids() const {
     return utilities_ids;
 }
 
-DroughtMitigationPolicy::~DroughtMitigationPolicy() {
-//    realization_utilities.clear();
-}
+DroughtMitigationPolicy::~DroughtMitigationPolicy() {}
 
 bool DroughtMitigationPolicy::operator<(const DroughtMitigationPolicy *other) {
     return id < other->id;

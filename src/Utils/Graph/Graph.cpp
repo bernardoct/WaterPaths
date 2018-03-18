@@ -175,14 +175,14 @@ const vector<vector<double>> Graph::getContinuityMatrix() const {
 
     unsigned long n_pipes = continuity_matrix_transpose.size();
 
-    for (int i = 0; i < continuity_matrix.size(); ++i) {
-        for (int j = 0; j < continuity_matrix[0].size(); ++j) {
+    for (int i = 0; i < (int) continuity_matrix.size(); ++i) {
+        for (int j = 0; j < (int) continuity_matrix[0].size(); ++j) {
             continuity_matrix[i][j] = continuity_matrix_transpose[j][i];
         }
     }
 
-    for (int i = 0; i < continuity_matrix.size(); ++i) {
-        for (int ii = 0; ii < continuity_matrix.size(); ++ii) {
+    for (int i = 0; i < (int) continuity_matrix.size(); ++i) {
+        for (int ii = 0; ii < (int) continuity_matrix.size(); ++ii) {
             continuity_matrix[i].push_back(0);
         }
         continuity_matrix[i][n_pipes + i] = -1;

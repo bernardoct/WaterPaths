@@ -52,9 +52,9 @@ Restrictions::~Restrictions() {}
 void Restrictions::applyPolicy(int week) {
 
     current_multiplier = 1.0;
-    int stage = 0;
+    unsigned long stage = 0;
     /// Loop through restriction stage rof triggers to see which stage should be applied, if any.
-    for (int i = 0; i < stage_triggers.size(); ++i) {
+    for (unsigned long i = 0; i < stage_triggers.size(); ++i) {
         if (realization_utilities[0]->getRisk_of_failure() > stage_triggers[i]) {
             /// Demand multiplier to be applied, based on the rofs.
             current_multiplier = stage_multipliers[i];
@@ -103,11 +103,11 @@ void Restrictions::calculateWeeklyAverageWaterPrices(
         vector<vector<double>> *priceMultipliers) {
 
     if (priceMultipliers) {
-        int n_tiers = static_cast<int>(typesMonthlyWaterPrice->at(0).size());
+        unsigned long n_tiers = typesMonthlyWaterPrice->at(0).size();
         restricted_weekly_average_volumetric_price =
                 std::vector<std::vector<double>>();
 
-        for (int s = 0; s < priceMultipliers->size(); ++s) { // stages loop
+        for (unsigned long s = 0; s < priceMultipliers->size(); ++s) { // stages loop
 //            restricted_weekly_average_volumetric_price[s] =
 //                    new double[(int) WEEKS_IN_YEAR + 1]();
             restricted_weekly_average_volumetric_price.emplace_back(
@@ -115,7 +115,7 @@ void Restrictions::calculateWeeklyAverageWaterPrices(
             double monthly_average_price[NUMBER_OF_MONTHS] = {};
 
             for (int m = 0; m < NUMBER_OF_MONTHS; ++m) // monthly loop
-                for (int t = 0; t < n_tiers;
+                for (unsigned long t = 0; t < n_tiers;
                      ++t) // consumer type loop
                     monthly_average_price[m] +=
                             (*typesMonthlyDemandFraction)[m][t] *
@@ -129,7 +129,7 @@ void Restrictions::calculateWeeklyAverageWaterPrices(
     }
 }
 
-void Restrictions::setRealization(unsigned int realization_id, vector<double> &utilities_rdm,
+void Restrictions::setRealization(unsigned long realization_id, vector<double> &utilities_rdm,
                                   vector<double> &water_sources_rdm, vector<double> &policy_rdm) {
     for (double& sm : stage_multipliers) {
         sm *= policy_rdm.at((unsigned long) id);

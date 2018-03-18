@@ -26,7 +26,7 @@ void MasterDataCollector::printPoliciesOutputCompact(
 
     if (!drought_mitigation_policy_collectors.empty()) {
 #pragma omp parallel for
-        for (int r = 0; r < drought_mitigation_policy_collectors[0].size();
+        for (int r = 0; r < (int) drought_mitigation_policy_collectors[0].size();
              ++r) {
             std::ofstream out_stream;
             out_stream.open(output_directory + "/" + file_name + "_r"
@@ -57,7 +57,7 @@ void MasterDataCollector::printPoliciesOutputTabular(
 
     if (!drought_mitigation_policy_collectors.empty()) {
 #pragma omp parallel for
-        for (int r = 0; r < drought_mitigation_policy_collectors[0].size();
+        for (int r = 0; r < (int) drought_mitigation_policy_collectors[0].size();
              ++r) {
             std::ofstream out_stream;
             out_stream.open(output_directory + "/" + file_name + "_r"
@@ -89,7 +89,7 @@ void MasterDataCollector::printUtilitiesOutputCompact(
         int week_i, int week_f, string file_name) {
 
 #pragma omp parallel for
-    for (int r = 0; r < utility_collectors[0].size(); ++r) {
+    for (int r = 0; r < (int) utility_collectors[0].size(); ++r) {
         std::ofstream out_stream;
         out_stream.open(output_directory + "/" + file_name + "_r"
                         + std::to_string(r) + ".csv");
@@ -117,7 +117,7 @@ void MasterDataCollector::printUtilitesOutputTabular(
         int week_i, int week_f, string file_name) {
 
 #pragma omp parallel for
-    for (int r = 0; r < utility_collectors[0].size(); ++r) {
+    for (int r = 0; r < (int) utility_collectors[0].size(); ++r) {
         std::ofstream out_stream;
         out_stream.open(output_directory + "/" + file_name + "_r"
                         + std::to_string(r) + ".tab");
@@ -155,7 +155,7 @@ void MasterDataCollector::printWaterSourcesOutputCompact(
         int week_i, int week_f, string file_name) {
 
 #pragma omp parallel for
-    for (int r = 0; r < water_source_collectors[0].size(); ++r) {
+    for (int r = 0; r < (int) water_source_collectors[0].size(); ++r) {
         std::ofstream out_stream;
         out_stream.open(output_directory + "/" + file_name + "_r"
                         + std::to_string(r) + ".csv");
@@ -178,12 +178,11 @@ void MasterDataCollector::printWaterSourcesOutputCompact(
     }
 }
 
-
 void MasterDataCollector::printWaterSourcesOutputTabular(
         int week_i, int week_f, string file_name) {
 
 #pragma omp parallel for
-    for (int r = 0; r < water_source_collectors[0].size(); ++r) {
+    for (int r = 0; r < (int) water_source_collectors[0].size(); ++r) {
         std::ofstream out_stream;
         out_stream.open(output_directory + "/" + file_name + "_r"
                         + std::to_string(r) + ".tab");
@@ -244,7 +243,7 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name,
             vector<RestrictionsDataCollector> restrictions;
             for (vector<DataCollector *> p : drought_mitigation_policy_collectors)
                 if (p[0]->type == RESTRICTIONS && p[0]->id == u[0].id)
-                    for (int i = 0; i < p.size(); ++i) {
+                    for (int i = 0; i < (int) p.size(); ++i) {
                         restrictions.push_back(
                                 dynamic_cast<RestrictionsDataCollector &>(*p[i]));
                     }
@@ -295,10 +294,10 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name,
 
         outStream.close();
 
-        for (int i = 0; i < objectives.size(); ++i) {
+        for (int i = 0; i < (int) objectives.size(); ++i) {
             double o = objectives.at(i);
             if (o > 10e10 || o < -0.1) {
-                char* error;
+                char error[512];
                 sprintf(error, "Objective %d has absurd value of %f. Aborting.\n", i, o);
                 throw_with_nested(runtime_error(error));
             }
@@ -311,7 +310,7 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name,
             vector<RestrictionsDataCollector> utility_restrictions;
             for (auto &p : drought_mitigation_policy_collectors)
                 if (p[0]->type == RESTRICTIONS && p[0]->id == u[0].id)
-                    for (int i = 0; i < p.size(); ++i) {
+                    for (int i = 0; i < (int) p.size(); ++i) {
                         utility_restrictions.push_back(
                                 dynamic_cast<RestrictionsDataCollector &>(*p[i]));
                     }
@@ -338,7 +337,7 @@ void MasterDataCollector::printPathways(string file_name) {
     outStream << "Realization\tutility\tweek\tinfra." << endl;
 
     for (auto &uc : utility_collectors)
-        for (int r = 0; r < uc.size(); ++r) {
+        for (int r = 0; r < (int) uc.size(); ++r) {
             for (vector<int> infra : uc[r].getPathways()) {
                 outStream << r << "\t" << infra[0] << "\t" << infra[1] << "\t"
                           << infra[2] << endl;
@@ -378,13 +377,13 @@ void MasterDataCollector::addRealization(
 
  //   cout << "adding Utilities collector r " << r << endl;
     /// Create utilities data collectors
-    for (int u = 0; u < utilities_realization.size(); ++u) {
+    for (int u = 0; u < (int) utilities_realization.size(); ++u) {
         utility_collectors[u].push_back(UtilitiesDataCollector(utilities_realization[u], r));
     }
  //   cout << "done " << r << endl;
 
     /// Create drought mitigation policies data collector
-    for (int dmp = 0; dmp < drought_mitigation_policies_realization.size();
+    for (int dmp = 0; dmp < (int) drought_mitigation_policies_realization.size();
          ++dmp)
         if (drought_mitigation_policies_realization[dmp]->type == RESTRICTIONS)
             drought_mitigation_policy_collectors[dmp].push_back(
@@ -404,7 +403,7 @@ void MasterDataCollector::addRealization(
                                              " function?");
 
     /// Create water sources data collectors
-    for (int ws = 0; ws < water_sources_realization.size(); ++ws) {
+    for (int ws = 0; ws < (int) water_sources_realization.size(); ++ws) {
         if (water_sources_realization[ws]->source_type == RESERVOIR)
             water_source_collectors[ws].push_back(
                     new ReservoirDataCollector(dynamic_cast<Reservoir *> (water_sources_realization[ws]), r));
@@ -443,8 +442,8 @@ void MasterDataCollector::collectData(unsigned long r) {
         uc[r].collect_data();
     for (vector<DataCollector *> dmp : drought_mitigation_policy_collectors)
         dmp[r]->collect_data();
-    for (vector<DataCollector *> ws : water_source_collectors)
-        ws[r]->collect_data();
+//    for (vector<DataCollector *> ws : water_source_collectors)
+//        ws[r]->collect_data();
 }
 
 MasterDataCollector::~MasterDataCollector() {

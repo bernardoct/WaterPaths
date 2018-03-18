@@ -11,9 +11,9 @@ using namespace std;
 
 class DataCollector {
 public:
-    const int table_width;
     const int id;
     const int type;
+    const int table_width;
     const char *name;
     unsigned long realization;
 

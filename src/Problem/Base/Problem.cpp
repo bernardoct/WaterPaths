@@ -154,7 +154,10 @@ const MasterDataCollector* Problem::getMaster_data_collector() {
 Problem::~Problem() {}
 
 void Problem::destroyDataCollector() {
-    delete master_data_collector;
+    if (master_data_collector != nullptr) {
+        delete master_data_collector;
+        master_data_collector = nullptr;
+    }
 }
 
 Problem::Problem(unsigned long n_weeks) : n_weeks(n_weeks) {

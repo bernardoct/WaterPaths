@@ -19,9 +19,9 @@ double ObjectivesCalculator::calculateReliabilityObjective(
     vector<int> year_reliabilities(n_years, 0);
 
     /// Creates a table with years that failed in each realization.
-    for (int r = 0; r < n_realizations; ++r) {
-        for (int y = 0; y < n_years; ++y) {
-            for (int w = (int) round(y * WEEKS_IN_YEAR); w < min((int) n_weeks,
+    for (unsigned long r = 0; r < n_realizations; ++r) {
+        for (unsigned long y = 0; y < n_years; ++y) {
+            for (int w = (int) round(y * WEEKS_IN_YEAR); w < (int) min((int) n_weeks,
                                                                  (int) round(
                                                                          (y +
                                                                           1) *
@@ -37,8 +37,8 @@ double ObjectivesCalculator::calculateReliabilityObjective(
     }
 
     /// Creates a vector with the number of realizations that failed for each year.
-    for (int y = 0; y < n_years; ++y) {
-        for (int r = 0; r < n_realizations; ++r) {
+    for (unsigned long y = 0; y < n_years; ++y) {
+        for (unsigned long r = 0; r < n_realizations; ++r) {
             if (realizations_year_reliabilities[r][y] ==
                 FAILURE)
                 year_reliabilities[y]++;
@@ -78,16 +78,15 @@ double ObjectivesCalculator::calculateRestrictionFrequencyObjective(
                 .getRestriction_multipliers().size();
         unsigned long n_years = (unsigned long) round(n_weeks / WEEKS_IN_YEAR);
 
-        vector<vector<double>> year_restriction_frequencies(n_realizations,
-                                                            vector<double>(n_years,
-                                                                           0));
+        vector<vector<double>> year_restriction_frequencies(
+			n_realizations, vector<double>(n_years, 0));
         double restriction_frequency = 0;
 
         /// Counts how many years across all realizations had restrictions.
-        for (int r = 0; r < n_realizations; ++r) {
-            for (int y = 0; y < n_years; ++y) {
+        for (unsigned long r = 0; r < n_realizations; ++r) {
+            for (unsigned long y = 0; y < n_years; ++y) {
                 for (int w = (int) round(y * WEEKS_IN_YEAR);
-                     w < min((int) n_weeks,
+                     w < (int) min((int) n_weeks,
                              (int) round((y + 1) * WEEKS_IN_YEAR)); ++w) {
                     if (restriction_data[r].getRestriction_multipliers()[w] !=
                         1.0) {
@@ -115,7 +114,7 @@ double ObjectivesCalculator::calculateNetPresentCostInfrastructureObjective(
 
     double infrastructure_npc = 0;
 //    for (const auto &r : utility_data) {
-    for (int i = 0; i < utility_data.size(); ++i) {
+    for (unsigned long i = 0; i < utility_data.size(); ++i) {
 	auto r = utility_data[i];
         infrastructure_npc += accumulate(
                 r.getNet_present_infrastructure_cost().begin(),
@@ -151,10 +150,10 @@ double ObjectivesCalculator::calculatePeakFinancialCostsObjective(
 
     /// Creates a table with years that failed in each realization.
     int y;
-    for (int r = 0; r < n_realizations; ++r) {
+    for (unsigned long r = 0; r < n_realizations; ++r) {
         year_financial_costs.assign(n_years,  0.0);
         y = 0;
-        for (int w = 0; w < n_weeks; ++w) {
+        for (unsigned long w = 0; w < n_weeks; ++w) {
             /// accumulate year's info by summing weekly amounts.
             realizations_year_debt_payment +=
                     utility_data[r].getDebt_service_payments()[w];
@@ -188,7 +187,7 @@ double ObjectivesCalculator::calculatePeakFinancialCostsObjective(
                 *max_element(year_financial_costs.begin(),
                              year_financial_costs.end());
         if (realization_financial_costs[r] > 1e10) {
-            printf("Absurdly high financial cost in realization %d.\n", r);
+            printf("Absurdly high financial cost in realization %lu.\n", r);
         }
     }
 
@@ -223,10 +222,10 @@ double ObjectivesCalculator::calculateWorseCaseCostsObjective(
 
     /// Creates a table with years that failed in each realization.
     int y;
-    for (int r = 0; r < n_realizations; ++r) {
+    for (unsigned long r = 0; r < n_realizations; ++r) {
         y = 0;
         year_financial_costs.assign(n_years, 0);
-        for (int w = 0; w < n_weeks; ++w) {
+        for (unsigned long w = 0; w < n_weeks; ++w) {
             /// accumulate year's info by summing weekly amounts.
             year_drought_mitigation_cost +=
                     utility_data[r].getDrought_mitigation_cost()[w];

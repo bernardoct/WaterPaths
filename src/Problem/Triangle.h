@@ -6,6 +6,7 @@
 #define TRIANGLEMODEL_TRIANGLE_H
 
 #include "Base/Problem.h"
+#include "../Simulation/Simulation.h"
 
 using namespace std;
 
@@ -55,9 +56,12 @@ public:
 
     ~Triangle();
 
-    void functionEvaluation(double *vars, double *objs, double *consts) override;
+    int functionEvaluation(double *vars, double *objs, double *consts) override;
 
-    void setRofTables(unsigned long n_realizations, int n_weeks, int n_utilities, string rof_tables_directory);
+    int simulationExceptionHander(const std::exception &e, Simulation *s,
+                                       double *objs, const double *vars);
+
+    void setRofTables(unsigned long n_realizations, int n_utilities, string rof_tables_directory);
 
     void setImport_export_rof_tables(int import_export_rof_tables, int n_weeks, string rof_tables_directory);
 

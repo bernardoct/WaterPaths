@@ -7,25 +7,21 @@
 #include "WaterReuse.h"
 
 WaterReuse::WaterReuse(const char *name, const int id, const double capacity)
-        : WaterSource(name,
-                      id,
-                      vector<Catchment *>(),
-                      capacity,
-                      capacity,
-                      WATER_REUSE) {
+        : WaterSource(name, id, vector<Catchment *>(), capacity, vector<int>(), capacity, WATER_REUSE) {
     available_volume = capacity;
 }
 
 
-WaterReuse::WaterReuse(
-        const char *name, const int id, const double treatment_capacity,
-        const double construction_rof_or_demand,
-        const vector<double> &construction_time_range, double permitting_period,
-        double construction_cost_of_capital) : WaterSource(name, id, vector<Catchment *>(), NONE, treatment_capacity,
-                                                           WATER_REUSE, construction_time_range, permitting_period,
-                                                           construction_cost_of_capital) {
+WaterReuse::WaterReuse(const char *name, const int id, const double treatment_capacity,
+                       const vector<double> &construction_time_range, double permitting_period,
+                       double construction_cost_of_capital) : WaterSource(name, id, vector<Catchment *>(), NONE, treatment_capacity,
+                                                                          vector<int>(), WATER_REUSE, construction_time_range,
+                                                                          permitting_period, construction_cost_of_capital),
+                                                              treated_volume(treatment_capacity) {
     available_volume = treatment_capacity;
 }
+
+WaterReuse::WaterReuse(const WaterReuse &reuse) : WaterSource(reuse), treated_volume(reuse.treated_volume) {}
 
 void WaterReuse::applyContinuity(int week, double upstream_source_inflow,
                                  double wastewater_discharge,

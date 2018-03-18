@@ -10,33 +10,22 @@
 
 class SequentialJointTreatmentExpansion : public WaterSource {
 private:
+
     double total_treatment_capacity;
-    vector<double> max_sequential_added_capacity;
-    vector<double> max_sequential_added_construction_cost;
+    vector<double> &added_treatment_capacities;
+    vector<double> &construction_costs;
 
 public:
     const int expansion_sequence_id;
 
-    SequentialJointTreatmentExpansion(
-            const char *name, const int id, const int parent_reservoir_ID,
-            double total_treatment_capacity,
-            const vector<double>& added_treatment_capacity_fractions,
-            const double construction_rof_or_demand,
-            const vector<double> &construction_time_range,
-            double permitting_period,
-            double construction_cost);
-
-    SequentialJointTreatmentExpansion(
-            const char *name, const int id, const int parent_reservoir_ID,
-            const int expansion_sequence_id,
-            double total_treatment_capacity,
-            const vector<double>& added_treatment_capacity_fractions,
-            vector<double>& max_sequential_added_capacity,
-            vector<double>& max_sequential_added_construction_cost,
-            const double construction_rof_or_demand,
-            const vector<double> &construction_time_range,
-            double permitting_period,
-            double construction_cost);
+    SequentialJointTreatmentExpansion(const char *name, const int id,
+                                          const int parent_reservoir_ID,
+                                          const int expansion_sequence_id,
+                                          vector<int> connected_sources,
+                                          vector<double> &sequential_treatment_capacity,
+                                          vector<double> &sequential_cost,
+                                          const vector<double> &construction_time_range,
+                                          double permitting_period);
 
     SequentialJointTreatmentExpansion(
             const SequentialJointTreatmentExpansion &joint_water_treatment_plant);
@@ -49,28 +38,27 @@ public:
                              vector<double> &demand_outflow) override;
 
     const unsigned int parent_reservoir_ID;
-    const vector<double> added_treatment_capacity_fractions;
 
     double implementTreatmentCapacity(int utility_id);
 
-    const vector<double>& getMax_sequential_added_capacity() const;
-
-    void setMax_sequential_added_capacity(
-            const vector<double> &max_sequential_added_capacity);
-
-    const vector<double>& getMax_sequential_added_construction_cost() const;
-
-    void setMax_sequential_added_construction_cost(
-            const vector<double> &max_sequential_added_construction_cost);
-
-    double payConstructionCost(int utility_id);
+    double calculateConstructionCost(int utility_id);
 
     double calculateNetPresentConstructionCost(
             int week, int utility_id, double discount_rate,
             double& level_debt_service_payment, double bond_term,
             double bond_interest_rate) const override;
 
-    virtual ~SequentialJointTreatmentExpansion();
+    ~SequentialJointTreatmentExpansion() override;
+
+    void setSequential_treatment_capacity(vector<vector<double>> *sequential_treatment_capacity);
+
+    void setSequential_cost(vector<vector<double>> *sequential_cost);
+
+    vector<vector<double>> *getSequential_treatment_capacity() const;
+
+    vector<vector<double>> *getSequential_cost() const;
+
+
 };
 
 

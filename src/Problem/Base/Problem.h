@@ -37,7 +37,7 @@ protected:
     string evap_inflows_suffix;
 
     vector<unsigned long > realizations_to_run;
-    MasterDataCollector* master_data_collector;
+    MasterDataCollector* master_data_collector = nullptr;
     vector<double> objectives;
     bool print_output_files = true;
 
@@ -56,7 +56,7 @@ public:
 
     virtual ~Problem();
 
-    virtual void functionEvaluation(double* vars, double* objs, double* consts)=0;
+    virtual int functionEvaluation(double* vars, double* objs, double* consts)=0;
 
     void setN_weeks(unsigned long n_weeks);
 

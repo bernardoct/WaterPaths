@@ -8,7 +8,7 @@
 
 WaterReuseDataCollector::WaterReuseDataCollector(WaterReuse *water_reuse, unsigned long realization)
         : DataCollector(water_reuse->id, water_reuse->name, realization, WATER_REUSE, 2 * COLUMN_WIDTH),
-          water_reuse(water_reuse) {}
+          water_reuse(water_reuse), reused_volume(water_reuse->getReused_volume()) {}
 
 string WaterReuseDataCollector::printTabularString(int week) {
     stringstream out_stream;
@@ -22,7 +22,7 @@ string WaterReuseDataCollector::printTabularString(int week) {
 string WaterReuseDataCollector::printCompactString(int week) {
     stringstream out_stream;
 
-    out_stream << water_reuse->getReused_volume() << ",";
+    out_stream << reused_volume << ",";
 
     return out_stream.str();
 }

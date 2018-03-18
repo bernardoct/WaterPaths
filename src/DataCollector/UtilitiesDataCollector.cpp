@@ -8,17 +8,9 @@
 
 
 UtilitiesDataCollector::UtilitiesDataCollector(const Utility *utility, unsigned long realization)
-        : DataCollector(utility->id, utility->name, realization, UTILITY, 14 * COLUMN_WIDTH),
+        : DataCollector(utility->id, utility->name, realization, UTILITY, 15 * COLUMN_WIDTH),
           utility(utility) {
 }
-
-/**
- * Copy assignment operator.
- * @param catchment
- * @return
- */
-UtilitiesDataCollector &UtilitiesDataCollector::operator=(const UtilitiesDataCollector &utility_data_collector) {}
-
 
 string UtilitiesDataCollector::printTabularString(int week) {
 
@@ -42,6 +34,8 @@ string UtilitiesDataCollector::printTabularString(int week) {
               << unrestricted_demand[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << waste_water_discharge[week]
+              << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+              << total_treatment_capacity[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << contingency_fund_size[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
@@ -78,6 +72,8 @@ string UtilitiesDataCollector::printCompactString(int week) {
               << ","
               << waste_water_discharge[week]
               << ","
+              << total_treatment_capacity[week]
+              << ","
               << contingency_fund_size[week]
               << ","
               << insurance_payout[week]
@@ -105,6 +101,7 @@ string UtilitiesDataCollector::printTabularStringHeaderLine1() {
               << setw(COLUMN_WIDTH) << "Unrest."
               << setw(COLUMN_WIDTH) << "Unfulf."
               << setw(COLUMN_WIDTH) << "W. Water"
+              << setw(COLUMN_WIDTH) << "Treatment"
               << setw(COLUMN_WIDTH) << "Conting."
               << setw(COLUMN_WIDTH) << "Insurance"
               << setw(COLUMN_WIDTH) << "Insurance"
@@ -127,6 +124,7 @@ string UtilitiesDataCollector::printTabularStringHeaderLine2() {
               << setw(COLUMN_WIDTH) << "Demand"
               << setw(COLUMN_WIDTH) << "Demand"
               << setw(COLUMN_WIDTH) << "Discharge"
+              << setw(COLUMN_WIDTH) << "Capacity"
               << setw(COLUMN_WIDTH) << "Fund"
               << setw(COLUMN_WIDTH) << "Payout"
               << setw(COLUMN_WIDTH) << "Price"
@@ -148,6 +146,7 @@ string UtilitiesDataCollector::printCompactStringHeader() {
               << id << "unrest_demand" << ","
               << id << "unfulf_demand" << ","
               << id << "wastewater" << ","
+              << id << "treat_capacity" << ","
               << id << "cont_fund" << ","
               << id << "ins_pout" << ","
               << id << "ins_price" << ","
@@ -161,10 +160,10 @@ void UtilitiesDataCollector::collect_data() {
     vector<int> infra_built;
 
     combined_storage.push_back(utility->getTotal_available_volume());
-    lt_rof.push_back(utility->getLong_term_risk_of_failure());
-    st_rof.push_back(utility->getRisk_of_failure());
-    unrestricted_demand.push_back(utility->getUnrestrictedDemand());
-    restricted_demand.push_back(utility->getRestrictedDemand());
+    //lt_rof.push_back(utility->getLong_term_risk_of_failure());
+    //st_rof.push_back(utility->getRisk_of_failure());
+    //unrestricted_demand.push_back(utility->getUnrestrictedDemand());
+    //restricted_demand.push_back(utility->getRestrictedDemand());
     contingency_fund_size.push_back(utility->getContingency_fund());
     net_present_infrastructure_cost.push_back(utility->getInfrastructure_net_present_cost());
     gross_revenues.push_back(utility->getGrossRevenue());
@@ -174,9 +173,10 @@ void UtilitiesDataCollector::collect_data() {
     insurance_contract_cost.push_back(utility->getInsurance_purchase());
     insurance_payout.push_back(utility->getInsurance_payout());
     capacity.push_back(utility->getTotal_storage_capacity());
-    waste_water_discharge.push_back(utility->getWaste_water_discharge());
-    unfulfilled_demand.push_back(utility->getUnfulfilled_demand());
-    net_stream_inflow.push_back(utility->getNet_stream_inflow());
+    //waste_water_discharge.push_back(utility->getWaste_water_discharge());
+    //unfulfilled_demand.push_back(utility->getUnfulfilled_demand());
+    //net_stream_inflow.push_back(utility->getNet_stream_inflow());
+    //total_treatment_capacity.push_back(utility->getTotal_treatment_capacity());
 
 //    checkForNans();
 

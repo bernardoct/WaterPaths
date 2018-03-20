@@ -41,7 +41,7 @@ double EvaporationSeries::getEvaporation(int week) {
 void EvaporationSeries::setRealization(unsigned long r, vector<double> &rdm_factors) {
     Catchment::setRealization(r, rdm_factors);
 
-    for (unsigned long w = 0; w < streamflows_realization.size(); ++w) {
+    for (unsigned long w = 0; w < series_length; ++w) {
         streamflows_realization[w] *= rdm_factors.at(0);
     }
 }

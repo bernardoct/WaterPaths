@@ -303,7 +303,7 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name,
             }
         }
     } else {
-        cout << "Calculating Objectives" << endl;
+//        cout << "Calculating Objectives" << endl;
         for (auto &u : utility_collectors) {
             /// Create vector with restriction policies pertaining only to the
             /// utility whose objectives are being calculated.

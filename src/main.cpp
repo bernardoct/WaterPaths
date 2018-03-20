@@ -19,10 +19,11 @@ using namespace Constants;
 using namespace Solutions;
 
 Triangle* trianglePtr;
+int failures = 0;
 
 void eval(double* vars, double* objs, double* consts) {
-    trianglePtr->functionEvaluation(vars, objs, consts);
-    trianglePtr->destroyDataCollector();
+    failures += trianglePtr->functionEvaluation(vars, objs, consts);
+    //printf("%f %f %f\n", objs[0], objs[1], objs[2]);
 }
 
 int main(int argc, char *argv[]) {
@@ -58,7 +59,7 @@ int main(int argc, char *argv[]) {
     unsigned long n_islands = 2;
     unsigned long nfe = 1000;
     unsigned long output_frequency = 200;
-    int seed = 0;
+    int seed = -1;
     int rdm_no = -1;
     vector<vector<int>> realizations_to_run;
     vector<vector<double>> utilities_rdm;
@@ -129,13 +130,12 @@ int main(int argc, char *argv[]) {
             case 'W': water_sources_rdm_file = optarg; break;
             case 'I': inflows_evap_directory_suffix = optarg; break;
             case 'C': import_export_rof_table = atoi(optarg); break;
-	        case 'O': rof_tables_directory = optarg; break;
+	    case 'O': rof_tables_directory = optarg; break;
             default:
                 fprintf(stderr, "Unknown option (-%c)\n", c);
                 return -1;
         }
     }
-
 
     Triangle triangle(n_weeks, import_export_rof_table);
 
@@ -240,7 +240,7 @@ int main(int argc, char *argv[]) {
                     triangle.setSol_number((unsigned long) s);
                     triangle.functionEvaluation(solutions[s].data(), c_obj, c_constr);
                     triangle.calculateAndPrintObjectives(true);
-                    triangle.printTimeSeriesAndPathways();
+//                    triangle.printTimeSeriesAndPathways();
                     triangle.destroyDataCollector();
                 }
             }
@@ -281,14 +281,19 @@ int main(int argc, char *argv[]) {
         return 0;
     } else {
 #ifdef  PARALLEL
+	if (seed > -1) {
+	        srand(seed);
+	}
+
         trianglePtr = &triangle;
         printf("Running Borg with:\n"
-            "n_islands: %d\n"
+            "n_islands: %lu\n"
             "nfe: %lu\n"
             "output freq.: %lu\n"
             "n_weeks: %lu\n"
-            "n_realizations: %lu\n\n",
-            n_islands, nfe, output_frequency, n_weeks, n_realizations);
+            "n_realizations: %lu\n" 
+	    "seed:%d\n",
+            n_islands, nfe, output_frequency, n_weeks, n_realizations, seed);
 
 //        cout << "Defining problem" << endl;
         BORG_Algorithm_ms_startup(&argc, &argv);
@@ -304,15 +309,14 @@ int main(int argc, char *argv[]) {
 
         // Set all the parameter bounds and epsilons
         setProblemDefinition(problem);
-
-	if (seed > -1)
-	        srand(seed);
         char outputFilename[256];
         char runtime[256];
         FILE* outputFile = nullptr;
-        sprintf(outputFilename, "%c/TestFiles/output/NC_output_MM_S%lu.set", system_io.c_str(), seed);
+        sprintf(outputFilename, "%s/TestFiles/output/NC_output_MM_S%d_N%lu.set", system_io.c_str(), seed, nfe);
+	printf("Reference set will be in %s.\n", outputFilename);
         // output path (make sure this exists)
-        sprintf(runtime, "%c/TestFiles/output/NC_runtime_MM_S%lu_M%%d.runtime", system_io.c_str(), seed); // runtime
+        sprintf(runtime, "%s/TestFiles/output/NC_runtime_MM_S%d_N%lu_M%%d.runtime", system_io.c_str(), seed, nfe); // runtime
+	printf("Runtime files will be in %s.\n", runtime);
         // path (make sure this exists)
 
         BORG_Algorithm_output_runtime(runtime);
@@ -333,6 +337,8 @@ int main(int argc, char *argv[]) {
             BORG_Archive_destroy(result);
             fclose(outputFile);
         }
+
+	printf("Number of failed function evaluations: %d.\n", failures);
 
         BORG_Algorithm_ms_shutdown();
         BORG_Problem_destroy(problem);

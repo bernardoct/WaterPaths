@@ -27,10 +27,10 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(const char 
                                                                      double permitting_period)
         : WaterSource(name, id, vector<Catchment *>(), NONE, NON_INITIALIZED, connected_sources, NEW_WATER_TREATMENT_PLANT,
                       construction_time_range, permitting_period, NONE),
-          parent_reservoir_ID((unsigned int) parent_reservoir_ID),
           added_treatment_capacities(sequential_treatment_capacity),
           construction_costs(sequential_cost),
-          expansion_sequence_id(expansion_sequence_id) {
+          expansion_sequence_id(expansion_sequence_id),
+          parent_reservoir_ID((unsigned int) parent_reservoir_ID) {
 
     if (sequential_treatment_capacity.empty())
         __throw_invalid_argument("max_sequential_capacity is initialized "
@@ -48,13 +48,13 @@ SequentialJointTreatmentExpansion::~SequentialJointTreatmentExpansion() = defaul
 SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
         const SequentialJointTreatmentExpansion &joint_water_treatment_plant) :
         WaterSource(joint_water_treatment_plant),
-        parent_reservoir_ID(joint_water_treatment_plant.parent_reservoir_ID),
         total_treatment_capacity(
                 joint_water_treatment_plant.total_treatment_capacity),
+        added_treatment_capacities(joint_water_treatment_plant.added_treatment_capacities),
+        construction_costs(joint_water_treatment_plant.construction_costs),
         expansion_sequence_id(
                 joint_water_treatment_plant.expansion_sequence_id),
-        added_treatment_capacities(joint_water_treatment_plant.added_treatment_capacities),
-        construction_costs(joint_water_treatment_plant.construction_costs) {
+        parent_reservoir_ID(joint_water_treatment_plant.parent_reservoir_ID) {
 }
 
 /**

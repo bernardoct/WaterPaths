@@ -173,9 +173,6 @@ vector<double> ContinuityModelROF::calculateLongTermROF(int week) {
  */
 vector<double> ContinuityModelROF::calculateShortTermROF(int week) {
 
-    if (week == 313)
-	printf("Realization %lu made it to week 313", realization_id);
-
     // vector where risks of failure will be stored.
     vector<double> risk_of_failure((unsigned long) n_utilities, 0.0);
     vector<double> year_failure((unsigned long) n_utilities, 0.0);

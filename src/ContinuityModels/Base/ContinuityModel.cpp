@@ -218,3 +218,11 @@ vector<int> ContinuityModel::getOnlineDownstreamSources() {
 
     return online_downstream_sources;
 }
+
+const vector<WaterSource *> &ContinuityModel::getContinuity_water_sources() const {
+    return continuity_water_sources;
+}
+
+const vector<Utility *> &ContinuityModel::getContinuity_utilities() const {
+    return continuity_utilities;
+}

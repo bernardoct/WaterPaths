@@ -23,7 +23,6 @@ int failures = 0;
 
 void eval(double* vars, double* objs, double* consts) {
     failures += trianglePtr->functionEvaluation(vars, objs, consts);
-    //printf("%f %f %f\n", objs[0], objs[1], objs[2]);
 }
 
 int main(int argc, char *argv[]) {
@@ -130,12 +129,13 @@ int main(int argc, char *argv[]) {
             case 'W': water_sources_rdm_file = optarg; break;
             case 'I': inflows_evap_directory_suffix = optarg; break;
             case 'C': import_export_rof_table = atoi(optarg); break;
-	    case 'O': rof_tables_directory = optarg; break;
+	        case 'O': rof_tables_directory = optarg; break;
             default:
                 fprintf(stderr, "Unknown option (-%c)\n", c);
                 return -1;
         }
     }
+
 
     Triangle triangle(n_weeks, import_export_rof_table);
 
@@ -202,6 +202,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    trianglePtr = &triangle;
+
     /// If Borg is not called, run in simulation mode
     if (!run_optimization) {
         vector<int> sol_range;
@@ -222,26 +224,26 @@ int main(int argc, char *argv[]) {
 
         /// Run model
         if (realizations_to_run.empty()) {
-            trianglePtr = &triangle;
             if (first_solution == -1) {
                 cout << endl << endl << endl << "Running solution "
                      << standard_solution << endl;
                 triangle.setSol_number(standard_solution);
-                triangle.functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
-                if (import_export_rof_table != EXPORT_ROF_TABLES) {
-                    triangle.calculateAndPrintObjectives(true);
-                    triangle.printTimeSeriesAndPathways();
-                    triangle.destroyDataCollector();
-                }
+//                trianglePtr->functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
+//                if (import_export_rof_table != EXPORT_ROF_TABLES) {
+//                    trianglePtr->calculateAndPrintObjectives(true);
+//                    triangle.printTimeSeriesAndPathways();
+//                    trianglePtr->destroyDataCollector();
+//                }
+                eval(solutions[standard_solution].data(), c_obj, c_constr);
             } else {
                 for (int s = first_solution; s < last_solution; ++s) {
                     cout << endl << endl << endl << "Running solution "
                          << s << endl;
                     triangle.setSol_number((unsigned long) s);
-                    triangle.functionEvaluation(solutions[s].data(), c_obj, c_constr);
-                    triangle.calculateAndPrintObjectives(true);
+                    trianglePtr->functionEvaluation(solutions[s].data(), c_obj, c_constr);
+                    trianglePtr->calculateAndPrintObjectives(true);
 //                    triangle.printTimeSeriesAndPathways();
-                    triangle.destroyDataCollector();
+                    trianglePtr->destroyDataCollector();
                 }
             }
         } else {
@@ -257,12 +259,12 @@ int main(int argc, char *argv[]) {
             bootstrap_output.open(bootstrap_output_name);
             string line;
 
-            triangle.setSol_number(standard_solution);
+            trianglePtr->setSol_number(standard_solution);
             for (auto &sample : realizations_to_run) {
                 auto sample_unsigned_long = vector<unsigned long>(sample.begin(), sample.end());
-                triangle.setRealizationsToRun(sample_unsigned_long);
-                triangle.functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
-                vector<double> objs = triangle.calculateAndPrintObjectives(false);
+                trianglePtr->setRealizationsToRun(sample_unsigned_long);
+                trianglePtr->functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
+                vector<double> objs = trianglePtr->calculateAndPrintObjectives(false);
                 line = "";
                 for (double &o : objs) {
                     line.append(to_string(o));
@@ -280,20 +282,15 @@ int main(int argc, char *argv[]) {
 
         return 0;
     } else {
-#ifdef  PARALLEL
-	if (seed > -1) {
-	        srand(seed);
-	}
 
-        trianglePtr = &triangle;
+#ifdef  PARALLEL
         printf("Running Borg with:\n"
             "n_islands: %lu\n"
             "nfe: %lu\n"
             "output freq.: %lu\n"
             "n_weeks: %lu\n"
-            "n_realizations: %lu\n" 
-	    "seed:%d\n",
-            n_islands, nfe, output_frequency, n_weeks, n_realizations, seed);
+            "n_realizations: %lu\n\n",
+            n_islands, nfe, output_frequency, n_weeks, n_realizations);
 
 //        cout << "Defining problem" << endl;
         BORG_Algorithm_ms_startup(&argc, &argv);
@@ -309,6 +306,10 @@ int main(int argc, char *argv[]) {
 
         // Set all the parameter bounds and epsilons
         setProblemDefinition(problem);
+
+	if (seed > -1) {
+	        srand(seed);
+	}
         char outputFilename[256];
         char runtime[256];
         FILE* outputFile = nullptr;

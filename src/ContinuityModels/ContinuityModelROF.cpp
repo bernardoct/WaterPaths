@@ -98,7 +98,7 @@ vector<double> ContinuityModelROF::calculateShortTermROFTable(int week) {
                               utility_base_storage_capacity[u]);
             /// Mean ROF between the two tiers of the ROF table where
             /// current storage is located.
-            risk_of_failure[u] = ut_storage_to_rof_table[u](week, tier + 1);
+            risk_of_failure[u] = ut_storage_to_rof_table[u](week, tier);
 //            risk_of_failure[u] = (ut_storage_to_rof_table[u](week, tier) +
 //                                  ut_storage_to_rof_table[u](week, tier + 1)) / 2;
 //        } catch (...) {
@@ -172,9 +172,6 @@ vector<double> ContinuityModelROF::calculateLongTermROF(int week) {
  * @param week for which rof is to be calculated.
  */
 vector<double> ContinuityModelROF::calculateShortTermROF(int week) {
-
-    if (week == 313)
-	printf("Realization %lu made it to week 313", realization_id);
 
     // vector where risks of failure will be stored.
     vector<double> risk_of_failure((unsigned long) n_utilities, 0.0);

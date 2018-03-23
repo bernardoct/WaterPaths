@@ -59,7 +59,7 @@ public:
     int functionEvaluation(double *vars, double *objs, double *consts) override;
 
     int simulationExceptionHander(const std::exception &e, Simulation *s,
-                                       double *objs, const double *vars);
+                                  double *objs, const double *vars);
 
     void setRofTables(unsigned long n_realizations, int n_utilities, string rof_tables_directory);
 

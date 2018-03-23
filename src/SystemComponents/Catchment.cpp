@@ -7,7 +7,7 @@
 
 
 Catchment::Catchment(vector<vector<double>> *streamflows_all, int series_length)
-        : streamflows_all(streamflows_all), series_length(streamflows_all->at(0).size()) {
+        : streamflows_all(streamflows_all), series_length(series_length) {
 
     if (series_length <
         Constants::WEEKS_IN_YEAR * Constants::NUMBER_REALIZATIONS_ROF)
@@ -40,9 +40,7 @@ Catchment &Catchment::operator=(const Catchment &catchment) = default;
 /**
  * Destructor.
  */
-Catchment::~Catchment() {
-    streamflows_realization = nullptr;
-}
+Catchment::~Catchment() {}
 
 /**
  * Get streamflow for a given week. This function assures that the number of
@@ -63,6 +61,6 @@ double Catchment::getStreamflow(int week) {
  * @param r
  */
 void Catchment::setRealization(unsigned long r, vector<double> &rdm_factors) {
-    streamflows_realization = streamflows_all->at(r).data();
+    streamflows_realization = vector<double>(streamflows_all->at(r));
 }
 

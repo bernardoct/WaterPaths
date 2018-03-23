@@ -8,27 +8,23 @@
 #include "Utils.h"
 
 double ObjectivesCalculator::calculateReliabilityObjective(
-        vector<UtilitiesDataCollector>& utility_collector) {
+        vector<UtilitiesDataCollector *>& utility_collector) {
     unsigned long n_realizations = utility_collector.size();
-    unsigned long n_weeks = utility_collector[0].getCombined_storage().size();
+    unsigned long n_weeks = utility_collector[0]->getCombined_storage().size();
     unsigned long n_years = (unsigned long) round(n_weeks / WEEKS_IN_YEAR);
 
     vector<vector<int>> realizations_year_reliabilities(n_realizations,
-                                                        vector<int>(n_years,
-                                                                    0));
+                                                        vector<int>(n_years, 0));
     vector<int> year_reliabilities(n_years, 0);
 
     /// Creates a table with years that failed in each realization.
     for (unsigned long r = 0; r < n_realizations; ++r) {
         for (unsigned long y = 0; y < n_years; ++y) {
-            for (int w = (int) round(y * WEEKS_IN_YEAR); w < (int) min((int) n_weeks,
-                                                                 (int) round(
-                                                                         (y +
-                                                                          1) *
-                                                                         WEEKS_IN_YEAR));
+            for (int w = (int) round(y * WEEKS_IN_YEAR);
+                 w < (int) min((int) n_weeks, (int) round((y + 1) * WEEKS_IN_YEAR));
                  ++w) {
-                if (utility_collector[r].getCombined_storage()[w] /
-                    utility_collector[r].getCapacity()[w] <
+                if (utility_collector[r]->getCombined_storage()[w] /
+                    utility_collector[r]->getCapacity()[w] <
                     STORAGE_CAPACITY_RATIO_FAIL) {
                     realizations_year_reliabilities[r][y] = FAILURE;
                 }
@@ -110,15 +106,15 @@ double ObjectivesCalculator::calculateRestrictionFrequencyObjective(
 }
 
 double ObjectivesCalculator::calculateNetPresentCostInfrastructureObjective(
-        vector<UtilitiesDataCollector>& utility_data) {
+        vector<UtilitiesDataCollector *>& utility_data) {
 
     double infrastructure_npc = 0;
 //    for (const auto &r : utility_data) {
     for (unsigned long i = 0; i < utility_data.size(); ++i) {
 	auto r = utility_data[i];
         infrastructure_npc += accumulate(
-                r.getNet_present_infrastructure_cost().begin(),
-                r.getNet_present_infrastructure_cost().end(),
+                r->getNet_present_infrastructure_cost().begin(),
+                r->getNet_present_infrastructure_cost().end(),
                 0.);
 	//for (int j = 0; j < r.getNet_present_infrastructure_cost().size(); ++j) {
 	//    auto week_NPV = r.getNet_present_infrastructure_cost()[j];
@@ -136,9 +132,9 @@ double ObjectivesCalculator::calculateNetPresentCostInfrastructureObjective(
 }
 
 double ObjectivesCalculator::calculatePeakFinancialCostsObjective(
-        vector<UtilitiesDataCollector>& utility_data) {
+        vector<UtilitiesDataCollector *>& utility_data) {
     unsigned long n_realizations = utility_data.size();
-    unsigned long n_weeks = utility_data[0].getGross_revenues().size();
+    unsigned long n_weeks = utility_data[0]->getGross_revenues().size();
     unsigned long n_years = (unsigned long) round(n_weeks / WEEKS_IN_YEAR);
 
     double realizations_year_debt_payment = 0;
@@ -156,13 +152,13 @@ double ObjectivesCalculator::calculatePeakFinancialCostsObjective(
         for (unsigned long w = 0; w < n_weeks; ++w) {
             /// accumulate year's info by summing weekly amounts.
             realizations_year_debt_payment +=
-                    utility_data[r].getDebt_service_payments()[w];
+                    utility_data[r]->getDebt_service_payments()[w];
             realizations_year_cont_fund_contribution +=
-                    utility_data[r].getContingency_fund_contribution()[w];
+                    utility_data[r]->getContingency_fund_contribution()[w];
             realizations_year_gross_revenue +=
-                    utility_data[r].getGross_revenues()[w];
+                    utility_data[r]->getGross_revenues()[w];
             realizations_year_insurance_contract_cost +=
-                    utility_data[r].getInsurance_contract_cost()[w];
+                    utility_data[r]->getInsurance_contract_cost()[w];
 
             /// if last week of the year, close the books and calculate
             /// financial cost for the year.
@@ -209,9 +205,9 @@ double ObjectivesCalculator::calculatePeakFinancialCostsObjective(
 }
 
 double ObjectivesCalculator::calculateWorseCaseCostsObjective(
-        vector<UtilitiesDataCollector>& utility_data) {
+        vector<UtilitiesDataCollector *>& utility_data) {
     unsigned long n_realizations = utility_data.size();
-    unsigned long n_weeks = utility_data[0].getGross_revenues().size();
+    unsigned long n_weeks = utility_data[0]->getGross_revenues().size();
     unsigned long n_years = (unsigned long) round(n_weeks / WEEKS_IN_YEAR);
 
     vector<double> worse_year_financial_costs(n_realizations,
@@ -228,14 +224,14 @@ double ObjectivesCalculator::calculateWorseCaseCostsObjective(
         for (unsigned long w = 0; w < n_weeks; ++w) {
             /// accumulate year's info by summing weekly amounts.
             year_drought_mitigation_cost +=
-                    utility_data[r].getDrought_mitigation_cost()[w];
-            year_gross_revenue += utility_data[r].getGross_revenues()[w];
+                    utility_data[r]->getDrought_mitigation_cost()[w];
+            year_gross_revenue += utility_data[r]->getGross_revenues()[w];
 
             /// if last week of the year, close the books and calculate financial cost for the year.
             if (Utils::isFirstWeekOfTheYear(w + 1)) {
                 year_financial_costs[y] =
                         max(year_drought_mitigation_cost
-                            - utility_data[r].getContingency_fund_size()[w],
+                            - utility_data[r]->getContingency_fund_size()[w],
                             0.0)
                         / year_gross_revenue;
 

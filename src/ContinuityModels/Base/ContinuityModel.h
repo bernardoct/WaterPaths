@@ -60,6 +60,10 @@ public:
                         vector<double> &water_sources_rdm);
 
     vector<int> getOnlineDownstreamSources();
+
+    const vector<WaterSource *> &getContinuity_water_sources() const;
+
+    const vector<Utility *> &getContinuity_utilities() const;
 };
 
 

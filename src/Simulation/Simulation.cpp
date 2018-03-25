@@ -345,7 +345,6 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                 /// Collect system data for output printing and objective calculations.
                 if (import_export_rof_tables != EXPORT_ROF_TABLES)
                     master_data_collector->collectData(r);
-                //printf("r%d w%d\n", r, w);
             }
             /// Export ROF tables for future simulations of the same problem with the same states-of-the-world.
             if (import_export_rof_tables == EXPORT_ROF_TABLES)

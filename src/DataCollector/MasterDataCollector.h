@@ -53,6 +53,8 @@ public:
             vector<Utility *> utilities_realization, unsigned long r);
 
     void collectData(unsigned long r);
+
+    void performBootstrapAnalysis(int sol_id, int n_sets, int n_samples, int n_threads, vector<vector<int>> bootstrap_samples = vector<vector<int>>());
 };
 
 

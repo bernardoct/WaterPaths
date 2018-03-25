@@ -4,11 +4,12 @@
 
 #include <algorithm>
 #include <numeric>
+#include <random>
 #include "Problem.h"
 
 vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
-
-    string fo = output_directory + "/TestFiles/output/Objectives";
+    this->master_data_collector->setOutputDirectory(output_directory);
+    string fo = "/TestFiles/output/Objectives";
     objectives = this->master_data_collector->calculatePrintObjectives(
             fo + "_s" + std::to_string(solution_no) + fname_sufix, print_files);
 
@@ -53,6 +54,8 @@ void Problem::printTimeSeriesAndPathways() {
 //                                               + std::to_string(solution_no));
 
 }
+
+
 
 vector<int> Problem::vecInfraRankToVecInt(vector<infraRank> v) {
     vector<int> sorted;
@@ -147,7 +150,7 @@ void Problem::setRealizationsToRun(vector<unsigned long>& realizations_to_run) {
     this->realizations_to_run = realizations_to_run;
 }
 
-const MasterDataCollector* Problem::getMaster_data_collector() {
+MasterDataCollector* Problem::getMaster_data_collector() {
     return master_data_collector;
 }
 

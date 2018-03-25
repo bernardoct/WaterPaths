@@ -5,8 +5,11 @@
 #include <fstream>
 #include <iomanip>
 #include <sys/stat.h>
+#include <numeric>
+#include <random>
 #include "MasterDataCollector.h"
 #include "../Utils/ObjectivesCalculator.h"
+#include "../Utils/Utils.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
 #include "TransfersDataCollector.h"
 #include "../SystemComponents/WaterSources/Quarry.h"
@@ -235,8 +238,7 @@ void MasterDataCollector::printWaterSourcesOutputTabular(
     }
 }
 
-vector<double> MasterDataCollector::calculatePrintObjectives(string file_name,
-                                                             bool print) {
+vector<double> MasterDataCollector::calculatePrintObjectives(string file_name, bool print) {
 
     vector<double> objectives;
 
@@ -260,12 +262,14 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name,
             /// Create vector with restriction policies pertaining only to the
             /// utility whose objectives are being calculated.
             vector<RestrictionsDataCollector> restrictions;
-            for (vector<DataCollector *> p : drought_mitigation_policy_collectors)
-                if (p[0]->type == RESTRICTIONS && p[0]->id == u[0]->id)
+            for (vector<DataCollector *> p : drought_mitigation_policy_collectors) {
+                if (p[0]->type == RESTRICTIONS && p[0]->id == u[0]->id) {
                     for (int i = 0; i < (int) p.size(); ++i) {
                         restrictions.push_back(
                                 dynamic_cast<RestrictionsDataCollector &>(*p[i]));
                     }
+                }
+            }
 
             /// Reliability
             double reliability = ObjectivesCalculator::calculateReliabilityObjective(u);
@@ -347,6 +351,103 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name,
         }
     }
     return objectives;
+}
+
+void MasterDataCollector::performBootstrapAnalysis(
+		int sol_id, int n_sets, int n_samples, int n_threads, vector<vector<int>> bootstrap_samples) {
+    printf("Running bootstrap samples.\n");
+    std::random_device rd;     // only used once to initialise (seed) engine
+    std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
+
+    int min = 0;
+    int max = (int) n_realizations - 1;
+    std::uniform_int_distribution<int> uni(min, max); // guaranteed unbiased
+    std::ofstream outStream_realizations;
+    std::ofstream outStream_objs;
+    string line;
+    outStream_objs.open(output_directory + "bootstrap_objs_" + to_string(n_sets) + "_" + 
+		    to_string(n_samples) + "_S" + to_string(sol_id) + ".csv");
+
+    /// Either read samples from file or create new ones.
+    vector<vector<int>> bootstrap_sample_sets(n_sets, vector<int>((unsigned long) n_samples));
+    if (bootstrap_samples.size() > 0) {
+	    bootstrap_sample_sets = bootstrap_samples;
+    } else {
+        outStream_realizations.open(output_directory + "bootstrap_realizations_" +
+                                    to_string(n_sets) + "_" + to_string(n_samples) + "_S" +
+                                    to_string(sol_id) + ".csv");
+        for (int set = 0; set < n_sets; ++set) {
+            /// Generate one set of bootstrapped realizations, if none was specified.
+            line = "";
+            for (int &s : bootstrap_sample_sets[set]) {
+                s = uni(rng);
+                line += to_string(s) + ",";
+            }
+            line.pop_back();
+            outStream_realizations << line << endl;
+        }
+    }
+
+    vector<vector<double>> objectives(n_sets);
+#pragma omp parallel for num_threads(n_threads) shared(objectives)
+    for (int set = 0; set < n_sets; ++set) {
+        /// Calculate objectives for the set of bootstrapped realizations.
+        for (auto &u : utility_collectors) {
+            /// Create vector with restriction policies pertaining only to the
+            /// utility whose objectives are being calculated.
+            vector<RestrictionsDataCollector> utility_restrictions;
+            for (auto &p : drought_mitigation_policy_collectors)
+                if (p[0]->type == RESTRICTIONS && p[0]->id == u[0]->id)
+                    for (int i = 0; i < (int) p.size(); ++i) {
+                        utility_restrictions.push_back(
+                                dynamic_cast<RestrictionsDataCollector &>(*p[i]));
+                    }
+
+	    vector<unsigned long> bootstrap_sample_set = vector<unsigned long>(
+			    bootstrap_sample_sets[set].begin(), 
+			    bootstrap_sample_sets[set].end());
+
+            objectives[set].push_back
+                    (ObjectivesCalculator::calculateReliabilityObjective(u, bootstrap_sample_set));
+            objectives[set].push_back
+                    (ObjectivesCalculator::calculateRestrictionFrequencyObjective(utility_restrictions, bootstrap_sample_set));
+            objectives[set].push_back
+                    (ObjectivesCalculator::calculateNetPresentCostInfrastructureObjective(u, bootstrap_sample_set));
+            objectives[set].push_back
+                    (ObjectivesCalculator::calculatePeakFinancialCostsObjective(u, bootstrap_sample_set));
+            objectives[set].push_back
+                    (ObjectivesCalculator::calculateWorseCaseCostsObjective(u, bootstrap_sample_set));
+        }
+    }
+
+        /// Print objectives.
+    for (int set = 0; set < n_sets; ++set) {
+        line = "";
+        for (double &o : objectives[set]) {
+            line += to_string(o) + ",";
+        }
+        line.pop_back();
+        outStream_objs << line << endl;
+    }
+
+    string file_name = output_directory + "objectives_all_reals_" + to_string(n_sets) + 
+	    "_" + to_string(n_samples) + "_S" + to_string(sol_id) + ".csv";
+    vector<double> objectives_all_reals = calculatePrintObjectives("", false);
+    
+    line = "";
+    for (double &o : objectives_all_reals) {
+	    line += to_string(o) + ",";
+    }
+    line.pop_back();
+    
+    std::ofstream outStream_objs_all_reals;
+    outStream_objs_all_reals.open(file_name);
+    outStream_objs_all_reals << line << endl;
+
+    outStream_objs_all_reals.close();
+    outStream_realizations.close();
+    outStream_objs.close();
+
 }
 
 void MasterDataCollector::printPathways(string file_name) {

@@ -896,9 +896,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         objs[5] = OWASA_JLA + Durham_JLA + Cary_JLA + Raleigh_JLA;
 
         objectives.push_back(objs[5]);
-
-        destroyDataCollector();
-        
+      
 	delete s;
 	s = nullptr;
 #endif
@@ -941,7 +939,6 @@ int Triangle::simulationExceptionHander(const std::exception &e, Simulation *s,
 	    delete s;
 	    s = nullptr;
 	}
-	destroyDataCollector();
 #else
         Utils::print_exception(e);
 #endif

@@ -1,4 +1,4 @@
-CFLAGS=-std=c++14
+CFLAGS=-std=c++14 -fsanitize=address -fno-omit-frame-pointer #-fno-sanitize-address-use-after-scope
 
 # List of sources and objects (include all .cpp files)
 SOURCES=$(shell find ./src -name "*.cpp")
@@ -8,17 +8,17 @@ TARGET=triangleSimulation
 EXECUTABLE=$(TARGET)
 
 LIB_DIR=./lib
-LIBS=-lm
+LIBS=-static-libasan -lm
 
 all: $(SOURCES) $(TARGET)
 
 borg: CC=mpicxx
 borg: LIBS += -lborgmm
-borg: CFLAGS += -DPARALLEL -fopenmp -march=ivybridge -O3
+borg: CFLAGS += -DPARALLEL -fopenmp -march=ivybridge -O0 -g
 borg: all
 
 gcc: CC=g++
-gcc: CFLAGS+=-O3 -march=ivybridge -fopenmp
+gcc: CFLAGS+=-O1 -march=ivybridge -fopenmp
 gcc: all
 
 intel: CC=icc
@@ -26,7 +26,7 @@ intel: CFLAGS+=-O3 ${TACC_VEC_FLAGS} -qopenmp
 intel: all
 
 gcc-debug: CC=g++
-gcc-debug: CFLAGS+=-O1 -march=ivybridge -g -fopenmp
+gcc-debug: CFLAGS+=-O0 -march=ivybridge -g -fopenmp
 gcc-debug: all
 
 intel-debug: CC=icc

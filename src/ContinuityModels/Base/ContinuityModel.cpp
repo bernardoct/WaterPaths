@@ -137,6 +137,7 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
     for (int r = 0; r < NUMBER_REALIZATIONS_ROF; ++r) {
         delta_realization_weeks[r] = (int) std::round((r + 1) * WEEKS_IN_YEAR);
     }
+
 }
 
 ContinuityModel::~ContinuityModel() {

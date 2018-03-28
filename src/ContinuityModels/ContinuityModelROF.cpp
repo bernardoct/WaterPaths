@@ -142,6 +142,10 @@ vector<double> ContinuityModelROF::calculateLongTermROF(int week) {
 
         for (int w = 0; w < WEEKS_ROF_LONG_TERM; ++w) {
             /// one week continuity time-step.
+            if (w == 40 & yr == 4) {
+                //cout << w << endl;
+            }
+
             continuityStep(w + week, yr, APPLY_DEMAND_BUFFER);
 
             /// check total available storage for each utility and, if smaller

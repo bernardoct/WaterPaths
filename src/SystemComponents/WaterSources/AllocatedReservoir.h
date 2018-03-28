@@ -12,8 +12,6 @@
 class AllocatedReservoir : public Reservoir {
 private:
 
-    int count;
-
 protected:
 
     AllocationModifier *allocation_modifier;
@@ -21,6 +19,7 @@ protected:
     const bool has_water_quality_pool;
 
 public:
+
     AllocatedReservoir(
             const char *name, const int id,
             const vector<Catchment *> &catchments, const double capacity,

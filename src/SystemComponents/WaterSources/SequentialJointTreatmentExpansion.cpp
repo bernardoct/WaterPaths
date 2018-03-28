@@ -74,7 +74,7 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(
                     (max_sequential_added_construction_cost[u],
                      construction_cost * alloc);
 
-            implemented_treatment_capacity += (*max_sequential_added_capacity)[u];
+            implemented_treatment_capacity += max_sequential_added_capacity[u];
         }
     }
 

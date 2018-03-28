@@ -1116,7 +1116,7 @@ Triangle::setRofTables(unsigned long n_realizations, int n_weeks, int n_utilitie
 
     cout << "Loading ROF tables" << endl;
     int n_tiers = NO_OF_INSURANCE_STORAGE_TIERS + 1;
-    rof_tables = vector<vector<Matrix2D<double>>>(n_realizations,
+    rof_tables = std::vector<std::vector<Matrix2D<double>>>(n_realizations,
                                                   vector<Matrix2D<double>>((unsigned long) n_utilities,
                                                                            Matrix2D<double>(n_weeks, n_tiers)));
 
@@ -1161,7 +1161,7 @@ void Triangle::readInputData(){
 
     cout << "Reading input data." << endl;
 
-#pragma omp parallel num_threads(20)
+#pragma omp parallel num_threads(20) // was 20
     {
 #pragma omp single
     streamflows_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/durham_inflows.csv", n_realizations);

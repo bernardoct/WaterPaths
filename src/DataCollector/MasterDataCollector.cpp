@@ -226,13 +226,24 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name,
 
     if (print) {
         cout << "Calculating and printing Objectives" << endl;
-        string obj_file_path = output_directory + "/" + file_name + ".out";
+        //string obj_file_path = output_directory + "/" + file_name + ".out"; doesnt work on windows
+        // cant have "/" in front of C:\ in the path name
+        string obj_file_path = output_directory + "" + file_name + ".out";
         cout << obj_file_path << endl;
 
         std::ofstream outStream;
+
         outStream.open(obj_file_path);
 
         outStream << setw(COLUMN_WIDTH) << "      " << setw((COLUMN_WIDTH * 2))
+                  << "Reliability"
+                  << setw(COLUMN_WIDTH * 2) << "Restriction Freq."
+                  //              << setw(COLUMN_WIDTH * 2) << "Jordan Lake Alloc."
+                  << setw(COLUMN_WIDTH * 2) << "Infrastructure NPC"
+                  << setw(COLUMN_WIDTH * 2) << "Peak Financial Cost"
+                  << setw(COLUMN_WIDTH * 2) << "Worse Case Costs" << endl;
+
+        cout << setw(COLUMN_WIDTH) << "      " << setw((COLUMN_WIDTH * 2))
                   << "Reliability"
                   << setw(COLUMN_WIDTH * 2) << "Restriction Freq."
                   //              << setw(COLUMN_WIDTH * 2) << "Jordan Lake Alloc."
@@ -266,6 +277,29 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name,
             double worse_cost = ObjectivesCalculator::calculateWorseCaseCostsObjective(u);
 
             outStream << setw(COLUMN_WIDTH) << u[0].name
+                      /// Reliability
+                      << setw(COLUMN_WIDTH * 2)
+                      << setprecision(COLUMN_PRECISION)
+                      << reliability
+                      /// Restriction Frequency
+                      << setw(COLUMN_WIDTH * 2)
+                      << setprecision(COLUMN_PRECISION)
+                      << restriction_freq
+                      /// Infrastructure NPC
+                      << setw(COLUMN_WIDTH * 2)
+                      << setprecision(COLUMN_PRECISION)
+                      << inf_npc
+                      /// Peak Financial Cost
+                      << setw(COLUMN_WIDTH * 2)
+                      << setprecision(COLUMN_PRECISION)
+                      << financial_cost
+                      /// Worse Case Costs
+                      << setw(COLUMN_WIDTH * 2)
+                      << setprecision(COLUMN_PRECISION)
+                      << worse_cost
+                      << endl;
+
+            cout << setw(COLUMN_WIDTH) << u[0].name
                       /// Reliability
                       << setw(COLUMN_WIDTH * 2)
                       << setprecision(COLUMN_PRECISION)
@@ -348,6 +382,7 @@ void MasterDataCollector::printPathways(string file_name) {
         }
 
     outStream.close();
+
 }
 
 void MasterDataCollector::setOutputDirectory(string directory) {

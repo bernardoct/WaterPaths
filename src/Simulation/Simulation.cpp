@@ -12,7 +12,7 @@
 #ifdef  PARALLEL
 #include <mpi.h>
 #endif
-#include <w32api/fileapi.h>
+//#include <w32api/fileapi.h>
 
 Simulation::Simulation(
         vector<WaterSource *> &water_sources, Graph &water_sources_graph,
@@ -196,16 +196,21 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
     string error_m = "Error in realizations ";
 #pragma omp parallel for num_threads(n_threads)// shared(had_catch)
     for (int r = 0; r < n_realizations; ++r) {
+        //cout << r << endl;
         try {
             double start = omp_get_wtime();
             for (int w = 0; w < total_simulation_time; ++w) {
                 // DO NOT change the order of the steps. This would mess up
                 // important dependencies.
-                //cout << "Week: " << w << endl;
+//                if (r == 22)
+//                    cout << "Week: " << w << endl;
+
                 /// Calculate long-term risk-of-failre if current week is first week of the year.
                 if (Utils::isFirstWeekOfTheYear(w))
                     realization_models[r]->setLongTermROFs(
                             rof_models[r]->calculateLongTermROF(w), w);
+
+
                 /// Calculate short-term risk-of-failure
                 if (import_export_rof_tables == IMPORT_ROF_TABLES) {
                     realization_models[r]->setShortTermROFs(
@@ -214,6 +219,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                     realization_models[r]->setShortTermROFs(
                             rof_models[r]->calculateShortTermROF(w));
                 }
+
                 /// Apply drought mitigation policies
                 realization_models[r]->applyDroughtMitigationPolicies(w);
                 /// Continuity calculations for current week

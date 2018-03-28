@@ -11,12 +11,11 @@ using namespace std;
 
 class DurhamModel : public Problem {
 private:
-    vector<Matrix3D<double>> rof_tables;
-    vector<vector<double>> infra_table_shift;
+    vector<vector<Matrix2D<double>>> rof_tables;
     int import_export_rof_tables;
     const int n_utilities = 2;
     double table_gen_storage_multiplier;
-    int scenario;
+    string rof_tables_directory;
 
     vector<vector<double>> streamflows_durham;
     vector<vector<double>> streamflows_haw;
@@ -37,17 +36,15 @@ public:
 
     ~DurhamModel();
 
-    void functionEvaluation(const double *vars, double *objs, double *consts) override;
-
-    void setRofTables(unsigned long n_realizations, int n_weeks, int n_utilities);
-
-    void setImport_export_rof_tables(int import_export_rof_tables, int n_weeks);
+    void functionEvaluation(double *vars, double *objs, double *consts) override;
 
     void readInputData();
 
-    void setScenario(int scen);
+    void setScenario(int scen) override;
 
-    void delete_catchment_vector(vector<Catchment *> vec_catchment);
+    void setImport_export_rof_tables(int import_export_rof_tables, int n_weeks, string rof_tables_directory);
+
+    void setRofTables(unsigned long n_realizations, int n_weeks, int n_utilities, string rof_tables_directory);
 };
 
 

@@ -15,7 +15,7 @@ private:
     Utility *downstream_utility;
     Reservoir *upstream_reservoir;
     Reservoir *downstream_reservoir;
-    MinEnvironFlowControl *upstream_min_env_flow_control;
+    MinEnvFlowControl *upstream_min_env_flow_control;
 
     const int upstream_utility_id;
     const int downstream_utility_id;
@@ -51,12 +51,12 @@ public:
 
     void addSystemComponents(vector<Utility *> utilities,
                              vector<WaterSource *> water_sources,
-                             vector<MinEnvironFlowControl *> min_env_flow_controls) override;
+                             vector<MinEnvFlowControl *> min_env_flow_controls) override;
 
-    void setRealization(unsigned int realization_id, vector<vector<double>> *utilities_rdm,
-                        vector<vector<double>> *water_sources_rdm, vector<vector<double>> *policy_rdm) override;
+    void setRealization(unsigned int realization_id, vector<double> &utilities_rdm,
+                        vector<double> &water_sources_rdm, vector<double> &policy_rdm) override;
 
-    const double getUtilityStorageFromROF(int week, const Matrix3D<double> *storage_to_rof_table, const int u_id);
+    const double getUtilityStorageFromROF(int week, vector<Matrix2D<double>> storage_to_rof_table_, const int u_id);
 
     const double &getRawWaterTransferVolume() const;
 

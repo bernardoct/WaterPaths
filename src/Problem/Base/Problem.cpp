@@ -8,7 +8,8 @@
 
 vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
 
-    string fo = output_directory + "/TestFiles/output/Objectives";
+    //string fo = output_directory + "/TestFiles/output/Objectives";
+    string fo = output_directory + "/TestFiles/output/scenario" + std::to_string(scenario) + "/Objectives";
     objectives = this->master_data_collector->calculatePrintObjectives(
             fo + "_s" + std::to_string(solution_no) + fname_sufix, print_files);
 
@@ -20,10 +21,10 @@ void Problem::printTimeSeriesAndPathways() {
     this->master_data_collector->setOutputDirectory(output_directory);
 
     /// Print output files.
-    string fu = "/TestFiles/output/Utilities";
-    string fws = "/TestFiles/output/WaterSources";
-    string fp = "/TestFiles/output/Policies";
-    string fpw = "/TestFiles/output/Pathways";
+    string fu = "/TestFiles/output/scenario" + std::to_string(scenario) + "/Utilities";
+    string fws = "/TestFiles/output/scenario" + std::to_string(scenario) + "/WaterSources";
+    string fp = "/TestFiles/output/scenario" + std::to_string(scenario) + "/Policies";
+    string fpw = "/TestFiles/output/scenario" + std::to_string(scenario) + "/Pathways";
 
     //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
     cout << "Printing Pathways" << endl;
@@ -160,3 +161,5 @@ void Problem::destroyDataCollector() {
 Problem::Problem(unsigned long n_weeks) : n_weeks(n_weeks) {
 
 }
+
+void Problem::setScenario(int scen) {}

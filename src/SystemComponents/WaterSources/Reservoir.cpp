@@ -322,6 +322,8 @@ void Reservoir::applyContinuity(int week, double upstream_source_inflow,
 
     double outflow_new = min_environmental_outflow;
 
+//    if (stored_volume_new < 0)
+//        __throw_out_of_range("Evaporation is enormous.");
 
     /// Check if spillage is needed and, if so, correct stored volume and
     /// calculate spillage.
@@ -338,6 +340,12 @@ void Reservoir::applyContinuity(int week, double upstream_source_inflow,
     upstream_catchment_inflow = catchment_inflow;
     this->upstream_source_inflow = upstream_source_inflow;
     this->wastewater_inflow = wastewater_inflow;
+
+    /// If evaporation is a crazy large number, ensure that the reservoir does not have
+    /// negative storage
+//    if (available_volume < 0.0){
+//        available_volume = 0.0;
+//    }
 }
 
 void Reservoir::setOnline() {

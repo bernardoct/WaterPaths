@@ -41,6 +41,8 @@ protected:
     vector<double> objectives;
     bool print_output_files = true;
 
+    int scenario;
+
     unsigned long  rdm_no;
     vector<vector<double>> utilities_rdm;
     vector<vector<double>> water_sources_rdm;
@@ -91,6 +93,8 @@ public:
     void destroyDataCollector();
 
     void printTimeSeriesAndPathways();
+
+    virtual void setScenario(int scen);
 };
 
 

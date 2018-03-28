@@ -30,7 +30,7 @@ RawWaterReleases::RawWaterReleases(const int id, const char *name,
 
 void RawWaterReleases::addSystemComponents(vector<Utility *> utilities,
                                            vector<WaterSource *> water_sources,
-                                           vector<MinEnvironFlowControl *> min_env_flow_controls) {
+                                           vector<MinEnvFlowControl *> min_env_flow_controls) {
     upstream_reservoir =
             dynamic_cast<Reservoir *>(water_sources[upstream_reservoir_id]);
     downstream_reservoir =
@@ -39,7 +39,7 @@ void RawWaterReleases::addSystemComponents(vector<Utility *> utilities,
     downstream_utility = utilities[downstream_utility_id];
 
     /// Gets the control rule that acts on reservoir of id reservoir_id.
-    for (MinEnvironFlowControl *mefc : min_env_flow_controls) {
+    for (MinEnvFlowControl *mefc : min_env_flow_controls) {
         if (mefc->water_source_id == upstream_reservoir_id) {
             upstream_min_env_flow_control = mefc;
         }
@@ -164,21 +164,21 @@ void RawWaterReleases::applyPolicy(int week) {
  */
 const double RawWaterReleases::getUtilityStorageFromROF(
         int week,
-        const Matrix3D<double> *storage_to_rof_table,
+        const vector<Matrix2D<double>> storage_to_rof_table,
         const int u_id) {
 
     /// Determine the storage associated with an ROF level
     for (int s = NO_OF_INSURANCE_STORAGE_TIERS - 1; s > -1; --s) {
 //        double temp = *storage_to_rof_table->getPointerToElement(week,u_id,s);
-        if (*storage_to_rof_table->getPointerToElement(week,u_id,s) >= rof_triggers[u_id]) {
-                // ERROR IS HERE, table has changed shape, adjustment made Feb 28,2018
+        if (*storage_to_rof_table.at(week).getPointerToElement(u_id,s) >= rof_triggers[u_id]) {
+                // ERROR IS HERE, table has changed shape, adjustments made Feb 28,2018 and March 5, 2018
             return (((double)s + 1) / (double)NO_OF_INSURANCE_STORAGE_TIERS);
         }
     }
 }
 
-void RawWaterReleases::setRealization(unsigned int realization_id, vector<vector<double>> *utilities_rdm,
-                                  vector<vector<double>> *water_sources_rdm, vector<vector<double>> *policy_rdm) {}
+void RawWaterReleases::setRealization(unsigned int realization_id, vector<double> &utilities_rdm,
+                                      vector<double> &water_sources_rdm, vector<double> &policy_rdm) {}
 
 const double &RawWaterReleases::getRawWaterTransferVolume() const {
     return raw_water_transfer_volume;

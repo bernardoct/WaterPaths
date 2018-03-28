@@ -30,7 +30,7 @@
  * on Jordan Lake (or any generic lake) but still pay for joint treatment
  * infrastructure).
  */
-void DurhamModel::functionEvaluation(const double *vars, double *objs, double *consts) {
+void DurhamModel::functionEvaluation(double *vars, double *objs, double *consts) {
     cout << "Building Durham Problem." << endl;
     //srand(0);//(unsigned int) time(nullptr));
 
@@ -165,14 +165,14 @@ void DurhamModel::functionEvaluation(const double *vars, double *objs, double *c
     vector<int> dlr_weeks = {0, 21, 47, 53};
     vector<double> dlr_releases = {3.877 * 7, 9.05, 3.877 * 7};
 
-    SeasonalMinEnvFlowControl durham_min_env_control(0, &dlr_weeks,
-                                                     &dlr_releases);
+    SeasonalMinEnvFlowControl durham_min_env_control(0, dlr_weeks,
+                                                     dlr_releases);
     JordanLakeMinEnvFlowControl jordan_min_env_control(
-            6, &cape_fear_river_at_lillington, 64.63, 129.26, 25.85, 193.89,
+            6, cape_fear_river_at_lillington, 64.63, 129.26, 25.85, 193.89,
             290.84, 387.79, 30825.0, 14924.0);
     FixedMinEnvFlowControl teer_min_env_control(9, 0);
 
-    vector<MinEnvironFlowControl *> min_env_flow_controls;
+    vector<MinEnvFlowControl *> min_env_flow_controls;
     min_env_flow_controls.push_back(&durham_min_env_control);
     min_env_flow_controls.push_back(&jordan_min_env_control);
     min_env_flow_controls.push_back(&teer_min_env_control);
@@ -280,14 +280,14 @@ void DurhamModel::functionEvaluation(const double *vars, double *objs, double *c
             {western_wake_treatment_frac_durham * 0.8, 0.0};
     vector<double> cary_upgrades_treatment_capacity_fractions = {0.0,1.0}; // allocations for durham and cary
 
-    auto *shared_added_wjlwtp_treatment_pool = new vector<double>();
-    auto *shared_added_wjlwtp_price = new vector<double>();
+    vector<double> shared_added_wjlwtp_treatment_pool;
+    vector<double> shared_added_wjlwtp_price;
     SequentialJointTreatmentExpansion low_wjlwtp("Low WJLWTP",
                                                  8,
                                                  1,
                                                  0,
                                                  33 * 7,
-                                                 &wjlwtp_treatment_capacity_fractions,
+                                                 wjlwtp_treatment_capacity_fractions,
                                                  shared_added_wjlwtp_treatment_pool,
                                                  shared_added_wjlwtp_price,
                                                  city_infrastructure_rof_triggers[0],
@@ -299,7 +299,7 @@ void DurhamModel::functionEvaluation(const double *vars, double *objs, double *c
                                                   1,
                                                   0,
                                                   54 * 7,
-                                                  &wjlwtp_treatment_capacity_fractions,
+                                                  wjlwtp_treatment_capacity_fractions,
                                                   shared_added_wjlwtp_treatment_pool,
                                                   shared_added_wjlwtp_price,
                                                   city_infrastructure_rof_triggers[0],
@@ -310,7 +310,7 @@ void DurhamModel::functionEvaluation(const double *vars, double *objs, double *c
                                                       10,
                                                       1,
                                                       56, // (72*7 - 448 = 56)
-                                                      &cary_upgrades_treatment_capacity_fractions,
+                                                      cary_upgrades_treatment_capacity_fractions,
                                                       caryupgrades_2 * 7,
                                                       construction_time_interval,
                                                       NONE,
@@ -319,7 +319,7 @@ void DurhamModel::functionEvaluation(const double *vars, double *objs, double *c
                                                       11,
                                                       1,
                                                       56, // (7*80 - 72*7 = 56)
-                                                      &cary_upgrades_treatment_capacity_fractions,
+                                                      cary_upgrades_treatment_capacity_fractions,
                                                       caryupgrades_3 * 7,
                                                       construction_time_interval,
                                                       NONE,
@@ -385,28 +385,27 @@ void DurhamModel::functionEvaluation(const double *vars, double *objs, double *c
 
     auto demand_n_weeks = (int) round(46 * WEEKS_IN_YEAR);
 
-    vector<int> cary_ws_return_id = {};
-    auto *cary_discharge_fraction_series =
-            new vector<vector<double>>();
+    vector<int> cary_ws_return_id;
+    vector<vector<double>> cary_discharge_fraction_series;
     WwtpDischargeRule wwtp_discharge_cary(
             cary_discharge_fraction_series,
-            &cary_ws_return_id);
+            cary_ws_return_id);
     vector<int> durham_ws_return_id = {1, 11};
     WwtpDischargeRule wwtp_discharge_durham(
-            &demand_to_wastewater_fraction_durham,
-            &durham_ws_return_id);
+            demand_to_wastewater_fraction_durham,
+            durham_ws_return_id);
 
     vector<vector<int>> wjlwtp_remove_from_to_build_list;// = {{21, 20}};
 
 
-    Utility durham((char *) "Durham", 0, &demand_durham, demand_n_weeks, durham_annual_payment,
+    Utility durham((char *) "Durham", 0, demand_durham, demand_n_weeks, durham_annual_payment,
                    &durhamDemandClassesFractions, &durhamUserClassesWaterPrices, wwtp_discharge_durham,
                    durham_inf_buffer, rof_triggered_infra_order_durham, vector<int>(),
-                   rofs_infra_durham, discount_rate, &wjlwtp_remove_from_to_build_list, bond_term[0], bond_rate[0]);
+                   rofs_infra_durham, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[0], bond_rate[0]);
 
     vector<int> demand_triggered_infra_order_cary = {10, 11};
     vector<double> demand_infra_cary = {caryupgrades_2 * 7, caryupgrades_3 * 7};
-    Utility cary((char *) "Cary", 1, &demand_cary, demand_n_weeks, cary_annual_payment, &caryDemandClassesFractions,
+    Utility cary((char *) "Cary", 1, demand_cary, demand_n_weeks, cary_annual_payment, &caryDemandClassesFractions,
                  &caryUserClassesWaterPrices, wwtp_discharge_cary, cary_inf_buffer, vector<int>(),
                  demand_triggered_infra_order_cary, demand_infra_cary, discount_rate, bond_term[1], bond_rate[1]);
 
@@ -426,6 +425,8 @@ void DurhamModel::functionEvaluation(const double *vars, double *objs, double *c
     table_storage_shift[0][14] = 100.;
     table_storage_shift[0][20] = 500.;
     table_storage_shift[0][21] = 500.;
+    table_storage_shift[0][15] = 700.;
+    table_storage_shift[0][9] = 700.;
 
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
     /// Restriction policies
@@ -433,15 +434,15 @@ void DurhamModel::functionEvaluation(const double *vars, double *objs, double *c
                                                    cary_restriction_trigger};
 
     vector<double> restriction_stage_multipliers_cary = {0.9, 0.8, 0.7, 0.6};
-    vector<double> restriction_stage_triggers_cary = {initial_restriction_triggers[0],
-                                                      initial_restriction_triggers[0] + 0.15f,
-                                                      initial_restriction_triggers[0] + 0.35f,
-                                                      initial_restriction_triggers[0] + 0.6f};
+    vector<double> restriction_stage_triggers_cary = {initial_restriction_triggers[1],
+                                                      initial_restriction_triggers[1] + 0.15f,
+                                                      initial_restriction_triggers[1] + 0.35f,
+                                                      initial_restriction_triggers[1] + 0.6f};
     vector<double> restriction_stage_multipliers_durham = {0.9, 0.8, 0.7, 0.6};
-    vector<double> restriction_stage_triggers_durham = {initial_restriction_triggers[1],
-                                                        initial_restriction_triggers[1] + 0.15f,
-                                                        initial_restriction_triggers[1] + 0.35f,
-                                                        initial_restriction_triggers[1] + 0.6f};
+    vector<double> restriction_stage_triggers_durham = {initial_restriction_triggers[0],
+                                                        initial_restriction_triggers[0] + 0.15f,
+                                                        initial_restriction_triggers[0] + 0.35f,
+                                                        initial_restriction_triggers[0] + 0.6f};
 
     Restrictions restrictions_d(0,
                                 restriction_stage_multipliers_durham,
@@ -491,9 +492,9 @@ void DurhamModel::functionEvaluation(const double *vars, double *objs, double *c
                  utilities,
                  drought_mitigation_policies,
                  min_env_flow_controls,
-                 &utilities_rdm,
-                 &water_sources_rdm,
-                 &policies_rdm,
+                 utilities_rdm,
+                 water_sources_rdm,
+                 policies_rdm,
                  import_export_rof_tables,
                  n_weeks,
                  realizations_to_run);
@@ -506,7 +507,7 @@ void DurhamModel::functionEvaluation(const double *vars, double *objs, double *c
     this->master_data_collector = s.runFullSimulation(n_threads);
 
     if (import_export_rof_tables != EXPORT_ROF_TABLES) {
-        objectives = calculateAndPrintObjectives(false);
+        objectives = calculateAndPrintObjectives(true);
 
         int i = 0;
         objs[i] = min(min(objectives[i * 4], objectives[i * 4 + 5]),
@@ -544,53 +545,49 @@ DurhamModel::DurhamModel(unsigned long n_weeks, int import_export_rof_table)
  * @param n_weeks number of weeks.
  */
 void
-DurhamModel::setRofTables(unsigned long n_realizations, int n_weeks, int n_utilities) {
+DurhamModel::setRofTables(unsigned long n_realizations, int n_weeks, int n_utilities, string rof_tables_directory) {
 
     cout << "Loading ROF tables" << endl;
-
-    string folder = "rof_tables";
     int n_tiers = NO_OF_INSURANCE_STORAGE_TIERS + 1;
-    rof_tables = vector<Matrix3D<double>>(
-            n_realizations, Matrix3D<double>(n_weeks, n_utilities, n_tiers));
+    rof_tables = std::vector<std::vector<Matrix2D<double>>>(n_realizations,
+                                                            vector<Matrix2D<double>>((unsigned long) n_utilities,
+                                                                                     Matrix2D<double>(n_weeks, n_tiers)));
 
-//    double start_loading = omp_get_wtime();
+    this->rof_tables_directory = rof_tables_directory;
+
 //#pragma omp parallel for
     for (int r = 0; r < n_realizations; ++r) {
-//        double start_realization = omp_get_wtime();
-        string file_name = folder + "/tables_r" + to_string(r);
-        ifstream in(file_name, ios_base::binary);
-        if (!in.good()) {
-            string error_table_file = "Tables file not found: " + file_name;
-            __throw_invalid_argument(error_table_file.c_str());
-        }
-
-        unsigned stringsize;
-        in.read(reinterpret_cast<char *>(&stringsize), sizeof(unsigned));
-
-        double data[stringsize];
-        in.read(reinterpret_cast<char *>(&data),
-                stringsize * sizeof(double));
-
-        rof_tables[r].setData(data, stringsize);
-
-        for (int i = 0; i < stringsize; ++i) {
-            double d = data[i];
-            if (std::isnan(d) || d > 1.01 || d < 0) {
-                string error_m = "nan or out of [0,1] rof imported "
-                                         "tables. Realization " +
-                                 to_string(r);
-                printf("%s", error_m.c_str());
-                __throw_logic_error(error_m.c_str());
+        for (int u = 0; u < n_utilities; ++u) {
+            string file_name = rof_tables_directory + "/tables_r" + to_string(r) + "_u" + to_string(u);
+            ifstream in(file_name, ios_base::binary);
+            if (!in.good()) {
+                string error_table_file = "Tables file not found: " + file_name;
+                __throw_invalid_argument(error_table_file.c_str());
             }
+
+            unsigned stringsize;
+            in.read(reinterpret_cast<char *>(&stringsize), sizeof(unsigned));
+
+            double data[stringsize];
+            in.read(reinterpret_cast<char *>(&data),
+                    stringsize * sizeof(double));
+
+            rof_tables[r][u].setData(data, stringsize);
+
+            for (int i = 0; i < stringsize; ++i) {
+                double d = data[i];
+                if (std::isnan(d) || d > 1.01 || d < 0) {
+                    string error_m = "nan or out of [0,1] rof imported "
+                                             "tables. Realization " +
+                                     to_string(r) + "\n";
+                    printf("%s", error_m.c_str());
+                    __throw_logic_error(error_m.c_str());
+                }
+            }
+
+            in.close();
         }
-
-        in.close();
-
-//        printf("Tables for realization %d loaded in %f s.\n", r,
-//               omp_get_wtime () - start_realization);
     }
-//    printf("ROF Tables loaded in %f s.\n",
-//           omp_get_wtime () - start_loading);
 }
 
 void DurhamModel::readInputData(){
@@ -598,49 +595,62 @@ void DurhamModel::readInputData(){
     cout << "Reading input data." << endl;
     cout << "Scenario " << scenario << endl;
 
-// #pragma omp parallel {
-    // #pragma omp single {
-    //streamflows_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/durham_inflows.csv", n_realizations);
-    //streamflows_haw = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/jordan_lake_inflows.csv", n_realizations);
-
-    streamflows_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/DurhamInflows_scenario1.csv", n_realizations);
-    streamflows_haw = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/Jordan_scenario1.csv", n_realizations);
-
-    streamflows_lillington = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/LillingtonInflows_Averages.csv", n_realizations);
+#pragma omp parallel num_threads(1) // was 20
+    {
+#pragma omp single
+        streamflows_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/scenario" + to_string(scenario) + "/durham_fullset.csv", n_realizations);
+#pragma omp single
+        streamflows_haw = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/scenario" + to_string(scenario) + "/TotalJordan_fullset.csv", n_realizations);
+#pragma omp single
+        streamflows_lillington = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/LillingtonInflows_Averages.csv", n_realizations);
 // };
-    //cout << "Reading evaporations." << endl;
-    evap_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/durham_evap.csv", n_realizations);
-    evap_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/owasa_evap.csv", n_realizations);
-    evap_jordan_lake = evap_owasa;
+        //cout << "Reading evaporations." << endl;
+#pragma omp single
+        evap_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/scenario" + to_string(scenario) + "/michielittle_netEvap_fullset.csv", n_realizations);
+#pragma omp single
+        evap_jordan_lake = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/scenario" + to_string(scenario) + "/jordan_netEvap_fullset.csv", n_realizations);
+#pragma omp single
+        {
+            evap_owasa = evap_jordan_lake;
+        }
 
-    //cout << "Reading demands." << endl;
-    demand_cary = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/cary_demand.csv", n_realizations);
-    demand_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/durham_demand.csv", n_realizations);
+        //cout << "Reading demands." << endl;
+#pragma omp single
+        demand_cary = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/cary_demand.csv", n_realizations);
+#pragma omp single
+        demand_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/durham_demand.csv", n_realizations);
+      //cout << "Reading others." << endl;
+#pragma omp single
+        {
+            demand_to_wastewater_fraction_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_durham.csv");
 
-    //cout << "Reading others." << endl;
-    demand_to_wastewater_fraction_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_durham.csv");
-//
-    caryDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/caryDemandClassesFractions.csv");
-    durhamDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/durhamDemandClassesFractions.csv");
+            caryDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/caryDemandClassesFractions.csv");
+            durhamDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/durhamDemandClassesFractions.csv");
 
-    caryUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/caryUserClassesWaterPrices.csv");
-    durhamUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/durhamUserClassesWaterPrices.csv");
-
-    cout << "Done reading input data." << endl;
+            caryUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/caryUserClassesWaterPrices.csv");
+            durhamUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/durhamUserClassesWaterPrices.csv");
+        }
+        cout << "Done reading input data." << endl;
+    }
 
 }
 
-void DurhamModel::setImport_export_rof_tables(int import_export_rof_tables, int n_weeks) {
+void DurhamModel::setImport_export_rof_tables(int import_export_rof_tables, int n_weeks, string rof_tables_directory) {
     if (std::abs(import_export_rof_tables) > 1)
         __throw_invalid_argument("Import/export ROF tables can be assigned as:\n"
                                          "-1 - import tables\n"
                                          "0 - ignore tables\n"
                                          "1 - export tables.\n"
                                          "The value entered is invalid.");
+
     DurhamModel::import_export_rof_tables = import_export_rof_tables;
+    this->rof_tables_directory = output_directory + "/TestFiles/" + rof_tables_directory;
 
     if (import_export_rof_tables == IMPORT_ROF_TABLES) {
-        DurhamModel::setRofTables(n_realizations, n_weeks, n_utilities);
+        DurhamModel::setRofTables(n_realizations, n_weeks, n_utilities, this->rof_tables_directory);
+    } else {
+        const string mkdir_command = "mkdir";
+        //system((mkdir_command + " " + this->rof_tables_directory).c_str());
     }
 }
 

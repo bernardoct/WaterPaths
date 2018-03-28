@@ -618,14 +618,14 @@ void Utility::waterTreatmentPlantConstructionHandler(unsigned int source_id) {
             ->addTreatmentCapacity(
                     added_capacity,
                     wtp->added_treatment_capacity_fractions
-                            .at((unsigned long) id),
+                            .at((unsigned long) id), id);
     double dead_storage_component = wtp->unallocated_treatment_capacity;
         // HOW DO I MAKE THIS THREE LINK TO THE UTILITIES THAT DEVELOP THE JOINT PROJECTS
         // DIVIDE BY THREE FOR COMPLETE TRIANGLE MODEL, DIVIDE BY 1 IMPLICITLY FOR DURHAM MODEL
 
     water_sources.at(wtp->parent_reservoir_ID)->
             addTreatmentCapacity(dead_storage_component,
-                                 wtp->added_treatment_capacity_fractions->at((unsigned long) id),
+                                 wtp->added_treatment_capacity_fractions.at((unsigned long) id),
                                  id);
 
     /// If source is intake or reuse and is not in the list of active

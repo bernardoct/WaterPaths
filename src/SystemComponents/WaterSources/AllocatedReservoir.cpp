@@ -221,7 +221,6 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
     double outflow_new = min_environmental_outflow;
     total_outflow = outflow_new;
 
-
     /// Check if spillage is needed and, if so, correct stored volume and
     /// calculate spillage and set all allocations to full. Otherwise,
     /// distributed inflows and outflows among respective allocations.
@@ -320,6 +319,9 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
         }
     }
 
+//    if (available_volume < 0)
+//        __throw_out_of_range("Evaporation is enormous.");
+
     total_demand += policy_added_demand;
     policy_added_demand = 0;
 
@@ -369,6 +371,17 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
                 evaporated_volume, total_demand, policy_added_demand,
                 total_outflow, cont_error);
     }
+
+    /// If evaporation is a crazy large number, ensure that the reservoir does not have
+    /// negative storage
+//    if (available_volume < 0.0){
+//        available_volume = 0.0;
+//        for (int u : *utilities_with_allocations) {
+//            if (available_allocated_volumes[u] < 0.0) {
+//                available_allocated_volumes[u] = 0.0;
+//            }
+//        }
+//    }
 }
 
 void AllocatedReservoir::addCapacity(double capacity) {

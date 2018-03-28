@@ -236,8 +236,6 @@ public:
 
     void sellRawWaterTransfer(double payment_per_volume, double raw_water_transferred);
 
-    vector<int> getNon_Priority_Utility_Water_Sources();
-
     vector<double>
     rearrangeInfraRofVector(const vector<double> &infra_construction_triggers,
                             const vector<int> &rof_infra_construction_order,

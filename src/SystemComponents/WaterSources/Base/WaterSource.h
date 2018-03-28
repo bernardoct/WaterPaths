@@ -15,7 +15,6 @@ const int BOND_INTEREST_PAYMENTS_PER_YEAR = 1;
 
 class WaterSource {
 protected:
-
     double available_volume = 0;
     double total_outflow = 0;
     double upstream_source_inflow = 0;
@@ -55,7 +54,7 @@ protected:
 public:
     const int id;
     const char *name;
-    const int source_type;
+    int source_type;
     const double construction_time;
 
     WaterSource(

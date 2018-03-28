@@ -23,7 +23,8 @@ using namespace std;
 using namespace Constants;
 using namespace Solutions;
 
-Triangle* trianglePtr;
+//Triangle* trianglePtr;
+DurhamModel* trianglePtr;
 
 void eval(double* vars, double* objs, double* consts) {
     trianglePtr->functionEvaluation(vars, objs, consts);
@@ -50,7 +51,7 @@ int main(int argc, char *argv[]) {
     string inflows_evap_directory_suffix = "-1";
     string rof_tables_directory = "rof_tables";
     unsigned long standard_solution = 0;
-    int n_threads;// = omp_get_num_procs();
+    int n_threads = 1;// = omp_get_num_procs();
     int standard_rdm = 0;
     int first_solution = -1;
     int last_solution = -1;

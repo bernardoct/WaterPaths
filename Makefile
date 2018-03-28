@@ -4,7 +4,7 @@ CFLAGS=-std=c++14 -fopenmp
 SOURCES=$(shell find ./src -name "*.cpp")
 OBJECTS=$(SOURCES:.cpp=.o)
 
-TARGET=triangleSimulation
+TARGET=DurhamModel
 EXECUTABLE=$(TARGET)
 
 LIB_DIR=./lib
@@ -18,7 +18,7 @@ borg: CFLAGS += -DPARALLEL -fopenmp
 borg: all
 
 gcc: CC=g++
-gcc: CFLAGS+=-O3 -march=native
+gcc: CFLAGS+=-O0 -march=native
 gcc: all
 
 intel: CC=icc

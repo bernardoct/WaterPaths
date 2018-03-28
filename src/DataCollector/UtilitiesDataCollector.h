@@ -24,17 +24,16 @@ private:
     vector<double> insurance_payout;
     vector<double> drought_mitigation_cost;
     vector<double> capacity;
-    vector<vector<int>> pathways;
     vector<double> net_present_infrastructure_cost;
     vector<double> waste_water_discharge;
     vector<double> unfulfilled_demand;
     vector<double> net_stream_inflow;
+    vector<vector<int>> pathways;
     const Utility *utility;
 
 public:
 
-    explicit UtilitiesDataCollector(const Utility *utility,
-                                        unsigned long realization);
+    explicit UtilitiesDataCollector(const Utility *utility, unsigned long realization);
 
     UtilitiesDataCollector &operator=(const UtilitiesDataCollector &utility_data_collector);
 

@@ -16,8 +16,7 @@ private:
     vector<double> restriction_multipliers;
 
 public:
-    explicit RestrictionsDataCollector(
-                Restrictions *restriction_policy, unsigned long realization);
+    explicit RestrictionsDataCollector(Restrictions *restriction_policy, unsigned long realization);
 
     string printTabularString(int week) override;
 

@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <iostream>
 #include <numeric>
-//#include <zconf.h>
 #include "AllocatedReservoir.h"
 
 
@@ -111,7 +110,8 @@ AllocatedReservoir::AllocatedReservoir(
         const double construction_rof_or_demand,
         const vector<double> &construction_time_range, double construction_cost,
         vector<int> *utilities_with_allocations,
-        vector<double> *allocated_fractions, vector<double> *allocated_treatment_fractions)
+        vector<double> *allocated_fractions, vector<double>
+        *allocated_treatment_fractions)
         : Reservoir(name,
                     id,
                     catchments,
@@ -163,8 +163,7 @@ AllocatedReservoir::AllocatedReservoir(const AllocatedReservoir &allocated_reser
           allocation_modifier(allocated_reservoir.allocation_modifier),
           modified_allocations(allocated_reservoir.modified_allocations),
           has_water_quality_pool(allocated_reservoir.has_water_quality_pool) {
-    //allocation_modifier = new AllocationModifier(*allocation_modifier);
-}
+        }
 
 /**
  * Copy assignment operator
@@ -186,12 +185,6 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
 
     double total_upstream_inflow;
 
-//    if (id == 6 & (week == 156 | week == 312 | week == 468)) {
-//        cout << "Check 1" << endl;
-//        cout << "Utility: " << name << ", Reservoir: " << id << endl;
-//        cout << "Week: " << week << ", Total Demand: " << total_demand << endl;
-//    }
-
     total_upstream_inflow = upstream_source_inflow +
             wastewater_inflow;
 
@@ -206,6 +199,7 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
     }
 
     double direct_demand = total_demand;
+
 
     /// Calculate total runoff inflow reaching reservoir from its watershed.
     upstream_catchment_inflow = 0;
@@ -227,25 +221,14 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
     double outflow_new = min_environmental_outflow;
     total_outflow = outflow_new;
 
+
     /// Check if spillage is needed and, if so, correct stored volume and
     /// calculate spillage and set all allocations to full. Otherwise,
     /// distributed inflows and outflows among respective allocations.
     if (available_volume_new > capacity) {
-        for (int u : *utilities_with_allocations) {
+        for (int u : *utilities_with_allocations)
             available_allocated_volumes[u] = this->capacity *
                                              allocated_fractions[u];
-
-            /// FIX: treatment capacity is re-allocated, but reduces Cary stake, capping demand at capacity
-            /// meanwhile, no demand is allocated to the other utilities??? even though they have capacity
-            /// even the water quality pool. total demand is also capped at 134.4......
-//            if (id == 6 & (week == 156 | week == 312 | week == 468)) {
-//                cout << "Week: " << week << ", Utility: " << u << ", Allocated Demand: " << demand_outflow[u] << endl;
-//                cout << "Week: " << week << ", Utility: " << u
-//                     << ", Allocated Treatment Capacity: " << allocated_treatment_capacities[u] << endl;
-//                cout << "Week: " << week << ", Utility: " << u
-//                     << ", Allocated Capacity: " << allocated_capacities[u] << endl;
-//            }
-        }
         total_outflow = outflow_new + available_volume_new - capacity;
         available_volume = capacity;
     } else {
@@ -345,31 +328,27 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
                                         available_allocated_volumes.end(),
                                         0.f);
     if ((int) abs(sum_allocations - available_volume) > 1) {
-        cout << endl;
-        cout << "week: " << week << endl;
-        cout << "source: " << name << endl;
-        cout << "sum_allocations " << sum_allocations << endl;
-        cout << "available volume old: " << available_volume_old << endl;
-        cout << "available_volume " << available_volume << endl << endl;
-        cout << "total_upstream_inflow: " << total_upstream_inflow << endl;
-        cout << "upstream_catchment_inflow: " << upstream_catchment_inflow << endl;
-        cout << "evaporation: " << evaporated_volume << endl;
-        cout << "total_demand: " << total_demand << endl;
-//        cout << "allocated demand, allocation 1: " << demand_outflow[0] << endl;
-//        cout << "allocated demand, allocation 2: " << demand_outflow[1] << endl;
-        cout << "policy_added_demand: " << policy_added_demand << endl;
-        cout << "total_outflow: " << total_outflow << endl;
-        cout << "water quality pool capacity: " << allocated_capacities[wq_pool_id] << endl;
-        cout << "water quality pool available volume: " << available_allocated_volumes[wq_pool_id] << endl;
-        cout << "continuity error: " << available_volume_old +
-                total_upstream_inflow + upstream_catchment_inflow -
-                evaporated_volume - total_demand - total_outflow -
-                available_volume << endl;
+        char error[4000];
+        double cont_error = available_volume_old +
+                            total_upstream_inflow + upstream_catchment_inflow -
+                            evaporated_volume - total_demand - total_outflow -
+                            available_volume;
+        sprintf(error, "Sum of allocated volumes in a reservoir must \n"
+                        "total current storage minus unallocated \n"
+                        "volume.Please report this error to \n"
+                        "bct52@cornell.edu.\n\n"
+                        "week: %d\nsum_allocations %f\n"
+                        "available volume old: %f\navailable_volume %f\n"
+                        "total_upstream_inflow: %f\n"
+                        "upstream_catchment_inflow: %f\nevaporation: %f\n"
+                        "total_demand: %f\npolicy_added_demand: %f\n"
+                        "total_outflow: %f\ncontinuity error: %f\n",
+                week, sum_allocations, available_volume_old, available_volume,
+                total_upstream_inflow, upstream_catchment_inflow,
+                evaporated_volume, total_demand, policy_added_demand,
+                total_outflow, cont_error);
 
-        __throw_runtime_error("Sum of allocated volumes in a reservoir must "
-                                      "total current storage minus unallocated "
-                                      "volume.Please report this error to "
-                                      "bct52@cornell.edu.");
+        throw_with_nested(runtime_error(error));
     }
 
     double cont_error = abs(available_volume_old - direct_demand + total_upstream_inflow +
@@ -377,13 +356,18 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
                            total_outflow - available_volume);
 //    if (cont_error > abs(available_volume) * 1e-4) {
     if (cont_error > 1.f) {
-        cout << "Source " << name << endl;
-        cout << "available_volume " << available_volume << endl;
-        cout << "Error " << cont_error << endl;
-        cout << "Week " << week << endl;
-        __throw_runtime_error("Continuity error in allocated water source. "
-                                      "If you cannot find the problem, please "
-                                      "report this to bct52@cornell.edu");
+        char error[4000];
+        sprintf(error, "Continuity error in %s\n\n"
+                        "week: %d\nsum_allocations %f\n"
+                        "available volume old: %f\navailable_volume %f\n"
+                        "total_upstream_inflow: %f\n"
+                        "upstream_catchment_inflow: %f\nevaporation: %f\n"
+                        "total_demand: %f\npolicy_added_demand: %f\n"
+                        "total_outflow: %f\ncontinuity error: %f\n",
+                name, week, sum_allocations, available_volume_old, available_volume,
+                total_upstream_inflow, upstream_catchment_inflow,
+                evaporated_volume, total_demand, policy_added_demand,
+                total_outflow, cont_error);
     }
 }
 
@@ -407,13 +391,16 @@ void AllocatedReservoir::addTreatmentCapacity(
         const double added_plant_treatment_capacity,
         double allocated_fraction_of_total_capacity,
         int utility_id) {
+    WaterSource::addTreatmentCapacity(
+            added_plant_treatment_capacity *
+            allocated_fraction_of_total_capacity,
+            allocated_fraction_of_total_capacity,
+            utility_id);
 
     /// Add capacity to respective treatment allocation.
-    allocated_treatment_capacities[utility_id] += added_plant_treatment_capacity; //*
-            //allocated_fraction_of_total_capacity; // this variable is misleading, should be frac of added cap
-
-    WaterSource::addTreatmentCapacity(added_plant_treatment_capacity,
-                                      allocated_fraction_of_total_capacity, utility_id);
+    allocated_treatment_capacities[utility_id] +=
+            added_plant_treatment_capacity *
+            allocated_fraction_of_total_capacity;
 
     /// Update treatment allocation fractions based on new allocated amounts
     /// and new total treatment capacity.

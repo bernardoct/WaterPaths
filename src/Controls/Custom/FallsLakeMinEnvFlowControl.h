@@ -6,26 +6,29 @@
 #define TRIANGLEMODEL_FALLSLAKEMINENVFLOWCONTROL_H
 
 
-#include "../Base/MinEnvironFlowControl.h"
+#include "../Base/MinEnvFlowControl.h"
 
-class FallsLakeMinEnvFlowControl : public MinEnvironFlowControl {
+class FallsLakeMinEnvFlowControl : public MinEnvFlowControl {
 private:
-    const int *week_interval;
-    const double *base_min_env_flows;
-    const double *base_min_gage_flows;
+    const vector<int> week_interval;
+    const vector<double> base_min_env_flows;
+    const vector<double> base_min_gage_flows;
     const int neuse_river_intake_id;
     Catchment crabtree;
-
 
 public:
     FallsLakeMinEnvFlowControl(
             int water_source_id, int neuse_river_intake_id,
-            const int *week_interval, const double *base_min_env_flows,
-            const double *base_gage_flows, Catchment crabtree);
+            vector<int> week_interval, vector<double> base_min_env_flows,
+            vector<double> base_gage_flows, Catchment &crabtree);
+
+    FallsLakeMinEnvFlowControl(const FallsLakeMinEnvFlowControl &min_env_control);
 
     double getRelease(int week) override;
 
-    void setRealization(unsigned int r, vector<vector<double>> *rdm_factors) override;
+    void setRealization(unsigned int r, vector<double> &rdm_factors) override;
+
+    ~FallsLakeMinEnvFlowControl() override;
 
 };
 

@@ -9,13 +9,15 @@
 
 #include <iostream>
 #include <cstring>
+#include <iostream>
+#include <fstream>
 #include <bits/unique_ptr.h>
 
 template<typename T>
 class Matrix2D {
 private:
     int di_, dj_;
-    T *data_;
+    unique_ptr<T[]> data_;
     bool not_initialized = true;
 public:
     Matrix2D();
@@ -23,7 +25,7 @@ public:
     Matrix2D(int di, int dj);
 
     T &operator()(int i, int j);        // Subscript operators often come in pairs
-    T operator()(int di, int d) const;  // Subscript operators often come in pairs
+    T operator()(int i, int j) const;  // Subscript operators often come in pairs
     // ...
     ~Matrix2D();                              // Destructor
     Matrix2D(const Matrix2D &m);               // Copy constructor
@@ -32,49 +34,55 @@ public:
 
     Matrix2D<T> &operator/(const double m);
 
-    void setData(T *data);
-
     void reset(T value);
 
-    void print() const;
+    void print(int i) const;
 
     int get_i();
 
     int get_j();
 
     bool empty();
-};
 
+    void setPartialData(int i, T *data, int length);
+
+    void setData(T *data, unsigned long length);
+
+    T *getPointerToElement(int i, int j) const;
+
+    void add_to_position(int i, int j, T *data, unsigned long length);
+};
 
 template<typename T>
 Matrix2D<T>::Matrix2D(int di, int dj) : di_(di), dj_(dj) {
     if (di == 0 || dj == 0)
         std::__throw_length_error("Matrix2D constructor has 0 size");
-    data_ = new T[di * dj];
-    fill_n(data_, di_ * dj_, 0);
+    data_ = unique_ptr<T[]>(new T[di * dj]);
+    fill_n(data_.get(), di_ * dj_, 0);
 }
 
 template<typename T>
 Matrix2D<T>::Matrix2D(const Matrix2D<T> &m) : di_(m.di_), dj_(m.dj_), not_initialized(m.not_initialized) {
-    data_ = new T[di_ * dj_];
-    std::copy(m.data_, m.data_ + di_ * dj_, data_);
+    if (di_ == 0 || dj_ == 0)
+        std::__throw_length_error("Matrix2D dimensions has 0 size");
+    data_ = unique_ptr<T[]>(new T[di_ * dj_]);
+    std::copy(m.data_.get(), m.data_.get() + di_ * dj_, data_.get());
 }
 
-template<class T>
+template<typename T>
 Matrix2D<T>::Matrix2D() {}
 
-template<class T>
-Matrix2D<T>::~Matrix2D() {
-    delete[] data_;
-}
+template<typename T>
+Matrix2D<T>::~Matrix2D() {}
 
 template<typename T>
 Matrix2D<T> &Matrix2D<T>::operator=(const Matrix2D<T> &m) {
     di_ = m.di_;
     dj_ = m.dj_;
-    not_initialized = m.not_initialized;
-    data_ = new T[di_ * dj_];
-    std::copy(m.data_, m.data_ + di_ * dj_, data_);
+    if (di_ == 0 || dj_ == 0)
+        std::__throw_length_error("Matrix2D dimensions has 0 size");
+    data_ = unique_ptr<T[]>(new T[di_ * dj_]);
+    std::copy(m.data_.get(), m.data_.get() + di_ * dj_, data_.get());
     return *this;
 }
 
@@ -101,39 +109,59 @@ Matrix2D<T> &Matrix2D<T>::operator/(const double n) {
 
 template<typename T>
 T &Matrix2D<T>::operator()(int i, int j) {
-    if (i >= di_ || j >= dj_)
-        std::__throw_length_error("Matrix2D subscript out of bounds");
-    not_initialized = false;
+    if (i >= di_ || j >= dj_) {
+        string error_message = "Matrix3D subscript out of bounds.\ni=" +
+                               to_string(i) + " (>=" + to_string(di_) + "?)\nj=" +
+                               to_string(j) + " (>" + to_string(dj_) + "?)";
+        std::throw_with_nested(std::length_error(error_message.c_str()));
+    }
     return data_[dj_ * i + j];
 }
 
 template<typename T>
 T Matrix2D<T>::operator()(int i, int j) const {
-    if (i >= di_ || j >= dj_)
-        std::__throw_length_error("Matrix2D subscript out of bounds");
+    if (i >= di_ || j >= dj_) {
+        string error_message = "Matrix3D subscript out of bounds.\ni=" +
+                               to_string(i) + " (>=" + to_string(di_) + "?)\nj=" +
+                               to_string(j) + " (>" + to_string(dj_) + "?)";
+        std::throw_with_nested(std::length_error(error_message.c_str()));
+    }
     return data_[dj_ * i + j];
 }
 
 template<typename T>
-void Matrix2D<T>::reset(T value) {
-    not_initialized = false;
-    fill_n(data_, di_ * dj_, value);
-}
-
-template<typename T>
-void Matrix2D<T>::print() const {
-    for (int i = 0; i < di_; ++i) {
-        for (int j = 0; j < dj_; ++j) {
-            std::cout << data_[dj_ * i + j] << " ";
-        }
-        std::cout << std::endl;
+void Matrix2D<T>::print(int i) const {
+    for (int j = 0; j < dj_; ++j) {
+        printf("%0.2f ", data_[dj_ * i + j]);
     }
+    printf("\n");
 }
 
 template<typename T>
-void Matrix2D<T>::setData(T *data) {
-    not_initialized = false;
-    data_ = data;
+void Matrix2D<T>::setData(T *data, unsigned long length) {
+    if (length != di_ * dj_) {
+        string er = "Size of data does not match that of matrix: " +
+                    to_string(length) + " vs. " + to_string(di_*dj_);
+        throw_with_nested(invalid_argument(er.c_str()));
+    }
+    memcpy(data_.get(), data, length * sizeof(T));
+}
+
+template<typename T>
+void Matrix2D<T>::setPartialData(int i, T *data, int length) {
+    if (i >= di_ + length)
+        std::__throw_length_error("Matrix3D subscript out of bounds or negative");
+    memcpy(data_.get() + i * dj_, data, length * sizeof(T));
+}
+
+template<typename T>
+T *Matrix2D<T>::getPointerToElement(int i, int j) const {
+    return data_.get() + i * dj_ + j;
+}
+
+template<typename T>
+void Matrix2D<T>::reset(T value) {
+    fill_n(data_.get(), di_ * dj_, value);
 }
 
 template<typename T>
@@ -149,6 +177,15 @@ int Matrix2D<T>::get_j() {
 template<typename T>
 bool Matrix2D<T>::empty() {
     return not_initialized;
+}
+
+template<typename T>
+void Matrix2D<T>::add_to_position(int i, int j, T *data,
+                                  unsigned long length) {
+    int pos0 = i * dj_ + j;
+    for (int p = 0; p < length; ++p) {
+        data_[pos0 + p] += data[p];
+    }
 }
 
 template<typename T>
@@ -194,7 +231,6 @@ public:
     bool empty() const;
 };
 
-
 template<typename T>
 Matrix3D<T>::Matrix3D(int di, int dj, int dk) : di_(di), dj_(dj), dk_(dk)
 {
@@ -213,7 +249,7 @@ Matrix3D<T>::Matrix3D(const Matrix3D<T> &m) : di_(m.di_), dj_(m.dj_), dk_(m.dk_)
 }
 
 template<typename T>
-Matrix3D<T>::Matrix3D() = default;
+Matrix3D<T>::Matrix3D() {}
 
 template<typename T>
 Matrix3D<T>::~Matrix3D() {}
@@ -253,15 +289,25 @@ Matrix3D<T> &Matrix3D<T>::operator/(const double n) {
 
 template<typename T>
 T &Matrix3D<T>::operator()(int i, int j, int k) {
-    if (i >= di_ || j >= dj_ || k >= dk_)
-        std::__throw_length_error("Matrix3D subscript out of bounds");
+    if (i >= di_ || j >= dj_ || k >= dk_) {
+        string error_message = "Matrix3D subscript out of bounds.\ni=" +
+                to_string(i) + " (>=" + to_string(di_) + "?)\nj=" +
+                to_string(j) + " (>" + to_string(dj_) + "?)\nk=" +
+                to_string(k) + " (>=" + to_string(dk_) + "?)";
+        std::throw_with_nested(std::length_error(error_message.c_str()));
+    }
     return data_[dj_ * dk_ * i + dk_ * j + k];
 }
 
 template<typename T>
 T Matrix3D<T>::operator()(int i, int j, int k) const {
-    if (i >= di_ || j >= dj_ || k >= dk_)
-        std::__throw_length_error("Matrix3D subscript out of bounds");
+    if (i >= di_ || j >= dj_ || k >= dk_) {
+        string error_message = "Matrix3D subscript out of bounds.\ni=" +
+                to_string(i) + " (>=" + to_string(di_) + "?)\nj=" +
+                to_string(j) + " (>" + to_string(dj_) + "?)\nk=" +
+                to_string(k) + " (>=" + to_string(dk_) + "?)";
+        std::throw_with_nested(std::length_error(error_message.c_str()));
+    }
     return data_[dj_ * dk_ * i + dk_ * j + k];
 }
 
@@ -270,7 +316,7 @@ void Matrix3D<T>::setData(T *data, unsigned long length) {
     if (length != di_*dj_*dk_) {
         string er = "Size of data does not match that of matrix: " +
                 to_string(length) + " vs. " + to_string(di_*dj_*dk_);
-        __throw_invalid_argument(er.c_str());
+        throw_with_nested(invalid_argument(er.c_str()));
     }
     memcpy(data_.get(), data, length* sizeof(T));
 }

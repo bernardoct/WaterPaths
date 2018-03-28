@@ -13,11 +13,16 @@
 #include "../SystemComponents/WaterSources/Relocation.h"
 #include "../DroughtMitigationInstruments/RawWaterReleases.h"
 #include "../SystemComponents/WaterSources/AllocatedReservoirExpansion.h"
+#include "../Controls/FixedMinEnvFlowControl.h"
+#include "../Controls/InflowMinEnvFlowControl.h"
+#include "../Controls/SeasonalMinEnvFlowControl.h"
+#include "../Controls/StorageMinEnvFlowControl.h"
+#include "../Controls/Custom/JordanLakeMinEnvFlowControl.h"
+#include "../Controls/Custom/FallsLakeMinEnvFlowControl.h"
 #include <fstream>
 #include <algorithm>
 #include <climits>
 #include <unistd.h>
-#include <libloaderapi.h>
 
 /**
  * Reads csv file into table, exported as a vector of vector of doubles.
@@ -25,7 +30,8 @@
  * @param max_lines
  * @return
  */
-vector<vector<double>> Utils::parse2DCsvFile(string file_name, unsigned long max_lines, vector<unsigned long> rows_to_read) {
+vector<vector<double>> Utils::parse2DCsvFile(string file_name, unsigned long max_lines,
+                                             vector<unsigned long> rows_to_read) {
 
     vector<vector<double> > data;
     ifstream inputFile(file_name);
@@ -80,7 +86,8 @@ vector<vector<double>> Utils::parse2DCsvFile(string file_name, unsigned long max
     }
 }
 
-vector<double> Utils::parse1DCsvFile(string file_name, unsigned long max_lines, vector<unsigned long> rows_to_read) {
+vector<double> Utils::parse1DCsvFile(string file_name, unsigned long max_lines,
+                                     vector<unsigned long> rows_to_read) {
     vector<double> data;
     ifstream infile(file_name);
     int l = 0;
@@ -111,6 +118,39 @@ vector<double> Utils::parse1DCsvFile(string file_name, unsigned long max_lines, 
     }
 
     return data;
+}
+
+vector<MinEnvFlowControl *> Utils::copyMinEnvFlowControlVector(
+        vector<MinEnvFlowControl *> min_env_flow_controls_original) {
+    vector<MinEnvFlowControl *> min_env_flow_controls_new;
+
+    for (MinEnvFlowControl *mef : min_env_flow_controls_original) {
+        if (mef->type == FIXED_FLOW_CONTROLS)
+            min_env_flow_controls_new.push_back(
+                    new FixedMinEnvFlowControl(*dynamic_cast<FixedMinEnvFlowControl *>(mef)));
+        else if (mef->type == INFLOW_CONTROLS)
+            min_env_flow_controls_new.push_back(
+                    new InflowMinEnvFlowControl(*dynamic_cast<InflowMinEnvFlowControl *>(mef)));
+        else if (mef->type == SEASONAL_CONTROLS)
+            min_env_flow_controls_new.push_back(
+                    new SeasonalMinEnvFlowControl(*dynamic_cast<SeasonalMinEnvFlowControl *>(mef)));
+        else if (mef->type == STORAGE_CONTROLS)
+            min_env_flow_controls_new.push_back(
+                    new StorageMinEnvFlowControl(*dynamic_cast<StorageMinEnvFlowControl *>(mef)));
+        else if (mef->type == JORDAN_CONTROLS)
+            min_env_flow_controls_new.push_back(
+                    new JordanLakeMinEnvFlowControl(*dynamic_cast<JordanLakeMinEnvFlowControl *>(mef)));
+        else if (mef->type == FALLS_CONTROLS)
+            min_env_flow_controls_new.push_back(
+                    new FallsLakeMinEnvFlowControl(*dynamic_cast<FallsLakeMinEnvFlowControl *>(mef)));
+        else
+            __throw_invalid_argument("One of the minimum environmental flow controls "
+                                             "does not have an implementation in the "
+                                             "Utils::copyWaterSourceVector function. "
+                                             "Please add your control to it.");
+    }
+
+    return min_env_flow_controls_new;
 }
 
 //#pragma optimize("", off)
@@ -203,13 +243,10 @@ Utils::copyDroughtMitigationPolicyVector(
 }
 
 bool Utils::isFirstWeekOfTheYear(int week) {
-//    return ((week + 1) / WEEKS_IN_YEAR - (int) ((week + 1) / WEEKS_IN_YEAR)) * WEEKS_IN_YEAR < 1.0 || week == 0;
     return WEEK_OF_YEAR[week] == 0;
 }
 
 int Utils::weekOfTheYear(int week) {
-//    return (int) (((week + 0.99) / WEEKS_IN_YEAR - (int) ((week + 0.99) / WEEKS_IN_YEAR)) *
-//                  WEEKS_IN_YEAR);
     return WEEK_OF_YEAR[week];
 }
 
@@ -218,4 +255,14 @@ void Utils::removeIntFromVector(vector<int>& vec, int el) {
     auto vbeg = vec.begin();
     auto vend = vec.end();
     vec.erase(std::remove(vbeg, vend, el), vend);
+}
+
+void Utils::print_exception(const std::exception& e, int level)
+{
+    std::cerr << std::string(level, ' ') << "exception: " << e.what() << '\n';
+    try {
+        std::rethrow_if_nested(e);
+    } catch(const std::exception& e) {
+        print_exception(e, level+1);
+    } catch(...) {}
 }

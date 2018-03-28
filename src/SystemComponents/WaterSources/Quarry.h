@@ -10,8 +10,8 @@
 
 class Quarry : public Reservoir {
 private:
-    double max_diversion;
-    double diverted_flow;
+    double max_diversion = NON_INITIALIZED;
+    double diverted_flow = NON_INITIALIZED;
 
 public:
 

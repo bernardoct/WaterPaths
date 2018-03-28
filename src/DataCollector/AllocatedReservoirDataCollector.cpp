@@ -6,16 +6,15 @@
 #include <iomanip>
 #include "AllocatedReservoirDataCollector.h"
 
-AllocatedReservoirDataCollector::AllocatedReservoirDataCollector(
-            AllocatedReservoir *allocated_reservoir, unsigned long realization)
-        : ReservoirDataCollector(allocated_reservoir, ALLOCATED_RESERVOIR,
-                                 (7 + (int) allocated_reservoir->
-                                                 getUtilities_with_allocations()->
-                                                 size()) * COLUMN_WIDTH,
-                                 realization),
+AllocatedReservoirDataCollector::AllocatedReservoirDataCollector(AllocatedReservoir *allocated_reservoir,
+                                                                 unsigned long realization)
+        : ReservoirDataCollector(allocated_reservoir, ALLOCATED_RESERVOIR, (7 + (int) allocated_reservoir->
+                getUtilities_with_allocations()->
+                size()) * COLUMN_WIDTH, realization),
           allocated_reservoir(allocated_reservoir),
           utilities_with_allocations
-                  (*allocated_reservoir->getUtilities_with_allocations()) {}
+                  (*allocated_reservoir->getUtilities_with_allocations()) {
+}
 
 string AllocatedReservoirDataCollector::printTabularString(int week) {
     string output = ReservoirDataCollector::printTabularString(week);

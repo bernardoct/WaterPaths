@@ -12,8 +12,10 @@
 
 class ContinuityModelROF : public ContinuityModel {
 private:
-    Matrix3D<double> storage_to_rof_table;
-    Matrix3D<double> storage_to_rof_rof_realization;
+//    Matrix3D<double> storage_to_rof_table;
+//    Matrix3D<double> storage_to_rof_rof_realization;
+    vector<Matrix2D<double>> ut_storage_to_rof_table;
+    vector<Matrix2D<double>> ut_storage_to_rof_rof_realization;
     vector<int> online_downstream_sources;
     bool *storage_wout_downstream;
     const int n_topo_sources;
@@ -24,7 +26,6 @@ protected:
     vector<WaterSource *> realization_water_sources;
     vector<Utility *> realization_utilities;
 
-    Matrix3D<double> precomputed_rof_tables;
     vector<vector<double>> table_storage_shift;
     vector<double> utility_base_storage_capacity;;
     vector<double> utility_base_delta_capacity_table;
@@ -34,8 +35,8 @@ protected:
 public:
     ContinuityModelROF(vector<WaterSource *> water_sources, const Graph &water_sources_graph,
                        const vector<vector<int>> &water_sources_to_utilities, vector<Utility *> utilities,
-                       vector<MinEnvironFlowControl *> &min_env_flow_controls, vector<vector<double>> *utilities_rdm,
-                       vector<vector<double>> *water_sources_rdm, unsigned long total_weeks_simulation,
+                       vector<MinEnvFlowControl *> min_env_flow_controls, vector<double>& utilities_rdm,
+                       vector<double>& water_sources_rdm, unsigned long total_weeks_simulation,
                        const bool use_precomputed_rof_tables, const unsigned int realization_id);
 
     ContinuityModelROF(ContinuityModelROF &continuity_model_rof);
@@ -58,17 +59,21 @@ public:
                                  int week_of_the_year,
                                  const double *to_full_toposort);
 
-    const Matrix3D<double> *getStorage_to_rof_table() const;
+    const vector<Matrix2D<double>> &getUt_storage_to_rof_table() const;
 
     void shiftStorages(double *available_volumes_shifted, const double
     *delta_storage);
 
     void printROFTable(const string &folder);
 
-    void setROFTablesAndShifts(const Matrix3D<double> &storage_to_rof_table,
+    void setROFTablesAndShifts(const vector<Matrix2D<double>> &storage_to_rof_table,
                                const vector<vector<double>> &table_storage_shift);
 
     vector<double> calculateShortTermROFTable(int week);
+
+    void tableROFExceptionHandler(double m, int u, int week);
+
+
 };
 
 

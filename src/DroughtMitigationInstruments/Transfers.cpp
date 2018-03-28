@@ -3,6 +3,7 @@
 //
 
 #include <numeric>
+#include <algorithm>
 #include "Transfers.h"
 #include "../Utils/Utils.h"
 
@@ -61,11 +62,15 @@ Transfers::Transfers(
     continuity_matrix[source_utility_id][
             continuity_matrix.size() + source_utility_id] = 1;
 
+    int max_buyer_id = *std::max_element(buyers_ids.begin(),
+                                                  buyers_ids.end());
+    util_id_to_vertex_id = vector<int>(max_buyer_id + 1, NON_INITIALIZED);
     /// Map buyer's IDs to vertexes ID starting from 0 for the sake of
     /// determining payments.
     for (int i = 0; i < buyers_ids.size(); ++i) {
-        util_id_to_vertex_id->insert(
-                pair<int, int>(buyers_ids.at((unsigned long) i), i));
+//        util_id_to_vertex_id.insert(
+//                pair<int, int>(buyers_ids.at((unsigned long) i), i));
+        util_id_to_vertex_id[buyers_ids.at((unsigned long) i)] = i;
     }
 
     /// Create QP matrices and vectors.
@@ -125,9 +130,6 @@ Transfers::Transfers(const Transfers &transfers) :
         source_utility_id(transfers.source_utility_id),
         source_treatment_buffer(transfers.source_treatment_buffer) {
 
-//    if (transfers.source_utility)
-//        FIXME: VALGRIND COMPLAINS ABOUT THIS LINE ABOVE EVEN IF IT'S NOT SUPPOSED TO BE CALLED.
-//        source_utility = new Utility(*transfers.source_utility);
     buyers_ids = transfers.buyers_ids;
     buyers_transfer_triggers = transfers.buyers_transfer_triggers;
     flow_rates_and_allocations = transfers.flow_rates_and_allocations;
@@ -162,7 +164,7 @@ Transfers::~Transfers() {
  */
 void Transfers::addSystemComponents(vector<Utility *> system_utilities,
                                     vector<WaterSource *> water_sources,
-                                    vector<MinEnvironFlowControl *> min_env_flow_controls) {
+                                    vector<MinEnvFlowControl *> min_env_flow_controls) {
 
     if (!realization_utilities.empty())
         throw std::invalid_argument("Utilities were already assigned to "
@@ -202,7 +204,7 @@ void Transfers::applyPolicy(int week) {
     double sum_rofs = 0;
     int utilities_requesting_transfers = 0;
     for (auto u : realization_utilities) {
-        vertex_id = (unsigned int) util_id_to_vertex_id->at((unsigned int) u->id);
+        vertex_id = (unsigned int) util_id_to_vertex_id.at((unsigned int) u->id);
         if (u->getRisk_of_failure() > buyers_transfer_triggers.at(vertex_id)) {
             sum_rofs += u->getRisk_of_failure();
             requesting_utilities_rofs.at(vertex_id) = u->getRisk_of_failure();
@@ -258,14 +260,25 @@ void Transfers::applyPolicy(int week) {
             double sum_allocations = 0;
             int price_week = Utils::weekOfTheYear(week);
 
-            for (auto u : *util_id_to_vertex_id) {
-                int id = u.first;
-                realization_utilities[u.second]->setDemand_offset
-                        (allocations[id],
-                         source_utility->waterPrice(price_week));
-                sum_allocations += allocations[id];
-                transfer_water_source->removeWater(id,
-                                                   allocations[id]);
+//            for (auto &u : util_id_to_vertex_id) {
+//                int id = u.first;
+//                realization_utilities[u.second]->setDemand_offset
+//                        (allocations[id],
+//                         source_utility->waterPrice(price_week));
+//                sum_allocations += allocations[id];
+//                transfer_water_source->removeWater(id,
+//                                                   allocations[id]);
+//            }
+            for (int id = 0; id < util_id_to_vertex_id.size(); ++id) {
+                int bid = util_id_to_vertex_id[id];
+                if (bid != NON_INITIALIZED) {
+                    realization_utilities[bid]->setDemand_offset
+                            (allocations[id],
+                             source_utility->waterPrice(price_week));
+                    sum_allocations += allocations[id];
+                    transfer_water_source->removeWater(id,
+                                                       allocations[id]);
+                }
             }
 
             source_utility->setDemand_offset(allocations[source_utility_id],
@@ -374,7 +387,7 @@ const vector<double> &Transfers::getAllocations() const {
     return allocations;
 }
 
-void Transfers::setRealization(unsigned int realization_id, vector<vector<double>> *utilities_rdm,
-                               vector<vector<double>> *water_sources_rdm, vector<vector<double>> *policy_rdm) {
+void Transfers::setRealization(unsigned int realization_id, vector<double> &utilities_rdm,
+                               vector<double> &water_sources_rdm, vector<double> &policy_rdm) {
 
 }

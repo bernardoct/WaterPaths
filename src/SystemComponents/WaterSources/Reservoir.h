@@ -172,7 +172,7 @@ public:
 
     void setOnline() override;
 
-    void setRealization(unsigned long r, vector<vector<double>> *rdm_factors) override;
+    void setRealization(unsigned long r, vector<double> &rdm_factors) override;
 
     double getArea() const;
 

@@ -12,10 +12,10 @@ ContinuityModelRealization::ContinuityModelRealization(
         const vector<vector<int>> &water_sources_to_utilities,
         vector<Utility *> &utilities,
         const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
-        vector<MinEnvironFlowControl *> &min_env_flow_control,
-        vector<vector<double>> *utilities_rdm,
-        vector<vector<double>> *water_sources_rdm,
-        vector<vector<double>> *policy_rdm,
+        vector<MinEnvFlowControl *> &min_env_flow_control,
+        vector<double>& utilities_rdm,
+        vector<double>& water_sources_rdm,
+        vector<double>& policy_rdm,
         const unsigned int realization_id)
         : ContinuityModel(water_sources, utilities, min_env_flow_control, water_sources_graph,
                           water_sources_to_utilities, utilities_rdm, water_sources_rdm,
@@ -25,28 +25,16 @@ ContinuityModelRealization::ContinuityModelRealization(
     /// Pass corresponding utilities to drought mitigation instruments.
     for (DroughtMitigationPolicy *dmp : this->drought_mitigation_policies) {
         dmp->addSystemComponents(utilities, water_sources, min_env_flow_control);
-        dmp->setRealization(realization_id, utilities_rdm, water_sources_rdm, policy_rdm);
+        dmp->setRealization(realization_id, utilities_rdm, water_sources_rdm,
+                            policy_rdm);
     }
 }
 
-ContinuityModelRealization::ContinuityModelRealization(ContinuityModelRealization &continuity_model_realization)
-        : ContinuityModel(continuity_model_realization.continuity_water_sources,
-                          continuity_model_realization.continuity_utilities,
-                          continuity_model_realization.min_env_flow_controls,
-                          continuity_model_realization.water_sources_graph,
-                          continuity_model_realization.water_sources_to_utilities,
-                          continuity_model_realization.utilities_rdm,
-                          continuity_model_realization.water_sources_rdm,
-                          continuity_model_realization.realization_id) {
-}
-
 ContinuityModelRealization::~ContinuityModelRealization() {
-    for (auto dmp : drought_mitigation_policies)
+    /// Delete drought mitigation policies.
+    for (auto dmp : drought_mitigation_policies) {
         delete dmp;
-}
-
-vector<WaterSource *> ContinuityModelRealization::getWater_sources() {
-    return continuity_water_sources;
+    }
 }
 
 void ContinuityModelRealization::setShortTermROFs(const vector<double> &risks_of_failure) {
@@ -70,8 +58,7 @@ void ContinuityModelRealization::setLongTermROFs(const vector<double> &risks_of_
         /// Runs utility's infrastructure construction handler and get the id
         /// of new source built, if any.
         nit = continuity_utilities[u]->
-                infrastructureConstructionHandler(risks_of_failure[u],
-                                                  week);
+                infrastructureConstructionHandler(risks_of_failure[u], week);
         /// If new source was built, check add it to the list of sources
         /// built by all utilities.
         if (nit != NON_INITIALIZED)

@@ -17,8 +17,7 @@ public:
     const char *name;
     unsigned long realization;
 
-    explicit DataCollector(int id, const char *name, unsigned long realization,
-                           int type, int table_width);
+    explicit DataCollector(int id, const char *name, unsigned long realization, int type, int table_width);
 
     virtual ~DataCollector();
 

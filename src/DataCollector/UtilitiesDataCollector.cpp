@@ -7,11 +7,10 @@
 #include "UtilitiesDataCollector.h"
 
 
-UtilitiesDataCollector::UtilitiesDataCollector(const Utility *utility,
-                                               unsigned long realization)
-        : DataCollector(utility->id, utility->name, realization, UTILITY,
-                        12 * COLUMN_WIDTH),
-          utility(utility) {}
+UtilitiesDataCollector::UtilitiesDataCollector(const Utility *utility, unsigned long realization)
+        : DataCollector(utility->id, utility->name, realization, UTILITY, 14 * COLUMN_WIDTH),
+          utility(utility) {
+}
 
 /**
  * Copy assignment operator.
@@ -30,7 +29,7 @@ string UtilitiesDataCollector::printTabularString(int week) {
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << capacity[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-	      << net_stream_inflow[week]
+	          << net_stream_inflow[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << st_rof[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
@@ -48,7 +47,11 @@ string UtilitiesDataCollector::printTabularString(int week) {
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << insurance_payout[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-              << insurance_contract_cost[week];
+              << insurance_contract_cost[week]
+              << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+              << net_present_infrastructure_cost[week]
+              << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+              << debt_service_payments[week];
 
     return outStream.str();
 }
@@ -60,8 +63,8 @@ string UtilitiesDataCollector::printCompactString(int week) {
     outStream << combined_storage[week]
               << ","
               << capacity[week]
-	      << ","
-	      << net_stream_inflow[week]
+              << ","
+	          << net_stream_inflow[week]
               << ","
               << st_rof[week]
               << ","
@@ -80,6 +83,10 @@ string UtilitiesDataCollector::printCompactString(int week) {
               << insurance_payout[week]
               << ","
               << insurance_contract_cost[week]
+              << ","
+              << net_present_infrastructure_cost[week]
+              << ","
+              << debt_service_payments[week]
               << ",";
 
     return outStream.str();
@@ -100,7 +107,9 @@ string UtilitiesDataCollector::printTabularStringHeaderLine1() {
               << setw(COLUMN_WIDTH) << "W. Water"
               << setw(COLUMN_WIDTH) << "Conting."
               << setw(COLUMN_WIDTH) << "Insurance"
-              << setw(COLUMN_WIDTH) << "Insurance";
+              << setw(COLUMN_WIDTH) << "Insurance"
+              << setw(COLUMN_WIDTH) << "Infra."
+              << setw(COLUMN_WIDTH) << "Debt";
 
     return outStream.str();
 }
@@ -120,7 +129,9 @@ string UtilitiesDataCollector::printTabularStringHeaderLine2() {
               << setw(COLUMN_WIDTH) << "Discharge"
               << setw(COLUMN_WIDTH) << "Fund"
               << setw(COLUMN_WIDTH) << "Payout"
-              << setw(COLUMN_WIDTH) << "Price";
+              << setw(COLUMN_WIDTH) << "Price"
+              << setw(COLUMN_WIDTH) << "NPV"
+              << setw(COLUMN_WIDTH) << "Service";
 
     return outStream.str();
 }
@@ -139,7 +150,9 @@ string UtilitiesDataCollector::printCompactStringHeader() {
               << id << "wastewater" << ","
               << id << "cont_fund" << ","
               << id << "ins_pout" << ","
-              << id << "ins_price" << ",";
+              << id << "ins_price" << ","
+              << id << "infra_npv" << ","
+              << id << "debt_serv" << ",";
 
     return outStream.str();
 }
@@ -165,7 +178,7 @@ void UtilitiesDataCollector::collect_data() {
     unfulfilled_demand.push_back(utility->getUnfulfilled_demand());
     net_stream_inflow.push_back(utility->getNet_stream_inflow());
 
-    checkForNans();
+//    checkForNans();
 
     infra_built = utility->getInfrastructure_built();
     if (pathways.empty() && !infra_built.empty())
@@ -173,29 +186,49 @@ void UtilitiesDataCollector::collect_data() {
     else
         if (!infra_built.empty() && infra_built[2] != pathways.back()[2])
             pathways.push_back(infra_built);
-
 }
 
 void UtilitiesDataCollector::checkForNans() const {
-    string error = "nan in combined_storage in week " + to_string(lt_rof.size()) + ", realization " + to_string(realization);
+    string error = "nan collecting data for utility " + to_string(id) + " in week " + to_string(lt_rof.size
+            ()) + ", realization " + to_string(realization);
+    if (std::isnan(unrestricted_demand.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(restricted_demand.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(combined_storage.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(lt_rof.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(st_rof.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(contingency_fund_size.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(net_present_infrastructure_cost.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(gross_revenues.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(debt_service_payments.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(contingency_fund_contribution.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(drought_mitigation_cost.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(insurance_contract_cost.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(insurance_payout.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(capacity.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(waste_water_discharge.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(unfulfilled_demand.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(net_stream_inflow.back()))
+        throw_with_nested(runtime_error(error.c_str()));
 
-    if (std::isnan(unrestricted_demand.back())) __throw_runtime_error(error.c_str());
-    if (std::isnan(restricted_demand.back())) __throw_runtime_error(error.c_str());
-    if (std::isnan(combined_storage.back())) __throw_runtime_error(error.c_str());
-    if (std::isnan(lt_rof.back())) __throw_runtime_error(error.c_str());
-    if (std::isnan(st_rof.back())) __throw_runtime_error(error.c_str());
-    if (std::isnan(contingency_fund_size.back())) __throw_runtime_error(error.c_str());
-    if (std::isnan(net_present_infrastructure_cost.back())) __throw_runtime_error(error.c_str()); // error here
-    if (std::isnan(gross_revenues.back())) __throw_runtime_error(error.c_str());
-    if (std::isnan(debt_service_payments.back())) __throw_runtime_error(error.c_str());
-    if (std::isnan(contingency_fund_contribution.back())) __throw_runtime_error(error.c_str());
-    if (std::isnan(drought_mitigation_cost.back())) __throw_runtime_error(error.c_str());
-    if (std::isnan(insurance_contract_cost.back())) __throw_runtime_error(error.c_str());
-    if (std::isnan(insurance_payout.back())) __throw_runtime_error(error.c_str());
-    if (std::isnan(capacity.back())) __throw_runtime_error(error.c_str());
-    if (std::isnan(waste_water_discharge.back())) __throw_runtime_error(error.c_str());
-    if (std::isnan(unfulfilled_demand.back())) __throw_runtime_error(error.c_str());
-    if (std::isnan(net_stream_inflow.back())) __throw_runtime_error(error.c_str());
+    error = "NPV absurdly high when collecting data for utility " + to_string(id) + " in week " + to_string(lt_rof.size
+            ()) + ", realization " + to_string(realization) + "\n";
+    if (net_present_infrastructure_cost.back() > 1e10) printf("%s", error.c_str());//throw_with_nested(runtime_error(error.c_str()));
 
 }
 

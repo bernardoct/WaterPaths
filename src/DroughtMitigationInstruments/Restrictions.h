@@ -15,7 +15,7 @@ private:
     vector<double> stage_multipliers;
     const vector<double> stage_triggers;
     double current_multiplier = 0;
-    double **restricted_weekly_average_volumetric_price = nullptr;
+    vector<vector<double>> restricted_weekly_average_volumetric_price;
 
 public:
     Restrictions(const int id, const vector<double> &stage_multipliers,
@@ -34,7 +34,7 @@ public:
 
     void addSystemComponents(vector<Utility *> systems_utilities,
                                  vector<WaterSource *> water_sources,
-                                 vector<MinEnvironFlowControl *> min_env_flow_controls) override;
+                                 vector<MinEnvFlowControl *> min_env_flow_controls) override;
 
     double getCurrent_multiplier() const;
 
@@ -45,8 +45,8 @@ public:
             const vector<vector<double>> *typesMonthlyWaterPrice,
             const vector<vector<double>> *priceMultipliers);
 
-    void setRealization(unsigned int realization_id, vector<vector<double>> *utilities_rdm,
-                        vector<vector<double>> *water_sources_rdm, vector<vector<double>> *policy_rdm) override;
+    void setRealization(unsigned int realization_id, vector<double> &utilities_rdm,
+                        vector<double> &water_sources_rdm, vector<double> &policy_rdm) override;
 };
 
 

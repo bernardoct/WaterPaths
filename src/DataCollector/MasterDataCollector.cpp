@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include <iomanip>
+#include <sys/stat.h>
 #include "MasterDataCollector.h"
 #include "../Utils/ObjectivesCalculator.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
@@ -31,7 +32,7 @@ void MasterDataCollector::printPoliciesOutputCompact(
              ++r) {
             std::ofstream out_stream;
             out_stream.open(output_directory + "/" + file_name + "_r"
-                            + std::to_string(r) + ".out");
+                            + std::to_string(r) + ".csv");
 
             string line;
             for (vector<DataCollector *> p : drought_mitigation_policy_collectors)
@@ -93,7 +94,7 @@ void MasterDataCollector::printUtilitiesOutputCompact(
     for (int r = 0; r < utility_collectors[0].size(); ++r) {
         std::ofstream out_stream;
         out_stream.open(output_directory + "/" + file_name + "_r"
-                        + std::to_string(r) + "_sim.out");
+                        + std::to_string(r) + ".csv");
 
         string line;
         for (vector<UtilitiesDataCollector> &p : utility_collectors)
@@ -155,10 +156,11 @@ void MasterDataCollector::printUtilitesOutputTabular(
 void MasterDataCollector::printWaterSourcesOutputCompact(
         int week_i, int week_f, string file_name) {
 
+#pragma omp parallel for
     for (int r = 0; r < water_source_collectors[0].size(); ++r) {
         std::ofstream out_stream;
         out_stream.open(output_directory + "/" + file_name + "_r"
-                        + std::to_string(r) + ".out");
+                        + std::to_string(r) + ".csv");
 
         string line;
         for (vector<DataCollector *> p : water_source_collectors)
@@ -224,8 +226,11 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name,
 
     if (print) {
         cout << "Calculating and printing Objectives" << endl;
+        string obj_file_path = output_directory + "/" + file_name + ".out";
+        cout << obj_file_path << endl;
+
         std::ofstream outStream;
-        outStream.open(output_directory + "/" + file_name + ".out");
+        outStream.open(obj_file_path);
 
         outStream << setw(COLUMN_WIDTH) << "      " << setw((COLUMN_WIDTH * 2))
                   << "Reliability"
@@ -235,7 +240,7 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name,
                   << setw(COLUMN_WIDTH * 2) << "Peak Financial Cost"
                   << setw(COLUMN_WIDTH * 2) << "Worse Case Costs" << endl;
 
-        for (auto u : utility_collectors) {
+        for (auto &u : utility_collectors) {
             /// Create vector with restriction policies pertaining only to the
             /// utility whose objectives are being calculated.
             vector<RestrictionsDataCollector> restrictions;
@@ -289,14 +294,24 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name,
             objectives.push_back(financial_cost);
             objectives.push_back(worse_cost);
         }
+
         outStream.close();
+
+        for (int i = 0; i < objectives.size(); ++i) {
+            double o = objectives.at(i);
+            if (o > 10e10 || o < -0.1) {
+                char* error;
+                sprintf(error, "Objective %d has absurd value of %f. Aborting.\n", i, o);
+                throw_with_nested(runtime_error(error));
+            }
+        }
     } else {
         cout << "Calculating Objectives" << endl;
-        for (auto u : utility_collectors) {
+        for (auto &u : utility_collectors) {
             /// Create vector with restriction policies pertaining only to the
             /// utility whose objectives are being calculated.
             vector<RestrictionsDataCollector> utility_restrictions;
-            for (auto p : drought_mitigation_policy_collectors)
+            for (auto &p : drought_mitigation_policy_collectors)
                 if (p[0]->type == RESTRICTIONS && p[0]->id == u[0].id)
                     for (int i = 0; i < p.size(); ++i) {
                         utility_restrictions.push_back(
@@ -324,7 +339,7 @@ void MasterDataCollector::printPathways(string file_name) {
 
     outStream << "Realization\tutility\tweek\tinfra." << endl;
 
-    for (auto uc : utility_collectors)
+    for (auto &uc : utility_collectors)
         for (int r = 0; r < uc.size(); ++r) {
             for (vector<int> infra : uc[r].getPathways()) {
                 outStream << r << "\t" << infra[0] << "\t" << infra[1] << "\t"
@@ -338,14 +353,13 @@ void MasterDataCollector::printPathways(string file_name) {
 void MasterDataCollector::setOutputDirectory(string directory) {
     output_directory = directory;
 
-//    struct stat sb;
-//    if (stat(output_directory.c_str(),
-//             &sb) == 0 && S_ISDIR(sb.st_mode))
-//        cout << "Output will be printed to folder " << output_directory << endl;
-//    else {
-//        cout << Utils::getexepath() << output_directory << endl;
-//        __throw_invalid_argument("Output folder does not exist.");
-//    }
+    struct stat sb;
+    if (stat(output_directory.c_str(), &sb) == 0)
+        cout << "Output will be printed to folder " << output_directory << endl;
+    else {
+        cout << output_directory << endl;
+        __throw_invalid_argument("Output folder does not exist.");
+    }
 }
 
 void MasterDataCollector::addRealization(
@@ -411,12 +425,10 @@ void MasterDataCollector::addRealization(
         else if (water_sources_realization[ws]->source_type == WATER_REUSE)
             water_source_collectors[ws].push_back(
                     new WaterReuseDataCollector(dynamic_cast<WaterReuse *> (water_sources_realization[ws]), r));
-        else if (water_sources_realization[ws]->source_type ==
-                 ALLOCATED_RESERVOIR)
+        else if (water_sources_realization[ws]->source_type == ALLOCATED_RESERVOIR)
             water_source_collectors[ws].push_back(
-                    new AllocatedReservoirDataCollector(
-                            dynamic_cast<AllocatedReservoir *>
-                                                (water_sources_realization[ws]), r));
+                    new AllocatedReservoirDataCollector(dynamic_cast<AllocatedReservoir *>
+                                                                            (water_sources_realization[ws]), r));
         else if (water_sources_realization[ws]->source_type ==
                  RESERVOIR_EXPANSION ||
                  water_sources_realization[ws]->source_type ==
@@ -458,3 +470,5 @@ MasterDataCollector::~MasterDataCollector() {
         for (DataCollector *dc : dcs)
             delete dc;
 }
+
+MasterDataCollector::MasterDataCollector() {}

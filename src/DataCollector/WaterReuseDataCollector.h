@@ -14,8 +14,7 @@ private:
     WaterReuse *water_reuse;
 
 public:
-    WaterReuseDataCollector(WaterReuse *water_reuse,
-                                unsigned long realization);
+    WaterReuseDataCollector(WaterReuse *water_reuse, unsigned long realization);
 
     string printTabularString(int week) override;
 

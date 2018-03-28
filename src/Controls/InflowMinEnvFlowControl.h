@@ -6,19 +6,23 @@
 #define TRIANGLEMODEL_INFLOWMINENVFLOWCONTROL_H
 
 
-#include "Base/MinEnvironFlowControl.h"
+#include "Base/MinEnvFlowControl.h"
 
-class InflowMinEnvFlowControl : public MinEnvironFlowControl {
+class InflowMinEnvFlowControl : public MinEnvFlowControl {
 public:
     InflowMinEnvFlowControl(
             int water_source_id, const vector<int> &aux_water_sources_ids,
-            const vector<double> *inflows, const vector<double> *releases);
+            const vector<double>& inflows, const vector<double>& releases);
 
-    const vector<double> *inflows;
-    const vector<double> *releases;
+    InflowMinEnvFlowControl(const InflowMinEnvFlowControl &min_env_control);
+
+    ~InflowMinEnvFlowControl() override;
+
+    const vector<double>& inflows;
+    const vector<double>& releases;
 
 private:
-    double getRelease(int week);
+    double getRelease(int week) override;
 };
 
 

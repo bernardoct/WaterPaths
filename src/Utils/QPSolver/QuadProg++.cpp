@@ -76,8 +76,16 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     x.resize(n);
     register int i, j, k, l; /* indices */
     int ip; // this is the index of the constraint to be added to the active set
-    Matrix<double> R(n, n), J(n, n);
-    Vector<double> s(m + p), z(n), r(m + p), d(n), np(n), u(m + p), x_old(n), u_old(m + p);
+    Matrix<double> R(n, n);
+    Matrix<double> J(n, n);
+    Vector<double> s(m + p);
+    Vector<double> z(n);
+    Vector<double> r(m + p);
+    Vector<double> d(n);
+    Vector<double> np(n);
+    Vector<double> u(m + p);
+    Vector<double> x_old(n);
+    Vector<double> u_old(m + p);
     double f_value, psi, c1, c2, sum, ss, R_norm;
     double inf;
     inf = std::numeric_limits<double>::infinity();

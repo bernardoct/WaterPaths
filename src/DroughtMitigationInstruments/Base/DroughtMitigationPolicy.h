@@ -9,7 +9,7 @@
 #include "../../Utils/Constants.h"
 #include "../../Utils/Graph/Graph.h"
 #include "../../Utils/Matrices.h"
-#include "../../Controls/Base/MinEnvironFlowControl.h"
+#include "../../Controls/Base/MinEnvFlowControl.h"
 
 class DroughtMitigationPolicy {
 protected:
@@ -18,8 +18,8 @@ protected:
     vector<int> utilities_ids;
     vector<Utility *> realization_utilities;
     vector<WaterSource *> realization_water_sources;
-    vector<MinEnvironFlowControl *> realization_min_env_flow_controls;
-    const Matrix3D<double> *storage_to_rof_table_;
+    vector<MinEnvFlowControl *> realization_min_env_flow_controls;
+    vector<Matrix2D<double>> storage_to_rof_table_;
     vector<vector<double>> *rdm_factors_all;
     double *rdm_factors_realization;
 
@@ -33,7 +33,7 @@ public:
 
     virtual void addSystemComponents(vector<Utility *> utilities,
                                          vector<WaterSource *> water_sources,
-                                         vector<MinEnvironFlowControl *> min_env_flow_controls)= 0;
+                                         vector<MinEnvFlowControl *> min_env_flow_controls)= 0;
 
     const vector<int> &getUtilities_ids() const;
 
@@ -43,10 +43,10 @@ public:
 
     virtual ~DroughtMitigationPolicy();
 
-    void setStorage_to_rof_table_(const Matrix3D<double> *storage_to_rof_table_);
+    void setStorage_to_rof_table_(const vector<Matrix2D<double>> &storage_to_rof_table_);
 
-    virtual void setRealization(unsigned int realization_id, vector<vector<double>> *utilities_rdm,
-                                vector<vector<double>> *water_sources_rdm, vector<vector<double>> *policy_rdm)= 0;
+    virtual void setRealization(unsigned int realization_id, vector<double> &utilities_rdm,
+                                vector<double> &water_sources_rdm, vector<double> &policy_rdm)= 0;
 
 };
 

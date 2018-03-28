@@ -32,7 +32,7 @@
 
 Utility::Utility(
         const char *name, int id,
-        vector<vector<double>> *demands_all_realizations,
+        vector<vector<double>>& demands_all_realizations,
         int number_of_week_demands,
         const double percent_contingency_fund_contribution,
         const vector<vector<double>> *typesMonthlyDemandFraction,
@@ -76,14 +76,16 @@ Utility::Utility(
  * @param infra_if_built_remove if infra option in position 0 of a row is
  * built, remove infra options of IDs in remaining positions of the same row.
  */
-Utility::Utility(const char *name, int id, vector<vector<double>> *demands_all_realizations,
+Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations,
                  int number_of_week_demands, const double percent_contingency_fund_contribution,
                  const vector<vector<double>> *typesMonthlyDemandFraction,
-                 const vector<vector<double>> *typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,
+                 const vector<vector<double>> *typesMonthlyWaterPrice,
+                 WwtpDischargeRule wwtp_discharge_rule,
                  double demand_buffer, const vector<int> &rof_infra_construction_order,
                  const vector<int> &demand_infra_construction_order,
                  const vector<double> &infra_construction_triggers, double infra_discount_rate,
-                 const vector<vector<int>> *infra_if_built_remove, double bond_term, double bond_interest_rate) :
+                 const vector<vector<int>>& infra_if_built_remove, double
+                 bond_term, double bond_interest_rate) :
         name(name), id(id), demands_all_realizations(demands_all_realizations),
         number_of_week_demands(number_of_week_demands),
         percent_contingency_fund_contribution
@@ -141,7 +143,7 @@ Utility::Utility(const char *name, int id, vector<vector<double>> *demands_all_r
  * @param rof_infra_construction_order
  * @param infra_discount_rate
  */
-Utility::Utility(const char *name, int id, vector<vector<double>> *demands_all_realizations,
+Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations,
                  int number_of_week_demands, const double percent_contingency_fund_contribution,
                  const vector<vector<double>> *typesMonthlyDemandFraction,
                  const vector<vector<double>> *typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,
@@ -160,7 +162,7 @@ Utility::Utility(const char *name, int id, vector<vector<double>> *demands_all_r
         demand_buffer(demand_buffer),
         total_available_volume(NONE),
         total_storage_capacity(NONE),
-        infra_if_built_remove(new vector<vector<int>>()),
+        infra_if_built_remove(vector<vector<int>>()),
         bond_term(bond_term),
         bond_interest_rate(bond_interest_rate) {
 
@@ -210,6 +212,7 @@ Utility::Utility(Utility &utility) :
 
 Utility::~Utility() {
     water_sources.clear();
+
 }
 
 Utility &Utility::operator=(const Utility &utility) {
@@ -286,7 +289,7 @@ void Utility::calculateWeeklyAverageWaterPrices(
     priceCalculationErrorChecking(typesMonthlyDemandFraction,
                                   typesMonthlyWaterPrice);
 
-    weekly_average_volumetric_price = new double[(int) WEEKS_IN_YEAR + 1]();
+    weekly_average_volumetric_price = vector<double>((int) WEEKS_IN_YEAR + 1, 0.);
     double monthly_average_price[NUMBER_OF_MONTHS] = {};
     int n_tiers = static_cast<int>(typesMonthlyWaterPrice->at(0).size());
 
@@ -410,16 +413,7 @@ void Utility::splitDemands(
                           weekly_peaking_factor[Utils::weekOfTheYear(week)];
     restricted_demand = unrestricted_demand * demand_multiplier - demand_offset;
     double unallocated_reservoirs_demand = restricted_demand;
-    bool over_allocation_ws[n_sources];
-//    memset(over_allocation_ws, false, (size_t) n_sources);
-
-//    if (week < 53 & week > 50) {
-//        wk_cnt += 1;
-//        if (current_wk != week)
-//            wk_cnt = 1;
-//        current_wk = week;
-//    }
-
+    double over_allocation_ws[water_sources.size()];
 
     /// Allocates demand to intakes and reuse based on allocated volume to
     /// this utility.
@@ -439,14 +433,6 @@ void Utility::splitDemands(
         auto source = water_sources[ws];
         over_allocation_ws[ws] = false;
 
-//        if (week > 50 & ws == 6 & week < 53 & wk_cnt == 1) {
-//            cout << "Source: " << water_sources[ws]->name << endl;
-//            cout << "Total Demand: " << water_sources[ws]->getDemand() << endl;
-//            cout << "Restricted Demand: " << restricted_demand << endl;
-//            cout << "Utility, Available allocated volume: " << name << ", "
-//                 << water_sources[ws]->getAvailableAllocatedVolume(id) << endl;
-//        }
-
         /// Calculate allocation based on sources' available volumes.
         double demand_fraction =
                 max(1.0e-6,
@@ -457,21 +443,10 @@ void Utility::splitDemands(
         double source_demand = restricted_demand * demand_fraction;
         demands[ws][id] = source_demand;
 
-//        if (week > 50 & ws == 6 & week < 53 & wk_cnt == 1) {
-//            cout << "Week: " << week << ", Utility: " << id << ", Allocated Demand: " << source_demand << endl;
-//        }
-
         /// Check if allocated demand was greater than treatment capacity.
         double over_allocated_demand_ws =
                 max(source_demand -
                             source->getAllocatedTreatmentCapacity(id), 0.0);
-
-//        if (week > 50 & ws == 6 & week < 54 & wk_cnt == 1) {
-//            cout << "Week: " << week << ", Utility: " << id
-//                 << ", Over-allocated Demand: " << over_allocated_demand_ws << endl;
-//            cout << "Week: " << week << ", Utility: " << id
-//                 << ", Allocated Treatment Capacity: " << water_sources[ws]->getAllocatedTreatmentCapacity(id) << endl;
-//        }
 
         /// Set reallocation variables for the sake of reallocating demand.
         if (over_allocated_demand_ws > 0.) {
@@ -484,12 +459,6 @@ void Utility::splitDemands(
 
         unallocated_reservoirs_demand -=
                 source_demand - over_allocated_demand_ws;
-
-//        if (week > 50 & ws == 6 & week < 53 & wk_cnt == 1) {
-//            cout << "Week: " << week << ", Utility: " << id
-//                 << ", Unallocated Demand: " << unallocated_reservoirs_demand << endl;
-//
-//        }
     }
 
     /// Do one iteration of demand reallocation among sources whose treatment
@@ -521,10 +490,6 @@ void Utility::splitDemands(
             unfulfilled_demand = 0;
     }
 
-//    if (week > 313 & week < 316 & wk_cnt == 1) {
-//        cout << "Week: " << week << ", Utility: " << id << ", Unfulfilled Demand: " << unfulfilled_demand << endl;
-//    }
-
     //FIXME: IMPROVE CONTINUITY ERROR CHECKING HERE TO DETECT POORLY SPLIT DEMANDS WITHOUT CAPTURING UNFULFILLED DEMAND DUE TO LACK OF STORED WATER.
 //    if (abs(unallocated_reservoirs_demand) > 1e-4)
 //        __throw_logic_error("There is demand not being allocated to a water "
@@ -549,10 +514,6 @@ void Utility::updateContingencyFund(
     int week_of_year = Utils::weekOfTheYear(week);
     double unrestricted_price = weekly_average_volumetric_price[week_of_year];
     double current_price;
-
-//    if (week == 52) {
-//        cout << "Check" << endl;
-//    }
 
     /// Clear yearly updated data collecting variables.
     if (week_of_year == 0) {
@@ -618,7 +579,8 @@ void Utility::setWaterSourceOnline(unsigned int source_id) {
     /// capacity to the corresponding existing reservoir.
     if (water_sources.at(source_id)->source_type == NEW_WATER_TREATMENT_PLANT) {
         waterTreatmentPlantConstructionHandler(source_id);
-    } else if (water_sources.at(source_id)->source_type == RESERVOIR_EXPANSION) {
+    } else if (water_sources.at(source_id)->source_type ==
+               RESERVOIR_EXPANSION) {
         reservoirExpansionConstructionHandler(source_id);
     } else if (water_sources.at(source_id)->source_type == ALLOCATED_RESERVOIR_EXPANSION) {
         allocatedReservoirExpansionConstructionHandler(source_id);
@@ -647,17 +609,19 @@ void Utility::setWaterSourceOnline(unsigned int source_id) {
 }
 
 void Utility::waterTreatmentPlantConstructionHandler(unsigned int source_id) {
-    auto wtp = dynamic_cast<SequentialJointTreatmentExpansion *>(water_sources.at(source_id));
+    auto wtp = dynamic_cast<SequentialJointTreatmentExpansion *>
+    (water_sources.at(source_id));
 
     /// Add treatment capacity to source
     double added_capacity = wtp->implementTreatmentCapacity(id);
+    water_sources.at(wtp->parent_reservoir_ID)
+            ->addTreatmentCapacity(
+                    added_capacity,
+                    wtp->added_treatment_capacity_fractions
+                            .at((unsigned long) id),
     double dead_storage_component = wtp->unallocated_treatment_capacity;
         // HOW DO I MAKE THIS THREE LINK TO THE UTILITIES THAT DEVELOP THE JOINT PROJECTS
         // DIVIDE BY THREE FOR COMPLETE TRIANGLE MODEL, DIVIDE BY 1 IMPLICITLY FOR DURHAM MODEL
-
-    water_sources.at(wtp->parent_reservoir_ID)->addTreatmentCapacity(added_capacity,
-                    wtp->added_treatment_capacity_fractions->at((unsigned long) id),
-                    id);
 
     water_sources.at(wtp->parent_reservoir_ID)->
             addTreatmentCapacity(dead_storage_component,
@@ -878,8 +842,8 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
  * @param next_construction
  */
 void Utility::removeRelatedSourcesFromQueue(int next_construction) {
-    if (infra_if_built_remove)
-        for (auto v : *infra_if_built_remove)
+    if (!infra_if_built_remove.empty())
+        for (auto v : infra_if_built_remove)
             if (v[0] == next_construction)
                 for (int i : v) {
                     Utils::removeIntFromVector(rof_infra_construction_order, i);
@@ -925,20 +889,17 @@ double Utility::updateCurrent_debt_payment(int week) {
  */
 void Utility::beginConstruction(int week, int infra_id) {
 
-//    if (week == 52) {
-//        cout << "Check construction" << endl;
-//    }
-
     /// Add water source construction cost to the books.
     double level_debt_service_payments;
-    infra_net_present_cost +=
+    double infra_net_present_cost_add =
             water_sources[infra_id]->
-                    calculateNetPresentConstructionCost(week, id, infra_discount_rate, &level_debt_service_payments,
-                                                        bond_term, bond_interest_rate);
+                    calculateNetPresentConstructionCost(
+                    week, id, infra_discount_rate, level_debt_service_payments,
+                    bond_term, bond_interest_rate);
+    infra_net_present_cost += infra_net_present_cost_add;
 
-//    if (week == 52) {
-//        cout << infra_net_present_cost << endl;
-//    }
+    if (std::isnan(infra_net_present_cost))
+        __throw_runtime_error("NPV error.");
 
     /// Create stream of level debt service payments for water source.
     debt_payment_streams.emplace_back(
@@ -958,7 +919,7 @@ void Utility::calculateWastewater_releases(int week, double *discharges) {
     double discharge;
     waste_water_discharge = 0;
 
-    for (int id : *wwtp_discharge_rule.discharge_to_source_ids) {
+    for (int &id : wwtp_discharge_rule.discharge_to_source_ids) {
         discharge = restricted_demand * wwtp_discharge_rule
                 .get_dependent_variable(id, Utils::weekOfTheYear(week));
         discharges[id] += discharge;
@@ -998,24 +959,26 @@ Utility::setDemand_offset(double demand_offset, double offset_rate_per_volume) {
  * comprehensive demand data set.
  * @param r
  */
-void Utility::setRealization(unsigned long r, vector<vector<double>> *rdm_factors) {
-    unsigned long n_weeks = demands_all_realizations->at(r).size();
+void Utility::setRealization(unsigned long r, vector<double>& rdm_factors) {
+    unsigned long n_weeks = demands_all_realizations.at(r).size();
     demand_series_realization = unique_ptr<double[]>(new double[n_weeks]());
 
     /// Apply demand multiplier and copy demands pertaining to current realization.
-    double delta_demand = demands_all_realizations->at(r)[0] * (1. - rdm_factors->at(r)[0]);
+    double delta_demand = demands_all_realizations.at(r)[0] * (1. -
+            rdm_factors.at(0));
     for (int w = 0; w < n_weeks; ++w) {
-        demand_series_realization[w] = demands_all_realizations->at(r)[w] * rdm_factors->at(r)[0]
+        demand_series_realization[w] = demands_all_realizations.at(r)[w] *
+                                               rdm_factors.at(0)
                                        + delta_demand;
     }
 
-    bond_term *= rdm_factors->at(r)[1];
-    bond_interest_rate *= rdm_factors->at(r)[2];
-    infra_discount_rate *= rdm_factors->at(r)[3];
+    bond_term *= rdm_factors.at(1);
+    bond_interest_rate *= rdm_factors.at(2);
+    infra_discount_rate *= rdm_factors.at(3);
 
     /// Set peaking demand factor.
     weekly_peaking_factor = calculateWeeklyPeakingFactor
-            (&demands_all_realizations->at(r));
+            (&demands_all_realizations.at(r));
 }
 
 vector<double> Utility::calculateWeeklyPeakingFactor(vector<double> *demands) {

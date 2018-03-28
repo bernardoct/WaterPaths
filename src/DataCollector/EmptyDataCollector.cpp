@@ -6,9 +6,7 @@
 #include "../Utils/Constants.h"
 
 EmptyDataCollector::EmptyDataCollector() : DataCollector
-                                                   (Constants::NON_INITIALIZED,
-                                                    nullptr, 0,
-                                                    Constants::NON_INITIALIZED,
+                                                   (Constants::NON_INITIALIZED, nullptr, 0, Constants::NON_INITIALIZED,
                                                     0) {}
 
 string EmptyDataCollector::printTabularString(int week) {

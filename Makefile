@@ -1,10 +1,4 @@
-#CC=g++
-CC=icc
-
-#the following is for normal use:
-CFLAGS=-std=c++14 -O0 -march=native -qopt-report=5 -g #-check-pointers=rw
-#CFLAGS=-std=c++14 -O0 -march=native -Wall -Wextra -flto-report#-check-pointers=rw
-
+CFLAGS=-std=c++14 -fopenmp
 
 # List of sources and objects (include all .cpp files)
 SOURCES=$(shell find ./src -name "*.cpp")
@@ -18,13 +12,30 @@ LIBS=-lm
 
 all: $(SOURCES) $(TARGET)
 
-borg: CC=mpiicpc
+borg: CC=mpicxx
 borg: LIBS += -lborgmm
-borg: CFLAGS += -DPARALLEL
+borg: CFLAGS += -DPARALLEL -fopenmp
 borg: all
 
-openmp: CFLAGS += -fopenmp
-openmp: all
+gcc: CC=g++
+gcc: CFLAGS+=-O3 -march=native
+gcc: all
+
+intel: CC=icc
+intel: CFLAGS+=-O3 -xAVX
+intel: all
+
+gcc-debug: CC=g++
+gcc-debug: CFLAGS+=-O0 -march=native -g
+gcc-debug: all
+
+intel-debug: CC=icc
+intel-debug: CFLAGS+=-O0 -xAVX -g
+intel-debug: all
+
+pchecking: CC=icc
+pchecking: CFLAGS+=-O0 -xAVX -g -traceback -check-pointers=rw -check-pointers-undimensioned -check-pointers-dangling=all -rdynamic
+pchecking: all
 
 prof: CFLAGS += -fopenmp -p
 prof: all

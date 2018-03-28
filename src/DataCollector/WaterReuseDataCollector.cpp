@@ -6,10 +6,8 @@
 #include <iomanip>
 #include "WaterReuseDataCollector.h"
 
-WaterReuseDataCollector::WaterReuseDataCollector(WaterReuse *water_reuse,
-                                                 unsigned long realization)
-        : DataCollector(water_reuse->id, water_reuse->name, realization,
-                        WATER_REUSE, 2 * COLUMN_WIDTH),
+WaterReuseDataCollector::WaterReuseDataCollector(WaterReuse *water_reuse, unsigned long realization)
+        : DataCollector(water_reuse->id, water_reuse->name, realization, WATER_REUSE, 2 * COLUMN_WIDTH),
           water_reuse(water_reuse) {}
 
 string WaterReuseDataCollector::printTabularString(int week) {

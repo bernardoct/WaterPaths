@@ -21,7 +21,7 @@ private:
 
 public:
 
-
+    MasterDataCollector();
 
     vector<double> calculatePrintObjectives(string file_name, bool print);
 

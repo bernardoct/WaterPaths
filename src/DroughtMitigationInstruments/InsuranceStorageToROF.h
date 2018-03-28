@@ -12,14 +12,13 @@
 class InsuranceStorageToROF : public DroughtMitigationPolicy,
                               public ContinuityModelROF {
 private:
+    vector<double> rof_triggers;// = vector<double>(40, 0.);
     const unsigned long total_simulation_time;
     const double insurance_premium;
-    double *insurance_price;
-    const double *fixed_payouts;
+    vector<double> insurance_price;
+    const vector<double> &fixed_payouts;
     vector<double> utilities_revenue_update;
     vector<double> utilities_revenue_last_year;
-    const vector<double> rof_triggers;
-    Matrix3D<double> storage_to_rof_table_prev_year;
 
 public:
 
@@ -27,10 +26,10 @@ public:
                               const Graph &water_sources_graph,
                               const vector<vector<int>> &water_sources_to_utilities,
                               vector<Utility *> &utilities,
-                              vector<MinEnvironFlowControl *> min_env_flow_controls,
-                              vector<vector<double>> *utilities_rdm,
-                              vector<vector<double>> *water_sources_rdm, vector<double> rof_triggers,
-                              const double insurance_premium, const double *fixed_payouts,
+                              vector<MinEnvFlowControl *> min_env_flow_controls,
+                              vector<vector<double>>& utilities_rdm,
+                              vector<vector<double>>& water_sources_rdm, vector<double> &rof_triggers,
+                              const double insurance_premium, const vector<double> &fixed_payouts,
                               unsigned long total_simulation_time);
 
     InsuranceStorageToROF(InsuranceStorageToROF &insurance);
@@ -48,10 +47,10 @@ public:
 
     void addSystemComponents(vector<Utility *> utilities,
                                  vector<WaterSource *> water_sources,
-                                 vector<MinEnvironFlowControl *> min_env_flow_controls) override;
+                                 vector<MinEnvFlowControl *> min_env_flow_controls) override;
 
-    void setRealization(unsigned int realization_id, vector<vector<double>> *utilities_rdm,
-                        vector<vector<double>> *water_sources_rdm, vector<vector<double>> *policy_rdm) override;
+    void setRealization(unsigned int realization_id, vector<double> &utilities_rdm,
+                        vector<double> &water_sources_rdm, vector<double> &policy_rdm) override;
 
 };
 

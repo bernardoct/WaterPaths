@@ -6,8 +6,8 @@
 
 StorageMinEnvFlowControl::StorageMinEnvFlowControl(
         int water_source_id, const vector<int> &aux_water_sources_ids,
-        vector<double> *storages, vector<double> *releases)
-        : MinEnvironFlowControl(water_source_id, aux_water_sources_ids,
+        vector<double>& storages, vector<double>& releases)
+        : MinEnvFlowControl(water_source_id, aux_water_sources_ids,
                                 vector<int>(),
                                 STORAGE_CONTROLS),
           storages(storages),
@@ -17,13 +17,20 @@ StorageMinEnvFlowControl::StorageMinEnvFlowControl(
                                          " reservoir/quarry");
 }
 
+StorageMinEnvFlowControl::StorageMinEnvFlowControl(
+        const StorageMinEnvFlowControl &min_env_control) :
+        MinEnvFlowControl(min_env_control),
+        storages(min_env_control.storages),
+        releases(min_env_control.releases) {}
+
+
 double StorageMinEnvFlowControl::getRelease(int week) {
     double source_storage = water_sources[water_source_id]
             ->getAvailableVolume();
 
     double release = 0;
-    for (int i = 0; i < storages->size(); ++i) {
-        release = (source_storage >= (*storages)[i] ? (*releases)[i] : release);
+    for (int i = 0; i < storages.size(); ++i) {
+        release = (source_storage >= storages[i] ? releases[i] : release);
     }
     return release;
 }

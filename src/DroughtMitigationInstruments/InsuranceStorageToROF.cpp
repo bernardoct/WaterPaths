@@ -10,16 +10,16 @@ InsuranceStorageToROF::InsuranceStorageToROF(const int id, vector<WaterSource *>
                                              const Graph &water_sources_graph,
                                              const vector<vector<int>> &water_sources_to_utilities,
                                              vector<Utility *> &utilities,
-                                             vector<MinEnvironFlowControl *> min_env_flow_controls,
-                                             vector<vector<double>> *utilities_rdm,
-                                             vector<vector<double>> *water_sources_rdm, vector<double> rof_triggers,
-                                             const double insurance_premium, const double *fixed_payouts,
+                                             vector<MinEnvFlowControl *> min_env_flow_controls,
+                                             vector<vector<double>>& utilities_rdm,
+                                             vector<vector<double>>& water_sources_rdm, vector<double> &rof_triggers,
+                                             const double insurance_premium, const vector<double> &fixed_payouts,
                                              unsigned long total_simulation_time)
         : DroughtMitigationPolicy(id, INSURANCE_STORAGE_ROF),
           ContinuityModelROF(Utils::copyWaterSourceVector(water_sources), water_sources_graph,
                              water_sources_to_utilities, Utils::copyUtilityVector(utilities, true),
-                             min_env_flow_controls,
-                             utilities_rdm, water_sources_rdm, total_simulation_time, false, (unsigned int) NON_INITIALIZED),
+                             Utils::copyMinEnvFlowControlVector(min_env_flow_controls), utilities_rdm.at(0), water_sources_rdm.at(0),
+                             total_simulation_time, false, (unsigned int) NON_INITIALIZED),
           insurance_premium(insurance_premium), fixed_payouts(fixed_payouts),
           rof_triggers(rof_triggers),
           utilities_revenue_last_year(vector<double>((unsigned long) n_utilities, 0.)),
@@ -33,17 +33,21 @@ InsuranceStorageToROF::InsuranceStorageToROF(const int id, vector<WaterSource *>
         u->resetTotal_storage_capacity();
     }
 
-    insurance_price = new double[n_utilities];
+    insurance_price = vector<double>((unsigned long) n_utilities);
 }
 
 InsuranceStorageToROF::InsuranceStorageToROF(
         InsuranceStorageToROF &insurance) :
         DroughtMitigationPolicy(insurance.id, insurance.type),
-        ContinuityModelROF(Utils::copyWaterSourceVector(
-                insurance.continuity_water_sources), insurance.water_sources_graph,
-                           insurance.water_sources_to_utilities, Utils::copyUtilityVector(
-                                insurance.continuity_utilities, true), insurance.min_env_flow_controls,
-                           insurance.utilities_rdm, insurance.water_sources_rdm, insurance.total_simulation_time, false, insurance.realization_id),
+        ContinuityModelROF(Utils::copyWaterSourceVector(insurance.continuity_water_sources),
+                           insurance.water_sources_graph,
+                           insurance.water_sources_to_utilities,
+                           Utils::copyUtilityVector(insurance.continuity_utilities, true),
+                           Utils::copyMinEnvFlowControlVector(insurance.min_env_flow_controls),
+                           insurance.utilities_rdm,
+                           insurance.water_sources_rdm,
+                           insurance.total_simulation_time,
+                           false, insurance.realization_id),
         insurance_premium(insurance.insurance_premium),
         fixed_payouts(insurance.fixed_payouts),
         rof_triggers(insurance.rof_triggers),
@@ -51,15 +55,13 @@ InsuranceStorageToROF::InsuranceStorageToROF(
                 vector<double>((unsigned long) n_utilities, 0.)),
         utilities_revenue_update(
                 vector<double>((unsigned long) n_utilities, 0.)),
-        insurance_price(new double[n_utilities]),
+        insurance_price(vector<double>((unsigned long) n_utilities)),
         total_simulation_time(insurance.total_simulation_time) {
-
     utilities_ids = insurance.utilities_ids;
 }
 
-InsuranceStorageToROF::~InsuranceStorageToROF() {
-    delete[] insurance_price;
-}
+InsuranceStorageToROF::~InsuranceStorageToROF() = default;
+
 
 void InsuranceStorageToROF::applyPolicy(int week) {
     int week_of_year = Utils::weekOfTheYear(week);
@@ -78,8 +80,6 @@ void InsuranceStorageToROF::applyPolicy(int week) {
                 0.);
 
         priceInsurance(week_of_year + 1);
-//        storage_to_rof_table_prev_year = Matrix3D<double>
-//                (*storage_to_rof_table_);
     }
 
     /// Do not make payouts during the first year, when no insurance was purchased.
@@ -97,11 +97,6 @@ void InsuranceStorageToROF::applyPolicy(int week) {
                                week,
                                utilities_rof);
 
-        //FIXME: FOR DEBUGGING.
-//        cout << week << " " << week_of_year << endl;
-//        storage_to_rof_table_prev_year.print(week_of_year);
-//        cout << endl;
-
         /// Make payouts, if needed.
         for (int u = 0; u < continuity_utilities.size(); ++u)
             if (utilities_rof[u] > rof_triggers[u])
@@ -114,7 +109,7 @@ void InsuranceStorageToROF::applyPolicy(int week) {
 
 void InsuranceStorageToROF::addSystemComponents(vector<Utility *> utilities,
                                                 vector<WaterSource *> water_sources,
-                                                vector<MinEnvironFlowControl *> min_env_flow_controls) {
+                                                vector<MinEnvFlowControl *> min_env_flow_controls) {
     DroughtMitigationPolicy::realization_utilities = vector<Utility *>(utilities.size());
     for (int i : utilities_ids)
         DroughtMitigationPolicy::realization_utilities[i] = utilities[i];
@@ -160,9 +155,8 @@ void InsuranceStorageToROF::priceInsurance(int week) {
                                    utilities_rofs);
             /// Increase the price of the insurance if payout is triggered.
             const vector<int> uids = utilities_ids;
-            asm volatile("" ::: "memory");
-            for (const int & u : uids) {
-                if (utilities_rofs[(unsigned long) u] > rof_triggers[(unsigned long) u]) {
+            for (const int &u : uids) {
+                if (utilities_rofs[u] > rof_triggers[u]) {
                     insurance_price[u] +=
                             fixed_payouts[u] * utilities_revenue_last_year[u] *
                             insurance_premium;
@@ -198,11 +192,11 @@ void InsuranceStorageToROF::getUtilitiesApproxROFs(
 
         /// get estimated rof value from the table.
         if (s == NO_OF_INSURANCE_STORAGE_TIERS - 1)
-            utilities_approx_rof[u] = (*storage_to_rof_table_)(week, u, s);
+            utilities_approx_rof[u] = storage_to_rof_table_[u](week, s);
         else
             utilities_approx_rof[u] =
-                    ((*storage_to_rof_table_)(week, u, s) +
-                     (*storage_to_rof_table_)(week, u, s + 1)) / 2.;
+                    (storage_to_rof_table_[u](week, s) +
+                     storage_to_rof_table_[u](week, s + 1)) / 2.;
     }
 }
 
@@ -221,7 +215,7 @@ vector<double> InsuranceStorageToROF::UtilitiesStorageCapacityRatio() {
     return u_storage_capacity_ratio;
 }
 
-void InsuranceStorageToROF::setRealization(unsigned int realization_id, vector<vector<double>> *utilities_rdm,
-                                           vector<vector<double>> *water_sources_rdm, vector<vector<double>> *policy_rdm) {
+void InsuranceStorageToROF::setRealization(unsigned int realization_id, vector<double> &utilities_rdm,
+                                           vector<double> &water_sources_rdm, vector<double> &policy_rdm) {
     ContinuityModel::setRealization(realization_id, utilities_rdm, water_sources_rdm);
 }

@@ -11,11 +11,11 @@ using namespace std;
 
 class Triangle : public Problem {
 private:
-    vector<Matrix3D<double>> rof_tables;
-    vector<vector<double>> infra_table_shift;
+    vector<vector<Matrix2D<double>>> rof_tables;
     int import_export_rof_tables;
     const int n_utilities = 4;
     double table_gen_storage_multiplier;
+    string rof_tables_directory;
 
     vector<vector<double>> streamflows_durham;
     vector<vector<double>> streamflows_flat;
@@ -55,15 +55,14 @@ public:
 
     ~Triangle();
 
-    void functionEvaluation(const double *vars, double *objs, double *consts) override;
+    void functionEvaluation(double *vars, double *objs, double *consts) override;
 
-    void setRofTables(unsigned long n_realizations, int n_weeks, int n_utilities);
+    void setRofTables(unsigned long n_realizations, int n_weeks, int n_utilities, string rof_tables_directory);
 
-    void setImport_export_rof_tables(int import_export_rof_tables, int n_weeks);
+    void setImport_export_rof_tables(int import_export_rof_tables, int n_weeks, string rof_tables_directory);
 
     void readInputData();
 
-    void delete_catchment_vector(vector<Catchment *> vec_catchment);
 };
 
 

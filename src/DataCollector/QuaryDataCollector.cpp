@@ -4,7 +4,5 @@
 
 #include "QuaryDataCollector.h"
 
-QuaryDataCollector::QuaryDataCollector(Reservoir *reservoir,
-                                       unsigned long realization)
-        : ReservoirDataCollector(reservoir, QUARRY, 7 * COLUMN_WIDTH,
-                                 realization) {}
+QuaryDataCollector::QuaryDataCollector(Reservoir *reservoir, unsigned long realization)
+        : ReservoirDataCollector(reservoir, QUARRY, 7 * COLUMN_WIDTH, realization) {}

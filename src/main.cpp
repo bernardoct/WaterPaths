@@ -9,9 +9,11 @@
 #include <mpi.h>
 #endif
 
+#include <sys/stat.h>
 #include <algorithm>
 #include <getopt.h>
 #include <fstream>
+#include <omp.h>
 
 #define NUM_OBJECTIVES 6;
 #define NUM_DEC_VAR 57;
@@ -57,6 +59,7 @@ int main(int argc, char *argv[]) {
     bool tabular = false;
     bool plotting = true;
     bool run_optimization = false;
+    bool print_objs_row = false;
     // omp_set_num_threads(1);
     unsigned long n_islands = 2;
     unsigned long nfe = 1000;
@@ -71,7 +74,7 @@ int main(int argc, char *argv[]) {
     vector<vector<double>> policies_rdm;
 
     int c;
-    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:S:A:R:U:P:W:I:C:O:")) != -1) {
+    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:S:A:R:U:P:W:I:C:O:B:")) != -1) {
         switch (c) {
             case '?':
                 fprintf(stdout,
@@ -109,7 +112,8 @@ int main(int argc, char *argv[]) {
                         "\t-O: Directory containing the pre-computed "
                         "ROF table binaries\n"
                         "\t-C: Import/export rof tables (-1: export, 0:"
-                        " do nothing (standard), 1: import)",
+                        " do nothing (standard), 1: import)\n"
+			"\t-B: Export objectives for all utilities on a single line",
                         argv[0], n_realizations, n_weeks, system_io.c_str());
                 return -1;
             case 's':
@@ -199,7 +203,24 @@ int main(int argc, char *argv[]) {
         }
     }
 
-
+    if (rdm_no % 2 == 0) {
+        while (rdm_no > 2000) {
+            rdm_no -= 2000;
+            rof_tables_directory = "/scratch/03253/tg825524/du_reeval_beta_" + to_string(rdm_no) + "/tables_rdm_2.0";
+        }
+      
+        struct stat sb;
+        if (stat(rof_tables_directory.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode)) {	   
+	    string objectives_file = system_io + "/TestFiles/output/Objectives_RDM" + to_string(rdm_no) + "_sols0_to_576.csv";
+            if (!stat(objectives_file.c_str(), &sb) == 0) {	   
+                import_export_rof_table = -1;
+	        solution_file = "combined_reference_sets_with_betas.set";
+    	        first_solution = 0;
+    	        last_solution = 576;
+	    }
+        } 
+    }
+    
     Triangle triangle(n_weeks, import_export_rof_table);
 
     /// Set basic realization parameters.
@@ -291,7 +312,7 @@ int main(int argc, char *argv[]) {
             if (standard_solution >= solutions.size())
                 __throw_invalid_argument("Number of solutions in file <= solution ID.\n");
         } else {
-            printf("You must specify a solutions file.\n");
+            __throw_invalid_argument("You must specify a solutions file.\n");
         }
 
         /// Run model
@@ -300,8 +321,30 @@ int main(int argc, char *argv[]) {
                  << standard_solution << endl;
             triangle.setSol_number(standard_solution);
             trianglePtr->functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
+	    printf("Done with tables!\n");
             if (import_export_rof_table != EXPORT_ROF_TABLES) {
-                trianglePtr->calculateAndPrintObjectives(true);
+                vector<double> objectives;
+		//try {
+                    triangle.printTimeSeriesAndPathways();
+                    objectives = trianglePtr->calculateAndPrintObjectives(!print_objs_row);
+		//} catch (...) {
+		//    objectives = vector<double>(25, 1e6);
+		//    printf("Error here.\n");
+		//}
+		if (print_objs_row) {
+		    ofstream objs_file;
+		    string file_name = "Objectives_row_s" + to_string(standard_solution) + "_rdm" + to_string(rdm_no) + ".csv";
+		    objs_file.open(file_name);
+		    
+		    string line;
+		    for (double &o : objectives) {
+		        line += to_string(o) + ",";
+		    }
+		    line.pop_back();
+		    objs_file << line << endl;
+		    objs_file.close();
+		}
+//                trianglePtr->getMaster_data_collector()->printNETCDFUtilities("netcdf_output");
 //                triangle.printTimeSeriesAndPathways();
             }
 
@@ -312,7 +355,7 @@ int main(int argc, char *argv[]) {
             trianglePtr->destroyDataCollector();
         } else {
 	    ofstream objs_file;
-	    string file_name = system_io + "Objectives_" + to_string(first_solution) + 
+	    string file_name = system_io + "TestFiles/output/Objectives_RDM" + to_string(rdm_no) + "_sols" + to_string(first_solution) + 
 		    "_to_" + to_string(last_solution) + ".csv";
 	    objs_file.open(file_name);
 	    printf("Objectives file will be printed at %s.\n", file_name.c_str());
@@ -322,7 +365,7 @@ int main(int argc, char *argv[]) {
                 triangle.setSol_number((unsigned long) s);
                 trianglePtr->functionEvaluation(solutions[s].data(), c_obj, c_constr);
                 vector<double> objectives = trianglePtr->calculateAndPrintObjectives(false);
-//                    triangle.printTimeSeriesAndPathways();
+                triangle.printTimeSeriesAndPathways();
                 trianglePtr->destroyDataCollector();
 		string line;
 		for (double &o : objectives) {
@@ -331,6 +374,7 @@ int main(int argc, char *argv[]) {
 		line.pop_back();
 		objs_file << line << endl;
             }
+	    objs_file.close();
         }
 
         return 0;

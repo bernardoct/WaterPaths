@@ -47,7 +47,7 @@ double FallsLakeMinEnvFlowControl::getRelease(int week) {
             water_sources[neuse_river_intake_id]->getTotal_outflow();
 
     return max(base_release,
-               min_gage_flow - neuse_outflow -
+               min_gage_flow - max(0., neuse_outflow) -
                crabtree.getStreamflow(week));
 }
 

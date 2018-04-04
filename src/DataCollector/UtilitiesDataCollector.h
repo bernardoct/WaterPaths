@@ -70,6 +70,12 @@ public:
 
     const vector<double> &getNet_present_infrastructure_cost() const;
 
+    const vector<double> &getSt_rof() const;
+
+    const vector<double> &getLt_rof() const;
+
+    const vector<double> &getRestricted_demand() const;
+
     void checkForNans() const;
 };
 

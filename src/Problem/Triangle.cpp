@@ -46,6 +46,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
     Simulation *s = nullptr;
     try {
+	//__throw_invalid_argument("Test error");
         double Durham_restriction_trigger = vars[0];
         double OWASA_restriction_trigger = vars[1];
         double raleigh_restriction_trigger = vars[2];
@@ -896,8 +897,10 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         objs[5] = OWASA_JLA + Durham_JLA + Cary_JLA + Raleigh_JLA;
 
         objectives.push_back(objs[5]);
-      
-	delete s;
+        
+        if (s != nullptr) {	
+            delete s;
+	}
 	s = nullptr;
 #endif
     } catch (const std::exception& e) {
@@ -913,9 +916,14 @@ int Triangle::simulationExceptionHander(const std::exception &e, Simulation *s,
         int num_dec_var = 57;
 //        printf("Exception called during calculations. Decision variables are below:\n");
         ofstream sol;
-	    int world_rank;
+	int world_rank;
 #ifdef  PARALLEL
-        MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+	int mpi_initialized;
+	MPI_Initialized(&mpi_initialized);
+	if (mpi_initialized)
+            MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+	else
+	    world_rank = 0;
 #else
         world_rank = 0;
 #endif
@@ -964,6 +972,7 @@ Triangle::Triangle(unsigned long n_weeks, int import_export_rof_table)
 void
 Triangle::setRofTables(unsigned long n_realizations, int n_utilities, string rof_tables_directory) {
 
+    //double start_time = omp_get_wtime();
     cout << "Loading ROF tables" << endl;
     int n_tiers = NO_OF_INSURANCE_STORAGE_TIERS + 1;
 
@@ -1022,6 +1031,8 @@ Triangle::setRofTables(unsigned long n_realizations, int n_utilities, string rof
             in.close();
         }
     }
+
+    //printf("Loading tables took %f time.\n", omp_get_wtime() - start_time);
 }
 
 void Triangle::readInputData() {
@@ -1110,7 +1121,8 @@ void Triangle::setImport_export_rof_tables(int import_export_rof_tables, int n_w
                                          "1 - export tables.\n"
                                          "The value entered is invalid.");
     Triangle::import_export_rof_tables = import_export_rof_tables;
-    this->rof_tables_directory = output_directory + "/TestFiles/" + rof_tables_directory;
+//    this->rof_tables_directory = output_directory + "/TestFiles/" + rof_tables_directory;
+    this->rof_tables_directory = rof_tables_directory;
 
     if (import_export_rof_tables == IMPORT_ROF_TABLES) {
         Triangle::setRofTables(n_realizations, n_utilities, this->rof_tables_directory);

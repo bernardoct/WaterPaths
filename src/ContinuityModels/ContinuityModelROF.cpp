@@ -392,7 +392,7 @@ void ContinuityModelROF::shiftStorages(
 void ContinuityModelROF::printROFTable(const string &folder) {
 
 //    try {
-        printf("Tables printed in folder %s for realization %lu.\n", folder.c_str(), realization_id);
+//        printf("Tables printed in folder %s for realization %lu.\n", folder.c_str(), realization_id);
         for (int u = 0; u < n_utilities; ++u) {
             string file_name = folder + "/tables_r" + to_string(realization_id) + "_u" + to_string(u);
             ofstream output_file(file_name, std::ofstream::binary);

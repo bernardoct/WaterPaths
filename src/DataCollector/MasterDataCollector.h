@@ -24,6 +24,9 @@ public:
 
     MasterDataCollector(unsigned long n_realizations);
 
+
+    int printNETCDFUtilities(string file_name);
+
     vector<double> calculatePrintObjectives(string file_name, bool print);
 
     virtual ~MasterDataCollector();

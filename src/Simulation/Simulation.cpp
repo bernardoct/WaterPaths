@@ -62,8 +62,6 @@ Simulation::Simulation(
         total_simulation_time(total_simulation_time),
         realizations_to_run(realizations_to_run),
         import_export_rof_tables(IMPORT_ROF_TABLES),
-        precomputed_rof_tables(&precomputed_rof_tables),
-        table_storage_shift(&table_storage_shift),
         n_realizations(realizations_to_run.size()),
         water_sources(water_sources),
         water_sources_graph(water_sources_graph),
@@ -73,7 +71,9 @@ Simulation::Simulation(
         min_env_flow_controls(min_env_flow_controls),
         utilities_rdm(utilities_rdm),
         water_sources_rdm(water_sources_rdm),
-        policies_rdm(policies_rdm) {
+        policies_rdm(policies_rdm),
+        precomputed_rof_tables(&precomputed_rof_tables),
+        table_storage_shift(&table_storage_shift) {
 
     setRof_tables_folder(rof_tables_folder);
 
@@ -86,7 +86,8 @@ Simulation::Simulation(
 }
 
 Simulation::Simulation(
-        vector<WaterSource *> &water_sources, Graph &water_sources_graph,
+        vector<WaterSource *> &water_sources, 
+	Graph &water_sources_graph,
         const vector<vector<int>> &water_sources_to_utilities,
         vector<Utility *> &utilities,
         const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
@@ -303,6 +304,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
     /// Run realizations.
     int had_catch = 0;
     string error_m = "Error in realizations ";
+//    std::reverse(realizations_to_run.begin(), realizations_to_run.end());
 #pragma omp parallel for ordered num_threads(n_threads) shared(had_catch)
 //    for (int r = (int) n_realizations - 1; r >= 0; --r) {
     for (unsigned long r = 0; r < n_realizations; ++r) {
@@ -344,7 +346,6 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                 /// Collect system data for output printing and objective calculations.
                 if (import_export_rof_tables != EXPORT_ROF_TABLES)
                     master_data_collector->collectData(r);
-                //printf("r%d w%d\n", r, w);
             }
             /// Export ROF tables for future simulations of the same problem with the same states-of-the-world.
             if (import_export_rof_tables == EXPORT_ROF_TABLES)
@@ -367,9 +368,14 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
     /// Handle exception from the OpenMP region and pass it up to the
     /// problem class.
     if (had_catch) {
-	    int world_rank;
+	int world_rank;
 #ifdef  PARALLEL
-        MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+	int mpi_initialized;
+	MPI_Initialized(&mpi_initialized);
+	if (mpi_initialized)
+            MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+	else
+	    world_rank = 0;
 #else
         world_rank = 0;
 #endif

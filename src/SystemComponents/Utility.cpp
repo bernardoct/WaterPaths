@@ -414,89 +414,75 @@ void Utility::splitDemands(
                           apply_demand_buffer * demand_buffer *
                           weekly_peaking_factor[Utils::weekOfTheYear(week)];
     restricted_demand = unrestricted_demand * demand_multiplier - demand_offset;
-    double unallocated_reservoirs_demand = restricted_demand;
-    double over_allocation_ws[water_sources.size()];
+    unfulfilled_demand = max(max(restricted_demand - total_available_volume,
+                                 restricted_demand - total_treatment_capacity), 0.);
+    restricted_demand -= unfulfilled_demand;
 
     /// Allocates demand to intakes and reuse based on allocated volume to
     /// this utility.
-    for (int ws : priority_draw_water_source) {
+    for (int &ws : priority_draw_water_source) {
         double source_demand =
                 min(restricted_demand,
                     water_sources[ws]->getAvailableAllocatedVolume(id));
         demands[ws][this->id] = source_demand;
-        over_allocation_ws[ws] = false;
     }
 
     /// Allocates remaining demand to reservoirs based on allocated available
     /// volume to this utility.
-    bool over_allocation = false;
-    double remaining_stored_volume = total_available_volume;
-    for (int ws : non_priority_draw_water_source) {
+    unsigned short over_allocated_sources = 0;
+    double over_allocated_volume = 0;
+    double demand_fraction[water_sources.size()];
+    int not_over_allocated_ids[water_sources.size()];
+    double sum_not_alloc_demand_fraction = 0;
+    unsigned short not_over_allocated_sources = 0;
+    for (int &ws : non_priority_draw_water_source) {
         auto source = water_sources[ws];
-        over_allocation_ws[ws] = false;
 
         /// Calculate allocation based on sources' available volumes.
-        double demand_fraction =
+        demand_fraction[ws] =
                 max(1.0e-6,
                     source->getAvailableAllocatedVolume(id) /
                     total_available_volume);
 
         /// Calculate demand allocated to a given source.
-        double source_demand = restricted_demand * demand_fraction;
+        double source_demand = restricted_demand * demand_fraction[ws];
         demands[ws][id] = source_demand;
 
         /// Check if allocated demand was greater than treatment capacity.
         double over_allocated_demand_ws =
-                max(source_demand -
-                            source->getAllocatedTreatmentCapacity(id), 0.0);
+                source_demand - source->getAllocatedTreatmentCapacity(id);
 
         /// Set reallocation variables for the sake of reallocating demand.
         if (over_allocated_demand_ws > 0.) {
-            over_allocation = true;
-            over_allocation_ws[ws] = true;
-            remaining_stored_volume -=
-                    source->getAvailableAllocatedVolume(id);
+            over_allocated_sources++;
+            over_allocated_volume += over_allocated_demand_ws;
             demands[ws][id] = source_demand - over_allocated_demand_ws;
+        } else {
+            not_over_allocated_ids[not_over_allocated_sources] = ws;
+            sum_not_alloc_demand_fraction += demand_fraction[ws];
+            not_over_allocated_sources++;
         }
-
-        unallocated_reservoirs_demand -=
-                source_demand - over_allocated_demand_ws;
     }
 
     /// Do one iteration of demand reallocation among sources whose treatment
     /// capacities have not yet been exceeded if there is an instance of
     /// overallocation.
-    double unallocated_reservoirs_demand_aux = unallocated_reservoirs_demand;
-    if (over_allocation && remaining_stored_volume > 0)
-        for (int ws : non_priority_draw_water_source)
-            if (!over_allocation_ws[ws]) {
-                double demand_fraction = max(1.0e-6,
-                            water_sources[ws]->getAvailableAllocatedVolume(id) /
-                            remaining_stored_volume);
-                double extra_demand_share = demand_fraction *
-                                            unallocated_reservoirs_demand_aux;
-                demands[ws][id] += extra_demand_share;
-                unallocated_reservoirs_demand -= extra_demand_share;
-            }
+    if (over_allocated_sources > 0) {		            
+        for (int i = 0; i < not_over_allocated_sources; ++i) {
+            int ws = not_over_allocated_ids[i];
+            demands[ws][id] += over_allocated_volume *
+                               demand_fraction[ws] / sum_not_alloc_demand_fraction;
+        }
+    }
 
     /// Update contingency fund
     if (used_for_realization) {
         updateContingencyFund(unrestricted_demand,
                               demand_multiplier,
                               demand_offset,
-                              unallocated_reservoirs_demand,
+                              unfulfilled_demand,
                               week);
-        if (unallocated_reservoirs_demand / unrestricted_demand > 0.01)
-            unfulfilled_demand = unallocated_reservoirs_demand;
-        else
-            unfulfilled_demand = 0;
     }
-
-    //FIXME: IMPROVE CONTINUITY ERROR CHECKING HERE TO DETECT POORLY SPLIT DEMANDS WITHOUT CAPTURING UNFULFILLED DEMAND DUE TO LACK OF STORED WATER.
-//    if (abs(unallocated_reservoirs_demand) > 1e-4)
-//        __throw_logic_error("There is demand not being allocated to a water "
-//                                    "source when the demand is being split "
-//                                    "among water sources.");
 }
 /**
  * Update contingency fund based on regular contribution, restrictions, and

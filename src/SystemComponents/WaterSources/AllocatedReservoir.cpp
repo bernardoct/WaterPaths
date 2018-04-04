@@ -284,19 +284,37 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
 //        throw_with_nested(runtime_error(error));
     }
 
-    if (abs(cont_error) > 1.f) {
+    if (abs(cont_error) > 1.f || available_volume < 0 || sum_allocations < 0) {
         char error[4000];
         sprintf(error, "Continuity error in %s\n\n"
-                        "week: %d\nsum_allocations %f\n"
-                        "available volume old: %f\navailable_volume %f\n"
+                        "week: %d\nsum_allocations: %f\n"
+                        "available_volume_old: %f\navailable_volume %f\n"
                         "total_upstream_inflow: %f\n"
                         "upstream_catchment_inflow: %f\nevaporation: %f\n"
                         "total_demand: %f\npolicy_added_demand: %f\n"
-                        "total_outflow: %f\ncontinuity error: %f\n",
+                        "total_outflow: %f\ncontinuity error: %f\n"
+                        "demands_0: %f\n"
+                        "demands_1: %f\n"
+                        "demands_2: %f\n"
+                        "demands_3: %f\n"
+                        "alloc_vols_0: %f\n"
+                        "alloc_vols_1: %f\n"
+                        "alloc_vols_2: %f\n"
+                        "alloc_vols_3: %f\n"
+                        "alloc_vols_4: %f\n",
                 name, week, sum_allocations, available_volume_old, available_volume,
                 total_upstream_inflow, upstream_catchment_inflow,
                 evaporated_volume, total_demand, policy_added_demand,
-                total_outflow, cont_error);
+                total_outflow, cont_error,
+                demand_outflow[0],
+                demand_outflow[1],
+                demand_outflow[2],
+                demand_outflow[3],
+                available_allocated_volumes[0],
+                available_allocated_volumes[1],
+                available_allocated_volumes[2],
+                available_allocated_volumes[3],
+                available_allocated_volumes[4]);
 
 	__throw_runtime_error(error);
 //        throw_with_nested(runtime_error(error));

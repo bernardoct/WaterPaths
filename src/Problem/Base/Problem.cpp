@@ -4,19 +4,26 @@
 
 #include <algorithm>
 #include <numeric>
+#include <random>
 #include "Problem.h"
 
 vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
-
-    string fo = output_directory + "/TestFiles/output/Objectives";
-    objectives = this->master_data_collector->calculatePrintObjectives(
-            fo + "_s" + std::to_string(solution_no) + fname_sufix, print_files);
-
-    return objectives;
+    if (this->master_data_collector != nullptr) {
+        this->master_data_collector->setOutputDirectory(output_directory);
+        string fo = "/TestFiles/output/Objectives";
+        objectives = this->master_data_collector->calculatePrintObjectives(
+                fo + "_s" + std::to_string(solution_no) + fname_sufix, print_files);
+    
+        return objectives;
+    } else {
+	objectives = vector<double>(25, 1e5);
+	return objectives;
+    }
 }
 
 void Problem::printTimeSeriesAndPathways() {
     /// Calculate objective values.
+    if (this->master_data_collector != nullptr) {
     this->master_data_collector->setOutputDirectory(output_directory);
 
     /// Print output files.
@@ -29,16 +36,16 @@ void Problem::printTimeSeriesAndPathways() {
     cout << "Printing Pathways" << endl;
     this->master_data_collector->printPathways(
             fpw + "_s" + std::to_string(solution_no) + fname_sufix);
-    cout << "Printing time series" << endl;
-    this->master_data_collector->printUtilitiesOutputCompact(
-            0, (int) n_weeks, fu + "_s" + std::to_string(solution_no) +
-                    fname_sufix);
-    this->master_data_collector->printWaterSourcesOutputCompact(
-            0, (int) n_weeks, fws + "_s" + std::to_string(solution_no) +
-                    fname_sufix);
-    this->master_data_collector->printPoliciesOutputCompact(
-            0, (int) n_weeks, fp + "_s" + std::to_string(solution_no) +
-                    fname_sufix);
+//    cout << "Printing time series" << endl;
+//    this->master_data_collector->printUtilitiesOutputCompact(
+//            0xes[r][i].plot(), (int) n_weeks, fu + "_s" + std::to_string(solution_no) +
+//                    fname_sufix);
+//    this->master_data_collector->printWaterSourcesOutputCompact(
+//            0, (int) n_weeks, fws + "_s" + std::to_string(solution_no) +
+//                    fname_sufix);
+//    this->master_data_collector->printPoliciesOutputCompact(
+//            0, (int) n_weeks, fp + "_s" + std::to_string(solution_no) +
+//                    fname_sufix);
 //    data_collector->printUtilitesOutputTabular(0,
 //                                               n_weeks,
 //                                               fu + "_s"
@@ -51,8 +58,13 @@ void Problem::printTimeSeriesAndPathways() {
 //                                               n_weeks,
 //                                               fp + "_s"
 //                                               + std::to_string(solution_no));
+    } else {
+	printf("Trying to print pathways but data collector is empty. Either your simulation crashed or you deleted the data collector too early.\n");
+    }
 
 }
+
+
 
 vector<int> Problem::vecInfraRankToVecInt(vector<infraRank> v) {
     vector<int> sorted;
@@ -147,7 +159,7 @@ void Problem::setRealizationsToRun(vector<unsigned long>& realizations_to_run) {
     this->realizations_to_run = realizations_to_run;
 }
 
-const MasterDataCollector* Problem::getMaster_data_collector() {
+MasterDataCollector* Problem::getMaster_data_collector() {
     return master_data_collector;
 }
 
@@ -156,7 +168,9 @@ Problem::~Problem() {}
 void Problem::destroyDataCollector() {
     if (master_data_collector != nullptr) {
         delete master_data_collector;
-        master_data_collector = nullptr;
+	master_data_collector = nullptr;
+    } else {
+        cerr << "Tried to delete nullptr master data collector.\n";
     }
 }
 

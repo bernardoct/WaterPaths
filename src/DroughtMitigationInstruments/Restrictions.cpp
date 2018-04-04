@@ -62,8 +62,6 @@ void Restrictions::applyPolicy(int week) {
         } else
             break;
     }
-
-    /// Apply demand multiplier and price surcharge, the latter if applicable.
     realization_utilities[0]->setDemand_multiplier(current_multiplier);
     if (!restricted_weekly_average_volumetric_price.empty() && stage > 0) {
         int week_of_year = Utils::weekOfTheYear(week);

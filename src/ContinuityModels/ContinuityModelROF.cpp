@@ -98,7 +98,7 @@ vector<double> ContinuityModelROF::calculateShortTermROFTable(int week) {
                               utility_base_storage_capacity[u]);
             /// Mean ROF between the two tiers of the ROF table where
             /// current storage is located.
-            risk_of_failure[u] = ut_storage_to_rof_table[u](week, tier + 1);
+            risk_of_failure[u] = ut_storage_to_rof_table[u](week, tier);
 //            risk_of_failure[u] = (ut_storage_to_rof_table[u](week, tier) +
 //                                  ut_storage_to_rof_table[u](week, tier + 1)) / 2;
 //        } catch (...) {
@@ -392,7 +392,7 @@ void ContinuityModelROF::shiftStorages(
 void ContinuityModelROF::printROFTable(const string &folder) {
 
 //    try {
-        printf("Tables printed in folder %s for realization %lu.\n", folder.c_str(), realization_id);
+//        printf("Tables printed in folder %s for realization %lu.\n", folder.c_str(), realization_id);
         for (int u = 0; u < n_utilities; ++u) {
             string file_name = folder + "/tables_r" + to_string(realization_id) + "_u" + to_string(u);
             ofstream output_file(file_name, std::ofstream::binary);

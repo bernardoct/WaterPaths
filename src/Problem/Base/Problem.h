@@ -86,11 +86,13 @@ public:
 
     void setFname_sufix(const string &fname_sufix);
 
-    const MasterDataCollector* getMaster_data_collector();
+    MasterDataCollector* getMaster_data_collector();
 
     void destroyDataCollector();
 
     void printTimeSeriesAndPathways();
+
+    void performBootstrapAnalysis(int n_sets, int n_samples);
 };
 
 

@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
                         "\t-S: number of bootstrap samples per set for bootstrap analysis.\n"
                         "\t-A: number of sets of bootstrap samples for bootstrap analysis.\n"
                         "\t-R: RDM sample number\n"
-                        "\t-U: Utilities RDM file\n"
+                        "\t-U: Utility RDM file\n"
                         "\t-P: Policies RDM file\n"
                         "\t-W: Water sources RDM file\n"
                         "\t-I: Inflows and evaporation folder suffix to"
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
                         "ROF table binaries\n"
                         "\t-C: Import/export rof tables (-1: export, 0:"
                         " do nothing (standard), 1: import)\n"
-			"\t-B: Export objectives for all utilities on a single line",
+                        "\t-B: Export objectives for all utilities on a single line",
                         argv[0], n_realizations, n_weeks, system_io.c_str());
                 return -1;
             case 's':
@@ -202,7 +202,7 @@ int main(int argc, char *argv[]) {
                 return -1;
         }
     }
-    
+
     Triangle triangle(n_weeks, import_export_rof_table);
 
     /// Set basic realization parameters.
@@ -225,8 +225,6 @@ int main(int argc, char *argv[]) {
         }
         triangle.setPrint_output_files(false);
     }
-
-//    realizations_to_run = vector<vector<int>>(1, {0, 226});
 
     if (!run_optimization && strlen(system_io.c_str()) == 0) {
         __throw_invalid_argument(
@@ -303,31 +301,12 @@ int main(int argc, char *argv[]) {
                  << standard_solution << endl;
             triangle.setSol_number(standard_solution);
             trianglePtr->functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
-	    printf("Done with tables!\n");
+            printf("Done with tables!\n");
             if (import_export_rof_table != EXPORT_ROF_TABLES) {
                 vector<double> objectives;
-		//try {
-                    triangle.printTimeSeriesAndPathways();
-                    objectives = trianglePtr->calculateAndPrintObjectives(!print_objs_row);
-		//} catch (...) {
-		//    objectives = vector<double>(25, 1e6);
-		//    printf("Error here.\n");
-		//}
-		if (print_objs_row) {
-		    ofstream objs_file;
-		    string file_name = "Objectives_row_s" + to_string(standard_solution) + "_rdm" + to_string(rdm_no) + ".csv";
-		    objs_file.open(file_name);
-		    
-		    string line;
-		    for (double &o : objectives) {
-		        line += to_string(o) + ",";
-		    }
-		    line.pop_back();
-		    objs_file << line << endl;
-		    objs_file.close();
-		}
+                triangle.printTimeSeriesAndPathways();
+                objectives = trianglePtr->calculateAndPrintObjectives(!print_objs_row);
 //                trianglePtr->getMaster_data_collector()->printNETCDFUtilities("netcdf_output");
-//                triangle.printTimeSeriesAndPathways();
             }
 
             if (n_sets > 0 && n_bs_samples > 0) {
@@ -336,11 +315,11 @@ int main(int argc, char *argv[]) {
             }
             trianglePtr->destroyDataCollector();
         } else {
-	    ofstream objs_file;
-	    string file_name = system_io + "TestFiles/output/Objectives_RDM" + to_string(rdm_no) + "_sols" + to_string(first_solution) + 
-		    "_to_" + to_string(last_solution) + ".csv";
-	    objs_file.open(file_name);
-	    printf("Objectives file will be printed at %s.\n", file_name.c_str());
+            ofstream objs_file;
+            string file_name = system_io + "TestFiles/output/Objectives_RDM" + to_string(rdm_no) + "_sols" + to_string(first_solution) +
+                               "_to_" + to_string(last_solution) + ".csv";
+            objs_file.open(file_name);
+            printf("Objectives file will be printed at %s.\n", file_name.c_str());
             for (int s = first_solution; s < last_solution; ++s) {
                 cout << endl << endl << endl << "Running solution "
                      << s << endl;
@@ -349,14 +328,14 @@ int main(int argc, char *argv[]) {
                 vector<double> objectives = trianglePtr->calculateAndPrintObjectives(false);
                 triangle.printTimeSeriesAndPathways();
                 trianglePtr->destroyDataCollector();
-		string line;
-		for (double &o : objectives) {
-		    line += to_string(o) + ",";
-		}
-		line.pop_back();
-		objs_file << line << endl;
+                string line;
+                for (double &o : objectives) {
+                    line += to_string(o) + ",";
+                }
+                line.pop_back();
+                objs_file << line << endl;
             }
-	    objs_file.close();
+            objs_file.close();
         }
 
         return 0;

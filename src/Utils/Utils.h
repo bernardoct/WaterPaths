@@ -8,7 +8,7 @@
 
 #include "../SystemComponents/WaterSources/Base/WaterSource.h"
 #include "../SystemComponents/WaterSources/Intake.h"
-#include "../SystemComponents/Utility.h"
+#include "../SystemComponents/Utility/Utility.h"
 #include "../DroughtMitigationInstruments/Base/DroughtMitigationPolicy.h"
 #include "../DroughtMitigationInstruments/Restrictions.h"
 #include "../Controls/Base/MinEnvFlowControl.h"

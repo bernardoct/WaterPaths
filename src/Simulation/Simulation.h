@@ -7,7 +7,7 @@
 
 #include "../Utils/Constants.h"
 #include "../SystemComponents/WaterSources/Base/WaterSource.h"
-#include "../SystemComponents/Utility.h"
+#include "../SystemComponents/Utility/Utility.h"
 #include "../DroughtMitigationInstruments/Restrictions.h"
 #include "../ContinuityModels/Base/ContinuityModel.h"
 #include "../ContinuityModels/ContinuityModelRealization.h"

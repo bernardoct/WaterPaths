@@ -496,7 +496,7 @@ void ContinuityModelROF::updateOnlineInfrastructure(int week) {
                 auto u = (unsigned long) uu;
                 water_sources_online_to_utilities.at(u).push_back((int) ws);
                 continuity_utilities.at(u)
-                        ->setWaterSourceOnline((int) ws, 0);
+                        ->setWaterSourceOnline((int) ws, week);
 
 
                 /// Update the shift in storage to be used to calculate the

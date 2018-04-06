@@ -308,17 +308,6 @@ void Reservoir::setOnline() {
 void Reservoir::setRealization(unsigned long r, vector<double> &rdm_factors) {
     WaterSource::setRealization(r, rdm_factors);
 
-    /// Set evaporation time series and cut off access to series set by setting
-    /// its pointer to the set to NULL.
-//    if (evaporation_series != nullptr)
-//        evaporation_series->setRealization(r, rdm_factors);
-//    else {
-//        cout << "WARNING: No evaporated_volume time series for Reservoir "
-//             << name;
-//        vector<vector<double>> *evaporation =
-//                new std::vector<vector<double>>(1, vector<double>(10000, 0));
-//        evaporation_series = EvaporationSeries(evaporation, 10000);
-//    }
     evaporation_series.setRealization(r, rdm_factors);
 }
 

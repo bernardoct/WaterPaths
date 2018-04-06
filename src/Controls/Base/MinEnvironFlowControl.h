@@ -7,7 +7,7 @@
 
 
 #include "../../SystemComponents/WaterSources/Base/WaterSource.h"
-#include "../../SystemComponents/Utility.h"
+#include "../../SystemComponents/Utility/Utility.h"
 
 class MinEnvironFlowControl {
 protected:

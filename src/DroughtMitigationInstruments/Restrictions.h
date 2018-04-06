@@ -6,7 +6,7 @@
 #define TRIANGLEMODEL_RESTRICTIONS_H
 
 
-#include "../SystemComponents/Utility.h"
+#include "../SystemComponents/Utility/Utility.h"
 #include "Base/DroughtMitigationPolicy.h"
 
 class Restrictions : public DroughtMitigationPolicy {

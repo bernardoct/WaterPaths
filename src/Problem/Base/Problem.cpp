@@ -36,16 +36,16 @@ void Problem::printTimeSeriesAndPathways() {
     cout << "Printing Pathways" << endl;
     this->master_data_collector->printPathways(
             fpw + "_s" + std::to_string(solution_no) + fname_sufix);
-//    cout << "Printing time series" << endl;
-//    this->master_data_collector->printUtilitiesOutputCompact(
-//            0xes[r][i].plot(), (int) n_weeks, fu + "_s" + std::to_string(solution_no) +
-//                    fname_sufix);
-//    this->master_data_collector->printWaterSourcesOutputCompact(
-//            0, (int) n_weeks, fws + "_s" + std::to_string(solution_no) +
-//                    fname_sufix);
-//    this->master_data_collector->printPoliciesOutputCompact(
-//            0, (int) n_weeks, fp + "_s" + std::to_string(solution_no) +
-//                    fname_sufix);
+    cout << "Printing time series" << endl;
+    this->master_data_collector->printUtilitiesOutputCompact(
+            0, (int) n_weeks, fu + "_s" + std::to_string(solution_no) +
+                    fname_sufix);
+    this->master_data_collector->printWaterSourcesOutputCompact(
+            0, (int) n_weeks, fws + "_s" + std::to_string(solution_no) +
+                    fname_sufix);
+    this->master_data_collector->printPoliciesOutputCompact(
+            0, (int) n_weeks, fp + "_s" + std::to_string(solution_no) +
+                    fname_sufix);
 //    data_collector->printUtilitesOutputTabular(0,
 //                                               n_weeks,
 //                                               fu + "_s"

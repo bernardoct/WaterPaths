@@ -41,6 +41,8 @@ public:
     static void removeIntFromVector(vector<int> &vec, int el);
 
     static void print_exception(const exception &e, int level = 0);
+
+    static vector<Bond *> copyBonds(vector<Bond *> bonds_original);
 };
 
 

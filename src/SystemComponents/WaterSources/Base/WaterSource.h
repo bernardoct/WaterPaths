@@ -8,6 +8,7 @@
 #include <string>
 #include "../../Catchment.h"
 #include "../../../Utils/Constants.h"
+#include "../../Bonds/Base/Bond.h"
 
 using namespace std;
 using namespace Constants;
@@ -23,7 +24,7 @@ protected:
     double total_demand = 0;
     double policy_added_demand = 0;
     double permitting_time = NON_INITIALIZED;
-    double construction_cost_of_capital = NON_INITIALIZED;
+    vector<Bond *> bonds;
     double upstream_min_env_inflow = 0;
     double capacity = NON_INITIALIZED;
 
@@ -61,22 +62,26 @@ public:
                     const double capacity, vector<int> connected_sources, double treatment_capacity,
                     const int source_type);
 
-    WaterSource(const char *source_name, const int id, const vector<Catchment *> &catchments,
+    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
+                const double capacity, double treatment_capacity, vector<int> connected_sources,
+                const int source_type, vector<double> *allocated_treatment_fractions,
+                vector<double> *allocated_fractions, vector<int> *utilities_with_allocations);
+
+    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
                 const double capacity, double treatment_capacity, vector<int> connected_sources,
                 const int source_type, const vector<double> construction_time_range,
-                double permitting_period, double construction_cost_of_capital);
+                double permitting_period, Bond &bond);
+
+    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
+                double treatment_capacity, vector<int> connected_sources, const int source_type,
+                const vector<double> construction_time_range, double permitting_period, vector<Bond *> bonds);
 
     WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
                     const double capacity, double treatment_capacity, vector<int> built_in_sequence,
                     const int source_type, vector<double> *allocated_treatment_fractions,
                     vector<double> *allocated_fractions, vector<int> *utilities_with_allocations,
                     const vector<double> construction_time_range, double permitting_period,
-                    double construction_cost_of_capital);
-
-    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
-                    const double capacity, double treatment_capacity, vector<int> connected_sources,
-                    const int source_type, vector<double> *allocated_treatment_fractions,
-                    vector<double> *allocated_fractions, vector<int> *utilities_with_allocations);
+                Bond &bond);
 
     WaterSource(const WaterSource &water_source);
 
@@ -95,11 +100,6 @@ public:
                                    vector<double> &demand_outflow);
 
     virtual void addTreatmentCapacity(const double added_treatment_capacity, int utility_id);
-
-    virtual double calculateNetPresentConstructionCost(int week, int utility_id, double discount_rate,
-                                                           double&
-                                                           level_debt_service_payment, double bond_term,
-                                                           double bond_interest_rate) const;
 
     virtual void removeWater(int allocation_id, double volume);
 
@@ -126,8 +126,6 @@ public:
     virtual void setFull();
 
     void setOutflow_previous_week(double outflow_previous_week);
-
-    virtual void connectSource(WaterSource* water_source);
 
     virtual double getSupplyCapacity();
 
@@ -169,17 +167,13 @@ public:
 
     double getPermitting_period() const;
 
-    void setPermitting_period(double permitting_period);
-
-    double getConstruction_cost_of_capital() const;
-
-    void setConstruction_cost_of_capital(double construction_cost_of_capital);
-
     double getAvailableSupplyVolume() const;
 
     double getAllocatedInflow(int utility_id) const;
 
     virtual double getSupplyAllocatedFraction(int utility_id);
+
+    Bond &getBond(int utility_id);
 
     void checkForInputErrorsConstruction();
 };

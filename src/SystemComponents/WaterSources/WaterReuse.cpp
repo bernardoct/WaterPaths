@@ -14,9 +14,9 @@ WaterReuse::WaterReuse(const char *name, const int id, const double capacity)
 
 WaterReuse::WaterReuse(const char *name, const int id, const double treatment_capacity,
                        const vector<double> &construction_time_range, double permitting_period,
-                       double construction_cost_of_capital) : WaterSource(name, id, vector<Catchment *>(), NONE, treatment_capacity,
+                       Bond &bond) : WaterSource(name, id, vector<Catchment *>(), NONE, treatment_capacity,
                                                                           vector<int>(), WATER_REUSE, construction_time_range,
-                                                                          permitting_period, construction_cost_of_capital),
+                                                                          permitting_period, bond),
                                                               treated_volume(treatment_capacity) {
     available_volume = treatment_capacity;
 }

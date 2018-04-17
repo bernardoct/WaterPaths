@@ -7,9 +7,9 @@
 Relocation::Relocation(const char *name, const int id, unsigned long parent_reservoir_ID,
                        vector<double> *allocated_fractions, vector<int> *utilities_with_allocations,
                        const vector<double> &construction_time_range, double permitting_period,
-                       double construction_cost_of_capital)
+                       Bond &bond)
         : WaterSource(name, id, vector<Catchment *>(), NONE, NONE, vector<int>(), SOURCE_RELOCATION,
-                      construction_time_range, permitting_period, construction_cost_of_capital),
+                      construction_time_range, permitting_period, bond),
           parent_reservoir_ID(parent_reservoir_ID), new_allocated_fractions
                   (allocated_fractions),
           utilities_with_allocations(utilities_with_allocations) {}

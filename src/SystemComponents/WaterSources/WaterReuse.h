@@ -16,7 +16,7 @@ public:
 
     WaterReuse(const char *name, const int id, const double treatment_capacity,
                    const vector<double> &construction_time_range, double permitting_period,
-                   double construction_cost_of_capital);
+                   Bond &bond);
     WaterReuse(const WaterReuse &reuse);
 
     void applyContinuity(int week, double upstream_source_inflow,

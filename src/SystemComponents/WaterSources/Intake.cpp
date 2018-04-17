@@ -15,9 +15,9 @@ Intake::Intake(
 
 Intake::Intake(const char *name, const int id, const vector<Catchment *> &catchments,
                const double raw_water_main_capacity, const vector<double> construction_time_range,
-               double permitting_period, double construction_npv_cost_of_capital) :
+               double permitting_period, Bond &bond) :
         WaterSource(name, id, catchments, NONE, raw_water_main_capacity, vector<int>(), INTAKE, construction_time_range,
-                    permitting_period, construction_npv_cost_of_capital) {}
+                    permitting_period, bond) {}
 
 /**
  *

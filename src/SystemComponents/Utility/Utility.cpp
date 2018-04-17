@@ -44,8 +44,8 @@ Utility::Utility(
         wwtp_discharge_rule(wwtp_discharge_rule),
         demands_all_realizations(demands_all_realizations),
         infra_discount_rate(NON_INITIALIZED),
-        bond_term(NON_INITIALIZED),
-        bond_interest_rate(NON_INITIALIZED),
+        bond_term_multiplier(NON_INITIALIZED),
+        bond_interest_rate_multiplier(NON_INITIALIZED),
         id(id),
         number_of_week_demands(number_of_week_demands),
         name(name),
@@ -93,8 +93,8 @@ Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_r
         wwtp_discharge_rule(wwtp_discharge_rule),
         demands_all_realizations(demands_all_realizations),
         infra_discount_rate(infra_discount_rate),
-        bond_term(bond_term),
-        bond_interest_rate(bond_interest_rate),
+        bond_term_multiplier(bond_term),
+        bond_interest_rate_multiplier(bond_interest_rate),
         id(id),
         number_of_week_demands(number_of_week_demands),
         name(name),
@@ -160,8 +160,8 @@ Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_r
         wwtp_discharge_rule(wwtp_discharge_rule),
         demands_all_realizations(demands_all_realizations),
         infra_discount_rate(infra_discount_rate),
-        bond_term(bond_term),
-        bond_interest_rate(bond_interest_rate),
+        bond_term_multiplier(bond_term),
+        bond_interest_rate_multiplier(bond_interest_rate),
         id(id),
         number_of_week_demands(number_of_week_demands),
         name(name),
@@ -202,8 +202,8 @@ Utility::Utility(Utility &utility) :
         demands_all_realizations(utility.demands_all_realizations),
         demand_series_realization(utility.number_of_week_demands),
         infra_discount_rate(utility.infra_discount_rate),
-        bond_term(utility.bond_term),
-        bond_interest_rate(utility.bond_interest_rate),
+        bond_term_multiplier(utility.bond_term_multiplier),
+        bond_interest_rate_multiplier(utility.bond_interest_rate_multiplier),
         id(utility.id),
         number_of_week_demands(utility.number_of_week_demands),
         name(utility.name),
@@ -444,13 +444,14 @@ void Utility::splitDemands(
 
     /// Update contingency fund
     if (used_for_realization) {
-        updateContingencyFund(unrestricted_demand,
-                              demand_multiplier,
-                              demand_offset,
-                              unfulfilled_demand,
-                              week);
+        updateContingencyFundAndDebtService(unrestricted_demand,
+                                            demand_multiplier,
+                                            demand_offset,
+                                            unfulfilled_demand,
+                                            week);
     }
 }
+
 /**
  * Update contingency fund based on regular contribution, restrictions, and
  * transfers. This function works for both sources and receivers of
@@ -462,7 +463,7 @@ void Utility::splitDemands(
  * @param demand_offset
  * @return contingency fund contribution or draw.
  */
-void Utility::updateContingencyFund(
+void Utility::updateContingencyFundAndDebtService(
         double unrestricted_demand, double demand_multiplier,
         double demand_offset, double unfulfilled_demand, int week) {
 
@@ -525,14 +526,16 @@ void Utility::updateContingencyFund(
     restricted_price = NON_INITIALIZED;
     offset_rate_per_volume = NONE;
     this->demand_offset = NONE;
+
+    /// Calculate current debt payment to be made on that week (if first
+    /// week of year), if any.
+    current_debt_payment = updateCurrent_debt_payment(week);
 }
 
 void Utility::setWaterSourceOnline(unsigned int source_id, int week) {
-
-    infra_net_present_cost += infrastructure_construction_manager.setWaterSourceOnline(
+    infrastructure_construction_manager.setWaterSourceOnline(
             source_id, week, total_storage_capacity, total_treatment_capacity,
             total_available_volume, total_stored_volume, debt_payment_streams);
-
 }
 
 
@@ -549,20 +552,8 @@ double Utility::updateCurrent_debt_payment(int week) {
 
     /// Checks if it's the first week of the year, when outstanding debt
     /// payments should be made.
-    if (Utils::isFirstWeekOfTheYear(week)) {
-        /// Checks if there's outstanding debt.
-        if (!debt_payment_streams.empty()) {
-            /// Iterate over all outstanding debt.
-            for (vector<double> &pmt : debt_payment_streams) {
-                if (!pmt.empty()) {
-                    /// Adds outstanding debt payment to total current annual
-                    /// payment.
-                    current_debt_payment += pmt.at(0);
-                    /// Scratch outstanding debt.
-                    pmt.erase(pmt.begin());
-                }
-            }
-        }
+    for (Bond *bond : issued_bonds) {
+        current_debt_payment += bond->getDebtService(week);
     }
 
     return current_debt_payment;
@@ -572,21 +563,33 @@ void Utility::forceInfrastructureConstruction(int week, vector<int> new_infra_tr
     infrastructure_construction_manager.forceInfrastructureConstruction(week, new_infra_triggered);
 }
 
+/**
+ * Check if new infrastructure is to be triggered based on long-term risk of failure and, if so, handle
+ * the beginning of construction, issue corresponding bonds and update debt.
+ * @param long_term_rof
+ * @param week
+ * @return
+ */
 int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
 
     double past_year_average_demand =
             std::accumulate(demand_series_realization.begin() + week - (int) WEEKS_IN_YEAR,
-                            demand_series_realization.begin() + week,
-                            0.0) / WEEKS_IN_YEAR;
+                            demand_series_realization.begin() + week, 0.0) / WEEKS_IN_YEAR;
     long_term_risk_of_failure = long_term_rof;
 
+    /// Check if new infrastructure is to be triggered and, if so, trigger it.
     int new_infra_triggered = infrastructure_construction_manager.infrastructureConstructionHandler(
-            long_term_rof, week, past_year_average_demand, total_storage_capacity, total_treatment_capacity,
-            total_available_volume, total_stored_volume, infra_net_present_cost, debt_payment_streams);
+            long_term_rof, week, past_year_average_demand, total_storage_capacity,
+            total_treatment_capacity, total_available_volume, total_stored_volume, debt_payment_streams);
 
-    /// Calculate current annual debt payment to be made on that week (if first
-    /// week of year), if any.
-    current_debt_payment = updateCurrent_debt_payment(week);
+    /// Issue and add bond of triggered water source to list of outstanding bonds, and update total new
+    /// infrastructure NPV.
+    if (new_infra_triggered != NON_INITIALIZED) {
+        Bond &bond = water_sources.at((unsigned long) new_infra_triggered)->getBond(id);
+        bond.issueBond(week, bond_term_multiplier, bond_interest_rate_multiplier);
+        issued_bonds.push_back(&bond);
+        infra_net_present_cost += bond.getNetPresentValueAtIssuance(infra_discount_rate, 0);
+    }
 
     return new_infra_triggered;
 }
@@ -640,8 +643,8 @@ void Utility::setRealization(unsigned long r, vector<double>& rdm_factors) {
                                        + delta_demand;
     }
 
-    bond_term *= rdm_factors.at(1);
-    bond_interest_rate *= rdm_factors.at(2);
+    bond_term_multiplier = rdm_factors.at(1);
+    bond_interest_rate_multiplier = rdm_factors.at(2);
     infra_discount_rate *= rdm_factors.at(3);
 
     /// Set peaking demand factor.

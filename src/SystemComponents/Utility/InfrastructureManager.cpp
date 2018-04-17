@@ -57,7 +57,6 @@ InfrastructureManager& InfrastructureManager::operator=(const InfrastructureMana
  * @param water_source
  */
 void InfrastructureManager::addWaterSource(WaterSource *water_source) {
-    checkErrorsAddWaterSourceOnline(water_source);
 
     /// Add water sources with their IDs matching the water sources vector
     /// indexes.
@@ -107,21 +106,6 @@ vector<double> InfrastructureManager::rearrangeInfraRofVector(
     return infra_construction_triggers_new;
 }
 
-void InfrastructureManager::checkErrorsAddWaterSourceOnline(WaterSource *water_source) {
-    /// Catch if user entered a water source as to be built but didn't enter
-    /// bond parameters.
-    for (int ws : rof_infra_construction_order) {
-        if (water_source->id == ws) {
-            if (water_source->getConstruction_cost_of_capital() == NON_INITIALIZED) {
-                cout << "Utility " << id << " set to build water source " <<
-                     ws << ", which has no bond parameters set." << endl;
-                __throw_invalid_argument("Water source with no bond parameters "
-                                         "but set as to be built.");
-            }
-        }
-    }
-}
-
 void InfrastructureManager::addWaterSourceToOnlineLists(int source_id, double &total_storage_capacity,
                                                         double &total_treatment_capacity,
                                                         double &total_available_volume,
@@ -147,7 +131,7 @@ void InfrastructureManager::addWaterSourceToOnlineLists(int source_id, double &t
 }
 
 
-double InfrastructureManager::setWaterSourceOnline(unsigned int source_id, int week, double &total_storage_capacity,
+void InfrastructureManager::setWaterSourceOnline(unsigned int source_id, int week, double &total_storage_capacity,
                                                  double &total_treatment_capacity,
                                                  double &total_available_volume,
                                                  double &total_stored_volume,
@@ -169,22 +153,6 @@ double InfrastructureManager::setWaterSourceOnline(unsigned int source_id, int w
                                     total_available_volume, total_stored_volume);
     }
 
-    /// Add water source construction cost to the books.
-    double level_debt_service_payments;
-    double infra_net_present_cost_add =
-            water_sources->at(source_id)->
-                    calculateNetPresentConstructionCost(
-                    week, id, infra_discount_rate, level_debt_service_payments,
-                    bond_term, bond_interest_rate);
-
-    if (std::isnan(infra_net_present_cost_add))
-        __throw_runtime_error("NPV error.");
-
-    /// Create stream of level debt service payments for water source.
-    debt_payment_streams.emplace_back(
-            (unsigned long) bond_term,
-            level_debt_service_payments);
-
     /// Updates total storage and treatment variables.
     total_storage_capacity = 0;
     total_treatment_capacity = 0;
@@ -202,8 +170,6 @@ double InfrastructureManager::setWaterSourceOnline(unsigned int source_id, int w
             total_available_volume += ws->getAvailableAllocatedVolume(id);
         }
     }
-
-    return infra_net_present_cost_add;
 }
 
 
@@ -211,9 +177,6 @@ void
 InfrastructureManager::waterTreatmentPlantConstructionHandler(unsigned int source_id, double &total_storage_capacity) {
     auto wtp = dynamic_cast<SequentialJointTreatmentExpansion *>
     (water_sources->at(source_id));
-
-    /// Calculate construction cost for current expansion and previous ones not yet built.
-    wtp->calculateConstructionCost(id);
 
     /// Add treatment capacity to source
     double added_capacity = wtp->implementTreatmentCapacity(id);
@@ -310,7 +273,6 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
                                                              double &total_treatment_capacity,
                                                              double &total_available_volume,
                                                              double &total_stored_volume,
-                                                             double &infra_net_present_cost,
                                                              vector<vector<double>> &debt_payment_streams) {
 
     int new_infra_triggered = NON_INITIALIZED;
@@ -327,7 +289,7 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
         /// Selects next water source whose permitting period is passed.
         int next_construction = NON_INITIALIZED;
         for (int id : rof_infra_construction_order) {
-            unsigned long idd = (unsigned long) id;
+            auto idd = (unsigned long) id;
             if (week > water_sources->at(idd)->getPermitting_period() && !water_sources->at(idd)->skipConstruction(id)) {
                 next_construction = id;
                 break;
@@ -355,7 +317,7 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
         /// Selects next water source whose permitting period is passed.
         int next_construction = NON_INITIALIZED;
         for (int &id : demand_infra_construction_order) {
-            unsigned long idd = (unsigned long) id;
+            auto idd = (unsigned long) id;
             if (week > water_sources->at(idd)->getPermitting_period() && !water_sources->at(idd)->skipConstruction(id)) {
                 next_construction = id;
                 break;
@@ -408,8 +370,9 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
 
                 /// Set online all sources that at to be set online now.
                 for (const int &wss : set_online_now) {
-                    infra_net_present_cost += setWaterSourceOnline((unsigned int) wss, week, total_storage_capacity, total_treatment_capacity,
-                                         total_available_volume, total_stored_volume, debt_payment_streams);
+                    setWaterSourceOnline((unsigned int) wss, week, total_storage_capacity,
+                                                                   total_treatment_capacity, total_available_volume,
+                                                                   total_stored_volume, debt_payment_streams);
 
                     /// Record ID of and when infrastructure option construction was
                     /// completed. (utility_id, week, new source id)

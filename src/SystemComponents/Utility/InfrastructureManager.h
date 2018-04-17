@@ -47,7 +47,7 @@ public:
                                            const vector<int> &rof_infra_construction_order,
                                            const vector<int> &demand_infra_construction_order);
 
-    double setWaterSourceOnline(unsigned int source_id, int week, double &total_storage_capacity,
+    void setWaterSourceOnline(unsigned int source_id, int week, double &total_storage_capacity,
                          double &total_treatment_capacity, double &total_available_volume,
                          double &total_stored_volume, vector<vector<double>> &debt_payment_streams);
 
@@ -60,13 +60,12 @@ public:
     void removeRelatedSourcesFromQueue(int next_construction);
 
     int infrastructureConstructionHandler(double long_term_rof, int week,
-                                          double past_year_average_demand,
-                                          double &total_storage_capacity,
-                                          double &total_treatment_capacity,
-                                          double &total_available_volume,
-                                          double &total_stored_volume,
-                                          double &infra_net_present_cost,
-                                          vector<vector<double>> &debt_payment_streams);
+                                              double past_year_average_demand,
+                                              double &total_storage_capacity,
+                                              double &total_treatment_capacity,
+                                              double &total_available_volume,
+                                              double &total_stored_volume,
+                                              vector<vector<double>> &debt_payment_streams);
 
     void forceInfrastructureConstruction(int week, vector<int> new_infra_triggered);
 
@@ -85,8 +84,6 @@ public:
     const vector<int> &getDemand_infra_construction_order() const;
 
     const vector<int> &getInfra_built_last_week() const;
-
-    void checkErrorsAddWaterSourceOnline(WaterSource *water_source);
 };
 
 

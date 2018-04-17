@@ -15,8 +15,6 @@ private:
 
 public:
 
-    Quarry(const Quarry &quarry, const double max_diversion);
-
     Quarry(
             const char *name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
@@ -25,9 +23,9 @@ public:
             DataSeries *storage_area_curve, double max_diversion);
 
     Quarry(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
-               const double max_treatment_capacity, EvaporationSeries &evaporation_series,
-               DataSeries *storage_area_curve, const vector<double> &construction_time_range,
-               double permitting_period, double construction_cost, double max_diversion);
+           const double max_treatment_capacity, EvaporationSeries &evaporation_series,
+           DataSeries *storage_area_curve, const vector<double> &construction_time_range,
+           double permitting_period, Bond &bond, double max_diversion);
 
     Quarry(
             const char *name, const int id,
@@ -37,9 +35,11 @@ public:
             double max_diversion);
 
     Quarry(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
-               const double max_treatment_capacity, EvaporationSeries &evaporation_series, double storage_area,
-               const vector<double> &construction_time_range, double permitting_period, double construction_cost,
-               double max_diversion);
+           const double max_treatment_capacity, EvaporationSeries &evaporation_series, double storage_area,
+           const vector<double> &construction_time_range, double permitting_period, Bond &bond,
+           double max_diversion);
+
+    Quarry(const Quarry &quarry, const double max_diversion);
 
     Quarry &operator=(const Quarry &quarry);
 

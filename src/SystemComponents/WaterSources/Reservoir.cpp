@@ -66,9 +66,9 @@ Reservoir::Reservoir(
 Reservoir::Reservoir(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
                      const double max_treatment_capacity, EvaporationSeries &evaporation_series,
                      DataSeries *storage_area_curve, const vector<double> &construction_time_range,
-                     double permitting_period, double construction_cost, int source_type) :
+                     double permitting_period, Bond &bond, int source_type) :
         WaterSource(name, id, catchments, capacity, max_treatment_capacity, vector<int>(), source_type,
-                    construction_time_range, permitting_period, construction_cost),
+                    construction_time_range, permitting_period, bond),
         storage_area_curve(storage_area_curve), fixed_area(false),
         evaporation_series(evaporation_series) {
 
@@ -92,9 +92,9 @@ Reservoir::Reservoir(const char *name, const int id, const vector<Catchment *> &
 Reservoir::Reservoir(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
                      const double max_treatment_capacity, EvaporationSeries &evaporation_series,
                      double storage_area, const vector<double> &construction_time_range, double permitting_period,
-                     double construction_cost, int source_type) :
+                     Bond &bond, int source_type) :
         WaterSource(name, id, catchments, capacity, max_treatment_capacity, vector<int>(), source_type,
-                    construction_time_range, permitting_period, construction_cost),
+                    construction_time_range, permitting_period, bond),
         storage_area_curve(nullptr), area(storage_area), fixed_area(true),
         evaporation_series(evaporation_series) {}
 
@@ -168,10 +168,10 @@ Reservoir::Reservoir(const char *name, const int id, const vector<Catchment *> &
                      DataSeries *storage_area_curve, vector<double> *allocated_treatment_fractions,
                      vector<double> *allocated_fractions, vector<int> *utilities_with_allocations,
                      const vector<double> &construction_time_range, double permitting_period,
-                     double construction_cost, int source_type) :
+                     Bond &bond, int source_type) :
         WaterSource(name, id, catchments, capacity, max_treatment_capacity, vector<int>(), source_type,
                     allocated_treatment_fractions, allocated_fractions, utilities_with_allocations,
-                    construction_time_range, permitting_period, construction_cost),
+                    construction_time_range, permitting_period, bond),
         storage_area_curve(storage_area_curve), fixed_area(false),
         evaporation_series(evaporation_series) {
 
@@ -198,10 +198,10 @@ Reservoir::Reservoir(const char *name, const int id, const vector<Catchment *> &
                      double storage_area, vector<double> *allocated_treatment_fractions,
                      vector<double> *allocated_fractions, vector<int> *utilities_with_allocations,
                      const vector<double> &construction_time_range, double permitting_period,
-                     double construction_cost, int source_type) :
+                     Bond &bond, int source_type) :
         WaterSource(name, id, catchments, capacity, max_treatment_capacity, vector<int>(), source_type,
                     allocated_treatment_fractions, allocated_fractions, utilities_with_allocations,
-                    construction_time_range, permitting_period, construction_cost),
+                    construction_time_range, permitting_period, bond),
         storage_area_curve(nullptr), area(storage_area), fixed_area(true),
         evaporation_series(evaporation_series) {}
 
@@ -284,14 +284,14 @@ void Reservoir::applyContinuity(int week, double upstream_source_inflow,
         outflow_new += stored_volume_new - capacity;
         stored_volume_new = capacity;
     } else if (stored_volume_new < 0) {
-	outflow_new = max(outflow_new - stored_volume_new, 0.);
-	stored_volume_new = 0.;
+        outflow_new = max(outflow_new - stored_volume_new, 0.);
+	    stored_volume_new = 0.;
     }
 
     /// Update data collection variables.
     this->total_demand = total_demand + policy_added_demand;
     policy_added_demand = 0;
-    available_volume = stored_volume_new;//max(stored_volume_new, 0.0);
+    available_volume = stored_volume_new;
     total_outflow = outflow_new;
     upstream_catchment_inflow = catchment_inflow;
     this->upstream_source_inflow = upstream_source_inflow;

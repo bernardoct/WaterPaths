@@ -52,14 +52,15 @@ private:
     double unrestricted_demand = 0;
     int n_sources = 0;
     double infra_discount_rate;
-    double bond_term;
-    double bond_interest_rate;
+    double bond_term_multiplier;
+    double bond_interest_rate_multiplier;
     double max_capacity = 0;
 
     /// Infrastructure cost
     double current_debt_payment = 0;
     vector<vector<double>> debt_payment_streams;
     double infra_net_present_cost = 0;
+    vector<Bond *> issued_bonds;
 
 public:
     const int id;
@@ -149,7 +150,7 @@ public:
 
     double getTotal_treatment_capacity() const;
 
-    void updateContingencyFund(
+    void updateContingencyFundAndDebtService(
             double unrestricted_demand, double demand_multiplier,
             double demand_offset, double unfulfilled_demand, int week);
 

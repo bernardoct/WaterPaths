@@ -13,8 +13,7 @@ AllocatedReservoir::AllocatedReservoir(
         const double capacity, const double max_treatment_capacity,
         EvaporationSeries &evaporation_series, DataSeries *storage_area_curve,
         vector<int> *utilities_with_allocations,
-        vector<double> *allocated_fractions, vector<double>
-        *allocated_treatment_fractions)
+        vector<double> *allocated_fractions, vector<double> *allocated_treatment_fractions)
         : Reservoir(name,
                     id,
                     catchments,
@@ -32,13 +31,13 @@ AllocatedReservoir::AllocatedReservoir(
 AllocatedReservoir::AllocatedReservoir(const char *name, const int id, const vector<Catchment *> &catchments,
                                        const double capacity, const double max_treatment_capacity,
                                        EvaporationSeries &evaporation_series, DataSeries *storage_area_curve,
-                                       const vector<double> &construction_time_range, double construction_cost,
-                                       vector<int> *utilities_with_allocations, vector<double> *allocated_fractions,
+                                       const vector<double> &construction_time_range, double permitting_period,
+                                       Bond &bond, vector<int> *utilities_with_allocations,
+                                       vector<double> *allocated_fractions,
                                        vector<double> *allocated_treatment_fractions)
         : Reservoir(name, id, catchments, capacity, max_treatment_capacity, evaporation_series, storage_area_curve,
                     allocated_treatment_fractions, allocated_fractions, utilities_with_allocations,
-                    construction_time_range, construction_cost, ALLOCATED_RESERVOIR,
-                    0),
+                    construction_time_range, permitting_period, bond, ALLOCATED_RESERVOIR),
           has_water_quality_pool(wq_pool_id != NON_INITIALIZED) {
 }
 
@@ -66,20 +65,19 @@ AllocatedReservoir::AllocatedReservoir(
 AllocatedReservoir::AllocatedReservoir(const char *name, const int id, const vector<Catchment *> &catchments,
                                        const double capacity, const double max_treatment_capacity,
                                        EvaporationSeries &evaporation_series, double storage_area,
-                                       const vector<double> &construction_time_range, double construction_cost,
-                                       vector<int> *utilities_with_allocations, vector<double> *allocated_fractions,
+                                       const vector<double> &construction_time_range, double permitting_period,
+                                       Bond &bond, vector<int> *utilities_with_allocations,
+                                       vector<double> *allocated_fractions,
                                        vector<double> *allocated_treatment_fractions)
         : Reservoir(name, id, catchments, capacity, max_treatment_capacity, evaporation_series, storage_area,
                     allocated_treatment_fractions, allocated_fractions, utilities_with_allocations,
-                    construction_time_range, construction_cost, ALLOCATED_RESERVOIR, 0),
+                    construction_time_range, permitting_period, bond, ALLOCATED_RESERVOIR),
           has_water_quality_pool(wq_pool_id != NON_INITIALIZED) {
 }
 
 AllocatedReservoir::AllocatedReservoir(
         const AllocatedReservoir &allocated_reservoir)
-        : Reservoir(allocated_reservoir),
-          has_water_quality_pool(allocated_reservoir.has_water_quality_pool) {
-        }
+        : Reservoir(allocated_reservoir), has_water_quality_pool(allocated_reservoir.has_water_quality_pool) {}
 
 /**
  * Copy assignment operator
@@ -95,8 +93,7 @@ AllocatedReservoir::~AllocatedReservoir() = default;
 
 
 void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow,
-                                         double wastewater_inflow,
-                                         vector<double> &demand_outflow) {
+                                         double wastewater_inflow, vector<double> &demand_outflow) {
 
     double total_upstream_inflow;
 

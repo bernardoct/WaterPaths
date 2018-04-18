@@ -105,30 +105,16 @@ AllocatedReservoir::AllocatedReservoir(const char *name, const int id, const vec
 
 AllocatedReservoir::AllocatedReservoir(const char *name, const int id, const vector<Catchment *> &catchments,
                                        const double capacity, const double max_treatment_capacity,
-                                       EvaporationSeries &evaporation_series, double storage_area,
-                                       const double construction_rof_or_demand,
+                                       EvaporationSeries &evaporation_series, DataSeries *storage_area_curve,
                                        const vector<double> &construction_time_range, double construction_cost,
                                        vector<int> *utilities_with_allocations, vector<double> *allocated_fractions,
                                        vector<double> *allocated_treatment_fractions,
                                        AllocationModifier *allocation_modifier)
-        : Reservoir(name,
-                    id,
-                    catchments,
-                    capacity,
-                    max_treatment_capacity,
-                    evaporation_series,
-                    storage_area,
-                    allocated_treatment_fractions,
-                    allocated_fractions,
-                    utilities_with_allocations,
-                    construction_rof_or_demand,
-                    construction_time_range,
-                    construction_cost,
-                    ALLOCATED_RESERVOIR),
+        : Reservoir(name, id, catchments, capacity, max_treatment_capacity, evaporation_series, storage_area_curve,
+                    allocated_treatment_fractions, allocated_fractions, utilities_with_allocations,
+                    construction_time_range, construction_cost, ALLOCATED_RESERVOIR, 0),
           has_water_quality_pool(wq_pool_id != NON_INITIALIZED),
-          modified_allocations(true), allocation_modifier(allocation_modifier) {
-
-}
+          modified_allocations(true), allocation_modifier(allocation_modifier) {}
 
 AllocatedReservoir::AllocatedReservoir(
         const AllocatedReservoir &allocated_reservoir)
@@ -397,6 +383,28 @@ void AllocatedReservoir::addTreatmentCapacity(const double added_plant_treatment
     }
 }
 
+
+/**
+ * Addes treatment capacity to a source. The specification of both the total
+ * treatment capacity of the new plant and the fraction of the treatment
+ * capacity allocated to a given utility allow for joint treatment plants. To
+ * have one utility only building an exclusive plant, the fraction will be 1.
+ * @param added_plant_treatment_capacity
+ * @param allocated_fraction_of_total_capacity
+ * @param utility_id
+ */
+void AllocatedReservoir::addAllocatedTreatmentCapacity(const double added_allocated_treatment_capacity, int utility_id) {
+
+    /// Add capacity to respective treatment allocation.
+    allocated_treatment_capacities[utility_id] += added_allocated_treatment_capacity;
+
+    /// Update treatment allocation fractions based on new allocated amounts
+    /// and new total treatment capacity.
+    for (int i = 0; i < (int) utilities_with_allocations->size(); ++i) {
+        allocated_treatment_fractions[i] = allocated_treatment_capacities[i] / total_treatment_capacity;
+    }
+}
+
 bool AllocatedReservoir::mass_balance_with_wq_pool(double net_inflow,
                                                      vector<double>
                                                      &demand_outflow) {
@@ -542,7 +550,7 @@ void AllocatedReservoir::updateTreatmentAndCapacityAllocations(int week) {
                 }
 
                 if (capacity_sums > total_treatment_capacity) {
-                    //cout << "ERROR in ModifiedAllocations" << endl;
+                    cout << "ERROR in ModifiedAllocations" << endl;
                     __throw_out_of_range("When treatment capacity is adjusted, the changes"
                                                  "cannot exceed total capacity in place");
                 }

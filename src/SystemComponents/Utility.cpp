@@ -11,6 +11,7 @@
 #include "WaterSources/Relocation.h"
 #include "WaterSources/AllocatedReservoirExpansion.h"
 #include "../Utils/Utils.h"
+#include "WaterSources/JointWTP.h"
 
 /**
  * Main constructor for the Utility class.
@@ -446,6 +447,9 @@ void Utility::splitDemands(
         double source_demand = restricted_demand * demand_fraction;
         demands[ws][id] = source_demand;
 
+        /// Keep accounting of annual demand to source per utility
+        water_sources[ws]->annual_source_demand[id] += source_demand;
+
         /// Check if allocated demand was greater than treatment capacity.
         double over_allocated_demand_ws =
                 max(source_demand -
@@ -589,17 +593,19 @@ void Utility::setWaterSourceOnline(unsigned int source_id, int week) {
         allocatedReservoirExpansionConstructionHandler(source_id);
     } else if (water_sources.at(source_id)->source_type == SOURCE_RELOCATION) {
         sourceRelocationConstructionHandler(source_id);
+    } else if (water_sources.at(source_id)->source_type == NEW_JOINT_WTP) {
+        jointWTPConstructionHandler(source_id, week);
     } else {
         water_sources.at(source_id)->setOnline();
         addWaterSourceToOnlineLists(source_id);
     }
 
     /// Add water source construction cost to the books.
-    double level_debt_service_payments;
+    vector<double> debt_service_payments;
     double infra_net_present_cost_add =
             water_sources[source_id]->
                     calculateNetPresentConstructionCost(
-                    week, id, infra_discount_rate, level_debt_service_payments,
+                    week, id, infra_discount_rate, debt_service_payments,
                     bond_term, bond_interest_rate);
     infra_net_present_cost += infra_net_present_cost_add;
 
@@ -607,9 +613,8 @@ void Utility::setWaterSourceOnline(unsigned int source_id, int week) {
         __throw_runtime_error("NPV error.");
 
     /// Create stream of level debt service payments for water source.
-    debt_payment_streams.emplace_back(
-            (unsigned long) bond_term,
-            level_debt_service_payments);
+    for (int y = 0; y < bond_term; y++)
+        debt_payment_streams.push_back(debt_service_payments);
 
     /// Updates total storage and treatment variables.
     total_storage_capacity = 0;
@@ -627,6 +632,105 @@ void Utility::setWaterSourceOnline(unsigned int source_id, int week) {
             total_treatment_capacity += ws->getAllocatedTreatmentCapacity(id);
             total_available_volume += ws->getAvailableAllocatedVolume(id);
         }
+}
+
+void Utility::jointWTPConstructionHandler(unsigned int source_id, int week) {
+    auto wtp = dynamic_cast<JointWTP *>(water_sources.at(source_id));
+
+    /// Determine financing split based on type of contract
+    if (wtp->getContractType() == 0) {
+        /// fixed capacity allocations means payments are fixed in each period
+
+        /// add treatment capacity to source
+        double added_total_capacity = wtp->getAddedTotalTreatmentCapacity();
+            // this will be the total capacity the first time, 0 after that
+            // this ensures that total capacity is not increased for each utility
+            // attached to the water source
+        water_sources.at(wtp->parent_reservoir_ID)->addTreatmentCapacity(added_total_capacity, id);
+
+        /// add capacity to each participating utility
+        double added_allocation_capacity = wtp->implementFixedTreatmentCapacity(id);
+        water_sources.at(wtp->parent_reservoir_ID)->addAllocatedTreatmentCapacity(added_allocation_capacity, id);
+
+    } else if (wtp->getContractType() == 1) {
+        /// uniform rates used to set allocations and payments annually
+
+        /// Add treatment capacity to source
+        double added_total_capacity = wtp->getAddedTotalTreatmentCapacity();
+            // this will be the total capacity the first time, 0 after that
+            // this ensures that total capacity is not increased for each utility
+            // attached to the water source
+        water_sources.at(wtp->parent_reservoir_ID)->addTreatmentCapacity(added_total_capacity, id);
+        /// Implement initial treatment capacity increases to member utilities
+        /// and adjust overall allocation fractions as they occur (within function)
+        double added_allocation_capacity = wtp->getAdjustableTreatmentCapacity(id, week/WEEKS_IN_YEAR);
+            // somehow get the index of the current year (relative to start of realization)
+            // based on the current week, does this work in ROF realizations?
+        water_sources.at(wtp->parent_reservoir_ID)->addAllocatedTreatmentCapacity(added_allocation_capacity, id);
+
+        /// Track allocation change
+        wtp->recordAllocationAdjustment(added_allocation_capacity, id);
+
+    } else if (wtp->getContractType() == 2) {
+        /// adjustible, "square-one" allocation strategy
+        /// allocations in first year are taken from first year in projections vector
+        /// after that, based on previous years actual use
+
+        /// Add treatment capacity to source
+        double added_total_capacity = wtp->getAddedTotalTreatmentCapacity();
+            // this will be the total capacity the first time, 0 after that
+            // this ensures that total capacity is not increased for each utility
+            // attached to the water source
+        water_sources.at(wtp->parent_reservoir_ID)->addTreatmentCapacity(added_total_capacity, id);
+
+        /// Implement initial treatment capacity increases to member utilities
+        /// and adjust overall allocation fractions as they occur (within function)
+        double added_allocation_capacity = wtp->getAdjustableTreatmentCapacity(id, week/WEEKS_IN_YEAR);
+            // somehow get the index of the current year (relative to start of realization)
+            // based on the current week, does this work in ROF realizations?
+        water_sources.at(wtp->parent_reservoir_ID)->addAllocatedTreatmentCapacity(added_allocation_capacity, id);
+
+        /// Track allocation change
+        wtp->recordAllocationAdjustment(added_allocation_capacity, id);
+
+    } else if (wtp->getContractType() == 3) {
+        /// third-party contracts are included, allocations fixed
+
+    } else {
+        /// third-party contracts are included, allocations adjustible
+
+    }
+
+    /// If source is intake or reuse and is not in the list of active
+    /// sources, add it to the priority list.
+    /// If source is not intake or reuse and is not in the list of active
+    /// sources, add it to the non-priority list.
+    bool is_priority_source =
+            water_sources.at(wtp->parent_reservoir_ID)->source_type == INTAKE ||
+            water_sources.at(wtp->parent_reservoir_ID)->source_type ==
+            WATER_REUSE;
+    bool is_not_in_priority_list =
+            find(priority_draw_water_source.begin(),
+                 priority_draw_water_source.end(),
+                 wtp->parent_reservoir_ID)
+            == priority_draw_water_source.end();
+    bool is_not_in_non_priority_list =
+            find(non_priority_draw_water_source.begin(),
+                 non_priority_draw_water_source.end(),
+                 wtp->parent_reservoir_ID)
+            == non_priority_draw_water_source.end();
+
+    /// Finally, the checking.
+    if (is_priority_source && is_not_in_priority_list) {
+        priority_draw_water_source.push_back((int) wtp->parent_reservoir_ID);
+        total_storage_capacity +=
+                water_sources.at(wtp->parent_reservoir_ID)
+                        ->getAllocatedCapacity(id);
+    } else if (is_not_in_non_priority_list) {
+        non_priority_draw_water_source
+                .push_back((int) wtp->parent_reservoir_ID);
+    }
+    water_sources.at(source_id)->setOnline();
 }
 
 void Utility::waterTreatmentPlantConstructionHandler(unsigned int source_id) {
@@ -1178,3 +1282,4 @@ double Utility::getUnfulfilled_demand() const {
 double Utility::getNet_stream_inflow() const {
     return net_stream_inflow;
 }
+

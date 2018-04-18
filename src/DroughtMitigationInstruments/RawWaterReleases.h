@@ -53,7 +53,7 @@ public:
                              vector<WaterSource *> water_sources,
                              vector<MinEnvFlowControl *> min_env_flow_controls) override;
 
-    void setRealization(unsigned int realization_id, vector<double> &utilities_rdm,
+    void setRealization(unsigned long realization_id, vector<double> &utilities_rdm,
                         vector<double> &water_sources_rdm, vector<double> &policy_rdm) override;
 
     const double getUtilityStorageFromROF(int week, vector<Matrix2D<double>> storage_to_rof_table_, const int u_id);

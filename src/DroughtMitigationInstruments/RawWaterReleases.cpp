@@ -169,15 +169,17 @@ const double RawWaterReleases::getUtilityStorageFromROF(
 
     /// Determine the storage associated with an ROF level
     for (int s = NO_OF_INSURANCE_STORAGE_TIERS - 1; s > -1; --s) {
-//        double temp = *storage_to_rof_table->getPointerToElement(week,u_id,s);
-        if (*storage_to_rof_table.at(week).getPointerToElement(u_id,s) >= rof_triggers[u_id]) {
+        //double temp = *storage_to_rof_table.at(u_id).getPointerToElement(week,s);
+
+        if (*storage_to_rof_table.at(u_id).getPointerToElement(week,s) >= rof_triggers[u_id]) {
                 // ERROR IS HERE, table has changed shape, adjustments made Feb 28,2018 and March 5, 2018
+                // again adjusted March 28, 2018
             return (((double)s + 1) / (double)NO_OF_INSURANCE_STORAGE_TIERS);
         }
     }
 }
 
-void RawWaterReleases::setRealization(unsigned int realization_id, vector<double> &utilities_rdm,
+void RawWaterReleases::setRealization(unsigned long realization_id, vector<double> &utilities_rdm,
                                       vector<double> &water_sources_rdm, vector<double> &policy_rdm) {}
 
 const double &RawWaterReleases::getRawWaterTransferVolume() const {

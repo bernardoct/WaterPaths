@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
-project(triMod)
+project(TriangleModel)
 
 set(CMAKE_CXX_STANDARD 14)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -march=native")
@@ -115,7 +115,7 @@ set(SOURCE_FILES
         src/SystemComponents/WaterSources/AllocatedReservoirExpansion.cpp
         src/SystemComponents/WaterSources/AllocatedReservoirExpansion.h
         src/Controls/AllocationModifier.cpp
-        src/Controls/AllocationModifier.h)
+        src/Controls/AllocationModifier.h src/SystemComponents/WaterSources/JointWTP.cpp src/SystemComponents/WaterSources/JointWTP.h)
 add_executable(TriangleModel ${SOURCE_FILES} src/Problem/Triangle.cpp)
 
 set(DURHAM_SOURCE_FILES

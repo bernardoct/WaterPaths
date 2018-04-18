@@ -405,7 +405,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         vector<double> bond_rate = {0.05, 0.05, 0.05, 0.05};
         double discount_rate = 0.05;
 
-        vector<int> allocation_adjustment_weeks = {156, 313, 469};
+        vector<int> allocation_adjustment_weeks = {52, 104, 156};
         vector<vector<double>> jl_new_capacity_fractions   {{0.05,0.1,0.3,0.15,0.4},
                                                             {0.2,0.1,0.4,0.1,0.2},
                                                             {0.3,0.0,0.4,0.1,0.2}};
@@ -417,7 +417,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         AllocationModifier jordan_lake_allocation_modifier(&allocation_adjustment_weeks,
                                                            &jl_new_capacity_fractions,
-                                                           &jl_new_treatment_capacities)
+                                                           &jl_new_treatment_capacities);
 
         /// Jordan Lake parameters
         double jl_supply_capacity = 14924.0 * table_gen_storage_multiplier;
@@ -442,13 +442,28 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                 fl_wq_capacity / fl_storage_capacity};
         vector<double> fl_treatment_allocation_fractions = {0.0, 0.0, 0.0, 1.0};
 
+        /// Lake Michie & Durham Little River Reservoir Parameters
+        /// (when treating as an allocated reservoir)
+        vector<int> lm_allocations_ids = {1, 3}; // Durham and Raleigh
+        vector<double> lm_initial_allocation_fractions = {0.9, 0.1}; // No initial Raleigh storage
+        vector<double> lm_initial_treatment_allocation_fractions = {0.0, 0.8, 0.0, 0.2};
+
         // Existing Sources
-        Reservoir durham_reservoirs("Lake Michie & Little River Res. (Durham)",
-                                    0,
-                                    catchment_durham,
-                                    6349.0 * table_gen_storage_multiplier,
-                                    ILLIMITED_TREATMENT_CAPACITY,
-                                    evaporation_durham, 1069);
+//        Reservoir durham_reservoirs("Lake Michie & Little River Res. (Durham)",
+//                                    0,
+//                                    catchment_durham,
+//                                    6349.0 * table_gen_storage_multiplier,
+//                                    ILLIMITED_TREATMENT_CAPACITY,
+//                                    evaporation_durham, 1069);
+        AllocatedReservoir durham_reservoirs("Lake Michie & LRR (Durham)",
+                                     0,
+                                     catchment_durham,
+                                     6349.0,
+                                     ILLIMITED_TREATMENT_CAPACITY,
+                                     evaporation_durham, 1069,
+                                     &lm_allocations_ids,
+                                     &lm_initial_allocation_fractions,
+                                     &lm_initial_treatment_allocation_fractions);
     //    Reservoir falls_lake("Falls Lake", 1, catchment_flat,
     //                         34700.0, 99999,
     //                         &evaporation_falls_lake, &falls_lake_storage_area);
@@ -462,43 +477,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                       &fl_allocations_ids,
                                       &fl_allocation_fractions,
                                       &fl_treatment_allocation_fractions);
-
-        /// Lake Michie & Durham Little River Reservoir Parameters
-//        /// (when treating as an allocated reservoir)
-//        vector<int> lm_allocations_ids = {1, 3}; // Durham and Raleigh
-//        vector<double> lm_initial_allocation_fractions = {0.9, 0.1}; // No initial Raleigh storage
-//        vector<double> lm_initial_treatment_allocation_fractions = {0.0, 0.8, 0.0, 0.2};
-//
-//        // Existing Sources
-//    //    Reservoir durham_reservoirs("Lake Michie & Little River Res. (Durham)",
-//    //                                0,
-//    //                                catchment_durham,
-//    //                                6349.0 * table_gen_storage_multiplier,
-//    //                                ILLIMITED_TREATMENT_CAPACITY,
-//    //                                evaporation_durham, 1069);
-//        AllocatedReservoir durham_reservoirs("Lake Michie & LRR (Durham)",
-//                                             0,
-//                                             catchment_durham,
-//                                             6349.0,
-//                                             ILLIMITED_TREATMENT_CAPACITY,
-//                                             evaporation_durham, 1069.0,
-//                                             &lm_allocations_ids,
-//                                             &lm_initial_allocation_fractions,
-//                                             &lm_initial_treatment_allocation_fractions);
-//
-//    //    Reservoir falls_lake("Falls Lake", 1, catchment_flat,
-//    //                         34700.0, 99999,
-//    //                         &evaporation_falls_lake, &falls_lake_storage_area);
-//        AllocatedReservoir falls_lake("Falls Lake",
-//                                      1,
-//                                      catchment_flat,
-//                                      fl_storage_capacity,
-//                                      ILLIMITED_TREATMENT_CAPACITY,
-//                                      evaporation_falls_lake,
-//                                      &falls_lake_storage_area,
-//                                      &fl_allocations_ids,
-//                                      &fl_allocation_fractions,
-//                                      &fl_treatment_allocation_fractions);
 
         Reservoir wheeler_benson_lakes("Wheeler-Benson Lakes", 2, catchment_swift,
                                        2789.66 * table_gen_storage_multiplier,
@@ -533,7 +511,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                        13940,
                                        &jl_allocations_ids,
                                        &jl_allocation_fractions,
-                                       &jl_treatment_allocation_fractions);
+                                       &jl_treatment_allocation_fractions,
+                                       &jordan_lake_allocation_modifier);
 
         // other than Cary WTP for Jordan Lake, assume no WTP constraints - each
         // city can meet its daily demands with available treatment infrastructure
@@ -587,10 +566,41 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                              23 * WEEKS_IN_YEAR, 64.6);
         ReservoirExpansion univ_lake_expansion("University Lake Expansion", 14, 5, 2550.0, construction_time_interval,
                                                17 * WEEKS_IN_YEAR, 107.0);
-        ReservoirExpansion low_michie_expansion("Low Lake Michie Expansion", 15, 0, added_storage_michie_expansion_low,
-                                                construction_time_interval, 17 * WEEKS_IN_YEAR, 158.3);
-        ReservoirExpansion high_michie_expansion("High Lake Michie Expansion", 16, 0, added_storage_michie_expansion_high,
-                                                 construction_time_interval, 17 * WEEKS_IN_YEAR, 203.3);
+
+//        ReservoirExpansion low_michie_expansion("Low Lake Michie Expansion", 15, 0, added_storage_michie_expansion_low,
+//                                                construction_time_interval, 17 * WEEKS_IN_YEAR, 158.3);
+//        ReservoirExpansion high_michie_expansion("High Lake Michie Expansion", 16, 0, added_storage_michie_expansion_high,
+//                                                 construction_time_interval, 17 * WEEKS_IN_YEAR, 203.3);
+
+        /// Lake Michie Allocated Expansion Parameters
+        double lm_total_new_capacity_low = 6349.0 + added_storage_michie_expansion_low;
+        double lm_total_new_capacity_high = 6349.0 + added_storage_michie_expansion_high;
+        vector <double> lm_new_allocation_fractions = {0.6,0.4};
+        vector <double> lm_new_treatment_fractions = {0.0,0.6,0.0,0.4};
+
+        AllocatedReservoirExpansion low_michie_expansion("Low Lake Michie Expansion (Allocated)",
+                                                         15,
+                                                         0,
+                                                         lm_total_new_capacity_low,
+                                                         &lm_allocations_ids,
+                                                         &lm_new_allocation_fractions,
+                                                         &lm_new_treatment_fractions,
+                                                         city_infrastructure_rof_triggers[1],
+                                                         construction_time_interval,
+                                                         17 * WEEKS_IN_YEAR,
+                                                         158.3);
+        AllocatedReservoirExpansion high_michie_expansion("High Lake Michie Expansion (Allocated)",
+                                                          16,
+                                                          0,
+                                                          lm_total_new_capacity_high,
+                                                          &lm_allocations_ids,
+                                                          &lm_new_allocation_fractions,
+                                                          &lm_new_treatment_fractions,
+                                                          city_infrastructure_rof_triggers[1],
+                                                          construction_time_interval,
+                                                          17 * WEEKS_IN_YEAR,
+                                                          203.3);
+
         WaterReuse low_reclaimed("Low Reclaimed Water System", 18, reclaimed_capacity_low, construction_time_interval,
                                  7 * WEEKS_IN_YEAR, 27.5);
         WaterReuse high_reclaimed("High Reclaimed Water System", 19, reclaimed_capacity_high, construction_time_interval,
@@ -783,18 +793,10 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                 {3, 4,  5, 6,  12, 13, 14, 20, 21, 24}, //OWASA
                 {0, 6,  9, 15, 16, 18, 19, 20, 21}, //Durham
                 {6, 22, 23},                    //Cary
-                {1, 2,  6, 7,  8,  17, 10, 20, 21}  //Raleigh
-        };
-        /// Water-source-utility connectivity matrix (each row corresponds to a utility and numbers are water
-        /// sources IDs.
-        vector<vector<int>> reservoir_utility_connectivity_matrix = {
-                {3, 4,  5, 6,  12, 13, 14, 20, 21, 24}, //OWASA
-                {0, 6,  9, 15, 16, 18, 19, 20, 21}, //Durham
-                {6, 22, 23},                    //Cary
-                {0, 1, 2,  6, 7,  8,  15, 16, 17, 10, 20, 21}  //Raleigh
+                {1, 2,  6, 7,  8,  15, 16, 17, 10, 20, 21}  //Raleigh
         };
 
-        auto table_storage_shift = vector<vector<double>>(4, vector<double>(25, 0.));
+        auto table_storage_shift = std::vector<std::vector<double>>(4, vector<double>(25, 0.));
         table_storage_shift[3][17] = 2000.;
         table_storage_shift[3][8] = 5000.;
         table_storage_shift[1][14] = 100.;
@@ -881,18 +883,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                     vector<double>(),
                     vector<int>());
         drought_mitigation_policies.push_back(&t);
-
-        vector<double> insurance_triggers = {owasa_insurance_use,
-                                             durham_insurance_use, cary_insurance_use,
-                                             raleigh_insurance_use}; //FIXME: Change per solution
-        vector<double> fixed_payouts = {owasa_insurance_payment,
-                                   durham_insurance_payment,
-                                   cary_insurance_payment,
-                                   raleigh_insurance_payment};
-        vector<int> insured_utilities = {0, 1, 2, 3};
-        InsuranceStorageToROF in(5, water_sources, g, reservoir_utility_connectivity_matrix, utilities,
-                                 min_env_flow_controls, utilities_rdm, water_sources_rdm, insurance_triggers, 1.2,
-                                 fixed_payouts, n_weeks);
 
         /// Raw Water Transfer policy
         ///     utility ids: 0 OWASA, 1 Durham, 2 Cary, 3 Raleigh
@@ -1097,7 +1087,7 @@ Triangle::setRofTables(unsigned long n_realizations, int n_utilities, string rof
     in.read(reinterpret_cast<char *>(&n_weeks_in_table), sizeof(unsigned));
 
     /// Create empty tables
-    rof_tables = vector<vector<Matrix2D<double>>>(
+    rof_tables = std::vector<vector<Matrix2D<double>>>(
             n_realizations,
             vector<Matrix2D<double>>((unsigned long) n_utilities,
                                      Matrix2D<double>(n_weeks_in_table / n_tiers, n_tiers)));
@@ -1145,7 +1135,7 @@ Triangle::setRofTables(unsigned long n_realizations, int n_utilities, string rof
 void Triangle::readInputData() {
     cout << "Reading input data." << endl;
 
-#pragma omp parallel num_threads(20)
+#pragma omp parallel num_threads(1) // was 20
 {
 #pragma omp single
     streamflows_durham = Utils::parse2DCsvFile(output_directory +
@@ -1234,6 +1224,6 @@ void Triangle::setImport_export_rof_tables(int import_export_rof_tables, int n_w
         Triangle::setRofTables(n_realizations, n_utilities, this->rof_tables_directory);
     } else {
         const string mkdir_command = "mkdir";
-        system((mkdir_command + " " + this->rof_tables_directory).c_str());
+        //system((mkdir_command + " " + this->rof_tables_directory).c_str());
     }
 }

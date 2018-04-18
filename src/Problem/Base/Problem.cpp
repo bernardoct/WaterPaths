@@ -9,8 +9,13 @@
 
 vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
     this->master_data_collector->setOutputDirectory(output_directory);
-    string fo = "/TestFiles/output/Objectives";
-    //string fo = output_directory + "/TestFiles/output/scenario" + std::to_string(scenario) + "/Objectives";
+
+    string fo;
+    if (scenario == 0) {
+        fo = "/TestFiles/output/trianglemodel/Objectives";
+    } else {
+        fo = output_directory + "/TestFiles/output/scenario" + std::to_string(scenario) + "/Objectives";
+    }
 
     objectives = this->master_data_collector->calculatePrintObjectives(
             fo + "_s" + std::to_string(solution_no) + fname_sufix, print_files);
@@ -22,17 +27,23 @@ void Problem::printTimeSeriesAndPathways() {
     /// Calculate objective values.
     this->master_data_collector->setOutputDirectory(output_directory);
 
-    /// Print output files.
-    string fu = "/TestFiles/output/Utilities";
-    string fws = "/TestFiles/output/WaterSources";
-    string fp = "/TestFiles/output/Policies";
-    string fpw = "/TestFiles/output/Pathways";
+    string fu; string fws; string fp; string fpw;
+    if (scenario == 0) {
+        /// Print output files.
+        fu = "/TestFiles/output/trianglemodel/Utilities";
+        fws = "/TestFiles/output/trianglemodel/WaterSources";
+        fp = "/TestFiles/output/trianglemodel/Policies";
+        fpw = "/TestFiles/output/trianglemodel/Pathways";
+    } else {
+        /// Print output files.
+        fu = "/TestFiles/output/scenario" + std::to_string(scenario) + "/Utilities";
+        fws = "/TestFiles/output/scenario" + std::to_string(scenario) + "/WaterSources";
+        fp = "/TestFiles/output/scenario" + std::to_string(scenario) + "/Policies";
+        fpw = "/TestFiles/output/scenario" + std::to_string(scenario) + "/Pathways";
+    }
 
-    /// Print output files.
-//    string fu = "/TestFiles/output/scenario" + std::to_string(scenario) + "/Utilities";
-//    string fws = "/TestFiles/output/scenario" + std::to_string(scenario) + "/WaterSources";
-//    string fp = "/TestFiles/output/scenario" + std::to_string(scenario) + "/Policies";
-//    string fpw = "/TestFiles/output/scenario" + std::to_string(scenario) + "/Pathways";
+
+
 
     //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
     cout << "Printing Pathways" << endl;

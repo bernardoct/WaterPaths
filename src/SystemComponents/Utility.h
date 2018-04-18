@@ -249,6 +249,7 @@ public:
 
     double getTotal_stored_volume() const;
 
+    void jointWTPConstructionHandler(unsigned int source_id, int week);
 };
 
 

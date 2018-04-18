@@ -213,9 +213,9 @@ WaterSource::WaterSource(const WaterSource &water_source) :
         id(water_source.id),
         name(water_source.name),
         source_type(water_source.source_type),
-        construction_time(water_source.construction_time) {
-        supply_allocated_fractions(water_source.supply_allocated_fractions),
-        wq_pool_locator(water_source.wq_pool_locator) {
+        wq_pool_locator(water_source.wq_pool_locator),
+        construction_time(water_source.construction_time),
+        annual_source_demand(water_source.annual_source_demand) {
 
     if (water_source.wq_pool_id != NON_INITIALIZED) {
         wq_pool_id = water_source.wq_pool_id;
@@ -265,6 +265,8 @@ WaterSource &WaterSource::operator=(const WaterSource &water_source) {
         available_allocated_volumes = water_source.available_allocated_volumes;
         allocated_capacities = water_source.allocated_capacities;
         allocated_treatment_capacities = water_source.allocated_treatment_capacities;
+
+        annual_source_demand = water_source.annual_source_demand;
     } 
 
     catchments.clear();
@@ -379,7 +381,7 @@ void WaterSource::setAllocations(
                     allocated_treatment_fractions->at(u);
             this->allocated_treatment_capacities[u] = total_treatment_capacity *
                                                       this->allocated_treatment_fractions[u];
-        } else
+        } else {
             (*this->utilities_with_allocations)[i] = u;
             wq_pool_locator = true;
         }
@@ -451,26 +453,30 @@ void WaterSource::bypass(int week, double total_upstream_inflow) {
  */
 double WaterSource::calculateNetPresentConstructionCost(
         int week, int utility_id, double discount_rate,
-        double& level_debt_service_payment, double bond_term,
+        vector<double>& debt_service_payments, double bond_term,
         double bond_interest_rate) const {
+
+    /// AS IS, THIS IS SET UP FOR FLAT, FIXED PAYMENTS ON BONDS
+    /// BUT DEBT SERVICE PAYMENTS IS NOW A VECTOR OF LENGTH bond_term
     double rate = bond_interest_rate / BOND_INTEREST_PAYMENTS_PER_YEAR;
     double principal = construction_cost_of_capital *
                        (allocated_fractions.empty() ? 1.: allocated_fractions[utility_id]);
     double n_payments = bond_term * BOND_INTEREST_PAYMENTS_PER_YEAR;
 
     /// Level debt service payment value
-    level_debt_service_payment = principal * (rate * pow(1. + rate, n_payments)) /
-                                  (pow(1. + rate, n_payments) - 1.);
+    double single_payment = principal * (rate * pow(1. + rate, n_payments)) / (pow(1. + rate, n_payments) - 1.);
+    debt_service_payments.emplace_back(bond_term, principal * (rate * pow(1. + rate, n_payments)) /
+                                  (pow(1. + rate, n_payments) - 1.));
 
     /// Net present cost of stream of level debt service payments for the whole
     /// bond term, at the time of issuance.
     double net_present_cost_at_issuance =
-            level_debt_service_payment *
+            single_payment *
             (1. - pow(1. + discount_rate,
                      -n_payments)) / discount_rate;
 
     /// Check for errors.
-    if (std::isnan(net_present_cost_at_issuance) || std::isnan(level_debt_service_payment)) {
+    if (std::isnan(net_present_cost_at_issuance) || std::isnan(single_payment)) {
         char error[512];
         sprintf(error, "rate: %f\n"
                        "principal: %f\n"
@@ -479,7 +485,7 @@ double WaterSource::calculateNetPresentConstructionCost(
                        "net present cost at issuance: %f\n"
                        "week: %d\n"
                        "utility ID: %d\n",
-               rate, principal, n_payments, level_debt_service_payment,
+               rate, principal, n_payments, single_payment,
                net_present_cost_at_issuance, week, utility_id);
         throw_with_nested(runtime_error(error));
     }
@@ -515,10 +521,11 @@ void WaterSource::setCapacity(double new_capacity) {
     WaterSource::capacity = new_capacity;
 }
 
-void WaterSource::addTreatmentCapacity(
-        const double added_treatment_capacity,
-        double allocations_added_treatment_capacity,
-        int utility_id) {
+//void WaterSource::addTreatmentCapacity(
+//        const double added_treatment_capacity,
+//        double allocations_added_treatment_capacity,
+//        int utility_id) {}
+
 void WaterSource::addTreatmentCapacity(const double added_treatment_capacity, int utility_id) {
     total_treatment_capacity += added_treatment_capacity;
 }
@@ -686,6 +693,8 @@ void WaterSource::resetAllocations(
 
 void WaterSource::updateTreatmentAndCapacityAllocations(int week) {}
 
+void WaterSource::updateTreatmentAllocations(int week) {}
+
 void WaterSource::resetTreatmentAllocations(const vector<double> *new_allocated_treatment_fractions) {
 
     /// Populate vectors.
@@ -739,4 +748,8 @@ void WaterSource::setConstruction_cost_of_capital(double construction_cost_of_ca
 
 const vector<int> &WaterSource::getBuilt_in_sequence() const {
     return built_in_sequence;
+}
+
+void WaterSource::addAllocatedTreatmentCapacity(const double added_allocated_treatment_capacity, int utility_id) {
+    total_treatment_capacity += added_allocated_treatment_capacity;
 }

@@ -19,7 +19,7 @@ private:
     int N_COLUMNS = 1;
 
 public:
-    RawWaterReleaseDataCollector(RawWaterReleases *raw_water_releases_policy);
+    RawWaterReleaseDataCollector(RawWaterReleases *raw_water_releases_policy, unsigned long realization);
 
     string printTabularString(int week) override;
 

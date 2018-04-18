@@ -51,6 +51,7 @@ void ContinuityModelRealization::setLongTermROFs(const vector<double> &risks_of_
     /// At the beginning of each year, modify allocations in shared reservoirs as desired
     for (unsigned long ws = 0; ws < continuity_water_sources.size(); ++ws) {
         continuity_water_sources[ws]->updateTreatmentAndCapacityAllocations(week);
+        continuity_water_sources[ws]->updateTreatmentAllocations(week);
     }
 
     /// Loop over utilities to see if any of them will build new infrastructure.

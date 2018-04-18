@@ -96,16 +96,16 @@ SequentialJointTreatmentExpansion::implementTreatmentCapacity(int utility_id) {
  * @return
  */
 double SequentialJointTreatmentExpansion::calculateConstructionCost(int utility_id) {
-    construction_cost_of_capital = construction_costs[utility_id];;
+    construction_cost_of_capital = construction_costs[utility_id];
     return construction_costs[utility_id];
 }
 
 double SequentialJointTreatmentExpansion::calculateNetPresentConstructionCost(
         int week, int utility_id, double discount_rate,
-        double& level_debt_service_payment, double bond_term,
+        vector<double>& debt_service_payments, double bond_term,
         double bond_interest_rate) const {
     double construction_cost_this_expansion = WaterSource::calculateNetPresentConstructionCost
-            (week, utility_id, discount_rate, level_debt_service_payment,
+            (week, utility_id, discount_rate, debt_service_payments,
              bond_term, bond_interest_rate);
 
     if (std::isnan(construction_cost_this_expansion))

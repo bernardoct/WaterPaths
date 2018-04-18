@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/RevampedTriangleModel.iml" filepath="$PROJECT_DIR$/.idea/RevampedTriangleModel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/WaterPaths.iml" filepath="$PROJECT_DIR$/.idea/WaterPaths.iml" />
     </modules>
   </component>
 </project>

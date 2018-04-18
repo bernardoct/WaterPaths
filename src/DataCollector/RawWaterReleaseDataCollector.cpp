@@ -6,7 +6,8 @@
 #include <iomanip>
 #include "RawWaterReleaseDataCollector.h"
 
-RawWaterReleaseDataCollector::RawWaterReleaseDataCollector(RawWaterReleases *raw_water_releases_policy)
+RawWaterReleaseDataCollector::RawWaterReleaseDataCollector(RawWaterReleases *raw_water_releases_policy,
+                                                           unsigned long realization)
         : DataCollector(raw_water_releases_policy->id, nullptr, realization,
                         RAW_WATER_TRANSFERS, N_COLUMNS * COLUMN_WIDTH),
           utilities_ids(raw_water_releases_policy->getUtilities_ids()),
@@ -87,6 +88,7 @@ string RawWaterReleaseDataCollector::printCompactStringHeader() {
 }
 
 void RawWaterReleaseDataCollector::collect_data() {
+
     raw_water_volume_released.push_back(raw_water_releases_policy->getRawWaterTransferVolume());
     utility_storage_targets.push_back(raw_water_releases_policy->getUtilityTargetStorageLevels());
     request_denials.push_back(raw_water_releases_policy->getRawWaterTransferDenials());

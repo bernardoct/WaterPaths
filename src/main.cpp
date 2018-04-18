@@ -70,11 +70,10 @@ int main(int argc, char *argv[]) {
     vector<vector<double>> utilities_rdm;
     vector<vector<double>> water_sources_rdm;
     vector<vector<double>> policies_rdm;
-    int scenario = 1;
+    int scenario = 0;
 
     int c;
-    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:S:A:R:U:P:W:I:C:O:")) != -1) {
-    //while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:R:U:P:W:I:C:O:S:")) != -1) {
+    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:S:A:R:U:P:W:I:C:O:X:")) != -1) {
         switch (c) {
             case '?':
                 fprintf(stdout,
@@ -112,7 +111,8 @@ int main(int argc, char *argv[]) {
                         "\t-O: Directory containing the pre-computed "
                         "ROF table binaries\n"
                         "\t-C: Import/export rof tables (-1: export, 0:"
-                        " do nothing (standard), 1: import)",
+                        " do nothing (standard), 1: import)\n"
+                        "\t-X: Scenario (0: Triangle Model, 1-4: Durham Model)",
                         argv[0], n_realizations, n_weeks, system_io.c_str());
                 return -1;
             case 's':
@@ -196,32 +196,9 @@ int main(int argc, char *argv[]) {
             case 'O':
                 rof_tables_directory = optarg;
                 break;
-//            case 's': solution_file = optarg; break;
-//            case 'u': uncertainty_file = optarg; break;
-//            case 'T': n_threads = atoi(optarg); break;
-//            case 'r': n_realizations = (unsigned long)atoi(optarg); break;
-//            case 't': n_weeks = (unsigned long)atoi(optarg); break;
-//            case 'd': system_io = optarg; break;
-//            case 'f': first_solution = atoi(optarg); break;
-//            case 'l': last_solution = atoi(optarg); break;
-//            case 'm': standard_solution = (unsigned long) atoi(optarg); break;
-//            case 'v': verbose = static_cast<bool>(atoi(optarg)); break;
-//            case 'c': tabular = static_cast<bool>(atoi(optarg)); break;
-//            case 'p': plotting = static_cast<bool>(atoi(optarg)); break;
-//            case 'b': run_optimization = true; break;
-//            case 'i': n_islands = (unsigned long) atoi(optarg); break;
-//            case 'n': nfe = (unsigned long) atoi(optarg); break;
-//            case 'o': output_frequency = (unsigned long) atoi(optarg); break;
-//            case 'e': seed = atoi(optarg); break;
-//            case 'y': bootstrap_file = optarg; break;
-//            case 'R': rdm_no = atoi(optarg); break;
-//            case 'U': utilities_rdm_file = optarg; break;
-//            case 'P': policies_rdm_file = optarg; break;
-//            case 'W': water_sources_rdm_file = optarg; break;
-//            case 'I': inflows_evap_directory_suffix = optarg; break;
-//            case 'C': import_export_rof_table = atoi(optarg); break;
-//	        case 'O': rof_tables_directory = optarg; break;
-//            case 'S': scenario = atoi(optarg); break;
+            case 'X':
+                scenario = atoi(optarg);
+                break;
             default:
                 fprintf(stderr, "Unknown option (-%c)\n", c);
                 return -1;
@@ -231,7 +208,10 @@ int main(int argc, char *argv[]) {
 
     Triangle triangle(n_weeks, import_export_rof_table);
     //DurhamModel triangle(n_weeks, import_export_rof_table); // set up cube for runs
+
     triangle.setScenario(scenario);
+
+    cout << "Scenario " << scenario << endl;
 
     /// Set basic realization parameters.
     triangle.setN_weeks(n_weeks);
@@ -352,8 +332,8 @@ int main(int argc, char *argv[]) {
                      << s << endl;
                 triangle.setSol_number((unsigned long) s);
                 trianglePtr->functionEvaluation(solutions[s].data(), c_obj, c_constr);
-                vector<double> objectives = trianglePtr->calculateAndPrintObjectives(false);
-//                    triangle.printTimeSeriesAndPathways();
+                vector<double> objectives = trianglePtr->calculateAndPrintObjectives(true);
+                triangle.printTimeSeriesAndPathways();
                 trianglePtr->destroyDataCollector();
 		string line;
 		for (double &o : objectives) {

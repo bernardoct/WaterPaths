@@ -49,37 +49,24 @@ public:
                            const vector<double> &construction_time_range, double construction_cost,
                            vector<int> *utilities_with_allocations, vector<double> *allocated_fractions,
                            vector<double> *allocated_treatment_fractions);
-//    AllocatedReservoir(
-//            const char *name,
-//            const int id,
-//            const vector<Catchment *> &catchments,
-//            const double capacity,
-//            const double max_treatment_capacity,
-//            EvaporationSeries &evaporation_series,
-//            double storage_area,
-//            vector<int> *utilities_with_allocations,
-//            vector<double> *allocated_fractions,
-//            vector<double> *allocated_treatment_fractions,
-//            AllocationModifier *allocation_modifier);
-//
-//    AllocatedReservoir(
-//            const char *name, const int id,
-//            const vector<Catchment *> &catchments, const double capacity,
-//            const double max_treatment_capacity,
-//            EvaporationSeries &evaporation_series, double storage_area,
-//            const double construction_rof_or_demand,
-//            const vector<double> &construction_time_range,
-//            double construction_cost,
-//            vector<int> *utilities_with_allocations,
-//            vector<double> *allocated_fractions, vector<double>
-//            *allocated_treatment_fractions);
+    AllocatedReservoir(
+            const char *name,
+            const int id,
+            const vector<Catchment *> &catchments,
+            const double capacity,
+            const double max_treatment_capacity,
+            EvaporationSeries &evaporation_series,
+            double storage_area,
+            vector<int> *utilities_with_allocations,
+            vector<double> *allocated_fractions,
+            vector<double> *allocated_treatment_fractions,
+            AllocationModifier *allocation_modifier);
 
     AllocatedReservoir(
             const char *name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
             const double max_treatment_capacity,
-            EvaporationSeries &evaporation_series, double storage_area,
-            const double construction_rof_or_demand,
+            EvaporationSeries &evaporation_series, DataSeries *storage_area_curve,
             const vector<double> &construction_time_range,
             double construction_cost,
             vector<int> *utilities_with_allocations,
@@ -116,11 +103,6 @@ public:
     void addTreatmentCapacity(const double added_plant_treatment_capacity, int utility_id)
     override;
 
-//    void addTreatmentCapacity(
-//            const double added_plant_treatment_capacity,
-//            double allocated_fraction_of_total_capacity, int utility_id)
-//    override;
-
     double getAllocatedTreatmentCapacity(int utility_id) const override;
 
     double getSupplyAllocatedFraction(int utility_id) override;
@@ -132,6 +114,8 @@ public:
 
     bool
     mass_balance_without_wq_pool(double net_inflow, vector<double> &demand_outflow);
+
+    void addAllocatedTreatmentCapacity(const double added_allocated_treatment_capacity, int utility_id) override;
 };
 
 

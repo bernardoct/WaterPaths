@@ -57,6 +57,7 @@ public:
     const char *name;
     int source_type;
     const double construction_time;
+    vector<double> annual_source_demand;
 
     WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
                     const double capacity, vector<int> connected_sources, double treatment_capacity,
@@ -97,9 +98,10 @@ public:
 
     virtual void addTreatmentCapacity(const double added_treatment_capacity, int utility_id);
 
+    virtual void addAllocatedTreatmentCapacity(const double added_allocated_treatment_capacity, int utility_id);
+
     virtual double calculateNetPresentConstructionCost(int week, int utility_id, double discount_rate,
-                                                           double&
-                                                           level_debt_service_payment, double bond_term,
+                                                           vector<double>& debt_service_payments, double bond_term,
                                                            double bond_interest_rate) const;
 
     virtual void removeWater(int allocation_id, double volume);
@@ -191,6 +193,8 @@ public:
     void resetTreatmentAllocations(const vector<double> *new_allocated_treatment_fractions);
 
     virtual void updateTreatmentAndCapacityAllocations(int week);
+
+    virtual void updateTreatmentAllocations(int week);
 };
 
 

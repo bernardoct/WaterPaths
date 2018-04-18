@@ -246,7 +246,8 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name, b
 
     if (print) {
         cout << "Calculating and printing Objectives" << endl;
-        string obj_file_path = output_directory + "/" + file_name + ".out"; doesnt work on windows
+        string obj_file_path = output_directory + "/" + file_name + ".out";
+        // doesnt work on windows
         // cant have "/" in front of C:\ in the path name
         //string obj_file_path = output_directory + "" + file_name + ".out";
         cout << obj_file_path << endl;
@@ -493,11 +494,11 @@ void MasterDataCollector::addRealization(
 #pragma omp critical
     {
         if (water_source_collectors.empty()) {
-            water_source_collectors = vector<vector<DataCollector *>>
+            water_source_collectors = std::vector<vector<DataCollector *>>
                     (water_sources_realization.size(), vector<DataCollector *>(n_realizations));
-            drought_mitigation_policy_collectors = vector<vector<DataCollector *>>
+            drought_mitigation_policy_collectors = std::vector<vector<DataCollector *>>
                     (drought_mitigation_policies_realization.size(), vector<DataCollector *>(n_realizations));
-            utility_collectors = vector<vector<UtilitiesDataCollector *>>
+            utility_collectors = std::vector<vector<UtilitiesDataCollector *>>
                     (utilities_realization.size(), vector<UtilitiesDataCollector *>(n_realizations));
         }
     };
@@ -520,14 +521,11 @@ void MasterDataCollector::addRealization(
         else if (drought_mitigation_policies_realization[dmp]->type == INSURANCE_STORAGE_ROF)
             drought_mitigation_policy_collectors[dmp][r] =
                     new EmptyDataCollector();
-            drought_mitigation_policy_collectors[dmp].push_back(
-                    new EmptyDataCollector());
         else if (drought_mitigation_policies_realization[dmp]->type ==
                  RAW_WATER_TRANSFERS)
-            drought_mitigation_policy_collectors[dmp].push_back(
+            drought_mitigation_policy_collectors[dmp][r] =
                     new RawWaterReleaseDataCollector
-                            (dynamic_cast<RawWaterReleases *>
-                             (drought_mitigation_policies_realization[dmp])));
+                            (dynamic_cast<RawWaterReleases *> (drought_mitigation_policies_realization[dmp]), r);
         else
             __throw_invalid_argument("Drought mitigation policy not recognized. "
                                              "Did you forget to add it to the "
@@ -557,14 +555,11 @@ void MasterDataCollector::addRealization(
                  water_sources_realization[ws]->source_type ==
                  NEW_WATER_TREATMENT_PLANT ||
                  water_sources_realization[ws]->source_type ==
-                 SOURCE_RELOCATION)
-            water_source_collectors[ws][r] =
-                    new EmptyDataCollector();
                  SOURCE_RELOCATION ||
                  water_sources_realization[ws]->source_type ==
                  ALLOCATED_RESERVOIR_EXPANSION)
-            water_source_collectors[ws].push_back(
-                    new EmptyDataCollector());
+            water_source_collectors[ws][r] =
+                    new EmptyDataCollector();
         else
             __throw_invalid_argument("Water source not recognized. "
                                              "Did you forget to add it to the "
@@ -578,7 +573,7 @@ void MasterDataCollector::collectData(unsigned long r) {
     for (vector<UtilitiesDataCollector *> &uc : utility_collectors)
         uc[r]->collect_data();
     for (vector<DataCollector *> dmp : drought_mitigation_policy_collectors)
-        dmp[r]->collect_data();
+        dmp[r]->collect_data(); // seg fault here
     for (vector<DataCollector *> ws : water_source_collectors)
         ws[r]->collect_data();
 }

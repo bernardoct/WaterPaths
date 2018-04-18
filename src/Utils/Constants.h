@@ -58,6 +58,7 @@ namespace Constants {
     const int NEW_WATER_TREATMENT_PLANT = 6;
     const int SOURCE_RELOCATION = 7;
     const int ALLOCATED_RESERVOIR_EXPANSION = 8;
+    const int NEW_JOINT_WTP = 9;
 
     const int TRANSFERS = 0;
     const int RESTRICTIONS = 1;

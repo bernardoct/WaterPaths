@@ -2,17 +2,14 @@
 #include "Utils/QPSolver/QuadProg++.h"
 #include "Utils/Solutions.h"
 #include "Problem/Triangle.h"
+
 #ifdef  PARALLEL
 #include "../Borg/borgmm.h"
 #include "../Borg/borgProblemDefinition.h"
 #include <mpi.h>
 #endif
-#include <algorithm>
-#include "Utils/Utils.h"
-#include "Problem/DurhamModel.h"
-// #include "../Borg/borgmm.h"
-// #include "../Borg/borgProblemDefinition.h"
 
+#include <algorithm>
 #include <getopt.h>
 #include <fstream>
 
@@ -23,11 +20,12 @@ using namespace std;
 using namespace Constants;
 using namespace Solutions;
 
-//Triangle* trianglePtr;
-DurhamModel* trianglePtr;
+//DurhamModel* trianglePtr;
+Triangle *trianglePtr;
+int failures = 0;
 
-void eval(double* vars, double* objs, double* consts) {
-    trianglePtr->functionEvaluation(vars, objs, consts);
+void eval(double *vars, double *objs, double *consts) {
+    failures += trianglePtr->functionEvaluation(vars, objs, consts);
     trianglePtr->destroyDataCollector();
 }
 
@@ -51,7 +49,7 @@ int main(int argc, char *argv[]) {
     string inflows_evap_directory_suffix = "-1";
     string rof_tables_directory = "rof_tables";
     unsigned long standard_solution = 0;
-    int n_threads = 1;// = omp_get_num_procs();
+    int n_threads;// = omp_get_num_procs();
     int standard_rdm = 0;
     int first_solution = -1;
     int last_solution = -1;
@@ -64,8 +62,10 @@ int main(int argc, char *argv[]) {
     unsigned long n_islands = 2;
     unsigned long nfe = 1000;
     unsigned long output_frequency = 200;
-    int seed = 0;
+    int seed = -1;
     int rdm_no = -1;
+    int n_sets = -1;
+    int n_bs_samples = -1;
     vector<vector<int>> realizations_to_run;
     vector<vector<double>> utilities_rdm;
     vector<vector<double>> water_sources_rdm;
@@ -73,72 +73,155 @@ int main(int argc, char *argv[]) {
     int scenario = 1;
 
     int c;
-    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:R:U:P:W:I:C:O:S:")) != -1) {
+    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:S:A:R:U:P:W:I:C:O:")) != -1) {
+    //while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:R:U:P:W:I:C:O:S:")) != -1) {
         switch (c) {
             case '?':
                 fprintf(stdout,
                         "%s\n"
-                                "\t-?: print this message\n"
-                                "\t-s: solutions file (hard coded solutions)\n"
-                                "\t-u: uncertain factors file (hard coded values)\n"
-                                "\t-T: number of threads (auto)\n"
-                                "\t-r: number of realizations (%lu)\n"
-                                "\t-t: total simulated time in weeks (%lu)\n"
-                                "\t-d: directory for system I/O (%s)\n"
-                                "\t-f: first solution number\n"
-                                "\t-l: last solution number\n"
-                                "\t-m: individual solution number\n"
-                                "\t-v: verbose mode (false)\n"
-                                "\t-c: tabular output (really big files, false)\n"
-                                "\t-p: plotting output (smaller csv files)\n"
-                                "\t-b: run optimization with Borg (false)\n"
-                                "\t-i: number of islands if using Borg (2)\n"
-                                "\t-n: number of function evaluations if using"
-                                " Borg (1000)\n"
-                                "\t-o: output frequency if using Borg (200)\n"
-                                "\t-e: seed number (none)\n"
-                                "\t-y: file with bootstrap samples\n"
-                                "\t-R: RDM sample number\n"
-                                "\t-U: Utilities RDM file\n"
-                                "\t-P: Policies RDM file\n"
-                                "\t-W: Water sources RDM file\n"
-                                "\t-I: Inflows and evaporation folder suffix to"
-                                    " be added to \"inflows\" and "
-                                    "\"evaporation\" (e.g., _high for "
-                                    "inflows_high)\n"
-				                "\t-O: Directory containing the pre-computed "
-                                    "ROF table binaries\n"
-                                "\t-C: Import/export rof tables (-1: export, 0:"
-                                    " do nothing (standard), 1: import)"
-                                "\t-S: Scenario (Durham Model ONLY)",
+                        "\t-?: print this message\n"
+                        "\t-s: solutions file (hard coded solutions)\n"
+                        "\t-u: uncertain factors file (hard coded values)\n"
+                        "\t-T: number of threads (auto)\n"
+                        "\t-r: number of realizations (%lu)\n"
+                        "\t-t: total simulated time in weeks (%lu)\n"
+                        "\t-d: directory for system I/O (%s)\n"
+                        "\t-f: first solution number\n"
+                        "\t-l: last solution number\n"
+                        "\t-m: individual solution number\n"
+                        "\t-v: verbose mode (false)\n"
+                        "\t-c: tabular output (really big files, false)\n"
+                        "\t-p: plotting output (smaller csv files)\n"
+                        "\t-b: run optimization with Borg (false)\n"
+                        "\t-i: number of islands if using Borg (2)\n"
+                        "\t-n: number of function evaluations if using"
+                        " Borg (1000)\n"
+                        "\t-o: output frequency if using Borg (200)\n"
+                        "\t-e: seed number (none)\n"
+                        "\t-y: file with bootstrap samples\n"
+                        "\t-S: number of bootstrap samples per set for bootstrap analysis.\n"
+                        "\t-A: number of sets of bootstrap samples for bootstrap analysis.\n"
+                        "\t-R: RDM sample number\n"
+                        "\t-U: Utilities RDM file\n"
+                        "\t-P: Policies RDM file\n"
+                        "\t-W: Water sources RDM file\n"
+                        "\t-I: Inflows and evaporation folder suffix to"
+                        " be added to \"inflows\" and "
+                        "\"evaporation\" (e.g., _high for "
+                        "inflows_high)\n"
+                        "\t-O: Directory containing the pre-computed "
+                        "ROF table binaries\n"
+                        "\t-C: Import/export rof tables (-1: export, 0:"
+                        " do nothing (standard), 1: import)",
                         argv[0], n_realizations, n_weeks, system_io.c_str());
                 return -1;
-            case 's': solution_file = optarg; break;
-            case 'u': uncertainty_file = optarg; break;
-            case 'T': n_threads = atoi(optarg); break;
-            case 'r': n_realizations = (unsigned long)atoi(optarg); break;
-            case 't': n_weeks = (unsigned long)atoi(optarg); break;
-            case 'd': system_io = optarg; break;
-            case 'f': first_solution = atoi(optarg); break;
-            case 'l': last_solution = atoi(optarg); break;
-            case 'm': standard_solution = (unsigned long) atoi(optarg); break;
-            case 'v': verbose = static_cast<bool>(atoi(optarg)); break;
-            case 'c': tabular = static_cast<bool>(atoi(optarg)); break;
-            case 'p': plotting = static_cast<bool>(atoi(optarg)); break;
-            case 'b': run_optimization = true; break;
-            case 'i': n_islands = (unsigned long) atoi(optarg); break;
-            case 'n': nfe = (unsigned long) atoi(optarg); break;
-            case 'o': output_frequency = (unsigned long) atoi(optarg); break;
-            case 'e': seed = atoi(optarg); break;
-            case 'y': bootstrap_file = optarg; break;
-            case 'R': rdm_no = atoi(optarg); break;
-            case 'U': utilities_rdm_file = optarg; break;
-            case 'P': policies_rdm_file = optarg; break;
-            case 'W': water_sources_rdm_file = optarg; break;
-            case 'I': inflows_evap_directory_suffix = optarg; break;
-            case 'C': import_export_rof_table = atoi(optarg); break;
-	        case 'O': rof_tables_directory = optarg; break;
-            case 'S': scenario = atoi(optarg); break;
+            case 's':
+                solution_file = optarg;
+                break;
+            case 'u':
+                uncertainty_file = optarg;
+                break;
+            case 'T':
+                n_threads = atoi(optarg);
+                break;
+            case 'r':
+                n_realizations = (unsigned long) atoi(optarg);
+                break;
+            case 't':
+                n_weeks = (unsigned long) atoi(optarg);
+                break;
+            case 'd':
+                system_io = optarg;
+                break;
+            case 'f':
+                first_solution = atoi(optarg);
+                break;
+            case 'l':
+                last_solution = atoi(optarg);
+                break;
+            case 'm':
+                standard_solution = (unsigned long) atoi(optarg);
+                break;
+            case 'v':
+                verbose = static_cast<bool>(atoi(optarg));
+                break;
+            case 'c':
+                tabular = static_cast<bool>(atoi(optarg));
+                break;
+            case 'p':
+                plotting = static_cast<bool>(atoi(optarg));
+                break;
+            case 'b':
+                run_optimization = true;
+                break;
+            case 'i':
+                n_islands = (unsigned long) atoi(optarg);
+                break;
+            case 'n':
+                nfe = (unsigned long) atoi(optarg);
+                break;
+            case 'o':
+                output_frequency = (unsigned long) atoi(optarg);
+                break;
+            case 'e':
+                seed = atoi(optarg);
+                break;
+            case 'y':
+                bootstrap_file = optarg;
+                break;
+            case 'R':
+                rdm_no = atoi(optarg);
+                break;
+            case 'U':
+                utilities_rdm_file = optarg;
+                break;
+            case 'P':
+                policies_rdm_file = optarg;
+                break;
+            case 'W':
+                water_sources_rdm_file = optarg;
+                break;
+            case 'I':
+                inflows_evap_directory_suffix = optarg;
+                break;
+            case 'C':
+                import_export_rof_table = atoi(optarg);
+                break;
+            case 'S':
+                n_bs_samples = atoi(optarg);
+                break;
+            case 'A':
+                n_sets = atoi(optarg);
+                break;
+            case 'O':
+                rof_tables_directory = optarg;
+                break;
+//            case 's': solution_file = optarg; break;
+//            case 'u': uncertainty_file = optarg; break;
+//            case 'T': n_threads = atoi(optarg); break;
+//            case 'r': n_realizations = (unsigned long)atoi(optarg); break;
+//            case 't': n_weeks = (unsigned long)atoi(optarg); break;
+//            case 'd': system_io = optarg; break;
+//            case 'f': first_solution = atoi(optarg); break;
+//            case 'l': last_solution = atoi(optarg); break;
+//            case 'm': standard_solution = (unsigned long) atoi(optarg); break;
+//            case 'v': verbose = static_cast<bool>(atoi(optarg)); break;
+//            case 'c': tabular = static_cast<bool>(atoi(optarg)); break;
+//            case 'p': plotting = static_cast<bool>(atoi(optarg)); break;
+//            case 'b': run_optimization = true; break;
+//            case 'i': n_islands = (unsigned long) atoi(optarg); break;
+//            case 'n': nfe = (unsigned long) atoi(optarg); break;
+//            case 'o': output_frequency = (unsigned long) atoi(optarg); break;
+//            case 'e': seed = atoi(optarg); break;
+//            case 'y': bootstrap_file = optarg; break;
+//            case 'R': rdm_no = atoi(optarg); break;
+//            case 'U': utilities_rdm_file = optarg; break;
+//            case 'P': policies_rdm_file = optarg; break;
+//            case 'W': water_sources_rdm_file = optarg; break;
+//            case 'I': inflows_evap_directory_suffix = optarg; break;
+//            case 'C': import_export_rof_table = atoi(optarg); break;
+//	        case 'O': rof_tables_directory = optarg; break;
+//            case 'S': scenario = atoi(optarg); break;
             default:
                 fprintf(stderr, "Unknown option (-%c)\n", c);
                 return -1;
@@ -146,8 +229,8 @@ int main(int argc, char *argv[]) {
     }
 
 
-    //Triangle triangle(n_weeks, import_export_rof_table);
-    DurhamModel triangle(n_weeks, import_export_rof_table); // set up cube for runs
+    Triangle triangle(n_weeks, import_export_rof_table);
+    //DurhamModel triangle(n_weeks, import_export_rof_table); // set up cube for runs
     triangle.setScenario(scenario);
 
     /// Set basic realization parameters.
@@ -164,7 +247,8 @@ int main(int argc, char *argv[]) {
         for (auto &v : bootstrap_samples_double) {
             realizations_to_run.push_back(vector<int>(v.begin(), v.end()));
             if (*std::max_element(v.begin(), v.end()) >= n_realizations)
-                __throw_invalid_argument("Number of realizations must be higher than the ID of all realizations in the bootstrap samples file.");
+                __throw_invalid_argument(
+                        "Number of realizations must be higher than the ID of all realizations in the bootstrap samples file.");
 
         }
         triangle.setPrint_output_files(false);
@@ -178,8 +262,9 @@ int main(int argc, char *argv[]) {
     }
 
     /// Set up input/output suffix, if necessary.
-    if (strlen(inflows_evap_directory_suffix.c_str()) > 2)
+    if (strlen(inflows_evap_directory_suffix.c_str()) > 2) {
         triangle.setEvap_inflows_suffix(inflows_evap_directory_suffix);
+    }
 
     /// Read RDM file, if any
     if (strlen(utilities_rdm_file.c_str()) > 2) {
@@ -206,11 +291,20 @@ int main(int argc, char *argv[]) {
             policies_rdm = Utils::parse2DCsvFile(system_io + policies_rdm_file);
             if (n_realizations > utilities_rdm.size()) {
                 __throw_length_error("If no rdm number is passed, the number of realizations needs to be smaller "
-                                             "or equal to the number of rows in the rdm files.");
+                                     "or equal to the number of rows in the rdm files.");
             }
             triangle.setRDMReevaluation((unsigned long) rdm_no, utilities_rdm,
                                         water_sources_rdm, policies_rdm);
         }
+    }
+
+    trianglePtr = &triangle;
+
+    /// Set realizations to be run -- otherwise, n_realizations realizations will be run.
+    if (!realizations_to_run.empty() && (n_sets <= 0 || n_bs_samples <= 0)) {
+        auto realizations_to_run_ul = vector<unsigned long>(realizations_to_run[0].begin(),
+                                                            realizations_to_run[0].end());
+        trianglePtr->setRealizationsToRun(realizations_to_run_ul);
     }
 
     /// If Borg is not called, run in simulation mode
@@ -220,7 +314,7 @@ int main(int argc, char *argv[]) {
         if ((first_solution == -1 && last_solution != -1) ||
             (first_solution != -1 && last_solution == -1))
             __throw_invalid_argument("If you set a first or last solution, you "
-                                             "must set the other as well.");
+                                     "must set the other as well.");
 
         vector<vector<double>> solutions;
         if (strlen(solution_file.c_str()) > 2) {
@@ -232,69 +326,50 @@ int main(int argc, char *argv[]) {
         }
 
         /// Run model
-        if (realizations_to_run.empty()) {
-            trianglePtr = &triangle;
-            if (first_solution == -1) {
-                cout << endl << endl << endl << "Running solution "
-                     << standard_solution << endl;
-                triangle.setSol_number(standard_solution);
-                triangle.functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
-                if (import_export_rof_table != EXPORT_ROF_TABLES) {
-                    triangle.calculateAndPrintObjectives(true);
-                    triangle.printTimeSeriesAndPathways();
-                    triangle.destroyDataCollector();
-                }
-            } else {
-                for (int s = first_solution; s < last_solution; ++s) {
-                    cout << endl << endl << endl << "Running solution "
-                         << s << endl;
-                    triangle.setSol_number((unsigned long) s);
-                    triangle.functionEvaluation(solutions[s].data(), c_obj, c_constr);
-                    triangle.calculateAndPrintObjectives(true);
-                    triangle.printTimeSeriesAndPathways();
-                    triangle.destroyDataCollector();
-                }
-            }
-        } else {
+        if (first_solution == -1) {
             cout << endl << endl << endl << "Running solution "
                  << standard_solution << endl;
-            ofstream bootstrap_output;
-            string bootstrap_output_name = system_io +
-                                           //bootstrap_file.substr(0, bootstrap_file.length()-4) + "_s" +
-                                           bootstrap_file + "_s" +
-                                           to_string(standard_solution) + "_out.csv";
-            cout << bootstrap_output_name << endl;
-
-            bootstrap_output.open(bootstrap_output_name);
-            string line;
-
             triangle.setSol_number(standard_solution);
-            for (auto &sample : realizations_to_run) {
-                auto sample_unsigned_long = vector<unsigned long>(sample.begin(), sample.end());
-                triangle.setRealizationsToRun(sample_unsigned_long);
-                triangle.functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
-                vector<double> objs = triangle.calculateAndPrintObjectives(false);
-                line = "";
-                for (double &o : objs) {
-                    line.append(to_string(o));
-                    line.append(",");
-                }
-                line.pop_back();
-                bootstrap_output << line << endl;
-                bootstrap_output.flush();
-                triangle.printTimeSeriesAndPathways();
-                triangle.destroyDataCollector();
+            trianglePtr->functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
+            if (import_export_rof_table != EXPORT_ROF_TABLES) {
+                trianglePtr->calculateAndPrintObjectives(true);
+//                triangle.printTimeSeriesAndPathways();
             }
-            bootstrap_output.close();
-            cout << "Objectives written in " << bootstrap_output_name << endl;
+
+            if (n_sets > 0 && n_bs_samples > 0) {
+                trianglePtr->getMaster_data_collector()->performBootstrapAnalysis(
+                        (int) standard_solution, n_sets, n_bs_samples, n_threads, realizations_to_run);
+            }
+            trianglePtr->destroyDataCollector();
+        } else {
+	    ofstream objs_file;
+	    string file_name = system_io + "Objectives_" + to_string(first_solution) +
+		    "_to_" + to_string(last_solution) + ".csv";
+	    objs_file.open(file_name);
+	    printf("Objectives file will be printed at %s.\n", file_name.c_str());
+            for (int s = first_solution; s < last_solution; ++s) {
+                cout << endl << endl << endl << "Running solution "
+                     << s << endl;
+                triangle.setSol_number((unsigned long) s);
+                trianglePtr->functionEvaluation(solutions[s].data(), c_obj, c_constr);
+                vector<double> objectives = trianglePtr->calculateAndPrintObjectives(false);
+//                    triangle.printTimeSeriesAndPathways();
+                trianglePtr->destroyDataCollector();
+		string line;
+		for (double &o : objectives) {
+		    line += to_string(o) + ",";
+		}
+		line.pop_back();
+		objs_file << line << endl;
+            }
         }
 
         return 0;
     } else {
+
 #ifdef  PARALLEL
-        trianglePtr = &triangle;
         printf("Running Borg with:\n"
-            "n_islands: %d\n"
+            "n_islands: %lu\n"
             "nfe: %lu\n"
             "output freq.: %lu\n"
             "n_weeks: %lu\n"
@@ -316,14 +391,17 @@ int main(int argc, char *argv[]) {
         // Set all the parameter bounds and epsilons
         setProblemDefinition(problem);
 
-	if (seed > -1)
-	        srand(seed);
+    if (seed > -1) {
+            srand(seed);
+    }
         char outputFilename[256];
         char runtime[256];
         FILE* outputFile = nullptr;
-        sprintf(outputFilename, "/work/03253/tg825524/stampede2/TestFiles/output/NC_output_MM_S%lu.set", seed);
+        sprintf(outputFilename, "%s/TestFiles/output/NC_output_MM_S%d_N%lu.set", system_io.c_str(), seed, nfe);
+    printf("Reference set will be in %s.\n", outputFilename);
         // output path (make sure this exists)
-        sprintf(runtime, "/work/03253/tg825524/stampede2/TestFiles/output/NC_runtime_MM_S%lu_M%%d.runtime", seed); // runtime
+        sprintf(runtime, "%s/TestFiles/output/NC_runtime_MM_S%d_N%lu_M%%d.runtime", system_io.c_str(), seed, nfe); // runtime
+    printf("Runtime files will be in %s.\n", runtime);
         // path (make sure this exists)
 
         BORG_Algorithm_output_runtime(runtime);
@@ -344,6 +422,8 @@ int main(int argc, char *argv[]) {
             BORG_Archive_destroy(result);
             fclose(outputFile);
         }
+
+    printf("Number of failed function evaluations: %d.\n", failures);
 
         BORG_Algorithm_ms_shutdown();
         BORG_Problem_destroy(problem);

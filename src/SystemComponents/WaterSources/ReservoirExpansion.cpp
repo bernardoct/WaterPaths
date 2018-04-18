@@ -4,14 +4,10 @@
 
 #include "ReservoirExpansion.h"
 
-ReservoirExpansion::ReservoirExpansion(
-        const char *name, const int id,
-        unsigned int parent_reservoir_ID,
-        const double capacity,
-        const double construction_rof_or_demand,
-        const vector<double> &construction_time_range, double permitting_period,
-        double construction_cost)
-        : WaterSource(name, id, vector<Catchment *>(), capacity, NON_INITIALIZED, RESERVOIR_EXPANSION,
+ReservoirExpansion::ReservoirExpansion(const char *name, const int id, const unsigned int parent_reservoir_ID,
+                                       const double capacity, const vector<double> &construction_time_range,
+                                       double permitting_period, double construction_cost)
+        : WaterSource(name, id, vector<Catchment *>(), capacity, NON_INITIALIZED, vector<int>(), RESERVOIR_EXPANSION,
                       construction_time_range, permitting_period, construction_cost),
           parent_reservoir_ID(parent_reservoir_ID) {}
 

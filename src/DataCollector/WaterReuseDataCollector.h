@@ -12,6 +12,7 @@
 class WaterReuseDataCollector : public DataCollector {
 private:
     WaterReuse *water_reuse;
+    double reused_volume;
 
 public:
     WaterReuseDataCollector(WaterReuse *water_reuse, unsigned long realization);

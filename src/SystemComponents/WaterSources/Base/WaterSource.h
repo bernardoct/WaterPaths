@@ -27,6 +27,7 @@ protected:
     double upstream_min_env_inflow = 0;
     double capacity = NON_INITIALIZED;
 
+    vector<int> built_in_sequence;
     vector<double> available_allocated_volumes;
     vector<double> allocated_capacities;
     vector<double> allocated_treatment_capacities;
@@ -57,29 +58,26 @@ public:
     int source_type;
     const double construction_time;
 
-    WaterSource(
-            const char *name, const int id,
-            const vector<Catchment *> &catchments, const double capacity,
-            double treatment_capacity, const int source_type);
+    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
+                    const double capacity, vector<int> connected_sources, double treatment_capacity,
+                    const int source_type);
 
     WaterSource(const char *source_name, const int id, const vector<Catchment *> &catchments,
-                    const double capacity, double treatment_capacity, const int source_type,
+                const double capacity, double treatment_capacity, vector<int> connected_sources,
+                const int source_type, const vector<double> construction_time_range,
+                double permitting_period, double construction_cost_of_capital);
+
+    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
+                    const double capacity, double treatment_capacity, vector<int> built_in_sequence,
+                    const int source_type, vector<double> *allocated_treatment_fractions,
+                    vector<double> *allocated_fractions, vector<int> *utilities_with_allocations,
                     const vector<double> construction_time_range, double permitting_period,
                     double construction_cost_of_capital);
 
     WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
-                    const double capacity, double treatment_capacity, const int source_type,
-                    vector<double> *allocated_treatment_fractions, vector<double> *allocated_fractions,
-                    vector<int> *utilities_with_allocations, const vector<double> construction_time_range,
-                    double permitting_period, double construction_cost_of_capital);
-
-    WaterSource(
-            const char *name, const int id,
-            const vector<Catchment *> &catchments, const double capacity,
-            double treatment_capacity, const int source_type,
-            vector<double> *allocated_treatment_fractions,
-            vector<double> *allocated_fractions,
-            vector<int> *utilities_with_allocations);
+                    const double capacity, double treatment_capacity, vector<int> connected_sources,
+                    const int source_type, vector<double> *allocated_treatment_fractions,
+                    vector<double> *allocated_fractions, vector<int> *utilities_with_allocations);
 
     WaterSource(const WaterSource &water_source);
 
@@ -97,10 +95,7 @@ public:
                                    double wastewater_inflow,
                                    vector<double> &demand_outflow);
 
-    virtual void addTreatmentCapacity(
-            const double added_treatment_capacity,
-            double allocations_added_treatment_capacity,
-            int utility_id);
+    virtual void addTreatmentCapacity(const double added_treatment_capacity, int utility_id);
 
     virtual double calculateNetPresentConstructionCost(int week, int utility_id, double discount_rate,
                                                            double&
@@ -113,6 +108,8 @@ public:
 
     virtual void setOnline();
 
+    virtual bool skipConstruction(int utility_id) const;
+
     virtual double getAvailableAllocatedVolume(int utility_id);
 
     double getMin_environmental_outflow() const;
@@ -121,6 +118,8 @@ public:
 
     double getAvailableVolume() const;
 
+    const vector<int> &getBuilt_in_sequence() const;
+
     double getTotal_outflow() const;
 
     bool isOnline() const;
@@ -128,6 +127,8 @@ public:
     virtual void setFull();
 
     void setOutflow_previous_week(double outflow_previous_week);
+
+    virtual void connectSource(WaterSource* water_source);
 
     virtual double getSupplyCapacity();
 

@@ -45,7 +45,7 @@ public:
 
     void setStorage_to_rof_table_(const vector<Matrix2D<double>> &storage_to_rof_table_);
 
-    virtual void setRealization(unsigned int realization_id, vector<double> &utilities_rdm,
+    virtual void setRealization(unsigned long realization_id, vector<double> &utilities_rdm,
                                 vector<double> &water_sources_rdm, vector<double> &policy_rdm)= 0;
 
 };

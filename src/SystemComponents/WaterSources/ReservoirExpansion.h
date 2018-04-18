@@ -11,15 +11,11 @@
 class ReservoirExpansion : public WaterSource {
 public:
 
-    unsigned int parent_reservoir_ID;
+    const unsigned int parent_reservoir_ID;
 
-    ReservoirExpansion(
-            const char *name, const int id,
-            unsigned int parent_reservoir_ID,
-            const double capacity, const double construction_rof_or_demand,
-            const vector<double> &construction_time_range,
-            double permitting_period,
-            double construction_cost);
+    ReservoirExpansion(const char *name, const int id, const unsigned int parent_reservoir_ID,
+                           const double capacity, const vector<double> &construction_time_range,
+                           double permitting_period, double construction_cost);
 
     ReservoirExpansion(const ReservoirExpansion &reservoir_expansion);
 

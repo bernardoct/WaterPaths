@@ -90,7 +90,7 @@ vector<double> Utils::parse1DCsvFile(string file_name, unsigned long max_lines,
                                      vector<unsigned long> rows_to_read) {
     vector<double> data;
     ifstream infile(file_name);
-    int l = 0;
+    unsigned long l = 0;
 
     while (infile && l < max_lines) {
         l++;
@@ -108,7 +108,8 @@ vector<double> Utils::parse1DCsvFile(string file_name, unsigned long max_lines,
                 cout << "NaN found in file " << file_name << " line " << l << endl;
                 e.what();
             }
-            if (!rows_to_read.empty() && rows_to_read[0] != NON_INITIALIZED) rows_to_read.erase(rows_to_read.begin());
+            if (!rows_to_read.empty())// && rows_to_read[0] != NON_INITIALIZED) 
+		    rows_to_read.erase(rows_to_read.begin());
         }
     }
 

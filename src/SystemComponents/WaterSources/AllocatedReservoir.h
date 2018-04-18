@@ -10,8 +10,6 @@
 #include "../../Controls/AllocationModifier.h"
 
 class AllocatedReservoir : public Reservoir {
-private:
-
 protected:
 
     AllocationModifier *allocation_modifier;
@@ -19,7 +17,6 @@ protected:
     const bool has_water_quality_pool;
 
 public:
-
     AllocatedReservoir(
             const char *name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
@@ -30,18 +27,12 @@ public:
             vector<double> *allocated_fractions, vector<double>
             *allocated_treatment_fractions);
 
-    AllocatedReservoir(
-            const char *name, const int id,
-            const vector<Catchment *> &catchments, const double capacity,
-            const double max_treatment_capacity,
-            EvaporationSeries &evaporation_series,
-            DataSeries *storage_area_curve,
-            const double construction_rof_or_demand,
-            const vector<double> &construction_time_range,
-            double construction_cost,
-            vector<int> *utilities_with_allocations,
-            vector<double> *allocated_fractions, vector<double>
-            *allocated_treatment_fractions);
+    AllocatedReservoir(const char *name, const int id, const vector<Catchment *> &catchments,
+                           const double capacity, const double max_treatment_capacity,
+                           EvaporationSeries &evaporation_series, DataSeries *storage_area_curve,
+                           const vector<double> &construction_time_range, double construction_cost,
+                           vector<int> *utilities_with_allocations, vector<double> *allocated_fractions,
+                           vector<double> *allocated_treatment_fractions);
 
     AllocatedReservoir(
             const char *name, const int id,
@@ -52,30 +43,36 @@ public:
             vector<double> *allocated_fractions, vector<double>
             *allocated_treatment_fractions);
 
-    AllocatedReservoir(
-            const char *name,
-            const int id,
-            const vector<Catchment *> &catchments,
-            const double capacity,
-            const double max_treatment_capacity,
-            EvaporationSeries &evaporation_series,
-            double storage_area,
-            vector<int> *utilities_with_allocations,
-            vector<double> *allocated_fractions,
-            vector<double> *allocated_treatment_fractions,
-            AllocationModifier *allocation_modifier);
-
-    AllocatedReservoir(
-            const char *name, const int id,
-            const vector<Catchment *> &catchments, const double capacity,
-            const double max_treatment_capacity,
-            EvaporationSeries &evaporation_series, double storage_area,
-            const double construction_rof_or_demand,
-            const vector<double> &construction_time_range,
-            double construction_cost,
-            vector<int> *utilities_with_allocations,
-            vector<double> *allocated_fractions, vector<double>
-            *allocated_treatment_fractions);
+    AllocatedReservoir(const char *name, const int id, const vector<Catchment *> &catchments,
+                           const double capacity, const double max_treatment_capacity,
+                           EvaporationSeries &evaporation_series, double storage_area,
+                           const vector<double> &construction_time_range, double construction_cost,
+                           vector<int> *utilities_with_allocations, vector<double> *allocated_fractions,
+                           vector<double> *allocated_treatment_fractions);
+//    AllocatedReservoir(
+//            const char *name,
+//            const int id,
+//            const vector<Catchment *> &catchments,
+//            const double capacity,
+//            const double max_treatment_capacity,
+//            EvaporationSeries &evaporation_series,
+//            double storage_area,
+//            vector<int> *utilities_with_allocations,
+//            vector<double> *allocated_fractions,
+//            vector<double> *allocated_treatment_fractions,
+//            AllocationModifier *allocation_modifier);
+//
+//    AllocatedReservoir(
+//            const char *name, const int id,
+//            const vector<Catchment *> &catchments, const double capacity,
+//            const double max_treatment_capacity,
+//            EvaporationSeries &evaporation_series, double storage_area,
+//            const double construction_rof_or_demand,
+//            const vector<double> &construction_time_range,
+//            double construction_cost,
+//            vector<int> *utilities_with_allocations,
+//            vector<double> *allocated_fractions, vector<double>
+//            *allocated_treatment_fractions);
 
     AllocatedReservoir(
             const char *name, const int id,
@@ -116,10 +113,13 @@ public:
 
     void addCapacity(double capacity) override;
 
-    void addTreatmentCapacity(
-            const double added_plant_treatment_capacity,
-            double allocated_fraction_of_total_capacity, int utility_id)
+    void addTreatmentCapacity(const double added_plant_treatment_capacity, int utility_id)
     override;
+
+//    void addTreatmentCapacity(
+//            const double added_plant_treatment_capacity,
+//            double allocated_fraction_of_total_capacity, int utility_id)
+//    override;
 
     double getAllocatedTreatmentCapacity(int utility_id) const override;
 

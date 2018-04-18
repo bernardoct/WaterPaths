@@ -19,7 +19,7 @@ private:
     vector<int> online_downstream_sources;
     bool *storage_wout_downstream;
     const int n_topo_sources;
-    const bool use_precomputed_rof_tables;
+    const int use_precomputed_rof_tables;
 
 protected:
     int beginning_tier = 0;
@@ -37,7 +37,7 @@ public:
                        const vector<vector<int>> &water_sources_to_utilities, vector<Utility *> utilities,
                        vector<MinEnvFlowControl *> min_env_flow_controls, vector<double>& utilities_rdm,
                        vector<double>& water_sources_rdm, unsigned long total_weeks_simulation,
-                       const bool use_precomputed_rof_tables, const unsigned int realization_id);
+                       const int use_precomputed_rof_tables, const unsigned long realization_id);
 
     ContinuityModelROF(ContinuityModelROF &continuity_model_rof);
 

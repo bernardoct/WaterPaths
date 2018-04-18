@@ -15,18 +15,18 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
                                  const vector<vector<int>> &water_sources_to_utilities,
                                  vector<double> &utilities_rdm,
                                  vector<double> &water_sources_rdm,
-                                 unsigned int realization_id) :
+                                 unsigned long realization_id) :
         continuity_water_sources(water_sources),
         continuity_utilities(utilities),
         min_env_flow_controls(min_env_flow_controls),
         water_sources_graph(water_sources_graph),
         water_sources_to_utilities(water_sources_to_utilities),
+        sources_topological_order(water_sources_graph.getTopological_order()), /// Get topological order so that mass balance is ran from up to downstream.
         utilities_rdm(utilities_rdm),
         water_sources_rdm(water_sources_rdm),
-        realization_id(realization_id),
         n_utilities((int) utilities.size()),
         n_sources((int) water_sources.size()),
-        sources_topological_order(water_sources_graph.getTopological_order()) /// Get topological order so that mass balance is ran from up to downstream.
+        realization_id(realization_id)
         {
 
     //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
@@ -38,38 +38,10 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
     std::sort(continuity_utilities.begin(), continuity_utilities.end(), Utility::compById);
 #endif
 
-    /// Set pointer to vector with capacities to be built on parent reservoir
-    /// for each sequential joint treatment expansion with the same parent
-    /// reservoir to be the same, so that whenever on utility builds a level
-    /// of expansion, the next level add up the difference between levels to
-    /// the parent reservoir.
-    for (auto water_source : water_sources)
-        if (water_source->source_type == NEW_WATER_TREATMENT_PLANT)
-            for (auto ws : water_sources) {
-                if (ws->source_type == NEW_WATER_TREATMENT_PLANT) {
-                    auto *sjte1 =
-                            dynamic_cast<SequentialJointTreatmentExpansion *>(ws);
-                    auto *sjte2 =
-                            dynamic_cast<SequentialJointTreatmentExpansion *>(water_source);
-                    if (sjte1->parent_reservoir_ID ==
-                        sjte2->parent_reservoir_ID
-                        &&
-                        sjte1->expansion_sequence_id ==
-                        sjte2->expansion_sequence_id
-                        &&
-                        sjte1->expansion_sequence_id != NON_INITIALIZED) {
-                        sjte1->setMax_sequential_added_capacity(
-                                sjte2->getMax_sequential_added_capacity());
-                        sjte1->setMax_sequential_added_construction_cost(
-                                sjte2->getMax_sequential_added_construction_cost());
-                    }
-                }
-            }
-
     /// Link water sources to utilities by passing pointers of the former to
     /// the latter.
-    for (int u = 0; u < utilities.size(); ++u) {
-        for (int ws = 0; ws < water_sources_to_utilities[u].size(); ++ws) {
+    for (unsigned long u = 0; u < utilities.size(); ++u) {
+        for (unsigned long ws = 0; ws < water_sources_to_utilities[u].size(); ++ws) {
             WaterSource *water_source =
                     continuity_water_sources[water_sources_to_utilities[u][ws]];
             this->continuity_utilities[u]->addWaterSource(water_source);
@@ -79,18 +51,11 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
     /// Create table showing which utilities draw water from each water source.
     utilities_to_water_sources.assign(water_sources.size(), vector<int>(0));
     water_sources_online_to_utilities.assign(water_sources.size(), vector<int>(0));
-    non_priority_water_sources_online_to_utilities.assign(water_sources.size(), vector<int>(0));
-
-    for (int u = 0; u < utilities.size(); ++u) {
+    for (unsigned long u = 0; u < utilities.size(); ++u) {
         for (const int &ws : water_sources_to_utilities[u]) {
             utilities_to_water_sources[ws].push_back(u);
             if (water_sources[ws]->isOnline())
                 water_sources_online_to_utilities[u].push_back(ws);
-            if (water_sources[ws]->isOnline() &&
-                    water_sources[ws]->source_type != INTAKE &&
-                    water_sources[ws]->source_type != WATER_REUSE &&
-                    water_sources[ws]->getAllocatedTreatmentCapacity(u) > 0.0)
-                non_priority_water_sources_online_to_utilities[u].push_back(ws);
         }
     }
 
@@ -99,7 +64,7 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
     for (auto water_source : water_sources) {
         bool online = false;
 
-        for (int u = 0; u < utilities.size(); ++u)
+        for (unsigned long u = 0; u < utilities.size(); ++u)
             if (water_source->isOnline())
                 online = true;
 
@@ -130,14 +95,14 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
     setRealization(realization_id, utilities_rdm, water_sources_rdm);
 
     demands = std::vector<vector<double>>(
-            continuity_water_sources.size(), vector<double>(continuity_utilities.size(), 0.));
+            continuity_water_sources.size(),
+            vector<double>(continuity_utilities.size(), 0.));
     
     /// populate array delta_realization_weeks so that the rounding and casting don't
     /// have to be done every time continuityStep is called, avoiding a bottleneck.
     for (int r = 0; r < NUMBER_REALIZATIONS_ROF; ++r) {
         delta_realization_weeks[r] = (int) std::round((r + 1) * WEEKS_IN_YEAR);
     }
-
 }
 
 ContinuityModel::~ContinuityModel() {
@@ -163,11 +128,12 @@ ContinuityModel::~ContinuityModel() {
  * @param week current week.
  * @param rof_realization rof realization id (between 0 and 49 inclusive).
  */
+//#pragma GCC optimize("O0")
 void ContinuityModel::continuityStep(
         int week, int rof_realization, bool apply_demand_buffer) {
-    double upstream_spillage[n_sources];
+    double* upstream_spillage = new double[n_sources];
     fill_n(upstream_spillage, n_sources, 0.);
-    double wastewater_discharges[n_sources];
+    double* wastewater_discharges = new double[n_sources];
     fill_n(wastewater_discharges, n_sources, 0.);
 
     /**
@@ -182,7 +148,6 @@ void ContinuityModel::continuityStep(
         u->calculateWastewater_releases(week, wastewater_discharges);
         u->splitDemands(week, demands, apply_demand_buffer);
     }
-
 
     /**
      * Set minimum environmental flows for water sources based on their
@@ -204,9 +169,10 @@ void ContinuityModel::continuityStep(
     auto& upstream_sources_ids = water_sources_graph.getUpstream_sources();
     for (int i : sources_topological_order) {
         /// Sum spillage from all sources upstream source i.
-        for (int ws : upstream_sources_ids[i])
-            upstream_spillage[i] +=
-                    continuity_water_sources.at(static_cast<unsigned long>(ws))->getTotal_outflow();
+        for (int ws : upstream_sources_ids[i]) {
+            upstream_spillage[i] += continuity_water_sources.at(
+                            static_cast<unsigned long>(ws))->getTotal_outflow();
+        }
 
         /// Apply
         continuity_water_sources[i]->continuityWaterSource(
@@ -214,14 +180,16 @@ void ContinuityModel::continuityStep(
                 upstream_spillage[i], wastewater_discharges[i], demands[i]);
     }
 
-
     /// updates combined storage for utilities.
     for (Utility *u : continuity_utilities) {
         u->updateTotalAvailableVolume();
     }
+
+    delete[] upstream_spillage;
+    delete[] wastewater_discharges;
 }
 
-void ContinuityModel::setRealization(unsigned int realization_id, vector<double> &utilities_rdm,
+void ContinuityModel::setRealization(unsigned long realization_id, vector<double> &utilities_rdm,
                                      vector<double> &water_sources_rdm) {
     if (realization_id != (unsigned) NON_INITIALIZED) {
         for (Utility *u : continuity_utilities)
@@ -250,4 +218,12 @@ vector<int> ContinuityModel::getOnlineDownstreamSources() {
     }
 
     return online_downstream_sources;
+}
+
+const vector<WaterSource *> &ContinuityModel::getContinuity_water_sources() const {
+    return continuity_water_sources;
+}
+
+const vector<Utility *> &ContinuityModel::getContinuity_utilities() const {
+    return continuity_utilities;
 }

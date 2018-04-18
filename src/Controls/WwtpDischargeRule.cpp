@@ -18,13 +18,13 @@ WwtpDischargeRule::WwtpDischargeRule(
         source_id_to_vector_index = vector<int>(
                 (unsigned long) length,
                 Constants::NON_INITIALIZED);
-        for (int i = 0; i < discharge_to_source_ids.size(); ++i)
+        for (unsigned long i = 0; i < discharge_to_source_ids.size(); ++i)
             source_id_to_vector_index[discharge_to_source_ids.at(
                     (unsigned long) i)] = i;
     }
 
     for (auto &f : year_series_fraction_discharge) {
-        if (f.size() != (int) Constants::WEEKS_IN_YEAR + 1)
+        if ((int) f.size() != (int) Constants::WEEKS_IN_YEAR + 1)
             __throw_invalid_argument("Wastewater discharge rules but contain "
                                              "exactly 53 (for years with "
                                              "extra week) values.");
@@ -39,11 +39,11 @@ WwtpDischargeRule::WwtpDischargeRule(
 }
 
 WwtpDischargeRule::WwtpDischargeRule(WwtpDischargeRule &wwtp_discharge_rule) :
-        discharge_to_source_ids(wwtp_discharge_rule.discharge_to_source_ids),
+	source_id_to_vector_index(
+                wwtp_discharge_rule.source_id_to_vector_index),
         year_series_fraction_discharge(
                 wwtp_discharge_rule.year_series_fraction_discharge),
-        source_id_to_vector_index(
-                wwtp_discharge_rule.source_id_to_vector_index) {}
+        discharge_to_source_ids(wwtp_discharge_rule.discharge_to_source_ids) {}
 
 WwtpDischargeRule &WwtpDischargeRule::operator=(
         const WwtpDischargeRule &wwtp_discharge_rule) {

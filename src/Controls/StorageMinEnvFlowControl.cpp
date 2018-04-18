@@ -29,7 +29,7 @@ double StorageMinEnvFlowControl::getRelease(int week) {
             ->getAvailableVolume();
 
     double release = 0;
-    for (int i = 0; i < storages.size(); ++i) {
+    for (unsigned long i = 0; i < storages.size(); ++i) {
         release = (source_storage >= storages[i] ? releases[i] : release);
     }
     return release;

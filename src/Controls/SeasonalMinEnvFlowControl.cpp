@@ -33,7 +33,7 @@ SeasonalMinEnvFlowControl::SeasonalMinEnvFlowControl(
 
 double SeasonalMinEnvFlowControl::getRelease(int week) {
     double release = min_env_flows[0];
-    for (int i = 0; i < min_env_flows.size(); ++i) {
+    for (unsigned long i = 0; i < min_env_flows.size(); ++i) {
         /// Done with ternary operator for improved performance.
         release = (Utils::weekOfTheYear(week) >= week_thresholds[i] ?
                    min_env_flows[i] : release);

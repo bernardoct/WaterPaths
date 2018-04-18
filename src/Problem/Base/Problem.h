@@ -37,7 +37,7 @@ protected:
     string evap_inflows_suffix;
 
     vector<unsigned long > realizations_to_run;
-    MasterDataCollector* master_data_collector;
+    MasterDataCollector* master_data_collector = nullptr;
     vector<double> objectives;
     bool print_output_files = true;
 
@@ -58,7 +58,7 @@ public:
 
     virtual ~Problem();
 
-    virtual void functionEvaluation(double* vars, double* objs, double* consts)=0;
+    virtual int functionEvaluation(double* vars, double* objs, double* consts)=0;
 
     void setN_weeks(unsigned long n_weeks);
 
@@ -88,11 +88,13 @@ public:
 
     void setFname_sufix(const string &fname_sufix);
 
-    const MasterDataCollector* getMaster_data_collector();
+    MasterDataCollector* getMaster_data_collector();
 
     void destroyDataCollector();
 
     void printTimeSeriesAndPathways();
+
+    void performBootstrapAnalysis(int n_sets, int n_samples);
 
     virtual void setScenario(int scen);
 };

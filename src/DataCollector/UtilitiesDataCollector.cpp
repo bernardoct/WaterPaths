@@ -8,17 +8,9 @@
 
 
 UtilitiesDataCollector::UtilitiesDataCollector(const Utility *utility, unsigned long realization)
-        : DataCollector(utility->id, utility->name, realization, UTILITY, 14 * COLUMN_WIDTH),
+        : DataCollector(utility->id, utility->name, realization, UTILITY, 15 * COLUMN_WIDTH),
           utility(utility) {
 }
-
-/**
- * Copy assignment operator.
- * @param catchment
- * @return
- */
-UtilitiesDataCollector &UtilitiesDataCollector::operator=(const UtilitiesDataCollector &utility_data_collector) {}
-
 
 string UtilitiesDataCollector::printTabularString(int week) {
 
@@ -42,6 +34,8 @@ string UtilitiesDataCollector::printTabularString(int week) {
               << unrestricted_demand[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << waste_water_discharge[week]
+              << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+              << total_treatment_capacity[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << contingency_fund_size[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
@@ -78,6 +72,8 @@ string UtilitiesDataCollector::printCompactString(int week) {
               << ","
               << waste_water_discharge[week]
               << ","
+              << total_treatment_capacity[week]
+              << ","
               << contingency_fund_size[week]
               << ","
               << insurance_payout[week]
@@ -105,6 +101,7 @@ string UtilitiesDataCollector::printTabularStringHeaderLine1() {
               << setw(COLUMN_WIDTH) << "Unrest."
               << setw(COLUMN_WIDTH) << "Unfulf."
               << setw(COLUMN_WIDTH) << "W. Water"
+              << setw(COLUMN_WIDTH) << "Treatment"
               << setw(COLUMN_WIDTH) << "Conting."
               << setw(COLUMN_WIDTH) << "Insurance"
               << setw(COLUMN_WIDTH) << "Insurance"
@@ -127,6 +124,7 @@ string UtilitiesDataCollector::printTabularStringHeaderLine2() {
               << setw(COLUMN_WIDTH) << "Demand"
               << setw(COLUMN_WIDTH) << "Demand"
               << setw(COLUMN_WIDTH) << "Discharge"
+              << setw(COLUMN_WIDTH) << "Capacity"
               << setw(COLUMN_WIDTH) << "Fund"
               << setw(COLUMN_WIDTH) << "Payout"
               << setw(COLUMN_WIDTH) << "Price"
@@ -148,6 +146,7 @@ string UtilitiesDataCollector::printCompactStringHeader() {
               << id << "unrest_demand" << ","
               << id << "unfulf_demand" << ","
               << id << "wastewater" << ","
+              << id << "treat_capacity" << ","
               << id << "cont_fund" << ","
               << id << "ins_pout" << ","
               << id << "ins_price" << ","
@@ -177,6 +176,7 @@ void UtilitiesDataCollector::collect_data() {
     waste_water_discharge.push_back(utility->getWaste_water_discharge());
     unfulfilled_demand.push_back(utility->getUnfulfilled_demand());
     net_stream_inflow.push_back(utility->getNet_stream_inflow());
+    total_treatment_capacity.push_back(utility->getTotal_treatment_capacity());
 
 //    checkForNans();
 

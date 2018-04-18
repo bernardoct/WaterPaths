@@ -9,8 +9,7 @@
 AllocatedReservoirDataCollector::AllocatedReservoirDataCollector(AllocatedReservoir *allocated_reservoir,
                                                                  unsigned long realization)
         : ReservoirDataCollector(allocated_reservoir, ALLOCATED_RESERVOIR, (7 + (int) allocated_reservoir->
-                getUtilities_with_allocations()->
-                size()) * COLUMN_WIDTH, realization),
+                getAvailable_allocated_volumes().size()) * COLUMN_WIDTH, realization),
           allocated_reservoir(allocated_reservoir),
           utilities_with_allocations
                   (*allocated_reservoir->getUtilities_with_allocations()) {
@@ -23,9 +22,9 @@ string AllocatedReservoirDataCollector::printTabularString(int week) {
 
     out_stream << output;
 
-    for (double v : allocated_stored_volumes[week])
+    for (int u : utilities_with_allocations)
         out_stream << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-                   << v;
+                   << allocated_stored_volumes[week][u];
 
     return out_stream.str();
 }
@@ -37,8 +36,8 @@ string AllocatedReservoirDataCollector::printCompactString(int week) {
 
     out_stream << output;
 
-    for (double v : allocated_stored_volumes[week])
-        out_stream << v << ",";
+    for (int u : utilities_with_allocations)
+        out_stream << allocated_stored_volumes[week][u] << ",";
 
     return out_stream.str();
 }
@@ -50,7 +49,7 @@ string AllocatedReservoirDataCollector::printTabularStringHeaderLine1() {
 
     out_stream << output;
 
-    for (int u : *(allocated_reservoir->getUtilities_with_allocations()))
+    for (unsigned long u = 0; u <allocated_reservoir->getUtilities_with_allocations()->size(); ++u)
         out_stream << setw(COLUMN_WIDTH) << "Stored V.";
 
     return out_stream.str();

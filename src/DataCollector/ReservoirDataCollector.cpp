@@ -7,7 +7,8 @@
 #include "ReservoirDataCollector.h"
 
 ReservoirDataCollector::ReservoirDataCollector(Reservoir *reservoir, unsigned long realization)
-        : DataCollector(reservoir->id, reservoir->name, realization, RESERVOIR, 7 * COLUMN_WIDTH), reservoir(reservoir) {
+        : DataCollector(reservoir->id, reservoir->name, realization, RESERVOIR, 7 * COLUMN_WIDTH), reservoir(reservoir),
+          fixed_area(reservoir->fixed_area), fixed_area_value(reservoir->getArea()) {
 }
 
 ReservoirDataCollector::ReservoirDataCollector(Reservoir *reservoir, int type, int table_width,
@@ -22,7 +23,7 @@ string ReservoirDataCollector::printTabularString(int week) {
             << setw(2 * COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
             << stored_volume[week];
 
-    if (reservoir->fixed_area)
+    if (fixed_area)
         outStream << setw(COLUMN_WIDTH) << area[week];
 
     outStream
@@ -48,8 +49,8 @@ string ReservoirDataCollector::printCompactString(int week) {
     outStream
             << stored_volume[week] << ",";
 
-    if (reservoir->fixed_area)
-        outStream << reservoir->fixed_area << ",";
+    if (fixed_area)
+        outStream << fixed_area << ",";
 
     outStream
             << demands[week] << ","
@@ -88,7 +89,7 @@ string ReservoirDataCollector::printTabularStringHeaderLine2() {
     outStream
             << setw(2 * COLUMN_WIDTH) << "Volume";
 
-    if (reservoir->fixed_area)
+    if (fixed_area)
         outStream << setw(COLUMN_WIDTH) << "Area";
 
     outStream
@@ -108,7 +109,7 @@ string ReservoirDataCollector::printCompactStringHeader() {
     outStream
             << id << "volume" << ",";
 
-    if (reservoir->fixed_area)
+    if (fixed_area)
         outStream << id << "s_area" << ",";
 
     outStream

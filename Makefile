@@ -4,37 +4,38 @@ CFLAGS=-std=c++14 -fopenmp
 SOURCES=$(shell find ./src -name "*.cpp")
 OBJECTS=$(SOURCES:.cpp=.o)
 
-TARGET=DurhamModel
+TARGET=triangleSimulation
 EXECUTABLE=$(TARGET)
 
 LIB_DIR=./lib
-LIBS=-lm
+LIBS=-static-libasan -lm
 
 all: $(SOURCES) $(TARGET)
 
 borg: CC=mpicxx
 borg: LIBS += -lborgmm
-borg: CFLAGS += -DPARALLEL -fopenmp
+borg: CFLAGS += -DPARALLEL -fopenmp -march=ivybridge -O0 -g
 borg: all
 
 gcc: CC=g++
-gcc: CFLAGS+=-O0 -march=native
+gcc: CFLAGS+=-O1 -march=ivybridge -fopenmp
 gcc: all
 
 intel: CC=icc
-intel: CFLAGS+=-O3 -xAVX
+intel: CFLAGS+=-O3 ${TACC_VEC_FLAGS} -qopenmp
 intel: all
 
 gcc-debug: CC=g++
-gcc-debug: CFLAGS+=-O0 -march=native -g
+gcc-debug: CFLAGS+=-O0 -march=ivybridge -g -fopenmp
 gcc-debug: all
 
 intel-debug: CC=icc
-intel-debug: CFLAGS+=-O0 -xAVX -g
+intel-debug: CFLAGS+=-O1 -xAVX -g -qopenmp
+#intel-debug: CFLAGS+=-O3 ${TACC_VEC_FLAGS} -g -qopenmp
 intel-debug: all
 
 pchecking: CC=icc
-pchecking: CFLAGS+=-O0 -xAVX -g -traceback -check-pointers=rw -check-pointers-undimensioned -check-pointers-dangling=all -rdynamic
+pchecking: CFLAGS+=-O0 ${TACC_VEC_FLAGS} -g -traceback -check-pointers=rw -check-pointers-undimensioned -check-pointers-dangling=all -rdynamic -qopenmp
 pchecking: all
 
 prof: CFLAGS += -fopenmp -p

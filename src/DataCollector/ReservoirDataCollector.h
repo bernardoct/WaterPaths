@@ -21,6 +21,8 @@ class ReservoirDataCollector : public DataCollector {
     vector<double> total_catchments_inflow;
     vector<double> evaporated_volume;
     vector<double> area;
+    bool fixed_area;
+    double fixed_area_value;
 
 public:
     explicit ReservoirDataCollector(Reservoir *reservoir, unsigned long realization);

@@ -25,9 +25,9 @@ Catchment::Catchment(vector<vector<double>> *streamflows_all, int series_length)
  * @param catchment
  */
 Catchment::Catchment(const Catchment &catchment) :
-        series_length(catchment.series_length),
         streamflows_all(catchment.streamflows_all),
         streamflows_realization(catchment.streamflows_realization),
+        series_length(catchment.series_length),
         parent(false) {}
 
 /**

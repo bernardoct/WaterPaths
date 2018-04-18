@@ -4,12 +4,14 @@
 
 #include <algorithm>
 #include <numeric>
+#include <random>
 #include "Problem.h"
 
 vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
+    this->master_data_collector->setOutputDirectory(output_directory);
+    string fo = "/TestFiles/output/Objectives";
+    //string fo = output_directory + "/TestFiles/output/scenario" + std::to_string(scenario) + "/Objectives";
 
-    //string fo = output_directory + "/TestFiles/output/Objectives";
-    string fo = output_directory + "/TestFiles/output/scenario" + std::to_string(scenario) + "/Objectives";
     objectives = this->master_data_collector->calculatePrintObjectives(
             fo + "_s" + std::to_string(solution_no) + fname_sufix, print_files);
 
@@ -21,10 +23,16 @@ void Problem::printTimeSeriesAndPathways() {
     this->master_data_collector->setOutputDirectory(output_directory);
 
     /// Print output files.
-    string fu = "/TestFiles/output/scenario" + std::to_string(scenario) + "/Utilities";
-    string fws = "/TestFiles/output/scenario" + std::to_string(scenario) + "/WaterSources";
-    string fp = "/TestFiles/output/scenario" + std::to_string(scenario) + "/Policies";
-    string fpw = "/TestFiles/output/scenario" + std::to_string(scenario) + "/Pathways";
+    string fu = "/TestFiles/output/Utilities";
+    string fws = "/TestFiles/output/WaterSources";
+    string fp = "/TestFiles/output/Policies";
+    string fpw = "/TestFiles/output/Pathways";
+
+    /// Print output files.
+//    string fu = "/TestFiles/output/scenario" + std::to_string(scenario) + "/Utilities";
+//    string fws = "/TestFiles/output/scenario" + std::to_string(scenario) + "/WaterSources";
+//    string fp = "/TestFiles/output/scenario" + std::to_string(scenario) + "/Policies";
+//    string fpw = "/TestFiles/output/scenario" + std::to_string(scenario) + "/Pathways";
 
     //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
     cout << "Printing Pathways" << endl;
@@ -54,6 +62,8 @@ void Problem::printTimeSeriesAndPathways() {
 //                                               + std::to_string(solution_no));
 
 }
+
+
 
 vector<int> Problem::vecInfraRankToVecInt(vector<infraRank> v) {
     vector<int> sorted;
@@ -148,14 +158,19 @@ void Problem::setRealizationsToRun(vector<unsigned long>& realizations_to_run) {
     this->realizations_to_run = realizations_to_run;
 }
 
-const MasterDataCollector* Problem::getMaster_data_collector() {
+MasterDataCollector* Problem::getMaster_data_collector() {
     return master_data_collector;
 }
 
 Problem::~Problem() {}
 
 void Problem::destroyDataCollector() {
-    delete master_data_collector;
+    if (master_data_collector != nullptr) {
+        delete master_data_collector;
+	master_data_collector = nullptr;
+    } else {
+        cerr << "Tried to delete nullptr master data collector.\n";
+    }
 }
 
 Problem::Problem(unsigned long n_weeks) : n_weeks(n_weeks) {

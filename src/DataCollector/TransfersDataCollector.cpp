@@ -38,7 +38,7 @@ string TransfersDataCollector::printTabularStringHeaderLine1() {
 
     stringstream outStream;
 
-    for (int id = 0; id < utilities_ids.size(); ++id)
+    for (unsigned long id = 0; id < utilities_ids.size(); ++id)
         outStream << setw(COLUMN_WIDTH) << "Transf.";
 
     return outStream.str();

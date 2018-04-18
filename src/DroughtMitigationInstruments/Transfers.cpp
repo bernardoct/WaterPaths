@@ -42,9 +42,9 @@ Transfers::Transfers(
         : DroughtMitigationPolicy(id, TRANSFERS),
           source_utility_id(source_utility_id),
           source_treatment_buffer(source_treatment_buffer),
+          transfer_water_source_id(transfer_water_source_id),
           buyers_ids(buyers_ids),
-          buyers_transfer_triggers(buyers_transfer_triggers),
-          transfer_water_source_id(transfer_water_source_id) {
+          buyers_transfer_triggers(buyers_transfer_triggers) {
 
     for (int i : buyers_ids)
         if (i == source_utility_id)
@@ -67,7 +67,7 @@ Transfers::Transfers(
     util_id_to_vertex_id = vector<int>(max_buyer_id + 1, NON_INITIALIZED);
     /// Map buyer's IDs to vertexes ID starting from 0 for the sake of
     /// determining payments.
-    for (int i = 0; i < buyers_ids.size(); ++i) {
+    for (int i = 0; i < (int) buyers_ids.size(); ++i) {
 //        util_id_to_vertex_id.insert(
 //                pair<int, int>(buyers_ids.at((unsigned long) i), i));
         util_id_to_vertex_id[buyers_ids.at((unsigned long) i)] = i;
@@ -79,13 +79,13 @@ Transfers::Transfers(
     /// CE.x = ce0
     /// CI.x >= ci0
     /// lb <= x <= ub
-    unsigned int n_flow_rates_Q_source =
-            (unsigned int) pipe_transfer_capacities.size() + 1;
-    auto n_allocations = (unsigned int) buyers_ids.size();
-    unsigned int n_vars = n_flow_rates_Q_source + n_allocations;
+    unsigned long n_flow_rates_Q_source =
+             pipe_transfer_capacities.size() + 1;
+    unsigned long n_allocations = buyers_ids.size();
+    unsigned long n_vars = n_flow_rates_Q_source + n_allocations;
 
     H.resize(0, n_vars, n_vars);
-    for (int i = 0; i < n_vars; ++i)
+    for (unsigned long i = 0; i < n_vars; ++i)
         if (i < n_flow_rates_Q_source) H[i][i] = 1e-6;
         else H[i][i] = 2;
 
@@ -96,8 +96,8 @@ Transfers::Transfers(
     /// utilities). Continuity matrix: +1 for flow entering utility and -1
     /// for leaving.
     Aeq.resize(0, n_allocations + 1, n_vars);
-    for (unsigned int i = 0; i < continuity_matrix.size(); ++i) {
-        for (unsigned int j = 0; j < continuity_matrix.at(i).size(); ++j) {
+    for (unsigned long i = 0; i < continuity_matrix.size(); ++i) {
+        for (unsigned long j = 0; j < continuity_matrix.at(i).size(); ++j) {
             Aeq[i][j] = continuity_matrix.at(i).at(j);
         }
     }
@@ -114,7 +114,7 @@ Transfers::Transfers(
     /// Fill in pipe capacities part of lower and upper bound vectors.
     lb.resize(0, n_vars);
     ub.resize(0, n_vars);
-    for (int i = 0; i < pipe_transfer_capacities.size(); ++i) {
+    for (unsigned long i = 0; i < pipe_transfer_capacities.size(); ++i) {
         lb[i] = -pipe_transfer_capacities[i];
         ub[i] = pipe_transfer_capacities[i];
     }
@@ -186,12 +186,11 @@ void Transfers::addSystemComponents(vector<Utility *> system_utilities,
 }
 
 void Transfers::applyPolicy(int week) {
-
     vector<double> requesting_utilities_rofs(buyers_ids.size(), 0);
     std::fill(allocations.begin(), allocations.end(), 0);
 
-    int n_vars = f.size();
-    int n_allocations = (int) buyers_ids.size();
+    unsigned long n_vars = f.size();
+    unsigned long n_allocations = buyers_ids.size();
     int n_utilities = n_allocations + 1;
     int n_pipes = n_vars - n_utilities;
 
@@ -200,11 +199,11 @@ void Transfers::applyPolicy(int week) {
      * splitting the available flow rate and for
      * checking weather any transfers will be needed.
      */
-    unsigned int vertex_id; // position of utility id in the buyers_transfer_triggers vector.
+    unsigned long vertex_id; // position of utility id in the buyers_transfer_triggers vector.
     double sum_rofs = 0;
     int utilities_requesting_transfers = 0;
     for (auto u : realization_utilities) {
-        vertex_id = (unsigned int) util_id_to_vertex_id.at((unsigned int) u->id);
+        vertex_id = (unsigned long) util_id_to_vertex_id.at((unsigned long) u->id);
         if (u->getRisk_of_failure() > buyers_transfer_triggers.at(vertex_id)) {
             sum_rofs += u->getRisk_of_failure();
             requesting_utilities_rofs.at(vertex_id) = u->getRisk_of_failure();
@@ -231,12 +230,11 @@ void Transfers::applyPolicy(int week) {
             /// Split up total volume available among the utilities
             /// proportionally to their ROFs.
             //FIXME: FIGURE OUT SCALING FACTOR, MAYBE BASED ON TOTAL DEMAND TO PREVENT BIGGEST UTILITY WITH HIGH RISK FROM GETTING ALL WATER.
-            for (int i = 0; i < n_allocations; ++i) {
+            for (unsigned long i = 0; i < n_allocations; ++i) {
                 transfer_requests[i] =
                         available_transfer_volume * requesting_utilities_rofs[i]
                         / sum_rofs;
             }
-
             /// Calculate allocations and flow rates through inter-utility
             /// connections.
             flow_rates_and_allocations = solve_QP(transfer_requests,
@@ -269,7 +267,7 @@ void Transfers::applyPolicy(int week) {
 //                transfer_water_source->removeWater(id,
 //                                                   allocations[id]);
 //            }
-            for (int id = 0; id < util_id_to_vertex_id.size(); ++id) {
+            for (unsigned long id = 0; id < util_id_to_vertex_id.size(); ++id) {
                 int bid = util_id_to_vertex_id[id];
                 if (bid != NON_INITIALIZED) {
                     realization_utilities[bid]->setDemand_offset
@@ -304,21 +302,21 @@ vector<double> Transfers::solve_QP(
         int week) {
 
     vector<double> flow_rates_and_allocations;
-    auto n_allocations = (unsigned int) allocation_requests.size();
-    unsigned int n_vars = f.size();
-    unsigned int n_pipes = n_vars - n_allocations - 1;
+    auto n_allocations = (unsigned long) allocation_requests.size();
+    unsigned long n_vars = f.size();
+    unsigned long n_pipes = n_vars - n_allocations - 1;
     Vector<double> x;
 
     Matrix<double> G = this->H;
 
     /// Set g0 vector to allocated to 2 * target_allocation.
-    for (int i = 0; i < allocation_requests.size(); ++i) {
+    for (unsigned long i = 0; i < allocation_requests.size(); ++i) {
         f[n_pipes + buyers_ids[i]] = -2 * allocation_requests[i];
     }
 
     /// Set allocation bounds to 0 if no allocation is requested, and to
     /// available transfer volume otherwise.
-    for (int i = 0; i < n_allocations; ++i) {
+    for (unsigned long i = 0; i < n_allocations; ++i) {
         if (allocation_requests[i] == NONE) {
             lb[n_pipes + buyers_ids[i]] = NONE;
             ub[n_pipes + buyers_ids[i]] = NONE;
@@ -347,10 +345,10 @@ vector<double> Transfers::solve_QP(
     /// through the network. The factor of 2 can be changed to any number
     /// smaller than 1.
     double max_flow;
-    for (int i = 0; i < n_allocations + 1; ++i) { // skip source
-        if (i != source_utility_id) {
+    for (unsigned long i = 0; i < n_allocations + 1; ++i) { // skip source
+        if (i != (unsigned long) source_utility_id) {
             max_flow = 0;
-            for (int j = 0; j < n_pipes; ++j) {
+            for (unsigned long j = 0; j < n_pipes; ++j) {
                 max_flow += abs(Aeq[i][j] * ub[j]);
             }
             if (lb[n_pipes + i] > max_flow)
@@ -376,7 +374,7 @@ vector<double> Transfers::solve_QP(
 
 
     /// Convert Vector x into a vector.
-    for (int i = 0; i < x.size(); ++i) {
+    for (unsigned long i = 0; i < x.size(); ++i) {
         flow_rates_and_allocations.push_back(x[i]);
     }
 
@@ -387,7 +385,7 @@ const vector<double> &Transfers::getAllocations() const {
     return allocations;
 }
 
-void Transfers::setRealization(unsigned int realization_id, vector<double> &utilities_rdm,
+void Transfers::setRealization(unsigned long realization_id, vector<double> &utilities_rdm,
                                vector<double> &water_sources_rdm, vector<double> &policy_rdm) {
 
 }

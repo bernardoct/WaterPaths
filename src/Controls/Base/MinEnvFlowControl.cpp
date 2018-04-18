@@ -7,20 +7,21 @@
 MinEnvFlowControl::MinEnvFlowControl(int water_source_id,
                                              const vector<int> &water_sources_ids,
                                              const vector<int> &aux_utilities_ids, int type)
-        : water_source_id(water_source_id),
+        : 
           water_sources_ids(water_sources_ids),
           utilities_ids(aux_utilities_ids),
+	  water_source_id(water_source_id),
           type(type) {}
 
 MinEnvFlowControl::MinEnvFlowControl(
         const MinEnvFlowControl &min_env_control) :
-        water_source_id(min_env_control.water_source_id),
+        water_sources(vector<WaterSource *>()),
+        utilities(vector<Utility *>()),
         water_sources_ids(min_env_control.water_sources_ids),
         utilities_ids(min_env_control.utilities_ids),
-        type(min_env_control.type),
-        water_sources(vector<WaterSource *>()),
-        utilities(vector<Utility *>()) {
-}
+        water_source_id(min_env_control.water_source_id),
+        type(min_env_control.type) {}
+
 
 void MinEnvFlowControl::addComponents(
         vector<WaterSource *> water_sources, vector<Utility *> utilities) {
@@ -37,7 +38,7 @@ void MinEnvFlowControl::addComponents(
     }
 }
 
-void MinEnvFlowControl::setRealization(unsigned int r, vector<double> &rdm_factors) {
+void MinEnvFlowControl::setRealization(unsigned long r, vector<double> &rdm_factors) {
 
 }
 

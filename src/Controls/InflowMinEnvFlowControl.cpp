@@ -27,7 +27,7 @@ double InflowMinEnvFlowControl::getRelease(int week) {
             water_sources[water_source_id]->getUpstreamCatchmentInflow();
 
     double release = 0;
-    for (int i = 0; i < inflows.size(); ++i) {
+    for (unsigned long i = 0; i < inflows.size(); ++i) {
         /// Done with ternary operator for improved performance.
         release = (inflow >= inflows[i] ? releases[i] : release);
     }

@@ -29,6 +29,8 @@ public:
     ContinuityModelRealization(
             ContinuityModelRealization &continuity_model_realization);
 
+    virtual ~ContinuityModelRealization();
+
     void setShortTermROFs(const vector<double> &risks_of_failure);
 
     void applyDroughtMitigationPolicies(int week);
@@ -37,7 +39,7 @@ public:
 
     void setLongTermROFs(const vector<double> &risks_of_failure, const int week);
 
-    virtual ~ContinuityModelRealization();
+
 };
 
 

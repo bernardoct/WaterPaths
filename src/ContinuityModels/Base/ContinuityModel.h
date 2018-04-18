@@ -39,7 +39,7 @@ protected:
     int delta_realization_weeks[NUMBER_REALIZATIONS_ROF];
 
 public:
-    const unsigned int realization_id;
+    const unsigned long realization_id;
 
     ContinuityModel(vector<WaterSource *> &water_sources, vector<Utility *> &utilities,
                     vector<MinEnvFlowControl *> &min_env_flow_controls,
@@ -47,7 +47,7 @@ public:
                     const vector<vector<int>> &water_sources_to_utilities,
                     vector<double> &utilities_rdm,
                     vector<double> &water_sources_rdm,
-                    unsigned int realization_id);
+                    unsigned long realization_id);
 
     ContinuityModel(ContinuityModel &continuity_model);
 
@@ -57,10 +57,14 @@ public:
 
     virtual ~ContinuityModel();
 
-    void setRealization(unsigned int realization_id, vector<double> &utilities_rdm,
+    void setRealization(unsigned long realization_id, vector<double> &utilities_rdm,
                         vector<double> &water_sources_rdm);
 
     vector<int> getOnlineDownstreamSources();
+
+    const vector<WaterSource *> &getContinuity_water_sources() const;
+
+    const vector<Utility *> &getContinuity_utilities() const;
 };
 
 

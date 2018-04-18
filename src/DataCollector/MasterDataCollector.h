@@ -14,14 +14,15 @@
 class MasterDataCollector {
 private:
     string output_directory;
+    unsigned long n_realizations;
 
     vector<vector<DataCollector *>> water_source_collectors;
     vector<vector<DataCollector *>> drought_mitigation_policy_collectors;
-    vector<vector<UtilitiesDataCollector>> utility_collectors;
+    vector<vector<UtilitiesDataCollector *>> utility_collectors;
 
 public:
 
-    MasterDataCollector();
+    MasterDataCollector(unsigned long n_realizations);
 
     vector<double> calculatePrintObjectives(string file_name, bool print);
 
@@ -52,6 +53,8 @@ public:
             vector<Utility *> utilities_realization, unsigned long r);
 
     void collectData(unsigned long r);
+
+    void performBootstrapAnalysis(int sol_id, int n_sets, int n_samples, int n_threads, vector<vector<int>> bootstrap_samples = vector<vector<int>>());
 };
 
 

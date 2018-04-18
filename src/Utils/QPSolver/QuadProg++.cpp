@@ -114,7 +114,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
 
     /* compute the trace of the original matrix H */
     c1 = 0.0;
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < (int) n; i++) {
         c1 += G[i][i];
     }
     /* decompose the matrix H in the form L^T L */
@@ -123,19 +123,19 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     print_matrix("H", H);
 #endif
     /* initialize the matrix R */
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < (int) n; i++) {
         d[i] = 0.0;
-        for (j = 0; j < n; j++)
+        for (j = 0; j < (int) n; j++)
             R[i][j] = 0.0;
     }
     R_norm = 1.0; /* this variable will hold the norm of the matrix R */
 
     /* compute the inverse of the factorized matrix H^-1, this is the initial value for H */
     c2 = 0.0;
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < (int) n; i++) {
         d[i] = 1.0;
         forward_elimination(G, z, d);
-        for (j = 0; j < n; j++)
+        for (j = 0; j < (int) n; j++)
             J[i][j] = z[j];
         c2 += z[i];
         d[i] = 0.0;
@@ -152,7 +152,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
      * allocations_aux = H^-1 * f
      */
     cholesky_solve(G, x, g0);
-    for (i = 0; i < n; i++)
+    for (i = 0; i < (int) n; i++)
         x[i] = -x[i];
     /* and compute the current solution value */
     f_value = 0.5 * scalar_product(g0, x);
@@ -163,8 +163,8 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
 
     /* Add equality constraints to the working set A */
     iq = 0;
-    for (i = 0; i < p; i++) {
-        for (j = 0; j < n; j++)
+    for (i = 0; i < (int) p; i++) {
+        for (j = 0; j < (int) n; j++)
             np[j] = CE[j][i];
         compute_d(d, J, np);
         update_z(z, J, d, iq);
@@ -183,7 +183,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
             t2 = (-scalar_product(np, x) - ce0[i]) / scalar_product(z, np);
 
         /* set allocations_aux = allocations_aux + t2 * z */
-        for (k = 0; k < n; k++)
+        for (k = 0; k < (int) n; k++)
             x[k] += t2 * z[k];
 
         /* set u = u+ */
@@ -202,7 +202,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     }
 
     /* set iai = K \ A */
-    for (i = 0; i < m; i++)
+    for (i = 0; i < (int) m; i++)
         iai[i] = i;
 
     l1:
@@ -220,10 +220,10 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     ss = 0.0;
     psi = 0.0; /* this value will contain the sum of all infeasibilities */
     ip = 0; /* ip will be the index of the chosen violated constraint */
-    for (i = 0; i < m; i++) {
+    for (i = 0; i < (int) m; i++) {
         iaexcl[i] = true;
         sum = 0.0;
-        for (j = 0; j < n; j++)
+        for (j = 0; j < (int) n; j++)
             sum += CI[j][i] * x[j];
         sum += ci0[i];
         s[i] = sum;
@@ -246,11 +246,11 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
         A_old[i] = A[i];
     }
     /* and for allocations_aux */
-    for (i = 0; i < n; i++)
+    for (i = 0; i < (int) n; i++)
         x_old[i] = x[i];
 
     l2: /* Step 2: check for feasibility and determine a new S-pair */
-    for (i = 0; i < m; i++) {
+    for (i = 0; i < (int) m; i++) {
         if (s[i] < ss && iai[i] != -1 && iaexcl[i]) {
             ss = s[i];
             ip = i;
@@ -261,7 +261,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     }
 
     /* set np = n[ip] */
-    for (i = 0; i < n; i++)
+    for (i = 0; i < (int) n; i++)
         np[i] = CI[i][ip];
     /* set u = [u 0]^T */
     u[iq] = 0.0;
@@ -345,7 +345,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
     /* case (iii): step in primal and dual space */
 
     /* set allocations_aux = allocations_aux + t * z */
-    for (k = 0; k < n; k++)
+    for (k = 0; k < (int) n; k++)
         x[k] += t * z[k];
     /* update the solution value */
     f_value += t * scalar_product(z, np) * (0.5 * t + u[iq]);
@@ -377,14 +377,14 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
             print_vector("A", A, iq);
                   print_vector("iai", iai);
 #endif
-            for (i = 0; i < m; i++)
+            for (i = 0; i < (int) m; i++)
                 iai[i] = i;
             for (i = p; i < iq; i++) {
                 A[i] = A_old[i];
                 u[i] = u_old[i];
                 iai[A[i]] = -1;
             }
-            for (i = 0; i < n; i++)
+            for (i = 0; i < (int) n; i++)
                 x[i] = x_old[i];
             goto l2; /* go to step 2 */
         } else
@@ -412,7 +412,7 @@ double solve_quadprog(Matrix<double> &G, Vector<double> &g0,
 
     /* update s[ip] = A * allocations_aux + b */
     sum = 0.0;
-    for (k = 0; k < n; k++)
+    for (k = 0; k < (int) n; k++)
         sum += CI[k][ip] * x[k];
     s[ip] = sum + ci0[ip];
 
@@ -445,8 +445,8 @@ void solve_quadprog_matlab_syntax(Matrix<double> &G, Vector<double> &g0,
     expanded_CI.resize(0, CI.nrows() + lb.size() + ub.size(), CI.ncols() + lb.size());
 
     /// Transpose CE.
-    for (int i = 0; i < CE.nrows(); ++i) {
-        for (int j = 0; j < CE.ncols(); ++j) {
+    for (unsigned int i = 0; i < CE.nrows(); ++i) {
+        for (unsigned int j = 0; j < CE.ncols(); ++j) {
             CE_T[j][i] = CE[i][j];
         }
     }
@@ -454,25 +454,25 @@ void solve_quadprog_matlab_syntax(Matrix<double> &G, Vector<double> &g0,
     /// Reverse signs of ce0 and ci0.
     Vector<double> ce0_inv;
     ce0_inv.resize(0, ce0.size());
-    for (int i = 0; i < ce0.size(); ++i) {
+    for (unsigned int i = 0; i < ce0.size(); ++i) {
         ce0_inv[i] = -ce0[i];
     }
     /// Expand ci0 to include the bounds.
     Vector<double> ci0_inv;
     ci0_inv.resize((0, ci0.size() + lb.size() + ub.size()));
-    for (int i = 0; i < ci0.size(); ++i) {
+    for (unsigned int i = 0; i < ci0.size(); ++i) {
         ci0_inv[i] = -ci0[i];
     }
 
     /// Expand CI so to include the bounds.
-    for (int i = 0; i < CI.nrows(); ++i) {
-        for (int j = 0; j < CI.ncols(); ++j) {
+    for (unsigned int i = 0; i < CI.nrows(); ++i) {
+        for (unsigned int j = 0; j < CI.ncols(); ++j) {
             expanded_CI[i][j] = CI[i][j];
         }
     }
 
     /// Including bounds in expanded_CI and ci_inv
-    for (int i = CI.nrows(); i < CI.nrows() + lb.size(); ++i) {
+    for (unsigned int i = CI.nrows(); i < CI.nrows() + lb.size(); ++i) {
         expanded_CI[i][i - CI.nrows()] = 1;
         expanded_CI[i+lb.size()][i - CI.nrows()] = -1;
     }
@@ -480,13 +480,13 @@ void solve_quadprog_matlab_syntax(Matrix<double> &G, Vector<double> &g0,
     /// Transpose expanded_CI
     Matrix<double> expanded_CI_inv;
     expanded_CI_inv.resize(0, expanded_CI.ncols(), expanded_CI.nrows());
-    for (int i = 0; i < expanded_CI.nrows(); ++i) {
-        for (int j = 0; j < expanded_CI.ncols(); ++j) {
+    for (unsigned int i = 0; i < expanded_CI.nrows(); ++i) {
+        for (unsigned int j = 0; j < expanded_CI.ncols(); ++j) {
             expanded_CI_inv[j][i] = expanded_CI[i][j];
         }
     }
 
-    for (int i = CI.nrows(); i < CI.nrows() + lb.size(); ++i) {
+    for (unsigned int i = CI.nrows(); i < CI.nrows() + lb.size(); ++i) {
         ci0_inv[i] = -lb[i - CI.nrows()];
         ci0_inv[i + lb.size()] = ub[i - CI.nrows()];
     }
@@ -500,14 +500,14 @@ void solve_quadprog_matlab_syntax(Matrix<double> &G, Vector<double> &g0,
 
     solve_quadprog(G, g0, CE_T, ce0_inv, expanded_CI_inv, ci0_inv, x);
 
-    for (int i = 0; i < x.size(); ++i) {
+    for (unsigned int i = 0; i < x.size(); ++i) {
         if (std::abs(x[i]) < 1e-12) x[i] = 0;
     }
 }
 
 
 inline void compute_d(Vector<double> &d, const Matrix<double> &J, const Vector<double> &np) {
-    register int i, j, n = d.size();
+    register int i, j, n = (int) d.size();
     register double sum;
 
     /* compute d = H^T * np */
@@ -520,7 +520,7 @@ inline void compute_d(Vector<double> &d, const Matrix<double> &J, const Vector<d
 }
 
 inline void update_z(Vector<double> &z, const Matrix<double> &J, const Vector<double> &d, int iq) {
-    register int i, j, n = z.size();
+    register int i, j, n = (int) z.size();
 
     /* setting of z = H * d */
     for (i = 0; i < n; i++) {

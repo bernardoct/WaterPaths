@@ -458,3 +458,7 @@ const vector<int> &InfrastructureManager::getDemand_infra_construction_order() c
 const vector<int> &InfrastructureManager::getInfra_built_last_week() const {
     return infra_built_last_week;
 }
+
+const vector<bool> &InfrastructureManager::getUnder_construction() const {
+    return under_construction;
+}

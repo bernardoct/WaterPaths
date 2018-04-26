@@ -217,6 +217,10 @@ public:
     double getTotal_stored_volume() const;
 
     void checkErrorsAddWaterSourceOnline(WaterSource *water_source);
+
+    void issueBond(int new_infra_triggered, int week);
+
+
 };
 
 

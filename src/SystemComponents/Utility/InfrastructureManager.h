@@ -84,6 +84,8 @@ public:
     const vector<int> &getDemand_infra_construction_order() const;
 
     const vector<int> &getInfra_built_last_week() const;
+
+    const vector<bool> &getUnder_construction() const;
 };
 
 

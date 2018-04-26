@@ -559,8 +559,25 @@ double Utility::updateCurrent_debt_payment(int week) {
     return current_debt_payment;
 }
 
+void Utility::issueBond(int new_infra_triggered, int week) {
+    if (new_infra_triggered != NON_INITIALIZED) {
+        Bond &bond = water_sources.at((unsigned long) new_infra_triggered)->getBond(id);
+        bond.issueBond(week, bond_term_multiplier, bond_interest_rate_multiplier);
+        issued_bonds.push_back(&bond);
+        infra_net_present_cost += bond.getNetPresentValueAtIssuance(infra_discount_rate, week);
+    }
+}
+
 void Utility::forceInfrastructureConstruction(int week, vector<int> new_infra_triggered) {
+    /// Build all triggered infrastructure
     infrastructure_construction_manager.forceInfrastructureConstruction(week, new_infra_triggered);
+
+    /// Issue bonds for triggered infrastructure
+    for (int ws : new_infra_triggered) {
+        if (infrastructure_construction_manager.getUnder_construction()[ws]) {
+            issueBond(ws, week);
+        }
+    }
 }
 
 /**
@@ -584,12 +601,7 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
 
     /// Issue and add bond of triggered water source to list of outstanding bonds, and update total new
     /// infrastructure NPV.
-    if (new_infra_triggered != NON_INITIALIZED) {
-        Bond &bond = water_sources.at((unsigned long) new_infra_triggered)->getBond(id);
-        bond.issueBond(week, bond_term_multiplier, bond_interest_rate_multiplier);
-        issued_bonds.push_back(&bond);
-        infra_net_present_cost += bond.getNetPresentValueAtIssuance(infra_discount_rate, 0);
-    }
+    issueBond(new_infra_triggered, week);
 
     return new_infra_triggered;
 }

@@ -11,21 +11,19 @@
 class LevelDebtServiceBond : public Bond {
 private:
     double level_debt_service_payment;
-    const int begin_repayment_after_n_years;
     int n_payments_made = 0;
 
 public:
     LevelDebtServiceBond(const int id, const double cost_of_capital, const int n_payments,
-                         const double coupon_rate, vector<int> pay_on_weeks);
+                             const double coupon_rate, vector<int> pay_on_weeks, bool begin_repayment_at_issuance = false);
 
-    LevelDebtServiceBond(const int id, const double cost_of_capital, const int n_payments,
-                         const double coupon_rate, vector<int> pay_on_weeks, const int starts_paying_after_n_years);
+    ~LevelDebtServiceBond() override;
 
     double getDebtService(int week) override;
 
     double getNetPresentValueAtIssuance(double yearly_discount_rate, int week) const override;
 
-    void issueBond(int week, double bond_term_multiplier, double bond_interest_rate_multiplier) override;
+    void issueBond(int week, int construction_time, double bond_term_multiplier, double bond_interest_rate_multiplier) override;
 };
 
 

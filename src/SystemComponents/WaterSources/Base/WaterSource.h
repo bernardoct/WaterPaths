@@ -12,7 +12,6 @@
 
 using namespace std;
 using namespace Constants;
-const int BOND_INTEREST_PAYMENTS_PER_YEAR = 1;
 
 class WaterSource {
 protected:
@@ -176,6 +175,8 @@ public:
     Bond &getBond(int utility_id);
 
     void checkForInputErrorsConstruction();
+
+
 };
 
 

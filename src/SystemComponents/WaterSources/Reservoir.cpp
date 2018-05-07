@@ -233,7 +233,7 @@ Reservoir &Reservoir::operator=(const Reservoir &reservoir) {
 /**
  * Destructor.
  */
-Reservoir::~Reservoir() {}
+Reservoir::~Reservoir() = default;
 
 /**
  * Reservoir mass balance. Gets releases from upstream reservoirs, demands from

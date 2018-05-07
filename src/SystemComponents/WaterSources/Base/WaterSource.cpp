@@ -60,7 +60,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
                          double permitting_period, Bond &bond)
         : available_volume(capacity),
           permitting_time(permitting_period),
-          bonds(vector<Bond *>(1, &bond)),
+          bonds(Utils::copyBonds(vector<Bond *>(1, &bond))),
           capacity(capacity),
           built_in_sequence(connected_sources),
           online(OFFLINE),
@@ -178,7 +178,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
                          const vector<double> construction_time_range, double permitting_period, Bond &bond)
         : available_volume(capacity),
           permitting_time(permitting_period),
-          bonds(vector<Bond *>(1, &bond)),
+          bonds(Utils::copyBonds(vector<Bond *>(1, &bond))),
           capacity(capacity),
           built_in_sequence(built_in_sequence),
           utilities_with_allocations(utilities_with_allocations),
@@ -270,7 +270,13 @@ WaterSource::WaterSource(const WaterSource &water_source) :
 /**
  * Destructor.
  */
-WaterSource::~WaterSource() = default;
+WaterSource::~WaterSource() {
+//    printf("Destroying bonds. Sad...\n");
+    for (Bond *b : bonds) {
+        delete b;
+//        b = nullptr;
+    }
+}
 
 /**
  * Copy assignment operator.

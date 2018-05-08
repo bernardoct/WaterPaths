@@ -39,6 +39,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
     for (Catchment *c : catchments) {
         this->catchments.push_back(Catchment(*c));
     }
+
 }
 
 /**
@@ -79,6 +80,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
         this->catchments.emplace_back(*c);
     }
     checkForInputErrorsConstruction();
+
 }
 
 /**
@@ -119,6 +121,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
         this->catchments.emplace_back(*c);
     }
     checkForInputErrorsConstruction();
+
 }
 
 
@@ -156,6 +159,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
     for (Catchment *c : catchments) {
         this->catchments.push_back(Catchment(*c));
     }
+
 }
 
 /**
@@ -205,6 +209,41 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
     checkForInputErrorsConstruction();
 }
 
+WaterSource::WaterSource(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
+                         double treatment_capacity, vector<int> built_in_sequence, const int source_type,
+                         vector<double> *allocated_treatment_fractions, vector<double> *allocated_fractions,
+                         vector<int> *utilities_with_allocations, const vector<double> construction_time_range,
+                         double permitting_period, vector<Bond *> bonds)
+        : available_volume(capacity),
+          permitting_time(permitting_period),
+          bonds(bonds),
+          capacity(capacity),
+          built_in_sequence(built_in_sequence),
+          utilities_with_allocations(utilities_with_allocations),
+          wq_pool_id(NON_INITIALIZED),
+          online(OFFLINE),
+          total_treatment_capacity(treatment_capacity),
+          highest_alloc_id(NOT_ALLOCATED),
+          id(id),
+          name(name),
+          source_type(source_type),
+          construction_time(
+                  construction_time_range[0] * WEEKS_IN_YEAR +
+                  (construction_time_range[1] -
+                   construction_time_range[0]) *
+                  (rand() % (int) WEEKS_IN_YEAR)) {
+    setAllocations(utilities_with_allocations,
+                   allocated_fractions,
+                   allocated_treatment_fractions);
+
+    for (Catchment *c : catchments) {
+        this->catchments.emplace_back(*c);
+    }
+
+    checkForInputErrorsConstruction();
+}
+
+
 void WaterSource::checkForInputErrorsConstruction() {
 
     if (std::isnan(permitting_time) || permitting_time < 0) {
@@ -248,7 +287,9 @@ WaterSource::WaterSource(const WaterSource &water_source) :
         source_type(water_source.source_type),
         wq_pool_locator(water_source.wq_pool_locator),
         construction_time(water_source.construction_time),
-        annual_source_demand(water_source.annual_source_demand) {
+        adjusted_allocated_treatment_capacities(water_source.adjusted_allocated_treatment_capacities),
+        base_wq_pool_fraction(water_source.base_wq_pool_fraction),
+        parent_reservoir_treatment_capacities(water_source.parent_reservoir_treatment_capacities) {
 
     if (water_source.wq_pool_id != NON_INITIALIZED) {
         wq_pool_id = water_source.wq_pool_id;
@@ -298,8 +339,11 @@ WaterSource &WaterSource::operator=(const WaterSource &water_source) {
         available_allocated_volumes = water_source.available_allocated_volumes;
         allocated_capacities = water_source.allocated_capacities;
         allocated_treatment_capacities = water_source.allocated_treatment_capacities;
+        adjusted_allocated_treatment_capacities = water_source.adjusted_allocated_treatment_capacities;
 
-        annual_source_demand = water_source.annual_source_demand;
+        parent_reservoir_treatment_capacities = water_source.parent_reservoir_treatment_capacities;
+
+        base_wq_pool_fraction = water_source.base_wq_pool_fraction;
     }
 
     catchments.clear();
@@ -401,6 +445,8 @@ void WaterSource::setAllocations(
     this->supply_allocated_fractions.reserve(length - 1);
     this->supply_allocated_fractions.assign(length - 1, 0.0);
 
+
+
     /// Populate vectors.
     for (unsigned long i = 0; i < utilities_with_allocations->size(); ++i) {
         auto u = (unsigned int) utilities_with_allocations->at(i);
@@ -430,6 +476,8 @@ void WaterSource::setAllocations(
                 (1. - this->allocated_fractions[wq_pool_id]);
 
     }
+
+    base_wq_pool_fraction = this->allocated_fractions[wq_pool_id];
 
     /// if none of the allocations looped over above are the WQ pool, the reservoir does not have one
     /// and the WQ pool ID should be returned to non-initialized status.
@@ -474,57 +522,6 @@ void WaterSource::bypass(int week, double total_upstream_inflow) {
     available_volume = NONE;
     total_outflow = upstream_catchment_inflow + total_upstream_inflow;
     this->upstream_source_inflow = total_upstream_inflow;
-}
-
-/**
- * Calculates the net present cost of the infrastructure options (water source)
- * as a bond structured with level debt service payments, issued on a given
- * week in the future.
- * @param week
- * @param discount_rate
- * @return Net present cost
- */
-double WaterSource::calculateNetPresentConstructionCost(
-        int week, int utility_id, double discount_rate,
-        vector<double>& debt_service_payments, double bond_term,
-        double bond_interest_rate) const {
-
-    /// AS IS, THIS IS SET UP FOR FLAT, FIXED PAYMENTS ON BONDS
-    /// BUT DEBT SERVICE PAYMENTS IS NOW A VECTOR OF LENGTH bond_term
-    double rate = bond_interest_rate / BOND_INTEREST_PAYMENTS_PER_YEAR;
-    double principal = construction_cost_of_capital *
-                       (allocated_fractions.empty() ? 1.: allocated_fractions[utility_id]);
-    double n_payments = bond_term * BOND_INTEREST_PAYMENTS_PER_YEAR;
-
-    /// Level debt service payment value
-    double single_payment = principal * (rate * pow(1. + rate, n_payments)) / (pow(1. + rate, n_payments) - 1.);
-    debt_service_payments.emplace_back(bond_term, principal * (rate * pow(1. + rate, n_payments)) /
-                                  (pow(1. + rate, n_payments) - 1.));
-
-    /// Net present cost of stream of level debt service payments for the whole
-    /// bond term, at the time of issuance.
-    double net_present_cost_at_issuance =
-            single_payment *
-            (1. - pow(1. + discount_rate,
-                     -n_payments)) / discount_rate;
-
-    /// Check for errors.
-    if (std::isnan(net_present_cost_at_issuance) || std::isnan(single_payment)) {
-        char error[512];
-        sprintf(error, "rate: %f\n"
-                       "principal: %f\n"
-                       "# of payments: %f\n"
-                       "level debt service payment: %f\n"
-                       "net present cost at issuance: %f\n"
-                       "week: %d\n"
-                       "utility ID: %d\n",
-               rate, principal, n_payments, single_payment,
-               net_present_cost_at_issuance, week, utility_id);
-        throw_with_nested(runtime_error(error));
-    }
-
-    /// Return NPC discounted from the time of issuance to the present.
-    return net_present_cost_at_issuance;// / pow(1 + discount_rate, week / WEEKS_IN_YEAR);
 }
 
 /**
@@ -599,6 +596,8 @@ void WaterSource::setRealization(unsigned long r, vector<double> &rdm_factors) {
 double WaterSource::getAvailableVolume() const {
     return available_volume;
 }
+
+void WaterSource::setAllocatedTreatmentCapacity(const int year, const int utility_id) {}
 
 double WaterSource::getAllocatedInflow(int utility_id) const {
     if (wq_pool_id == NON_INITIALIZED)
@@ -722,11 +721,13 @@ void WaterSource::resetAllocations(
         available_allocated_volumes[u] =
                 available_volume * allocated_fractions[u];
     }
+
+    base_wq_pool_fraction = allocated_fractions[wq_pool_id];
 }
 
 void WaterSource::updateTreatmentAndCapacityAllocations(int week) {}
 
-void WaterSource::updateTreatmentAllocations(int week) {}
+void WaterSource::updateTreatmentAllocations(int week, vector<vector<vector<double>>> weekly_demands) {}
 
 void WaterSource::resetTreatmentAllocations(const vector<double> *new_allocated_treatment_fractions) {
 
@@ -779,6 +780,36 @@ Bond &WaterSource::getBond(int utility_id) {
     }
 }
 
-void WaterSource::addAllocatedTreatmentCapacity(const double added_allocated_treatment_capacity, int utility_id) {
+void WaterSource::addAllocatedTreatmentCapacity(double added_allocated_treatment_capacity, int utility_id) {
     total_treatment_capacity += added_allocated_treatment_capacity;
 }
+
+double WaterSource::calculateJointWTPDebtServiceFraction(int utility_id, int week) {
+    return 0;
+}
+
+int WaterSource::getParentSourceID() {
+    return NON_INITIALIZED;
+}
+
+void WaterSource::addTotalTreatmentCapacity(const double added_plant_treatment_capacity) {
+    total_treatment_capacity += added_plant_treatment_capacity;
+}
+
+double WaterSource::getAllocationAdjustment(const int utility_id) {
+    return 0;
+}
+
+void WaterSource::setAllocationAdjustment(const int utility_id, const double allocation_adjustment) {}
+
+double WaterSource::getAllocatedTreatmentFraction(int utility_id) const {
+    return 1;
+}
+
+void WaterSource::normalizeAllocatedSupplyCapacity() {}
+
+void WaterSource::setAllocatedSupplyCapacity(double capacity_allocation_fraction, int utility_id) {}
+
+void WaterSource::recordParentReservoirTreatmentCapacity(const int utility_id, const double capacity_value) {}
+
+void WaterSource::setExternalAllocatedTreatmentCapacity(const int year) {}

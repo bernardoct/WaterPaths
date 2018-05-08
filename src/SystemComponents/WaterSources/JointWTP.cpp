@@ -5,138 +5,252 @@
 #include <iostream>
 #include <numeric>
 #include "JointWTP.h"
+#include "../../Utils/Utils.h"
+
 
 JointWTP::JointWTP(const char *name, const int id, const int contract_type, const int parent_reservoir_ID,
-                   vector<int> participating_utilities, const double total_treatment_capacity,
-                   const double total_capital_cost, vector<double> fixed_allocations,
+                   vector<int> *utils_with_allocations,
+                   vector<int> connected_sources, const double added_treatment_capacity,
+                   vector<Bond *> &bonds, vector<double> &fixed_allocations,
                    double fixed_external_allocation, const vector<double> &construction_time_range,
                    double permitting_period)
-        : WaterSource(name, id, vector<Catchment *>(), NONE, NON_INITIALIZED,
-                      participating_utilities, NEW_JOINT_WTP,
-                      construction_time_range, permitting_period, NONE),
+        : WaterSource(name, id, vector<Catchment *>(), NONE, added_treatment_capacity,
+                      connected_sources, NEW_JOINT_WTP,
+                      construction_time_range, permitting_period, bonds),
           parent_reservoir_ID((unsigned int) parent_reservoir_ID),
           contract_type(contract_type),
-          total_added_capacity(total_treatment_capacity),
-          total_capital_cost(total_capital_cost),
-          external_allocation(fixed_external_allocation),  fixed_utility_allocations(&fixed_allocations),
-          external_demands(nullptr), annual_demands(nullptr),
-          third_party_ids(nullptr), third_party_sales_rates(nullptr), utility_peaking_factors(nullptr) {
+          external_allocation(fixed_external_allocation) {
 
-    double temp_total_allocation = accumulate(fixed_utility_allocations->begin(),
-                                              fixed_utility_allocations->end(),0.0) +
+    utilities_with_allocations = utils_with_allocations;
+
+    /// Set identifiers to make code more readable
+    /// reminder: there can only be one external utility
+    EXTERNAL_SOURCE_ID = (int) utilities_with_allocations->size();
+    N_UTILITIES_INCLUDING_EXTERNAL = (int) utilities_with_allocations->size() + 1;
+    N_INTERNAL_UTILITIES = N_UTILITIES_INCLUDING_EXTERNAL - 1;
+
+    for (unsigned long u : *utilities_with_allocations) {
+        allocated_treatment_fractions.push_back(fixed_allocations[u]);
+        allocated_treatment_capacities.push_back(fixed_allocations[u]*total_treatment_capacity);
+        previous_period_allocated_capacities.push_back(allocated_treatment_capacities[u]);
+    }
+    previous_period_allocated_capacities.push_back(external_allocation*total_treatment_capacity);
+
+    current_external_allocation_fraction = external_allocation;
+
+    double temp_total_allocation = accumulate(fixed_allocations.begin(),
+                                              fixed_allocations.end(),0.0) +
                                    external_allocation;
     if (temp_total_allocation > 1) {
         cout << "Normalizing fixed allocations" << endl;
-        for (int u = 0; u < fixed_utility_allocations->size(); ++u)
-            fixed_utility_allocations->at(u) = fixed_utility_allocations->at(u)/temp_total_allocation;
+        for (unsigned long u : *utilities_with_allocations) {
+            allocated_treatment_fractions[u] = fixed_allocations.at(u) / temp_total_allocation;
+            allocated_treatment_capacities[u] = allocated_treatment_fractions[u]*total_treatment_capacity;
+        }
         external_allocation = external_allocation/temp_total_allocation;
+        previous_period_allocated_capacities[EXTERNAL_SOURCE_ID] =
+                external_allocation*total_treatment_capacity;
     }
 }
 
 
 JointWTP::JointWTP(const char *name, const int id, const int contract_type, const int parent_reservoir_ID,
-                   vector<int> participating_utilities, const double total_treatment_capacity,
-                   const double total_capital_cost, const vector<double> &construction_time_range,
+                   vector<int> *utils_with_allocations,
+                   vector<int> connected_sources, const double added_treatment_capacity,
+                   vector<Bond *> &bonds, const vector<double> &construction_time_range,
+                   double permitting_period,
+                   vector<double> demand_peaking_factor,
+                   vector<vector<double>> future_annual_utility_demands,
+                   vector<double> external_annual_demands, const int past_demand_weeks_to_use)
+        : WaterSource(name, id, vector<Catchment *>(), NONE, added_treatment_capacity,
+                      connected_sources, NEW_JOINT_WTP,
+                      construction_time_range, permitting_period, bonds),
+          parent_reservoir_ID((unsigned int) parent_reservoir_ID),
+          contract_type(contract_type),
+          external_allocation(NON_INITIALIZED),
+          external_demands(external_annual_demands), annual_demands(future_annual_utility_demands),
+          utility_peaking_factors(demand_peaking_factor),
+          observed_demand_weeks_to_use(past_demand_weeks_to_use) {
+
+    /// Normalize annual initial allocations based on relative demands
+    /// incorporating peaking factors in each annual period
+
+    utilities_with_allocations = utils_with_allocations;
+
+    /// Set identifiers to make code more readable
+    /// reminder: there can only be one external utility
+    EXTERNAL_SOURCE_ID = (int) utilities_with_allocations->size();
+    N_UTILITIES_INCLUDING_EXTERNAL = (int) utilities_with_allocations->size() + 1;
+    N_INTERNAL_UTILITIES = N_UTILITIES_INCLUDING_EXTERNAL - 1;
+    PROJECTED_YEARS = (int) external_demands.size();
+
+    utility_allocation_fractions = std::vector<vector<double>>(N_UTILITIES_INCLUDING_EXTERNAL,
+                                                               vector<double>(PROJECTED_YEARS));
+
+    adjusted_allocated_treatment_capacities = vector<double>(N_UTILITIES_INCLUDING_EXTERNAL,0.0);
+
+    setProjectedAllocationFractions(utility_allocation_fractions,
+                                    annual_demands,
+                                    external_demands,
+                                    utility_peaking_factors);
+
+    /// Set first year values
+    for (unsigned long u : *utilities_with_allocations) {
+        allocated_treatment_fractions.push_back(utility_allocation_fractions.at(u)[0]);
+        allocated_treatment_capacities.push_back(allocated_treatment_fractions[u]*total_treatment_capacity);
+        previous_period_allocated_capacities.push_back(allocated_treatment_capacities[u]);
+
+        parent_reservoir_treatment_capacities.push_back(0);
+    }
+    previous_period_allocated_capacities.push_back(utility_allocation_fractions.at(EXTERNAL_SOURCE_ID)[0]
+                                                   * total_treatment_capacity);
+    current_external_allocation_fraction = utility_allocation_fractions.at(EXTERNAL_SOURCE_ID)[0];
+}
+
+JointWTP::JointWTP(const char *name, const int id, const int contract_type, const int parent_reservoir_ID,
+                   vector<int> *utils_with_allocations,
+                   vector<int> connected_sources, const double added_treatment_capacity,
+                   vector<Bond *> &bonds, const vector<double> &construction_time_range,
                    double permitting_period,
                    vector<double> demand_peaking_factor,
                    vector<vector<double>> future_annual_utility_demands,
                    vector<double> external_annual_demands)
-        : WaterSource(name, id, vector<Catchment *>(), NONE, NON_INITIALIZED,
-                      participating_utilities, NEW_JOINT_WTP,
-                      construction_time_range, permitting_period, NONE),
+        : WaterSource(name, id, vector<Catchment *>(), NONE, added_treatment_capacity,
+                      connected_sources, NEW_JOINT_WTP,
+                      construction_time_range, permitting_period, bonds),
           parent_reservoir_ID((unsigned int) parent_reservoir_ID),
           contract_type(contract_type),
-          total_added_capacity(total_treatment_capacity),
-          total_capital_cost(total_capital_cost),
-          external_allocation(0), fixed_utility_allocations(nullptr),
-          external_demands(&external_annual_demands), annual_demands(&future_annual_utility_demands),
-          third_party_ids(nullptr), third_party_sales_rates(nullptr), utility_peaking_factors(&demand_peaking_factor) {
+          external_allocation(NON_INITIALIZED),
+          external_demands(external_annual_demands), annual_demands(future_annual_utility_demands),
+          utility_peaking_factors(demand_peaking_factor) {
 
     /// Normalize annual initial allocations based on relative demands
     /// incorporating peaking factors in each annual period
-    /// TODO: ADD CONSIDERATION OF TAKE-OR-PAY CONTRACTS, REQUIRED MINIMUM PURCHASES
-    double temp_total_annual_demand = 0.0;
-    for (int y = 0; y < external_demands->size(); y++) {
-        for (int u = 0; u < annual_demands->at(y).size(); u++) {
-            temp_total_annual_demand += annual_demands->at(y).at(u)*utility_peaking_factors->at(u);
-        }
-        temp_total_annual_demand += external_demands->at(y)*
-                utility_peaking_factors->at(utility_peaking_factors->size());
 
-        for (int u = 0; u < annual_demands->at(y).size(); u++) {
-            utility_allocation_fractions->at(y).at(u) = annual_demands->at(y).at(u)/temp_total_annual_demand;
-        }
-        utility_allocation_fractions->at(y).at(utility_allocation_fractions->at(y).size()+1) =
-                external_demands->at(y)/temp_total_annual_demand;
+    utilities_with_allocations = utils_with_allocations;
+
+    /// Set identifiers to make code more readable
+    /// reminder: there can only be one external utility
+    EXTERNAL_SOURCE_ID = (int) utilities_with_allocations->size();
+    N_UTILITIES_INCLUDING_EXTERNAL = (int) utilities_with_allocations->size() + 1;
+    N_INTERNAL_UTILITIES = N_UTILITIES_INCLUDING_EXTERNAL - 1;
+    PROJECTED_YEARS = (int) external_demands.size();
+
+    utility_allocation_fractions = std::vector<vector<double>>(N_UTILITIES_INCLUDING_EXTERNAL,
+                                                               vector<double>(PROJECTED_YEARS));
+
+    setProjectedAllocationFractions(utility_allocation_fractions,
+                                    annual_demands,
+                                    external_demands,
+                                    utility_peaking_factors);
+
+    /// Set first year values
+    for (unsigned long u : *utilities_with_allocations) {
+        allocated_treatment_fractions.push_back(utility_allocation_fractions.at(u)[0]);
+        allocated_treatment_capacities.push_back(allocated_treatment_fractions[u]*total_treatment_capacity);
+        previous_period_allocated_capacities.push_back(allocated_treatment_capacities[u]);
     }
+    previous_period_allocated_capacities.push_back(utility_allocation_fractions.at(EXTERNAL_SOURCE_ID)[0]
+                                                   * total_treatment_capacity);
+    current_external_allocation_fraction = utility_allocation_fractions.at(EXTERNAL_SOURCE_ID)[0];
 }
 
 JointWTP::JointWTP(const char *name, const int id, const int contract_type, const int parent_reservoir_ID,
-                   vector<int> participating_utilities, const double total_treatment_capacity,
-                   const double total_capital_cost, vector<double> fixed_allocations,
+                   vector<int> *utils_with_allocations,
+                   vector<int> connected_sources, const double added_treatment_capacity,
+                   vector<Bond *> &bonds, vector<double> &fixed_allocations,
                    double fixed_external_allocation, const vector<double> &construction_time_range,
                    double permitting_period, vector<int> third_party_utilities,
                    vector<double> third_party_sales_volumetric_rate)
-        : WaterSource(name, id, vector<Catchment *>(), NONE, NON_INITIALIZED,
-                      participating_utilities, NEW_JOINT_WTP,
-                      construction_time_range, permitting_period, NONE),
+        : WaterSource(name, id, vector<Catchment *>(), NONE, added_treatment_capacity,
+                      connected_sources, NEW_JOINT_WTP,
+                      construction_time_range, permitting_period, bonds),
           parent_reservoir_ID((unsigned int) parent_reservoir_ID),
           contract_type(contract_type),
-          total_added_capacity(total_treatment_capacity),
-          total_capital_cost(total_capital_cost),
-          external_allocation(fixed_external_allocation),  fixed_utility_allocations(&fixed_allocations),
-          external_demands(nullptr), annual_demands(nullptr),
-          third_party_ids(&third_party_utilities), third_party_sales_rates(&third_party_sales_volumetric_rate),
-          utility_peaking_factors(nullptr) {
+          external_allocation(fixed_external_allocation),
+          third_party_ids(third_party_utilities), third_party_sales_rates(third_party_sales_volumetric_rate) {
 
-    double temp_total_allocation = accumulate(fixed_utility_allocations->begin(),
-                                              fixed_utility_allocations->end(),0.0) +
+    /// TODO: ADD CONSIDERATION OF TAKE-OR-PAY CONTRACTS, REQUIRED MINIMUM PURCHASES
+    utilities_with_allocations = utils_with_allocations;
+
+    /// Set identifiers to make code more readable
+    /// reminder: there can only be one external utility
+    EXTERNAL_SOURCE_ID = (int) utilities_with_allocations->size();
+    N_UTILITIES_INCLUDING_EXTERNAL = (int) utilities_with_allocations->size() + 1;
+    N_INTERNAL_UTILITIES = N_UTILITIES_INCLUDING_EXTERNAL - 1;
+
+    for (unsigned long u : *utilities_with_allocations) {
+        allocated_treatment_fractions.push_back(fixed_allocations[u]);
+        allocated_treatment_capacities.push_back(fixed_allocations[u]*total_treatment_capacity);
+        previous_period_allocated_capacities.push_back(allocated_treatment_capacities[u]);
+    }
+    previous_period_allocated_capacities.push_back(external_allocation*total_treatment_capacity);
+
+    current_external_allocation_fraction = external_allocation;
+
+    double temp_total_allocation = accumulate(fixed_allocations.begin(),
+                                              fixed_allocations.end(),0.0) +
                                    external_allocation;
     if (temp_total_allocation > 1) {
         cout << "Normalizing fixed allocations" << endl;
-        for (int u = 0; u < fixed_utility_allocations->size(); ++u)
-            fixed_utility_allocations->at(u) = fixed_utility_allocations->at(u)/temp_total_allocation;
+        for (unsigned long u : *utilities_with_allocations) {
+            allocated_treatment_fractions[u] = fixed_allocations.at(u) / temp_total_allocation;
+            allocated_treatment_capacities[u] = allocated_treatment_fractions[u]*total_treatment_capacity;
+        }
         external_allocation = external_allocation/temp_total_allocation;
+        previous_period_allocated_capacities[EXTERNAL_SOURCE_ID] =
+                external_allocation*total_treatment_capacity;
     }
 }
 
 JointWTP::JointWTP(const char *name, const int id, const int contract_type, const int parent_reservoir_ID,
-                   vector<int> participating_utilities, const double total_treatment_capacity,
-                   const double total_capital_cost, const vector<double> &construction_time_range,
+                   vector<int> *utils_with_allocations,
+                   vector<int> connected_sources, const double added_treatment_capacity,
+                   vector<Bond *> &bonds, const vector<double> &construction_time_range,
                    double permitting_period,
                    vector<double> demand_peaking_factor,
                    vector<vector<double>> future_annual_utility_demands,
                    vector<double> external_annual_demands, vector<int> third_party_utilities,
                    vector<double> third_party_sales_volumetric_rate)
-        : WaterSource(name, id, vector<Catchment *>(), NONE, NON_INITIALIZED,
-                      participating_utilities, NEW_JOINT_WTP,
-                      construction_time_range, permitting_period, NONE),
+        : WaterSource(name, id, vector<Catchment *>(), NONE, added_treatment_capacity,
+                      connected_sources, NEW_JOINT_WTP,
+                      construction_time_range, permitting_period, bonds),
           parent_reservoir_ID((unsigned int) parent_reservoir_ID),
           contract_type(contract_type),
-          total_added_capacity(total_treatment_capacity),
-          total_capital_cost(total_capital_cost),
-          external_allocation(0),  fixed_utility_allocations(nullptr),
-          external_demands(&external_annual_demands), annual_demands(&future_annual_utility_demands),
-          third_party_ids(&third_party_utilities), third_party_sales_rates(&third_party_sales_volumetric_rate),
-          utility_peaking_factors(&demand_peaking_factor) {
+          external_allocation(NON_INITIALIZED),
+          external_demands(external_annual_demands), annual_demands(future_annual_utility_demands),
+          third_party_ids(third_party_utilities), third_party_sales_rates(third_party_sales_volumetric_rate),
+          utility_peaking_factors(demand_peaking_factor) {
 
     /// Normalize annual initial allocations based on relative demands
     /// incorporating peaking factors in each annual period
-    /// TODO: ADD CONSIDERATION OF TAKE-OR-PAY CONTRACTS, REQUIRED MINIMUM PURCHASES
-    double temp_total_annual_demand = 0.0;
-    for (int y = 0; y < external_demands->size(); y++) {
-        for (int u = 0; u < annual_demands->at(y).size(); u++) {
-            temp_total_annual_demand += annual_demands->at(y).at(u)*utility_peaking_factors->at(u);
-        }
-        temp_total_annual_demand += external_demands->at(y)*
-                                    utility_peaking_factors->at(utility_peaking_factors->size());
 
-        for (int u = 0; u < annual_demands->at(y).size(); u++) {
-            utility_allocation_fractions->at(y).at(u) = annual_demands->at(y).at(u)/temp_total_annual_demand;
-        }
-        utility_allocation_fractions->at(y).at(utility_allocation_fractions->at(y).size()+1) =
-                external_demands->at(y)/temp_total_annual_demand;
+    utilities_with_allocations = utils_with_allocations;
+
+    /// Set identifiers to make code more readable
+    /// reminder: there can only be one external utility
+    EXTERNAL_SOURCE_ID = (int) utilities_with_allocations->size();
+    N_UTILITIES_INCLUDING_EXTERNAL = (int) utilities_with_allocations->size() + 1;
+    N_INTERNAL_UTILITIES = N_UTILITIES_INCLUDING_EXTERNAL - 1;
+    PROJECTED_YEARS = (int) external_demands.size();
+
+    utility_allocation_fractions = std::vector<vector<double>>(N_UTILITIES_INCLUDING_EXTERNAL,
+                                                               vector<double>(PROJECTED_YEARS));
+
+    setProjectedAllocationFractions(utility_allocation_fractions,
+                                    annual_demands,
+                                    external_demands,
+                                    utility_peaking_factors);
+
+    /// Set first year values
+    for (unsigned long u : *utilities_with_allocations) {
+        allocated_treatment_fractions.push_back(utility_allocation_fractions.at(u)[0]);
+        allocated_treatment_capacities.push_back(allocated_treatment_fractions[u]*total_treatment_capacity);
+        previous_period_allocated_capacities.push_back(allocated_treatment_capacities[u]);
     }
+    previous_period_allocated_capacities.push_back(utility_allocation_fractions.at(EXTERNAL_SOURCE_ID)[0]
+                                                   * total_treatment_capacity);
+    current_external_allocation_fraction = utility_allocation_fractions.at(EXTERNAL_SOURCE_ID)[0];
 }
 
 
@@ -148,17 +262,22 @@ JointWTP::JointWTP(const JointWTP &joint_water_treatment_plant)
         : WaterSource(joint_water_treatment_plant),
           parent_reservoir_ID(joint_water_treatment_plant.parent_reservoir_ID),
           contract_type(joint_water_treatment_plant.contract_type),
-          total_added_capacity(joint_water_treatment_plant.total_added_capacity),
-          total_capital_cost(joint_water_treatment_plant.total_capital_cost),
           external_allocation(joint_water_treatment_plant.external_allocation),
-          fixed_utility_allocations(joint_water_treatment_plant.fixed_utility_allocations),
           external_demands(joint_water_treatment_plant.external_demands),
           annual_demands(joint_water_treatment_plant.annual_demands),
           third_party_ids(joint_water_treatment_plant.third_party_ids),
           third_party_sales_rates(joint_water_treatment_plant.third_party_sales_rates),
           utility_peaking_factors(joint_water_treatment_plant.utility_peaking_factors),
           initial_capacity_added(joint_water_treatment_plant.initial_capacity_added),
-          previous_year_allocated_capacities(joint_water_treatment_plant.previous_year_allocated_capacities) {
+          previous_period_allocated_capacities(joint_water_treatment_plant.previous_period_allocated_capacities),
+          build_year(joint_water_treatment_plant.build_year),
+          utility_allocation_fractions(joint_water_treatment_plant.utility_allocation_fractions),
+          observed_demand_weeks_to_use(joint_water_treatment_plant.observed_demand_weeks_to_use),
+          EXTERNAL_SOURCE_ID(joint_water_treatment_plant.EXTERNAL_SOURCE_ID),
+          N_UTILITIES_INCLUDING_EXTERNAL(joint_water_treatment_plant.N_UTILITIES_INCLUDING_EXTERNAL),
+          N_INTERNAL_UTILITIES(joint_water_treatment_plant.N_INTERNAL_UTILITIES),
+          PROJECTED_YEARS(joint_water_treatment_plant.PROJECTED_YEARS),
+          current_external_allocation_fraction(joint_water_treatment_plant.current_external_allocation_fraction) {
 
 }
 
@@ -179,116 +298,8 @@ void JointWTP::applyContinuity(int week, double upstream_source_inflow, double w
     __throw_logic_error("Joint WTP class only meant to adjust allocations and demand targets, not continuity");
 }
 
-double JointWTP::calculateFixedAllocationCosts(int utility_id) {
-    construction_cost_of_capital = total_capital_cost * (fixed_utility_allocations->at(utility_id));
-    return construction_cost_of_capital;
-}
-
 int JointWTP::getContractType() {
     return contract_type;
-}
-
-vector<double> JointWTP::calculateAdjustableAllocationConstructionCosts(int utility_id, double bond_length) {
-    vector<double> annual_capital_responsibility;
-    for (int year = 0; year < bond_length; year++) {
-        annual_capital_responsibility[year] =
-                total_capital_cost/bond_length * utility_allocation_fractions->at(year).at(utility_id);
-    }
-
-    return annual_capital_responsibility;
-}
-
-double JointWTP::calculateNetPresentConstructionCost(
-        int week, int utility_id, double discount_rate,
-        vector<double>& debt_service_payments, double bond_term,
-        double bond_interest_rate) const {
-    double rate = bond_interest_rate / BOND_INTEREST_PAYMENTS_PER_YEAR;
-    double net_present_cost_at_issuance = 0.0;
-
-    /// Based on type of contract, debt service payments are determined here annually
-    /// and the entire cost of the project for a given utility is present valued as well
-
-    if (contract_type == 0) {
-        /// Determine annual fixed payment
-        double fixed_annual_responsibility = total_capital_cost * (fixed_utility_allocations->at(utility_id));
-
-        /// Set total PV debt service total
-        for (int year = 0; year < bond_term; year++)
-            net_present_cost_at_issuance += fixed_annual_responsibility / pow((1 + discount_rate), year);
-
-        debt_service_payments.emplace_back(bond_term, fixed_annual_responsibility);
-            // vector of annual costs for the project for a utility
-
-    } else if (contract_type == 1) {
-        vector<double> annual_capital_responsibility;
-        int present_value_year = 0;
-        for (int year = week/WEEKS_IN_YEAR; year < bond_term + week/WEEKS_IN_YEAR; year++) {
-            /// Determine annual payments
-            annual_capital_responsibility[present_value_year] =
-                    total_capital_cost/bond_term * utility_allocation_fractions->at(year).at(utility_id) *
-                            (rate * pow(1. + rate, bond_term)) / (pow(1. + rate, bond_term) - 1.);
-
-            /// Set total PV debt service total
-            net_present_cost_at_issuance += annual_capital_responsibility[year] /
-                    pow((1 + discount_rate), present_value_year);
-                // TODO: this isn't right, figure out how fix present valuation
-
-            debt_service_payments.push_back(annual_capital_responsibility[present_value_year]);
-                // build vector of annual costs for the project for a utility
-            present_value_year += 1;
-        }
-    } else if (contract_type == 2) {
-        vector<double> annual_capital_responsibility;
-        int present_value_year = 0;
-
-        /// This is a problem, payments can't be known beforehand (not based on projections)
-        // TODO: ACTUALLY DEAL WITH CHANGING DEBT SERVICE CALCULATIONS SO THAT THEY DONT HAPPEN RIGHT AT CONSTRUCTION
-        for (int year = week/WEEKS_IN_YEAR; year < bond_term + week/WEEKS_IN_YEAR; year++) {
-            /// Determine annual payments
-            if (isOnline())
-                annual_capital_responsibility[present_value_year] =
-                        total_capital_cost/bond_term *
-                                previous_year_allocated_capacities->at(utility_id)/total_added_capacity *
-                        (rate * pow(1. + rate, bond_term)) / (pow(1. + rate, bond_term) - 1.);
-            else
-                annual_capital_responsibility[present_value_year] =
-                        total_capital_cost/bond_term *
-                                utility_allocation_fractions->at(year).at(utility_id) *
-                        (rate * pow(1. + rate, bond_term)) / (pow(1. + rate, bond_term) - 1.);
-                // for payments before plant comes online, they are based on use projections
-
-            /// Set total PV debt service total
-            net_present_cost_at_issuance += annual_capital_responsibility[year] /
-                                            pow((1 + discount_rate), present_value_year);
-            // TODO: this isn't right, figure out how fix present valuation
-
-            debt_service_payments.push_back(annual_capital_responsibility[present_value_year]);
-            // build vector of annual costs for the project for a utility
-            present_value_year += 1;
-        }
-    } else if (contract_type == 3) {
-
-    } else {
-
-    }
-
-    /// Check for errors.
-    if (std::isnan(net_present_cost_at_issuance) || std::isnan(debt_service_payments[0])) {
-        char error[512];
-        sprintf(error, "rate: %f\n"
-                        "principal: %f\n"
-                        "# of payments: %f\n"
-                        "level debt service payment: %f\n"
-                        "net present cost at issuance: %f\n"
-                        "week: %d\n"
-                        "utility ID: %d\n",
-                rate, total_capital_cost, bond_term, debt_service_payments[0],
-                net_present_cost_at_issuance, week, utility_id);
-        throw_with_nested(runtime_error(error));
-    }
-
-    /// Return NPC discounted from the time of issuance to the present.
-    return net_present_cost_at_issuance;// / pow(1 + discount_rate, week / WEEKS_IN_YEAR);
 }
 
 
@@ -299,7 +310,7 @@ double JointWTP::calculateNetPresentConstructionCost(
  * @return
  */
 double JointWTP::implementFixedTreatmentCapacity(int utility_id) {
-    return total_added_capacity * fixed_utility_allocations->at(utility_id);
+    return total_treatment_capacity * allocated_treatment_fractions[utility_id];
 }
 
 /**
@@ -308,43 +319,111 @@ double JointWTP::implementFixedTreatmentCapacity(int utility_id) {
  * @return
  */
 double JointWTP::getAdjustableTreatmentCapacity(int utility_id, int year) {
-    return total_added_capacity * utility_allocation_fractions->at(year).at(utility_id);
+//    if (utility_allocation_fractions.at(utility_id)[year] != allocated_treatment_fractions[utility_id]) {
+//        cout << "Error in JointWTP: allocated treatment fractions in year " << year
+//             << " are not equal to projected allocation fractions" << endl;
+//        cout << "Likely the allocations were not re-allocated at the beginning of the year?"
+//             << " This should be done in the updateTreatmentAllocations function" << endl;
+//    }
+    return total_treatment_capacity * utility_allocation_fractions.at(utility_id)[year];
 }
 
-void JointWTP::updateTreatmentAllocations(int week) {
+
+/**
+ * Returns the capacity allocation for a given utility
+ * @param utility_id
+ * @return
+ */
+double JointWTP::getAllocatedTreatmentCapacity(int utility_id) const {
+
+    if (utility_id == WATER_QUALITY_ALLOCATION)
+        __throw_invalid_argument("Water quality pool does not have allocated treatment "
+                                         "capacity.");
+    return allocated_treatment_capacities[utility_id];
+}
+
+
+/**
+ * Returns the capacity allocation for a given utility
+ * @param utility_id
+ * @return
+ */
+double JointWTP::getAllocatedTreatmentFraction(int utility_id) const {
+    if (utility_id == WATER_QUALITY_ALLOCATION)
+        __throw_invalid_argument("Water quality pool does not have allocated treatment "
+                                         "fraction.");
+    return allocated_treatment_fractions[utility_id];
+}
+
+void JointWTP::updateTreatmentAllocations(int week, vector<vector<vector<double>>> weekly_demands) {
     /// MEANT TO ONLY RUN DURING ANNUAL LONG TERM ROF CALCULATION
+
+    double total_past_period_source_demand = 0.0;
+    int past_weeks_to_use = observed_demand_weeks_to_use;
 
     if (isOnline()) {
         cout << "Updating allocations for " << name << " in week "<< week << endl;
+        cout << "This is week " << WEEK_OF_YEAR[week] << " in year "<< Utils::yearOfTheRealization(week) << endl;
         cout << "Contract type: " << contract_type << endl;
+        cout << "As a reminder, this Joint WTP was built in year " << build_year << endl;
 
         if (contract_type == 0) {
             /// fixed allocations, so treatment capacity is added to existing capacity per utility
             /// ALREADY DONE IN CONSTRUCTION HANDLER BECAUSE IT IS ONLY NECESSARY ONCE
             cout << "Treatment capacity and allocations are set in JointWTP construction handler." << endl;
+            cout << "For year " << Utils::yearOfTheRealization(week) << ", those allocations are: " << endl;
+            for (int u : *utilities_with_allocations) {
+                cout << "Utility " << u << ", Allocation fraction: " << allocated_treatment_fractions[u] << endl;
+                previous_period_allocated_capacities.at(u) = total_treatment_capacity *
+                        allocated_treatment_fractions[u];
+            }
+            cout << "External allocation fraction: " << current_external_allocation_fraction << endl;
 
         } else if (contract_type == 1) {
             /// uniform rate BASED ON USE PROJECTIONS
             /// first year of new plant, allocation assignment is done in construction handler
             /// every year following is done here:
-            /// must adjust utility treatment capacities based on difference between those for the current
-            /// year and the year before, then recalculate allocation fractions
+            /// must adjust utility treatment capacities based on allocations for the current
+            /// year, then recalculate allocation fractions
 
-            cout << "Current year estimate: " << week/WEEKS_IN_YEAR << endl;
+            cout << "Current year: " << Utils::yearOfTheRealization(week) << endl;
+            for (int u : *utilities_with_allocations) {
+                cout << "Utility " << u << ", Allocation fraction (before adjustment): "
+                     << allocated_treatment_fractions[u] << endl;
+                cout << "Utility " << u << ", Allocation capacity (before adjustment): "
+                     << allocated_treatment_capacities[u] << endl;
+            }
+            cout << "External Allocation (year before): "
+                 << utility_allocation_fractions.at(EXTERNAL_SOURCE_ID)[Utils::yearOfTheRealization(week)-1] << endl;
 
-            for (unsigned long i = 0; i < annual_demands->at(0).size(); ++i) {
+            for (unsigned long i = 0; i < utilities_with_allocations->size(); ++i) {
                 int u = utilities_with_allocations->at(i);
 
-                allocated_treatment_capacities[u] += total_added_capacity *
-                        (utility_allocation_fractions->at(week/WEEKS_IN_YEAR-1).at(u) -
-                                utility_allocation_fractions->at(week/WEEKS_IN_YEAR).at(u));
-                    // difference in this and previous year's allocation
-                    // begins year after source goes online
+                allocated_treatment_capacities[u] = total_treatment_capacity *
+                                utility_allocation_fractions.at(u)[Utils::yearOfTheRealization(week)];
+                    // set to current year allocation
+                    // NOTE: THIS VECTOR OF ALLOCATED CAPACITIES IS JUST FOR THE CURRENT WTP PROJECT
+                    //       NOT THE UNDERLYING ALLOCATED RESERVOIR
 
                 (*this->utilities_with_allocations)[i] = u;
 
                 allocated_treatment_fractions[u] =  allocated_treatment_capacities[u]/total_treatment_capacity;
+
+                previous_period_allocated_capacities.at(u) = total_treatment_capacity *
+                        utility_allocation_fractions.at(u)[Utils::yearOfTheRealization(week)];
             }
+
+            current_external_allocation_fraction =
+                    utility_allocation_fractions.at(EXTERNAL_SOURCE_ID)[Utils::yearOfTheRealization(week)];
+
+            for (int u : *utilities_with_allocations) {
+                cout << "Utility " << u << ", Allocation fraction (after adjustment): "
+                     << allocated_treatment_fractions[u] << endl;
+                cout << "Utility " << u << ", Allocation capacity (before adjustment): "
+                     << allocated_treatment_capacities[u] << endl;
+            }
+            cout << "External Allocation (after): "
+                 << utility_allocation_fractions.at(EXTERNAL_SOURCE_ID)[Utils::yearOfTheRealization(week)] << endl;
 
         } else if (contract_type == 2) {
             /// SQUARE ONE REALLOCATION BASED ON PREVIOUS YEAR ACTUAL USE, NOT PROJECTION
@@ -355,63 +434,153 @@ void JointWTP::updateTreatmentAllocations(int week) {
             /// source when this joint wtp is built, then its use of the source will always be enormous. need to judge
             /// use based on use above previously existing treatment capacity
 
-            cout << "Current year estimate: " << week/WEEKS_IN_YEAR << endl;
+            cout << "Current year: " << Utils::yearOfTheRealization(week) << endl;
 
-            double total_past_source_demand = accumulate(annual_source_demand.begin(),annual_source_demand.end(),0.0);
-            for (unsigned long i = 0; i < annual_demands->at(0).size(); ++i) {
-                int u = utilities_with_allocations->at(i);
+            for (int u : *utilities_with_allocations) {
+                cout << "Utility " << u << ", Allocation fraction (before adjustment): "
+                     << allocated_treatment_fractions[u] << endl;
+            }
+            cout << "External allocation fraction (before): " << current_external_allocation_fraction << endl;
 
-                double average_past_annual_demand = annual_source_demand[u]/WEEKS_IN_YEAR/7;
-                    // right now, only set up to collect one year of past data
-                    // results in avg MGD demand on this wtp
+            if (week-observed_demand_weeks_to_use < 0)
+                past_weeks_to_use = week;
 
-                /// Does this utility have an allocation on this source other than the joint wtp in question?
-                double treatment_capacity_difference = (allocated_treatment_capacities[u] -
-                        previous_year_allocated_capacities->at(u))/7;
-                    // if this value is greater than 0, utility u also draws from the attached source from another wtp
-                    // converted to MGD
+            /// Sum past demand on the source (this means the underlying reservoir) and apply peaking factor
+            /// Here, factor in any demand from another WTP on the source by subtracting from summed demand
+            /// available capacity that isn't from this WTP
+            for (int& u : *utilities_with_allocations) {
+                for (auto w = (int)(weekly_demands[parent_reservoir_ID][u].size() - past_weeks_to_use);
+                     w < weekly_demands[parent_reservoir_ID][u].size(); w++) {
 
-                /// Account for other treatment capacities on the source, convert to MGW treatment capacity
-                if (treatment_capacity_difference > 0) {
-                    allocated_treatment_capacities[u] += (average_past_annual_demand - treatment_capacity_difference) *
-                                                         utility_peaking_factors->at(u) * 7 -
-                                                         previous_year_allocated_capacities->at(u);
-                        // year to follow is allocated capacity based on past year's use multiplied by a peaking factor
+                    /// Calculate treatment capacity on parent source that this WTP can account for
+                    /// for a given utility u
+                    double parent_treatment_capacity_externally_covered;
+                    if (parent_reservoir_treatment_capacities[u] == 0) {
+                        parent_treatment_capacity_externally_covered = 0;
+                    } else {
+                        parent_treatment_capacity_externally_covered =
+                                parent_reservoir_treatment_capacities[u] - allocated_treatment_capacities[u];
+                    }
 
-                    previous_year_allocated_capacities->at(u) = (average_past_annual_demand - treatment_capacity_difference) *
-                                                                utility_peaking_factors->at(u) * 7;
-                } else {
-                    allocated_treatment_capacities[u] += (average_past_annual_demand *
-                                                          utility_peaking_factors->at(u) * 7) -
-                                                         previous_year_allocated_capacities->at(u);
-                    previous_year_allocated_capacities->at(u) = average_past_annual_demand *
-                                                                utility_peaking_factors->at(u) * 7;
+                    if (parent_treatment_capacity_externally_covered < 0) {
+                        parent_treatment_capacity_externally_covered = 0;
+//                        cout << "Error in JointWTP updateTreatmentAllocations: "
+//                             << "parent reservoir allocated treatment capacity "
+//                                     "cannot be lower than allocated JointWTP capacity" << endl;
+                    }
+
+                    double wtp_demand_obligation = weekly_demands[parent_reservoir_ID][u][w]
+                                                   - parent_treatment_capacity_externally_covered;
+
+                    if (wtp_demand_obligation > allocated_treatment_capacities[u]) {
+                        wtp_demand_obligation = allocated_treatment_capacities[u];
+                    } else if (wtp_demand_obligation < 0) {
+                        wtp_demand_obligation = 0;
+                    }
+
+                    /// Total past period demand on source WTP, in average MGW
+                    total_past_period_source_demand += wtp_demand_obligation
+                                                       * utility_peaking_factors.at(u)
+                                                       / past_weeks_to_use;
                 }
+            }
+
+            /// Include demand projections from external utilities
+            /// Assumed to be annual average MGD, so is converted to average MGW for most recent year
+            total_past_period_source_demand +=
+                    (external_demands[Utils::yearOfTheRealization(week)] * DAYS_IN_WEEK
+                     * utility_peaking_factors.at(EXTERNAL_SOURCE_ID));
+
+            double average_past_demand = 0.0;
+            for (int i = 0; i < utilities_with_allocations->size(); i++) {
+                average_past_demand = 0.0;
+                unsigned long u = utilities_with_allocations->at(i);
+
+                for (auto w = (int)(weekly_demands[parent_reservoir_ID][u].size() - past_weeks_to_use);
+                     w < weekly_demands[parent_reservoir_ID][u].size(); w++) {
+
+                    /// Calculate ratio of treatment capacity on parent source that this WTP accounts for
+                    /// for a given utility u
+                    double parent_treatment_capacity_obligation;
+                    if (parent_reservoir_treatment_capacities[u] == 0) {
+                        parent_treatment_capacity_obligation = 1;
+                    } else {
+                        parent_treatment_capacity_obligation = allocated_treatment_capacities[u]
+                                                               / parent_reservoir_treatment_capacities[u];
+                    }
+
+                    double wtp_demand_obligation = parent_treatment_capacity_obligation
+                                                   * weekly_demands[parent_reservoir_ID][u][w];
+                    if (wtp_demand_obligation > allocated_treatment_capacities[u]) {
+                        wtp_demand_obligation = allocated_treatment_capacities[u];
+                    }
+
+                    /// Collect single utility's avg MGW of demand on this WTP
+                    average_past_demand += wtp_demand_obligation
+                                           * utility_peaking_factors.at(u)
+                                           / past_weeks_to_use;
+                }
+
+                /// Determine fraction of past demand attributed to utility u
+                double past_demand_fraction = 0.0;
+                past_demand_fraction = average_past_demand / total_past_period_source_demand;
+
+                /// Record current allocation fraction for each utility in the project
+                utility_allocation_fractions.at(u)[Utils::yearOfTheRealization(week)] = past_demand_fraction;
+
+                allocated_treatment_capacities[u] = past_demand_fraction * total_treatment_capacity;
+
+                previous_period_allocated_capacities.at(u) = past_demand_fraction * total_treatment_capacity;
+
+                if (previous_period_allocated_capacities.at(u) < 0)
+                    cout << "Error in week " << week << ", allocated capacities for Joint WTP are negative." << endl;
 
                 if (allocated_treatment_capacities[u] < 0)
                     allocated_treatment_capacities[u] = 0.0;
 
+                if (allocated_treatment_fractions[u] < 0)
+                    cout << "Error in JointWTP: allocated_treatment_fraction for utility " << u << " is < 0" << endl;
+
                 (*this->utilities_with_allocations)[i] = u;
 
                 allocated_treatment_fractions[u] = allocated_treatment_capacities[u] / total_treatment_capacity;
+
             }
 
-            double temp = accumulate(previous_year_allocated_capacities->begin(),
-                                     previous_year_allocated_capacities->end(),0.0);
-            if (temp/total_added_capacity > 1) {
+            current_external_allocation_fraction = (external_demands[Utils::yearOfTheRealization(week)]
+                                                    * DAYS_IN_WEEK
+                                                    * utility_peaking_factors.at(EXTERNAL_SOURCE_ID))
+                                                   / total_past_period_source_demand;
+            previous_period_allocated_capacities[EXTERNAL_SOURCE_ID] =
+                    current_external_allocation_fraction * total_treatment_capacity;
+
+            double temp = accumulate(previous_period_allocated_capacities.begin(),
+                                     previous_period_allocated_capacities.end(),0.0);
+            if (temp/total_treatment_capacity > 1) {
                 cout << "Capacity was over-allocated based on past year's demands. Normalizing now..." << endl;
                 cout << "Week: " << week << ", Allocated Capacity this time: " << temp << endl;
-                cout << "Total Available Capacity: " << total_added_capacity << endl;
+                cout << "Total Available Capacity: " << total_treatment_capacity << endl;
 
-                for (int i = 0; i < previous_year_allocated_capacities->size(); i++) {
-                    allocated_treatment_capacities[i] -= previous_year_allocated_capacities->at(i);
+                for (unsigned long i = 0; i < utilities_with_allocations->size(); i++) {
+                    unsigned long u = utilities_with_allocations->at(i);
+                    allocated_treatment_capacities[i] -= previous_period_allocated_capacities.at(i);
 
-                    previous_year_allocated_capacities->at(i) =
-                            previous_year_allocated_capacities->at(i) / temp * total_added_capacity;
+                    previous_period_allocated_capacities.at(i) =
+                            previous_period_allocated_capacities.at(i) / temp * total_treatment_capacity;
 
-                    allocated_treatment_capacities[i] += previous_year_allocated_capacities->at(i);
+                    allocated_treatment_capacities[i] += previous_period_allocated_capacities.at(i);
                     allocated_treatment_fractions[i] = allocated_treatment_capacities[i] / total_treatment_capacity;
                 }
+                current_external_allocation_fraction = 1 - accumulate(allocated_treatment_fractions.begin(),
+                                                                      allocated_treatment_fractions.end(),
+                                                                      0.0);
+                previous_period_allocated_capacities[EXTERNAL_SOURCE_ID] =
+                        current_external_allocation_fraction * total_treatment_capacity;
+            }
+
+            for (int u : *utilities_with_allocations) {
+                cout << "Utility " << u << ", Allocation fraction (after adjustment): "
+                     << allocated_treatment_fractions[u] << endl;
             }
 
         } else if (contract_type == 3) {
@@ -420,16 +589,12 @@ void JointWTP::updateTreatmentAllocations(int week) {
 
         }
     }
-
-    /// Reset annual counter
-    for (unsigned long i = 0; i < annual_source_demand.size(); ++i)
-        annual_source_demand[i] = 0.0;
 }
 
 double JointWTP::getAddedTotalTreatmentCapacity() {
     double total_capacity_to_add = 0.0;
     if (!initial_capacity_added)
-        total_capacity_to_add = total_added_capacity;
+        total_capacity_to_add = total_treatment_capacity;
 
     initial_capacity_added = true;
 
@@ -437,7 +602,206 @@ double JointWTP::getAddedTotalTreatmentCapacity() {
 }
 
 void JointWTP::recordAllocationAdjustment(double added_treatment_capacity, int utility_id) {
-    previous_year_allocated_capacities->at(utility_id) = added_treatment_capacity;
+    previous_period_allocated_capacities.at(utility_id) = added_treatment_capacity;
+}
+
+void JointWTP::setBuildYear(int year) {
+    build_year = year;
+}
+
+
+double JointWTP::calculateJointWTPDebtServiceFraction(int utility_id, int week) {
+
+//    if (WEEK_OF_YEAR[week] == 0) {
+//        cout << "allocated_treatment_fraction for utility " << utility_id << ": "
+//             << allocated_treatment_fractions[utility_id] << endl;
+//        cout << "utility_allocation_fraction for utility " << utility_id << ": "
+//             << utility_allocation_fractions.at(utility_id)[Utils::yearOfTheRealization(week)] << endl;
+//    }
+
+    if (week == 365 || week == 417) {
+        cout << week << endl;
+    }
+
+    double total_allocated = 0.0;
+    double utility_principal_responsibility_fraction;
+    if (contract_type == 0) {
+        /// fixed payments, based on initial allocations
+
+        total_allocated += accumulate(allocated_treatment_fractions.begin(),
+                                      allocated_treatment_fractions.end(), 0.0)
+                           + external_allocation;
+
+        utility_principal_responsibility_fraction = allocated_treatment_fractions[utility_id]/total_allocated;
+
+    } else if (contract_type == 1) {
+        /// adjustable payments, based on period use
+        /// uniform rate applies here in that everyone is charged equal rate per unit use
+        /// and allocation fractions were determined in the constructors based on
+        /// relative expected use
+
+        if (utility_allocation_fractions.at(utility_id)[Utils::yearOfTheRealization(week)]
+            != allocated_treatment_fractions[utility_id] && isOnline() && WEEK_OF_YEAR[week] == 0
+            && Utils::yearOfTheRealization(week) > build_year) {
+            cout << "Error in JointWTP: allocated treatment fractions in year " << Utils::yearOfTheRealization(week)
+                 << " for determining financial payment are not correct" << endl;
+            cout << "Reminder: allocations are not updated by JointWTP class until one year after "
+                 << "plant comes online" << endl;
+        }
+
+        /// If payments start before plant comes online, it is necessary to update allocations
+        /// for debt service calculations, though it has no impact on water treatment or use
+        for (int u = 0; u < utilities_with_allocations->size(); u++)
+            allocated_treatment_fractions[u] =
+                    utility_allocation_fractions.at(u)[Utils::yearOfTheRealization(week)];
+
+        for (int u = 0; u < utilities_with_allocations->size(); u++)
+            total_allocated += allocated_treatment_fractions[u];
+        total_allocated +=
+                utility_allocation_fractions.at(EXTERNAL_SOURCE_ID)[Utils::yearOfTheRealization(week)];
+
+        /// If allocations fractions sum to <= 0, add factor to prevent dividing by zero below
+        if (total_allocated <= 0) {
+            cout << "Total allocated payments to active utilities is less than or equal to 0" << endl;
+            total_allocated = 0.000001;
+        }
+
+        utility_principal_responsibility_fraction = allocated_treatment_fractions[utility_id]/total_allocated;
+
+    } else if (contract_type == 2) {
+        /// adjustable payments, based on period allocations that were based on historic use
+
+        for (int& u : *utilities_with_allocations)
+            total_allocated += allocated_treatment_capacities[u];
+        total_allocated += external_demands[Utils::yearOfTheRealization(week)] * DAYS_IN_WEEK;
+
+        /// If allocations fractions sum to <= 0, add factor to prevent dividing by zero below
+        if (total_allocated <= 0) {
+            total_allocated = 0.000001;
+        }
+
+        utility_principal_responsibility_fraction = allocated_treatment_capacities[utility_id]/total_allocated;
+
+    } else {
+        utility_principal_responsibility_fraction = 0;
+    }
+
+    if (utility_principal_responsibility_fraction < 0 && isOnline())
+        cout << "During JointWTP debt service calculation, utility treatment fraction is < 0" << endl;
+    else if (utility_principal_responsibility_fraction > 1 && isOnline())
+        cout << "During JointWTP debt service calculation, utility treatment fraction is > 1" << endl;
+
+    return utility_principal_responsibility_fraction;
+}
+
+int JointWTP::getParentSourceID() {
+    return parent_reservoir_ID;
+}
+
+double JointWTP::getAllocationAdjustment(const int utility_id) {
+    /// For contracts that do not do retroactive payments, the vector holding adjustments
+    /// is not initialized in the constructor, meaning it is empty and so this information
+    /// can be used to ensure no allocation adjustments happen when not expected.
+    if (adjusted_allocated_treatment_capacities.empty())
+        return 0;
+    else
+        return adjusted_allocated_treatment_capacities[utility_id]/total_treatment_capacity;
+}
+
+void JointWTP::setAllocationAdjustment(const int utility_id, const double allocation_adjustment) {
+    if (!adjusted_allocated_treatment_capacities.empty())
+        adjusted_allocated_treatment_capacities[utility_id] = allocation_adjustment;
+}
+
+
+void JointWTP::setProjectedAllocationFractions(vector<vector<double>> &utility_allocation_fractions,
+                                               vector<vector<double>> &annual_demands,
+                                               vector<double> &external_demands,
+                                               vector<double> &utility_peaking_factors) {
+    double expected_total_annual_demand = 0.0;
+    for (unsigned long y = 0; y < PROJECTED_YEARS; y++) {
+        expected_total_annual_demand = 0.0;
+        for (int u : *utilities_with_allocations) {
+            expected_total_annual_demand += annual_demands.at(u)[y]*utility_peaking_factors.at(u)*DAYS_IN_WEEK;
+        }
+        expected_total_annual_demand += external_demands.at(y) * DAYS_IN_WEEK *
+                                        utility_peaking_factors.at(EXTERNAL_SOURCE_ID);
+
+        /// If allocations sum to <= 0, add factor to prevent dividing by zero below
+        /// because of new if statement below, it shouldn't matter anyway, but this is a cover just in case
+        if (expected_total_annual_demand <= 0) {
+            cout << "Projections in year " << y << " are less than or equal to zero." << endl;
+            expected_total_annual_demand = 0.000001;
+        }
+
+        /// If annual total demands exceed treatment capacity of new project,
+        /// normalize them relative to the expected demand. If not, normalize relative
+        /// to the plant treatment capacity
+        if (expected_total_annual_demand > total_treatment_capacity) {
+            for (unsigned long u : *utilities_with_allocations) {
+                utility_allocation_fractions.at(u)[y] = (annual_demands.at(u)[y]*utility_peaking_factors.at(u)*DAYS_IN_WEEK)
+                                                        / expected_total_annual_demand;
+            }
+            utility_allocation_fractions.at(EXTERNAL_SOURCE_ID)[y] =
+                    (external_demands.at(y)*utility_peaking_factors.at(EXTERNAL_SOURCE_ID)*DAYS_IN_WEEK)
+                    / expected_total_annual_demand;
+        } else {
+            for (unsigned long u : *utilities_with_allocations) {
+                utility_allocation_fractions.at(u)[y] = (annual_demands.at(u)[y]*utility_peaking_factors.at(u)*DAYS_IN_WEEK)
+                                                        / total_treatment_capacity;
+            }
+            utility_allocation_fractions.at(EXTERNAL_SOURCE_ID)[y] =
+                    (external_demands.at(y)*utility_peaking_factors.at(EXTERNAL_SOURCE_ID)*DAYS_IN_WEEK)
+                    / total_treatment_capacity;
+        }
+    }
+
+    /// Check values
+    double temp_year_total_allocs;
+    for (unsigned long y = 0; y < PROJECTED_YEARS; y++) {
+        temp_year_total_allocs = 0.0;
+        for (unsigned long u = 0; u < N_UTILITIES_INCLUDING_EXTERNAL; u++) {
+            temp_year_total_allocs += utility_allocation_fractions.at(u)[y];
+        }
+        if (temp_year_total_allocs > 1)
+            cout << "Error in JointWTP: utility allocation fractions in future year " << y << " sum to > 1." << endl;
+    }
+
+}
+
+
+void JointWTP::setAllocatedTreatmentCapacity(const int year, const int utility_id) {
+    // TODO: SET UP FOR OTHER CONTRACT TYPES IF NECESSARY
+    if (contract_type == 1 || contract_type == 2) {
+        allocated_treatment_fractions[utility_id] = utility_allocation_fractions[utility_id][year];
+        allocated_treatment_capacities[utility_id] = allocated_treatment_fractions[utility_id]
+                                                     * total_treatment_capacity;
+    }
+}
+
+void JointWTP::recordParentReservoirTreatmentCapacity(const int utility_id, const double capacity_value) {
+    if (!parent_reservoir_treatment_capacities.empty())
+        parent_reservoir_treatment_capacities[utility_id] = capacity_value;
+}
+
+double JointWTP::getExternalDemand(const int year) {
+    return external_demands[year] * DAYS_IN_WEEK;
+}
+
+double JointWTP::getExternalTreatmentAllocation() {
+    return current_external_allocation_fraction;
+}
+
+void JointWTP::setExternalAllocatedTreatmentCapacity(const int year) {
+    if (contract_type == 0) {
+        previous_period_allocated_capacities[EXTERNAL_SOURCE_ID] = external_allocation * total_treatment_capacity;
+        current_external_allocation_fraction = external_allocation;
+    } else {
+        previous_period_allocated_capacities[EXTERNAL_SOURCE_ID] =
+                utility_allocation_fractions[EXTERNAL_SOURCE_ID][year] * total_treatment_capacity;
+        current_external_allocation_fraction =
+                utility_allocation_fractions[EXTERNAL_SOURCE_ID][year];
+    }
 }
 
 JointWTP::~JointWTP() = default;

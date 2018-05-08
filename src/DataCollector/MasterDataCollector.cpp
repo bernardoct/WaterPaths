@@ -36,6 +36,7 @@ static const int NC_ERR = 2;
 #include "EmptyDataCollector.h"
 #include "../DroughtMitigationInstruments/RawWaterReleases.h"
 #include "RawWaterReleaseDataCollector.h"
+#include "JointWTPDataCollector.h"
 
 using namespace Constants;
 
@@ -636,6 +637,10 @@ void MasterDataCollector::addRealization(
             drought_mitigation_policy_collectors[dmp][r] =
                     new RawWaterReleaseDataCollector
                             (dynamic_cast<RawWaterReleases *> (drought_mitigation_policies_realization[dmp]), r);
+        else if (drought_mitigation_policies_realization[dmp]->type ==
+                 DIRECT_TRANSFERS)
+            drought_mitigation_policy_collectors[dmp][r] =
+                    new EmptyDataCollector();
         else
             __throw_invalid_argument("Drought mitigation policy not recognized. "
                                              "Did you forget to add it to the "
@@ -660,10 +665,19 @@ void MasterDataCollector::addRealization(
             water_source_collectors[ws][r] =
                     new AllocatedReservoirDataCollector(dynamic_cast<AllocatedReservoir *>
                                                                             (water_sources_realization[ws]), r);
+        else if (water_sources_realization[ws]->source_type == NEW_JOINT_WTP)
+            water_source_collectors[ws][r] =
+                    new JointWTPDataCollector(dynamic_cast<JointWTP *>(water_sources_realization[ws]),
+                                              dynamic_cast<AllocatedReservoir *>(
+                                                      water_sources_realization[water_sources_realization[ws]->
+                                                              getParentSourceID()]),
+                                              r);
         else if (water_sources_realization[ws]->source_type ==
                  RESERVOIR_EXPANSION ||
                  water_sources_realization[ws]->source_type ==
                  NEW_WATER_TREATMENT_PLANT ||
+                 water_sources_realization[ws]->source_type ==
+                 NEW_JOINT_WTP ||
                  water_sources_realization[ws]->source_type ==
                  SOURCE_RELOCATION ||
                  water_sources_realization[ws]->source_type ==

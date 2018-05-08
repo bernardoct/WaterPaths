@@ -21,6 +21,7 @@ public:
     const int type;
     const vector<int> pay_on_weeks;
     const int id;
+    int water_source_id = NON_INITIALIZED;
 
     Bond(const int id, const double cost_of_capital, const int n_payments, vector<int> pay_on_weeks,
                   const int type);
@@ -40,6 +41,9 @@ public:
 
     virtual void setRealizationWaterSource(unsigned long r, vector<double> &rdm_factors);
 
+    virtual void setAllocatedDebtService(int week, double debt_obligation_fraction);
+
+    virtual double setRetroactiveDebtServicePayment(int week, double allocation_adjustment_capacity_fraction);
 };
 
 

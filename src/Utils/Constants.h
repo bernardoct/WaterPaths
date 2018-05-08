@@ -27,6 +27,7 @@ namespace Constants {
     const int ILLIMITED_TREATMENT_CAPACITY = 99999;
     const double STORAGE_CAPACITY_RATIO_FAIL = 0.2;
     const int NOT_ALLOCATED = 1;
+    const int DAYS_IN_WEEK = 7;
 
     const bool APPLY_DEMAND_BUFFER = true;
 
@@ -65,6 +66,7 @@ namespace Constants {
     const int INSURANCE_PSEUDO_ROF = 2;
     const int INSURANCE_STORAGE_ROF = 3;
     const int RAW_WATER_TRANSFERS = 4;
+    const int DIRECT_TRANSFERS = 5;
 
     const int FIXED_FLOW_CONTROLS = 0;
     const int INFLOW_CONTROLS = 1;
@@ -76,6 +78,7 @@ namespace Constants {
     const int LEVEL_DEBT_SERVICE = 0;
     const int BALLOON_PAYMENT = 1;
     const int FLOATING_INTEREST = 2;
+    const int ALLOCATED_LEVEL_DEBT_SERVICE = 3;
 
     const int N_RDM_FACTORS_UTILITIES = 4;
     const int N_RDM_FACTORS_WATER_SOURCES = 2;

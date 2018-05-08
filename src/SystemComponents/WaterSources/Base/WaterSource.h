@@ -35,6 +35,9 @@ protected:
     vector<double> allocated_treatment_fractions;
     vector<double> allocated_fractions;
     vector<double> supply_allocated_fractions;
+    vector<double> adjusted_allocated_treatment_capacities;
+
+    vector<double> parent_reservoir_treatment_capacities;
 
     vector<int> *utilities_with_allocations = nullptr;
     int wq_pool_id = NON_INITIALIZED;
@@ -46,6 +49,7 @@ protected:
     double evaporated_volume = 0;
     double total_treatment_capacity = 0;
     int highest_alloc_id = NON_INITIALIZED;
+    double base_wq_pool_fraction = 0;
 
     virtual void applyContinuity(int week, double upstream_source_inflow,
                                      double wastewater_inflow,
@@ -58,7 +62,6 @@ public:
     const char *name;
     int source_type;
     const double construction_time;
-    vector<double> annual_source_demand;
 
     WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
                     const double capacity, vector<int> connected_sources, double treatment_capacity,
@@ -85,6 +88,13 @@ public:
                     const vector<double> construction_time_range, double permitting_period,
                 Bond &bond);
 
+    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
+                const double capacity, double treatment_capacity, vector<int> built_in_sequence,
+                const int source_type, vector<double> *allocated_treatment_fractions,
+                vector<double> *allocated_fractions, vector<int> *utilities_with_allocations,
+                const vector<double> construction_time_range, double permitting_period,
+                vector<Bond *> bonds);
+
     WaterSource(const WaterSource &water_source);
 
     virtual ~WaterSource();
@@ -103,11 +113,9 @@ public:
 
     virtual void addTreatmentCapacity(const double added_treatment_capacity, int utility_id);
 
-    virtual void addAllocatedTreatmentCapacity(const double added_allocated_treatment_capacity, int utility_id);
+    virtual void addAllocatedTreatmentCapacity(double added_allocated_treatment_capacity, int utility_id);
 
-    virtual double calculateNetPresentConstructionCost(int week, int utility_id, double discount_rate,
-                                                           vector<double>& debt_service_payments, double bond_term,
-                                                           double bond_interest_rate) const;
+    virtual void setAllocatedSupplyCapacity(double capacity_allocation_fraction, int utility_id);
 
     virtual void removeWater(int allocation_id, double volume);
 
@@ -193,7 +201,27 @@ public:
 
     virtual void updateTreatmentAndCapacityAllocations(int week);
 
-    virtual void updateTreatmentAllocations(int week);
+    virtual void updateTreatmentAllocations(int week, vector<vector<vector<double>>> weekly_demands);
+
+    virtual double calculateJointWTPDebtServiceFraction(int utility_id, int week);
+
+    virtual int getParentSourceID();
+
+    virtual void addTotalTreatmentCapacity(const double added_plant_treatment_capacity);
+
+    virtual double getAllocationAdjustment(const int utility_id);
+
+    virtual void setAllocationAdjustment(const int utility_id, const double allocation_adjustment);
+
+    virtual double getAllocatedTreatmentFraction(int utility_id) const;
+
+    virtual void normalizeAllocatedSupplyCapacity();
+
+    virtual void setAllocatedTreatmentCapacity(const int year, const int utility_id);
+
+    virtual void setExternalAllocatedTreatmentCapacity(const int year);
+
+    virtual void recordParentReservoirTreatmentCapacity(const int utility_id, const double capacity_value);
 };
 
 

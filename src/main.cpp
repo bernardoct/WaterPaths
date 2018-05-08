@@ -76,8 +76,8 @@ int main(int argc, char *argv[]) {
     int scenario = 0;
 
     int c;
-    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:S:A:R:U:P:W:I:C:O:B:")) != -1) {
-    //while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:S:A:R:U:P:W:I:C:O:X:")) != -1) {
+    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:S:A:R:U:P:W:I:C:O:B:X:")) != -1) {
+    //while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:S:A:R:U:P:W:I:C:O:B:X:")) != -1) {
         switch (c) {
             case '?':
                 fprintf(stdout,
@@ -117,8 +117,7 @@ int main(int argc, char *argv[]) {
                         "\t-C: Import/export rof tables (-1: export, 0:"
                         " do nothing (standard), 1: import)\n"
                         "\t-B: Export objectives for all utilities on a single line",
-                        //" do nothing (standard), 1: import)\n"
-                        //"\t-X: Scenario (0: Triangle Model, 1-4: Durham Model)",
+                        "\t-X: Scenario (0: Triangle Model, 1-4: Durham Model)",
                         argv[0], n_realizations, n_weeks, system_io.c_str());
                 return -1;
             case 's':
@@ -201,6 +200,9 @@ int main(int argc, char *argv[]) {
                 break;
             case 'O':
                 rof_tables_directory = optarg;
+                break;
+            case 'B':
+                print_objs_row = atoi(optarg);
                 break;
             case 'X':
                 scenario = atoi(optarg);

@@ -43,6 +43,8 @@ public:
     static void print_exception(const exception &e, int level = 0);
 
     static vector<Bond *> copyBonds(vector<Bond *> bonds_original);
+
+    static int yearOfTheRealization(int week);
 };
 
 

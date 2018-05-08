@@ -97,6 +97,11 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
     demands = std::vector<vector<double>>(
             continuity_water_sources.size(),
             vector<double>(continuity_utilities.size(), 0.));
+
+    /// Initialize a 3D array to hold weekly demands for every water source
+    realization_demands = std::vector<vector<vector<double>>>(continuity_water_sources.size(),
+                                                              std::vector<vector<double>>(continuity_utilities.size(),
+                                                                                          vector<double>()));
     
     /// populate array delta_realization_weeks so that the rounding and casting don't
     /// have to be done every time continuityStep is called, avoiding a bottleneck.
@@ -146,6 +151,9 @@ void ContinuityModel::continuityStep(
     for (Utility *u : continuity_utilities) {
         u->calculateWastewater_releases(week, wastewater_discharges);
         u->splitDemands(week, demands, apply_demand_buffer);
+
+        /// Keep a record of each week's demands
+        u->recordWeeklyDemand(week, demands, apply_demand_buffer, realization_demands);
     }
 
     /**

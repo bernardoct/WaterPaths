@@ -22,6 +22,9 @@
 #include "../SystemComponents/Bonds/LevelDebtServiceBond.h"
 #include "../SystemComponents/Bonds/BalloonPaymentBond.h"
 #include "../SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.h"
+#include "../SystemComponents/WaterSources/JointWTP.h"
+#include "../SystemComponents/Bonds/AllocatedLevelDebtServiceBond.h"
+#include "../DroughtMitigationInstruments/DirectTreatedWaterTransfer.h"
 #include <fstream>
 #include <algorithm>
 #include <climits>
@@ -191,6 +194,10 @@ vector<WaterSource *> Utils::copyWaterSourceVector(
             water_sources_new.push_back(
                     new SequentialJointTreatmentExpansion(
                             *dynamic_cast<SequentialJointTreatmentExpansion *>(ws)));
+        else if (ws->source_type == NEW_JOINT_WTP)
+            water_sources_new.push_back(
+                    new JointWTP(
+                            *dynamic_cast<JointWTP *>(ws)));
         else if (ws->source_type == SOURCE_RELOCATION)
             water_sources_new.push_back(
                     new Relocation(
@@ -241,6 +248,9 @@ Utils::copyDroughtMitigationPolicyVector(
         else if (dmp->type == RAW_WATER_TRANSFERS)
             drought_mitigation_policy_new.push_back(
                     new RawWaterReleases(*dynamic_cast<RawWaterReleases *>(dmp)));
+        else if (dmp->type == DIRECT_TRANSFERS)
+            drought_mitigation_policy_new.push_back(
+                    new DirectTreatedWaterTransfer(*dynamic_cast<DirectTreatedWaterTransfer *>(dmp)));
     }
 
     return drought_mitigation_policy_new;
@@ -257,6 +267,9 @@ vector<Bond *> Utils::copyBonds(vector<Bond *> bonds_original) {
         else if (bond->type == FLOATING_INTEREST)
             bonds_new.push_back(new FloatingInterestBalloonPaymentBond(
                     *dynamic_cast<FloatingInterestBalloonPaymentBond *>(bond)));
+        else if (bond->type == ALLOCATED_LEVEL_DEBT_SERVICE)
+            bonds_new.push_back(new AllocatedLevelDebtServiceBond(
+                    *dynamic_cast<AllocatedLevelDebtServiceBond *>(bond)));
         else
             __throw_invalid_argument("Your bond type does not have a corresponding "
                                      "copy function in Utils::copyBonds yet.\n");
@@ -271,6 +284,14 @@ bool Utils::isFirstWeekOfTheYear(int week) {
 
 int Utils::weekOfTheYear(int week) {
     return WEEK_OF_YEAR[week];
+}
+
+int Utils::yearOfTheRealization(int week) {
+    int counter = -1; // start at -1 so that initial year is year 0
+    for (int i = 0; i < week+1; i++)
+        if (WEEK_OF_YEAR[i] == 0)
+            counter += 1;
+    return counter;
 }
 
 void Utils::removeIntFromVector(vector<int>& vec, int el) {

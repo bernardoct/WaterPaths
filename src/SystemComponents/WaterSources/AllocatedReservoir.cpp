@@ -106,13 +106,14 @@ AllocatedReservoir::AllocatedReservoir(const char *name, const int id, const vec
 AllocatedReservoir::AllocatedReservoir(const char *name, const int id, const vector<Catchment *> &catchments,
                                        const double capacity, const double max_treatment_capacity,
                                        EvaporationSeries &evaporation_series, DataSeries *storage_area_curve,
-                                       const vector<double> &construction_time_range, double construction_cost,
+                                       const vector<double> &construction_time_range, double permitting_period,
+                                       Bond &bond,
                                        vector<int> *utilities_with_allocations, vector<double> *allocated_fractions,
                                        vector<double> *allocated_treatment_fractions,
                                        AllocationModifier *allocation_modifier)
         : Reservoir(name, id, catchments, capacity, max_treatment_capacity, evaporation_series, storage_area_curve,
                     allocated_treatment_fractions, allocated_fractions, utilities_with_allocations,
-                    construction_time_range, construction_cost, ALLOCATED_RESERVOIR, 0),
+                    construction_time_range, permitting_period, bond, ALLOCATED_RESERVOIR),
           has_water_quality_pool(wq_pool_id != NON_INITIALIZED),
           modified_allocations(true), allocation_modifier(allocation_modifier) {}
 
@@ -121,7 +122,8 @@ AllocatedReservoir::AllocatedReservoir(
         : Reservoir(allocated_reservoir),
           allocation_modifier(allocated_reservoir.allocation_modifier),
           modified_allocations(allocated_reservoir.modified_allocations),
-          has_water_quality_pool(allocated_reservoir.has_water_quality_pool) {
+          has_water_quality_pool(allocated_reservoir.has_water_quality_pool),
+          member_utility_demand_outflow(allocated_reservoir.member_utility_demand_outflow) {
         }
 
 /**
@@ -155,8 +157,17 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
         total_demand += i;
     }
 
-    double direct_demand = total_demand;
+    /// Collect information on split demands for transfer sales
+    if (member_utility_demand_outflow.empty())
+        for (int i = 0; i < demand_outflow.size(); i++) {
+            member_utility_demand_outflow.push_back(demand_outflow[i]);
+        }
+    else
+        for (int i = 0; i < demand_outflow.size(); i++) {
+            member_utility_demand_outflow[i] = demand_outflow[i];
+        }
 
+    double direct_demand = total_demand;
 
     /// Calculate total runoff inflow reaching reservoir from its watershed.
     upstream_catchment_inflow = 0;
@@ -382,6 +393,7 @@ void AllocatedReservoir::addCapacity(double capacity) {
  * @param utility_id
  */
 void AllocatedReservoir::addTreatmentCapacity(const double added_plant_treatment_capacity, int utility_id) {
+
     WaterSource::addTreatmentCapacity(added_plant_treatment_capacity, utility_id);
 
     /// Add capacity to respective treatment allocation.
@@ -394,27 +406,155 @@ void AllocatedReservoir::addTreatmentCapacity(const double added_plant_treatment
         allocated_treatment_fractions[i] = allocated_treatment_capacities[i]
                                            / total_treatment_capacity;
     }
+
 }
 
 
 /**
- * Addes treatment capacity to a source. The specification of both the total
- * treatment capacity of the new plant and the fraction of the treatment
+ * Adds treatment capacity to a source. Specify the fraction of the treatment
  * capacity allocated to a given utility allow for joint treatment plants. To
  * have one utility only building an exclusive plant, the fraction will be 1.
- * @param added_plant_treatment_capacity
  * @param allocated_fraction_of_total_capacity
  * @param utility_id
  */
-void AllocatedReservoir::addAllocatedTreatmentCapacity(const double added_allocated_treatment_capacity, int utility_id) {
+void AllocatedReservoir::addAllocatedTreatmentCapacity(double added_allocated_treatment_capacity, int utility_id) {
+
+    if (allocated_treatment_capacities[utility_id] + added_allocated_treatment_capacity < 0) {
+        cout << "Error in AllocatedReservoir: treatment capacity re-allocation will result in negative allocated_treatment_capacity" << endl;
+        cout << "If this is the first readjustment period after new source comes online, ignore this." << endl;
+        added_allocated_treatment_capacity = allocated_treatment_capacities[utility_id];
+    }
 
     /// Add capacity to respective treatment allocation.
     allocated_treatment_capacities[utility_id] += added_allocated_treatment_capacity;
 
-    /// Update treatment allocation fractions based on new allocated amounts
-    /// and new total treatment capacity.
     for (int i = 0; i < (int) utilities_with_allocations->size(); ++i) {
+        /// Update treatment allocation fractions based on new allocated amounts
+        /// and new total treatment capacity.
         allocated_treatment_fractions[i] = allocated_treatment_capacities[i] / total_treatment_capacity;
+    }
+}
+
+
+/**
+ * Sets allocated supply for a utility at a source. Specify the fraction of
+ * capacity allocated to a given utility allow for joint projects. To
+ * have one utility, the fraction will be 1.
+ * @param capacity_allocation_fraction
+ * @param utility_id
+ */
+void AllocatedReservoir::setAllocatedSupplyCapacity(double capacity_allocation_fraction, int utility_id) {
+    /// Set respective supply allocations.
+    /// capacity_allocation_fraction passed as parameter is fraction of water SUPPLY pool, not total capacity
+    /// however, allocated_fractions for the utility must be as fraction of entire storage capacity
+    allocated_capacities[utility_id] = capacity_allocation_fraction * capacity * (1 - base_wq_pool_fraction);
+    allocated_fractions[utility_id]  = allocated_capacities[utility_id] / capacity;
+
+    available_allocated_volumes[utility_id] = available_volume * allocated_fractions[utility_id];
+
+    /// Allocations are normalized again in normalizeAllocatedSupplyCapacity
+}
+
+
+/**
+ * If supply allocations have been reset, make sure that the fractions sum to 1
+ * by shifting un-allocated supply capacity to the WQ pool. If over-allocated,
+ * reduce the water quality pool to account for this.
+ */
+void AllocatedReservoir::normalizeAllocatedSupplyCapacity() {
+    /// Sum the allocated capacity fractions, which should include the water quality pool
+    double temp_sum_allocations = accumulate(allocated_fractions.begin(), allocated_fractions.end(), 0.0);
+
+    /// Normalize respective supply allocations for every utility (and water quality pool).
+    /// If there is unallocated supply, it goes into the WQ pool for now
+//    if (temp_sum_allocations != 1) {
+        cout << "Allocations in " << name
+             << " do not sum to 1 (or maybe they do, I changed this). Re-allocating now..." << endl;
+        if (temp_sum_allocations > 1) {
+            cout << "Allocation fractions sum to greater than 1."
+                 << " The water quality pool will be reduced if it is above base level. "
+                 << "After that, water supply allocations will be reduced." << endl;
+            double necessary_reduction = temp_sum_allocations - 1;
+
+            if (allocated_fractions[wq_pool_id] > base_wq_pool_fraction) {
+                cout << "Water quality pool fraction (" << allocated_fractions[wq_pool_id]
+                     << ") is greater than the base level (" << base_wq_pool_fraction
+                     << "). This will be reduced first." << endl;
+
+                if (necessary_reduction > allocated_fractions[wq_pool_id] - base_wq_pool_fraction) {
+                    allocated_fractions[wq_pool_id] = base_wq_pool_fraction;
+                    necessary_reduction -= allocated_fractions[wq_pool_id] - base_wq_pool_fraction;
+                } else {
+                    allocated_fractions[wq_pool_id] -= necessary_reduction;
+                    necessary_reduction = 0.0;
+                }
+
+                cout << "Water quality pool fraction (" << allocated_fractions[wq_pool_id]
+                     << ") has been adjusted." << endl;
+            }
+
+            temp_sum_allocations = accumulate(allocated_fractions.begin(), allocated_fractions.end(), 0.0);
+            double water_supply_allocation_total = temp_sum_allocations - allocated_fractions[wq_pool_id];
+
+            double utility_fraction_of_supply;
+            for (int i = 0; i < (int) utilities_with_allocations->size(); ++i) {
+                int u = utilities_with_allocations->at(i);
+                u = (u == WATER_QUALITY_ALLOCATION ? wq_pool_id : u);
+
+                cout << "Utility " << u << " fraction (before): " << allocated_fractions[u] << endl;
+                if (u != wq_pool_id) {
+                    utility_fraction_of_supply = allocated_fractions[u] / water_supply_allocation_total;
+                    allocated_fractions[u] -= utility_fraction_of_supply * necessary_reduction;
+                }
+                cout << "Utility " << u << " fraction (after): " << allocated_fractions[u] << endl;
+            }
+
+            for (int i = 0; i < (int) utilities_with_allocations->size(); ++i) {
+                int u = utilities_with_allocations->at(i);
+                u = (u == WATER_QUALITY_ALLOCATION ? wq_pool_id : u);
+
+                cout << "Utility " << u << " capacity (before): " << allocated_capacities[u] << endl;
+
+                /// Update supply allocation capacitites based on new allocated fractions
+                allocated_capacities[u] = allocated_fractions[u] * capacity;
+                available_allocated_volumes[u] = available_volume * allocated_fractions[u];
+
+                (*this->utilities_with_allocations)[i] = u;
+
+                cout << "Utility " << u << " capacity (after): " << allocated_capacities[u] << endl;
+            }
+        } else {
+            cout << "Allocation fractions sum to less than 1. Augmenting water quality pool to fix." << endl;
+            double necessary_augmentation = 1 - temp_sum_allocations;
+
+            for (int i = 0; i < (int) utilities_with_allocations->size(); ++i) {
+                int u = utilities_with_allocations->at(i);
+                u = (u == WATER_QUALITY_ALLOCATION ? wq_pool_id : u);
+
+                cout << "Utility " << u << " fraction (before): " << allocated_fractions[u] << endl;
+                cout << "Utility " << u << " capacity (before): " << allocated_capacities[u] << endl;
+
+                if (u == wq_pool_id)
+                    allocated_fractions[u] += necessary_augmentation;
+
+                /// Update capacity allocation fractions based on new allocated amounts
+                allocated_capacities[u] = allocated_fractions[u] * capacity;
+                available_allocated_volumes[u] = available_volume * allocated_fractions[u];
+
+                (*this->utilities_with_allocations)[i] = u;
+
+                cout << "Utility " << u << " fraction (after): " << allocated_fractions[u] << endl;
+                cout << "Utility " << u << " capacity (after): " << allocated_capacities[u] << endl;
+            }
+
+        }
+//    }
+
+    /// Continuity check
+    double temp_sum_allocation_fractions = accumulate(allocated_fractions.begin(), allocated_fractions.end(), 0.0);
+    double temp_sum_allocation_capacities = accumulate(allocated_capacities.begin(), allocated_capacities.end(), 0.0);
+    if (temp_sum_allocation_fractions != 1 || temp_sum_allocation_capacities != capacity) {
+        cout << "Somehow the allocations are still wrong?" << endl;
     }
 }
 
@@ -571,4 +711,12 @@ void AllocatedReservoir::updateTreatmentAndCapacityAllocations(int week) {
         }
     }
 
+}
+
+double AllocatedReservoir::getAllocatedTreatmentFraction(int utility_id) const {
+    return allocated_treatment_fractions[utility_id];
+}
+
+double AllocatedReservoir::getAllocatedDemand(int utility_id) {
+    return member_utility_demand_outflow[utility_id];
 }

@@ -14,15 +14,12 @@ private:
     vector<double> *new_allocated_treatment_fractions;
 
 public:
-    AllocatedReservoirExpansion(
-            const char *name, const int id,
-            const unsigned int parent_reservoir_id,
-            const double new_capacity,
-            vector<int> *utilities_with_allocations,
-            vector<double> *new_allocated_fractions,
-            vector<double> *new_allocated_treatment_fractions,
-            const double construction_rof_or_demand, const vector<double> &construction_time_range,
-            double permitting_period, double construction_cost);
+    AllocatedReservoirExpansion(const char *name, const int id, const unsigned int parent_reservoir_id,
+                                const double new_capacity, vector<int> *utilities_with_allocations,
+                                vector<double> *new_allocated_fractions,
+                                vector<double> *new_allocated_treatment_fractions,
+                                const double construction_rof_or_demand, const vector<double> &construction_time_range,
+                                double permitting_period, Bond &bond);
 
     AllocatedReservoirExpansion(const AllocatedReservoirExpansion &allocated_reservoir_expansion);
 

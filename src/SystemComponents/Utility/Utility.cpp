@@ -12,7 +12,6 @@
 #include "../../Utils/Utils.h"
 #include "InfrastructureManager.h"
 #include "../WaterSources/AllocatedReservoirExpansion.h"
-#include "../Utils/Utils.h"
 #include "../WaterSources/JointWTP.h"
 
 /**
@@ -395,6 +394,10 @@ void Utility::splitDemands(
                 min(restricted_demand,
                     water_sources[ws]->getAvailableAllocatedVolume(id));
         demands[ws][this->id] = source_demand;
+
+        /// Record weekly demands at each source in the WaterSource class
+//        if (!water_sources[ws]->weekly_utility_demands.empty())
+//            (water_sources[ws]->weekly_utility_demands.at(id)).push_back(source_demand);
     }
 
     /// Allocates remaining demand to reservoirs based on allocated available
@@ -408,6 +411,10 @@ void Utility::splitDemands(
     for (int &ws : non_priority_draw_water_source) {
         auto source = water_sources[ws];
 
+//        if (ws == 6 && week == 365 && id == 3) {
+//            cout << "Stop inside splitDemands to check Jordan Lake" << endl;
+//        }
+
         /// Calculate allocation based on sources' available volumes.
         demand_fraction[ws] =
                 max(1.0e-6,
@@ -418,8 +425,9 @@ void Utility::splitDemands(
         double source_demand = restricted_demand * demand_fraction[ws];
         demands[ws][id] = source_demand;
 
-        /// Keep accounting of annual demand to source per utility
-        water_sources[ws]->annual_source_demand[id] += source_demand;
+        /// Record weekly demands at each source in the WaterSource class
+//        if (!water_sources[ws]->weekly_utility_demands.empty())
+//            (water_sources[ws]->weekly_utility_demands.at(id)).push_back(source_demand);
 
         /// Check if allocated demand was greater than treatment capacity.
         double over_allocated_demand_ws =
@@ -559,6 +567,34 @@ double Utility::updateCurrent_debt_payment(int week) {
     /// Checks if it's the first week of the year, when outstanding debt
     /// payments should be made.
     for (Bond *bond : issued_bonds) {
+        if (bond->type == ALLOCATED_LEVEL_DEBT_SERVICE) {
+            /// Determine debt service if based on changing allocations year-to-year
+            double period_principal_obligation_fraction =
+                    water_sources[bond->water_source_id]->calculateJointWTPDebtServiceFraction(id, week);
+            bond->setAllocatedDebtService(week, period_principal_obligation_fraction);
+
+            /// Calculate and add to debt payment any retroactive payments resulting from a change in
+            /// bond payment allocations
+            double allocation_adjustment = water_sources[bond->water_source_id]->getAllocationAdjustment(id);
+            double period_retroactive_debt_service_payment =
+                    bond->setRetroactiveDebtServicePayment(week, allocation_adjustment);
+            current_debt_payment += period_retroactive_debt_service_payment;
+
+            if (WEEK_OF_YEAR[week] == 0)
+                cout << name << " is paying periodic debt service on bond (id " << bond->id << ") of "
+                     << bond->getDebtService(week) << " million dollars, as well as "
+                     << period_retroactive_debt_service_payment
+                     << " million in retroactive payment. This corresponds to the water source "
+                     << water_sources[bond->water_source_id]->name
+                     << endl;
+        } else {
+            if (WEEK_OF_YEAR[week] == 0)
+                cout << name << " is paying periodic debt service on bond (id " << bond->id << ") of "
+                     << bond->getDebtService(week) << " million dollars." << endl;
+//                        "This corresponds to the water source "
+//                     << water_sources[bond->id]->name << endl; // seg fault for cary plant bc it has multiple bonds
+        }
+
         current_debt_payment += bond->getDebtService(week);
     }
 
@@ -590,14 +626,34 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
 
     /// Issue and add bond of triggered water source to list of outstanding bonds, and update total new
     /// infrastructure NPV.
-    if (new_infra_triggered != NON_INITIALIZED) {
-        Bond &bond = water_sources.at((unsigned long) new_infra_triggered)->getBond(id);
+    /// WHAT IF SINGLE UTILITY TRIGGERS JOINT PROJECT?
+    /// Going to handle all of this triggering outside of this function
+//    if (new_infra_triggered != NON_INITIALIZED) {
+//        Bond &bond = water_sources.at((unsigned long) new_infra_triggered)->getBond(id);
+//        bond.issueBond(week, bond_term_multiplier, bond_interest_rate_multiplier);
+//        issued_bonds.push_back(&bond);
+//        infra_net_present_cost += bond.getNetPresentValueAtIssuance(infra_discount_rate, 0);
+//    }
+
+    return new_infra_triggered;
+}
+
+
+/**
+ * Issue bond for utilities on joint project that did not trigger construction
+ * @param week
+ * @param joint_infra_triggered
+ */
+void Utility::infrastructureBondHandler(int week, int infra_triggered) {
+
+    /// Issue and add bond of triggered water source to list of outstanding bonds, and update total new
+    /// infrastructure NPV.
+    if (infra_triggered != NON_INITIALIZED) {
+        Bond &bond = water_sources.at((unsigned long) infra_triggered)->getBond(id);
         bond.issueBond(week, bond_term_multiplier, bond_interest_rate_multiplier);
         issued_bonds.push_back(&bond);
         infra_net_present_cost += bond.getNetPresentValueAtIssuance(infra_discount_rate, 0);
     }
-
-    return new_infra_triggered;
 }
 
 void Utility::calculateWastewater_releases(int week, double *discharges) {
@@ -635,10 +691,24 @@ void Utility::sellRawWaterTransfer(double payment_per_volume, double raw_water_t
     raw_water_transfer_sale = payment_per_volume * raw_water_transferred;
 }
 
+void Utility::purchaseDirectTreatedWaterTransfer(double payment_per_volume, double water_transferred) {
+    contingency_fund -= payment_per_volume * water_transferred;
+    direct_treated_water_transfer_purchase = payment_per_volume * water_transferred;
+}
+
+void Utility::sellDirectTreatedWaterTransfer(double payment_per_volume, double water_transferred) {
+    contingency_fund += payment_per_volume * water_transferred;
+    direct_treated_water_transfer_sale = payment_per_volume * water_transferred;
+}
+
 void
 Utility::setDemand_offset(double demand_offset, double offset_rate_per_volume) {
     this->demand_offset = demand_offset;
     this->offset_rate_per_volume = offset_rate_per_volume;
+}
+
+void Utility::addDemand_offset(double demand_offset) {
+    this->demand_offset += demand_offset;
 }
 
 /**
@@ -820,4 +890,17 @@ double Utility::getUnfulfilled_demand() const {
 
 double Utility::getNet_stream_inflow() const {
     return net_stream_inflow;
+}
+
+void Utility::recordWeeklyDemand(int week, vector<vector<double>> &demands,
+                                 bool apply_demand_buffer, vector<vector<vector<double>>> &realization_demands) {
+//    if (week > 365) {
+//        cout << "Pause here to check demands on Jordan Lake in week " << week << endl;
+//        cout << demands[6][3] << endl;
+//    }
+
+    for (int &ws : priority_draw_water_source)
+        realization_demands[ws][id].push_back(demands[ws][id]);
+    for (int &ws : non_priority_draw_water_source)
+        realization_demands[ws][id].push_back(demands[ws][id]);
 }

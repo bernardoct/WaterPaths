@@ -8,6 +8,7 @@
 #include "../WaterSources/ReservoirExpansion.h"
 #include "../WaterSources/Relocation.h"
 #include "../../Utils/Utils.h"
+#include "../WaterSources/JointWTP.h"
 
 InfrastructureManager::InfrastructureManager(int id, const vector<double> &infra_construction_triggers,
                                              const vector<vector<int>> &infra_if_built_remove,
@@ -141,14 +142,20 @@ void InfrastructureManager::setWaterSourceOnline(unsigned int source_id, int wee
     /// priority/non-priority ID vector. If reservoir expansion, add its
     /// capacity to the corresponding existing reservoir.
     if (water_sources->at(source_id)->source_type == NEW_WATER_TREATMENT_PLANT) {
+        cout << "WTP, source ID " << source_id << ", is set online in week " << week << endl;
         waterTreatmentPlantConstructionHandler(source_id, total_storage_capacity);
     } else if (water_sources->at(source_id)->source_type ==
                RESERVOIR_EXPANSION) {
+        cout << "Reservoir Expansion, source ID " << source_id << ", is set online in week " << week << endl;
         reservoirExpansionConstructionHandler(source_id);
     } else if (water_sources->at(source_id)->source_type == SOURCE_RELOCATION) {
+        cout << "Source Reallocation, source ID " << source_id << ", is set online in week " << week << endl;
         sourceRelocationConstructionHandler(source_id);
+    } else if (water_sources->at(source_id)->source_type == NEW_JOINT_WTP) {
+        jointWTPConstructionHandler(source_id, week, total_storage_capacity);
     } else {
         water_sources->at(source_id)->setOnline();
+        cout << "Miscellaneous Project, source ID " << source_id << ", is set online in week " << week << endl;
         addWaterSourceToOnlineLists(source_id, total_storage_capacity, total_treatment_capacity,
                                     total_available_volume, total_stored_volume);
     }
@@ -172,6 +179,117 @@ void InfrastructureManager::setWaterSourceOnline(unsigned int source_id, int wee
     }
 }
 
+void InfrastructureManager::jointWTPConstructionHandler(unsigned int source_id, int week,
+                                                        double &total_storage_capacity) {
+    auto wtp = dynamic_cast<JointWTP *>(water_sources->at(source_id));
+
+    cout << "Joint WTP, " << wtp->name << ", is set online in week " << week << endl;
+
+    /// Determine financing split based on type of contract
+    if (wtp->getContractType() == 0) {
+        /// fixed capacity allocations means payments are fixed in each period
+
+        /// add treatment capacity to source
+        double added_total_capacity = wtp->getAddedTotalTreatmentCapacity();
+        // this will be the total capacity the first time, 0 after that
+        // this ensures that total capacity is not increased for each utility
+        // attached to the water source
+        water_sources->at(wtp->parent_reservoir_ID)->addTotalTreatmentCapacity(added_total_capacity);
+
+        /// add capacity to each participating utility
+        double added_allocation_capacity = wtp->implementFixedTreatmentCapacity(id);
+        water_sources->at(wtp->parent_reservoir_ID)->addAllocatedTreatmentCapacity(added_allocation_capacity, id);
+
+    } else if (wtp->getContractType() == 1) {
+        /// uniform rates used to set allocations and payments annually
+
+        /// Add treatment capacity to source
+        double added_total_capacity = wtp->getAddedTotalTreatmentCapacity();
+        // this will be the total capacity the first time, 0 after that
+        // this ensures that total capacity is not increased for each utility
+        // attached to the water source
+        water_sources->at(wtp->parent_reservoir_ID)->addTotalTreatmentCapacity(added_total_capacity);
+
+        /// Implement initial treatment capacity increases to member utilities
+        /// and adjust overall allocation fractions as they occur (within function)
+        double added_allocation_capacity = wtp->getAdjustableTreatmentCapacity(id, Utils::yearOfTheRealization(week));
+        // this is set up to change (or is able to change) each year
+        // current year is determined within the function here where week is passed.
+        water_sources->at(wtp->id)->setAllocatedTreatmentCapacity(Utils::yearOfTheRealization(week), id);
+        water_sources->at(wtp->parent_reservoir_ID)->addAllocatedTreatmentCapacity(added_allocation_capacity, id);
+
+        water_sources->at(wtp->id)->setExternalAllocatedTreatmentCapacity(Utils::yearOfTheRealization(week));
+
+        /// Track allocation change
+        wtp->recordAllocationAdjustment(added_allocation_capacity, id);
+
+    } else if (wtp->getContractType() == 2) {
+        /// adjustible, "square-one" allocation strategy
+        /// allocations in first year are taken from first year in projections vector
+        /// after that, based on previous years actual use
+
+        /// Add treatment capacity to source
+        double added_total_capacity = wtp->getAddedTotalTreatmentCapacity();
+        // this will be the total capacity the first time, 0 after that
+        // this ensures that total capacity is not increased for each utility
+        // attached to the water source
+        water_sources->at(wtp->parent_reservoir_ID)->addTotalTreatmentCapacity(added_total_capacity);
+
+        /// Implement initial treatment capacity increases to member utilities
+        /// and adjust overall allocation fractions as they occur (within function)
+        double added_allocation_capacity = wtp->getAdjustableTreatmentCapacity(id, Utils::yearOfTheRealization(week));
+        // somehow get the index of the current year (relative to start of realization)
+        // based on the current week, does this work in ROF realizations?
+        water_sources->at(wtp->id)->setAllocatedTreatmentCapacity(Utils::yearOfTheRealization(week), id);
+        water_sources->at(wtp->parent_reservoir_ID)->addAllocatedTreatmentCapacity(added_allocation_capacity, id);
+
+        water_sources->at(wtp->id)->setExternalAllocatedTreatmentCapacity(Utils::yearOfTheRealization(week));
+
+        /// Track allocation change
+        wtp->recordAllocationAdjustment(added_allocation_capacity, id);
+
+    } else if (wtp->getContractType() == 3) {
+        /// third-party contracts are included, allocations fixed
+
+    } else {
+        /// third-party contracts are included, allocations adjustible
+
+    }
+
+    /// If source is intake or reuse and is not in the list of active
+    /// sources, add it to the priority list.
+    /// If source is not intake or reuse and is not in the list of active
+    /// sources, add it to the non-priority list.
+    bool is_priority_source =
+            water_sources->at(wtp->parent_reservoir_ID)->source_type == INTAKE ||
+            water_sources->at(wtp->parent_reservoir_ID)->source_type ==
+            WATER_REUSE;
+    bool is_not_in_priority_list =
+            find(priority_draw_water_source->begin(),
+                 priority_draw_water_source->end(),
+                 wtp->parent_reservoir_ID)
+            == priority_draw_water_source->end();
+    bool is_not_in_non_priority_list =
+            find(non_priority_draw_water_source->begin(),
+                 non_priority_draw_water_source->end(),
+                 wtp->parent_reservoir_ID)
+            == non_priority_draw_water_source->end();
+
+    /// Finally, the checking.
+    if (is_priority_source && is_not_in_priority_list) {
+        priority_draw_water_source->push_back((int) wtp->parent_reservoir_ID);
+        total_storage_capacity +=
+                water_sources->at(wtp->parent_reservoir_ID)
+                        ->getAllocatedCapacity(id);
+    } else if (is_not_in_non_priority_list) {
+        non_priority_draw_water_source
+                ->push_back((int) wtp->parent_reservoir_ID);
+    }
+
+    /// Set WTP online and record completion year
+    water_sources->at(source_id)->setOnline();
+    wtp->setBuildYear(Utils::yearOfTheRealization(week));
+}
 
 void
 InfrastructureManager::waterTreatmentPlantConstructionHandler(unsigned int source_id, double &total_storage_capacity) {
@@ -248,13 +366,16 @@ void InfrastructureManager::forceInfrastructureConstruction(
     for (int ws : new_infra_triggered) {
         /// Variable storing the position of an infrastructure option in the
         /// queue of infrastructure to be built.
-        auto it = find(rof_infra_construction_order.begin(),
+        auto it1 = find(rof_infra_construction_order.begin(),
                        rof_infra_construction_order.end(),
                        ws);
+        auto it2 = find(demand_infra_construction_order.begin(),
+                        demand_infra_construction_order.end(),
+                        ws);
         /// If one of the infrastructure options built this year by one of
         /// the other utilities is in this utility's queue, force it to be
         /// triggered.
-        if (it != rof_infra_construction_order.end()) {
+        if (it1 != rof_infra_construction_order.end() || it2 != demand_infra_construction_order.end()) {
             /// Force infrastructure option new_infra_triggered to be built.
             beginConstruction(week, ws);
         }

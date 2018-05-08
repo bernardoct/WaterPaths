@@ -11,91 +11,74 @@
 class JointWTP : public WaterSource {
 private:
 
-    double total_added_capacity;
-    double total_capital_cost;
+    int build_year = 0;
+    int EXTERNAL_SOURCE_ID = -1;
+    int PROJECTED_YEARS = -1;
+    int N_UTILITIES_INCLUDING_EXTERNAL = -1;
+    int N_INTERNAL_UTILITIES = -1;
+
     double external_allocation;
     int contract_type;
 
+    int observed_demand_weeks_to_use = 0;
+
     bool initial_capacity_added = false;
 
-    vector<int> *third_party_ids;
-    vector<double> *third_party_sales_rates;
+    vector<int> third_party_ids;
+    vector<double> third_party_sales_rates;
 
-    vector<double> *fixed_utility_allocations;
+    vector<double> external_demands;
+    vector<vector<double>> annual_demands;
+    vector<double> utility_peaking_factors;
+    vector<double> previous_period_allocated_capacities;
 
-    vector<double> *external_demands;
-    vector<vector<double>> *annual_demands;
-    vector<double> *utility_peaking_factors;
-    vector<double> *previous_year_allocated_capacities = nullptr;
+    vector<vector<double>> utility_allocation_fractions;
 
-    vector<vector<double>> *utility_allocation_fractions = nullptr;
+    double current_external_allocation_fraction = 0.0;
+
 public:
 
     const unsigned int parent_reservoir_ID;
 
     /// FOR CONTRACT TYPE 0
-    JointWTP(const char *name, const int id,
-             const int contract_type,
-                // 0: fixed capacity, 1: uniform rate, 2: adjustible allocations, 3: add third-party contracts
-             const int parent_reservoir_ID,
-             vector<int> participating_utilities,
-                // assumes parent reservoir already has allocations for these utilities
-             const double total_treatment_capacity,
-             const double total_capital_cost,
-             vector <double> fixed_allocations,
-             double fixed_external_allocation,
-             const vector<double> &construction_time_range,
-             double permitting_period);
+    JointWTP(const char *name, const int id, const int contract_type, const int parent_reservoir_ID,
+             vector<int> *utils_with_allocations,
+             vector<int> participating_utilities, const double added_treatment_capacity, vector<Bond *> &bonds,
+             vector<double> &fixed_allocations, double fixed_external_allocation,
+             const vector<double> &construction_time_range, double permitting_period);
 
     /// FOR CONTRACT TYPES 1 AND 2
-    JointWTP(const char *name, const int id,
-             const int contract_type,
-                // 0: fixed capacity, 1: uniform rate, 2: adjustible allocations, 3: add third-party contracts
-             const int parent_reservoir_ID,
-             vector<int> participating_utilities,
-                // assumes parent reservoir already has allocations for these utilities
-             const double total_treatment_capacity,
-             const double total_capital_cost,
-             const vector<double> &construction_time_range,
-             double permitting_period,
-             vector<double> demand_peaking_factor,
-                // indices for each utility attached to the source, and an extra for external reservations
-             vector<vector<double>> future_annual_utility_demands,
+    /// Type 1
+    JointWTP(const char *name, const int id, const int contract_type, const int parent_reservoir_ID,
+             vector<int> *utils_with_allocations,
+             vector<int> participating_utilities, const double added_treatment_capacity, vector<Bond *> &bonds,
+             const vector<double> &construction_time_range, double permitting_period,
+             vector<double> demand_peaking_factor, vector<vector<double>> future_annual_utility_demands,
              vector<double> external_annual_demands);
 
+    /// Type 2
+    JointWTP(const char *name, const int id, const int contract_type, const int parent_reservoir_ID,
+             vector<int> *utils_with_allocations,
+             vector<int> participating_utilities, const double added_treatment_capacity, vector<Bond *> &bonds,
+             const vector<double> &construction_time_range, double permitting_period,
+             vector<double> demand_peaking_factor, vector<vector<double>> future_annual_utility_demands,
+             vector<double> external_annual_demands, const int past_demand_weeks_to_use);
+
     /// FOR CONTRACT TYPE 3 with type 0 base (type 3)
-    JointWTP(const char *name, const int id,
-             const int contract_type,
-            // 0: fixed capacity, 1: uniform rate, 2: adjustible allocations,
-            // 3: add third-party contracts, fixed allocs, 4: 3rd party contracts, adjustible allocs
-             const int parent_reservoir_ID,
-             vector<int> participating_utilities,
-            // assumes parent reservoir already has allocations for these utilities
-             const double total_treatment_capacity,
-             const double total_capital_cost,
-             vector <double> fixed_allocations,
-             double fixed_external_allocation,
-             const vector<double> &construction_time_range,
-             double permitting_period,
-             vector<int> third_party_utilities,
+    JointWTP(const char *name, const int id, const int contract_type, const int parent_reservoir_ID,
+             vector<int> *utils_with_allocations,
+             vector<int> participating_utilities, const double added_treatment_capacity, vector<Bond *> &bonds,
+             const vector<double> &construction_time_range, double permitting_period,
+             vector<double> demand_peaking_factor, vector<vector<double>> future_annual_utility_demands,
+             vector<double> external_annual_demands, vector<int> third_party_utilities,
              vector<double> third_party_sales_volumetric_rate);
 
     /// FOR CONTRACT TYPE 3 with type 1 or 2 base (type 4)
-    JointWTP(const char *name, const int id,
-             const int contract_type,
-            // 0: fixed capacity, 1: uniform rate, 2: adjustible allocations,
-            // 3: add third-party contracts, fixed allocs, 4: 3rd party contracts, adjustible allocs
-             const int parent_reservoir_ID,
-             vector<int> participating_utilities,
-                // assumes parent reservoir already has allocations for these utilities
-             const double total_treatment_capacity,
-             const double total_capital_cost,
-             const vector<double> &construction_time_range,
-             double permitting_period,
-             vector<double> demand_peaking_factor,
-             vector<vector<double>> future_annual_utility_demands,
-             vector<double> external_annual_demands,
-             vector<int> third_party_utilities,
+    JointWTP(const char *name, const int id, const int contract_type, const int parent_reservoir_ID,
+             vector<int> *utils_with_allocations,
+             vector<int> participating_utilities, const double added_treatment_capacity, vector<Bond *> &bonds,
+             vector<double> &fixed_allocations, double fixed_external_allocation,
+             const vector<double> &construction_time_range, double permitting_period, vector<int> third_party_utilities,
              vector<double> third_party_sales_volumetric_rate);
 
     JointWTP(const JointWTP &joint_water_treatment_plant);
@@ -110,25 +93,44 @@ public:
 
     int getContractType();
 
-    vector<double> calculateAdjustableAllocationConstructionCosts(int utility_id, double bond_length);
-
-    double calculateFixedAllocationCosts(int utility_id);
-
-    double calculateNetPresentConstructionCost(
-            int week, int utility_id, double discount_rate,
-            vector<double>& debt_service_payments, double bond_term,
-            double bond_interest_rate) const override;
-
     double implementFixedTreatmentCapacity(int utility_id);
 
     double getAdjustableTreatmentCapacity(int utility_id, int year);
 
-    void updateTreatmentAllocations(int week) override;
+    void updateTreatmentAllocations(int week, vector<vector<vector<double>>> weekly_demands) override;
 
     double getAddedTotalTreatmentCapacity();
 
     void recordAllocationAdjustment(double added_treatment_capacity, int utility_id);
 
+    void setBuildYear(int year);
+
+    double calculateJointWTPDebtServiceFraction(int utility_id, int week) override;
+
+    int getParentSourceID() override;
+
+    double getAllocatedTreatmentCapacity(int utility_id) const override;
+
+    double getAllocationAdjustment(const int utility_id) override;
+
+    void setAllocationAdjustment(const int utility_id, const double allocation_adjustment) override;
+
+    double getAllocatedTreatmentFraction(int utility_id) const override;
+
+    void setProjectedAllocationFractions(vector<vector<double>> &utility_allocation_fractions,
+                                         vector<vector<double>> &annual_demands,
+                                         vector<double> &external_demands,
+                                         vector<double> &utility_peaking_factors);
+
+    void setAllocatedTreatmentCapacity(const int year, const int utility_id) override;
+
+    void recordParentReservoirTreatmentCapacity(const int utility_id, const double capacity_value) override;
+
+    double getExternalDemand(const int year);
+
+    double getExternalTreatmentAllocation();
+
+    void setExternalAllocatedTreatmentCapacity(const int year) override;
 };
 
 

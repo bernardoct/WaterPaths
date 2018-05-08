@@ -5,7 +5,7 @@
 #ifndef TRIANGLEMODEL_RAWWATERRELEASES_H
 #define TRIANGLEMODEL_RAWWATERRELEASES_H
 
-#include "../SystemComponents/Utility.h"
+#include "../SystemComponents/Utility/Utility.h"
 #include "Base/DroughtMitigationPolicy.h"
 #include "../SystemComponents/WaterSources/AllocatedReservoir.h"
 

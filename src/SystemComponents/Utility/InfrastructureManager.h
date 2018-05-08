@@ -53,6 +53,8 @@ public:
 
     void waterTreatmentPlantConstructionHandler(unsigned int source_id, double &total_storage_capacity);
 
+    void jointWTPConstructionHandler(unsigned int source_id, int week, double &total_storage_capacity);
+
     void reservoirExpansionConstructionHandler(unsigned int source_id);
 
     void sourceRelocationConstructionHandler(unsigned int source_id);
@@ -84,6 +86,7 @@ public:
     const vector<int> &getDemand_infra_construction_order() const;
 
     const vector<int> &getInfra_built_last_week() const;
+
 };
 
 

@@ -13,10 +13,10 @@ AllocatedReservoirExpansion::AllocatedReservoirExpansion(const char *name, const
                                                          vector<double> *new_allocated_treatment_fractions,
                                                          const double construction_rof_or_demand,
                                                          const vector<double> &construction_time_range,
-                                                         double permitting_period, double construction_cost)
+                                                         double permitting_period, Bond &bond)
         : ReservoirExpansion(name, id, parent_reservoir_id, new_capacity,
                              construction_time_range,
-                             permitting_period, construction_cost),
+                             permitting_period, bond),
           new_allocated_fractions(new_allocated_fractions),
           new_allocated_treatment_fractions(new_allocated_treatment_fractions) {
 

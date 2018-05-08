@@ -58,6 +58,9 @@ private:
     double bond_interest_rate_multiplier;
     double max_capacity = 0;
 
+    double direct_treated_water_transfer_purchase = 0;
+    double direct_treated_water_transfer_sale = 0;
+
     /// Infrastructure cost
     double current_debt_payment = 0;
     vector<vector<double>> debt_payment_streams;
@@ -220,13 +223,20 @@ public:
 
     double getNet_stream_inflow() const;
 
-    void allocatedReservoirExpansionConstructionHandler(unsigned int source_id);
-
     double getTotal_stored_volume() const;
 
     void checkErrorsAddWaterSourceOnline(WaterSource *water_source);
 
-    void jointWTPConstructionHandler(unsigned int source_id, int week);
+    void recordWeeklyDemand(int week, vector<vector<double>> &demands, bool apply_demand_buffer,
+                            vector<vector<vector<double>>> &realization_demands);
+
+    void infrastructureBondHandler(int week, int infra_triggered);
+
+    void addDemand_offset(double demand_offset);
+
+    void purchaseDirectTreatedWaterTransfer(double payment_per_volume, double water_transferred);
+
+    void sellDirectTreatedWaterTransfer(double payment_per_volume, double water_transferred);
 };
 
 

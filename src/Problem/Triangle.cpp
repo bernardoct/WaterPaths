@@ -31,6 +31,9 @@
 #include "../SystemComponents/Bonds/BalloonPaymentBond.h"
 #include "../DroughtMitigationInstruments/RawWaterReleases.h"
 #include "../SystemComponents/WaterSources/AllocatedReservoirExpansion.h"
+#include "../SystemComponents/WaterSources/JointWTP.h"
+#include "../SystemComponents/Bonds/AllocatedLevelDebtServiceBond.h"
+#include "../DroughtMitigationInstruments/DirectTreatedWaterTransfer.h"
 
 /**
  * Runs carolina problem.
@@ -103,6 +106,10 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         double western_wake_treatment_plant_rank_durham_high = vars[43]; // 21
         double western_wake_treatment_plant_rank_raleigh_low = vars[44]; // 20
         double western_wake_treatment_plant_rank_raleigh_high = vars[45]; // 21
+
+        double western_wake_treatment_plant_rank_cary_low = 0.99; // 20
+        double western_wake_treatment_plant_rank_cary_high = 0.995; // 21
+
     //    double caryupgrades_1 = vars[46]; // not used: already built.
         double caryupgrades_2 = vars[47];
         double caryupgrades_3 = vars[48];
@@ -154,8 +161,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                 infraRank(7, little_river_reservoir_ranking),
                 infraRank(8, richland_creek_quarry_rank),
                 infraRank(10, neuse_river_intake_rank),
-                infraRank(15, lake_michie_expansion_ranking_low),
-                infraRank(16, lake_michie_expansion_ranking_high),
                 infraRank(17, reallocate_falls_lake_rank),
                 infraRank(20, western_wake_treatment_plant_rank_raleigh_low),
                 infraRank(21, western_wake_treatment_plant_rank_raleigh_high)
@@ -452,21 +457,21 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         vector<double> lm_initial_treatment_allocation_fractions = {0.0, 0.8, 0.0, 0.2};
 
         // Existing Sources
-//        Reservoir durham_reservoirs("Lake Michie & Little River Res. (Durham)",
-//                                    0,
-//                                    catchment_durham,
-//                                    6349.0 * table_gen_storage_multiplier,
-//                                    ILLIMITED_TREATMENT_CAPACITY,
-//                                    evaporation_durham, 1069);
-        AllocatedReservoir durham_reservoirs("Lake Michie & LRR (Durham)",
-                                     0,
-                                     catchment_durham,
-                                     6349.0,
-                                     ILLIMITED_TREATMENT_CAPACITY,
-                                     evaporation_durham, 1069,
-                                     &lm_allocations_ids,
-                                     &lm_initial_allocation_fractions,
-                                     &lm_initial_treatment_allocation_fractions);
+        Reservoir durham_reservoirs("Lake Michie & Little River Res. (Durham)",
+                                    0,
+                                    catchment_durham,
+                                    6349.0 * table_gen_storage_multiplier,
+                                    ILLIMITED_TREATMENT_CAPACITY,
+                                    evaporation_durham, 1069);
+//        AllocatedReservoir durham_reservoirs("Lake Michie & LRR (Durham)",
+//                                     0,
+//                                     catchment_durham,
+//                                     6349.0,
+//                                     ILLIMITED_TREATMENT_CAPACITY,
+//                                     evaporation_durham, 1069,
+//                                     &lm_allocations_ids,
+//                                     &lm_initial_allocation_fractions,
+//                                     &lm_initial_treatment_allocation_fractions);
     //    Reservoir falls_lake("Falls Lake", 1, catchment_flat,
     //                         34700.0, 99999,
     //                         &evaporation_falls_lake, &falls_lake_storage_area);
@@ -514,13 +519,12 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                        13940,
                                        &jl_allocations_ids,
                                        &jl_allocation_fractions,
-                                       &jl_treatment_allocation_fractions,
-                                       &jordan_lake_allocation_modifier);
+                                       &jl_treatment_allocation_fractions);
 
         // other than Cary WTP for Jordan Lake, assume no WTP constraints - each
         // city can meet its daily demands with available treatment infrastructure
 
-        double WEEKS_IN_YEAR = 0;
+        // double WEEKS_IN_YEAR = 0;
 
         // Potential Sources
         // The capacities listed here for expansions are what additional capacity is gained relative to existing capacity,
@@ -588,7 +592,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                                  construction_time_interval, 17 * WEEKS_IN_YEAR, high_mi_exp_bond);
 
         LevelDebtServiceBond low_rec_bond(18, 27.5, 25, 0.05, vector<int>(1, 0), 3);
-                                               17 * WEEKS_IN_YEAR, 107.0);
 
 //        ReservoirExpansion low_michie_expansion("Low Lake Michie Expansion", 15, 0, added_storage_michie_expansion_low,
 //                                                construction_time_interval, 17 * WEEKS_IN_YEAR, 158.3);
@@ -596,33 +599,33 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 //                                                 construction_time_interval, 17 * WEEKS_IN_YEAR, 203.3);
 
         /// Lake Michie Allocated Expansion Parameters
-        double lm_total_new_capacity_low = 6349.0 + added_storage_michie_expansion_low;
-        double lm_total_new_capacity_high = 6349.0 + added_storage_michie_expansion_high;
-        vector <double> lm_new_allocation_fractions = {0.6,0.4};
-        vector <double> lm_new_treatment_fractions = {0.0,0.6,0.0,0.4};
-
-        AllocatedReservoirExpansion low_michie_expansion("Low Lake Michie Expansion (Allocated)",
-                                                         15,
-                                                         0,
-                                                         lm_total_new_capacity_low,
-                                                         &lm_allocations_ids,
-                                                         &lm_new_allocation_fractions,
-                                                         &lm_new_treatment_fractions,
-                                                         city_infrastructure_rof_triggers[1],
-                                                         construction_time_interval,
-                                                         17 * WEEKS_IN_YEAR,
-                                                         158.3);
-        AllocatedReservoirExpansion high_michie_expansion("High Lake Michie Expansion (Allocated)",
-                                                          16,
-                                                          0,
-                                                          lm_total_new_capacity_high,
-                                                          &lm_allocations_ids,
-                                                          &lm_new_allocation_fractions,
-                                                          &lm_new_treatment_fractions,
-                                                          city_infrastructure_rof_triggers[1],
-                                                          construction_time_interval,
-                                                          17 * WEEKS_IN_YEAR,
-                                                          203.3);
+//        double lm_total_new_capacity_low = 6349.0 + added_storage_michie_expansion_low;
+//        double lm_total_new_capacity_high = 6349.0 + added_storage_michie_expansion_high;
+//        vector <double> lm_new_allocation_fractions = {0.6,0.4};
+//        vector <double> lm_new_treatment_fractions = {0.0,0.6,0.0,0.4};
+//
+//        AllocatedReservoirExpansion low_michie_expansion("Low Lake Michie Expansion (Allocated)",
+//                                                         15,
+//                                                         0,
+//                                                         lm_total_new_capacity_low,
+//                                                         &lm_allocations_ids,
+//                                                         &lm_new_allocation_fractions,
+//                                                         &lm_new_treatment_fractions,
+//                                                         city_infrastructure_rof_triggers[1],
+//                                                         construction_time_interval,
+//                                                         17 * WEEKS_IN_YEAR,
+//                                                         158.3);
+//        AllocatedReservoirExpansion high_michie_expansion("High Lake Michie Expansion (Allocated)",
+//                                                          16,
+//                                                          0,
+//                                                          lm_total_new_capacity_high,
+//                                                          &lm_allocations_ids,
+//                                                          &lm_new_allocation_fractions,
+//                                                          &lm_new_treatment_fractions,
+//                                                          city_infrastructure_rof_triggers[1],
+//                                                          construction_time_interval,
+//                                                          17 * WEEKS_IN_YEAR,
+//                                                          203.3);
 
         WaterReuse low_reclaimed("Low Reclaimed Water System", 18, reclaimed_capacity_low, construction_time_interval,
                                  7 * WEEKS_IN_YEAR, low_rec_bond);
@@ -631,7 +634,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         WaterReuse high_reclaimed("High Reclaimed Water System", 19, reclaimed_capacity_high, construction_time_interval,
                                   7 * WEEKS_IN_YEAR, high_rec_bond);
 
-        WEEKS_IN_YEAR = Constants::WEEKS_IN_YEAR;
+        //WEEKS_IN_YEAR = Constants::WEEKS_IN_YEAR;
 
         vector<double> wjlwtp_treatment_capacity_fractions =
                 {western_wake_treatment_plant_owasa_frac,
@@ -647,43 +650,114 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                 0.,
                 33 * 7 * western_wake_treatment_plant_raleigh_frac,
         };
-        vector<double> cost_wjlwtp_upgrade_1 = {
-                243.3 * western_wake_treatment_plant_owasa_frac,
-                243.3 * western_wake_treatment_frac_durham,
-                0.,
-                243.3 * western_wake_treatment_plant_raleigh_frac,
-        };
+//        vector<double> cost_wjlwtp_upgrade_1 = {
+//                243.3 * western_wake_treatment_plant_owasa_frac,
+//                243.3 * western_wake_treatment_frac_durham,
+//                0.,
+//                243.3 * western_wake_treatment_plant_raleigh_frac,
+//        };
         vector<double> capacities_wjlwtp_upgrade_2 = {
                 (54 * 7 - 33 * 7) * western_wake_treatment_plant_owasa_frac,
                 (54 * 7 - 33 * 7) * western_wake_treatment_frac_durham,
                 0.,
                 (54 * 7 - 33 * 7) * western_wake_treatment_plant_raleigh_frac
         };
-        vector<double> cost_wjlwtp_upgrade_2 = {
-                (316.8 - 243.3) * western_wake_treatment_plant_owasa_frac,
-                (316.8 - 243.3) * western_wake_treatment_frac_durham,
-                0.,
-                (316.8 - 243.3) * western_wake_treatment_plant_raleigh_frac
+//        vector<double> cost_wjlwtp_upgrade_2 = {
+//                (316.8 - 243.3) * western_wake_treatment_plant_owasa_frac,
+//                (316.8 - 243.3) * western_wake_treatment_frac_durham,
+//                0.,
+//                (316.8 - 243.3) * western_wake_treatment_plant_raleigh_frac
+//        };
+
+        /// Capital cost of TOTAL project passed to each utility's bond object for the joint wtp
+        /// individual contributions are allocated within the class based on
+        /// (1) a fixed allocation
+        /// (2) use projections
+        /// (3) past demand on the project
+        vector<double> cost_wjlwtp_upgrade_1 = {
+                243.3,
+                243.3,
+                243.3,
+                243.3
         };
+        vector<double> cost_wjlwtp_upgrade_2 = {
+                (316.8 - 243.3),
+                (316.8 - 243.3),
+                (316.8 - 243.3),
+                (316.8 - 243.3)
+        };
+
 
         /// Bonds West Jordan Lake treatment plant
         vector<Bond *> wjlwtp_bonds_capacity_1;
         int uid = 0;
         for (double &cost : cost_wjlwtp_upgrade_1) {
-            wjlwtp_bonds_capacity_1.emplace_back(new LevelDebtServiceBond(20 + uid, cost, 25, 0.05, vector<int>(1, 0), 3));
+            wjlwtp_bonds_capacity_1.emplace_back(new AllocatedLevelDebtServiceBond(20 + uid, cost, 25, 0.05, vector<int>(1, 0), 20, 3));
             uid++;
         }
         vector<Bond *> wjlwtp_bonds_capacity_2;
         uid = 0;
         for (double &cost : cost_wjlwtp_upgrade_2) {
-            wjlwtp_bonds_capacity_2.emplace_back(new LevelDebtServiceBond(21 + uid, cost, 25, 0.05, vector<int>(1, 0), 3));
+            wjlwtp_bonds_capacity_2.emplace_back(new AllocatedLevelDebtServiceBond(21 + uid, cost, 25, 0.05, vector<int>(1, 0), 21, 3));
             uid++;
         }
+
+        //AllocatedLevelDebtServiceBond low_wjlwtp_bond(20, 243.3, 25, 0.05, vector<int>(1, 0), 3);
+        //AllocatedLevelDebtServiceBond high_wjlwtp_bond(20, (316.8-243.3), 25, 0.05, vector<int>(1, 0), 3);
+
         /// West Jordan Lake treatment plant
-        SequentialJointTreatmentExpansion low_wjlwtp("Low WJLWTP", 20, 6, 0, {20, 21}, capacities_wjlwtp_upgrade_1,
-                                                     wjlwtp_bonds_capacity_1, construction_time_interval, 12 * WEEKS_IN_YEAR);
-        SequentialJointTreatmentExpansion high_wjlwtp("High WJLWTP", 21, 6, 1, {20, 21}, capacities_wjlwtp_upgrade_2,
-                                                      wjlwtp_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR);
+//        SequentialJointTreatmentExpansion low_wjlwtp("Low WJLWTP", 20, 6, 0, {20, 21}, capacities_wjlwtp_upgrade_1,
+//                                                     wjlwtp_bonds_capacity_1, construction_time_interval, 12 * WEEKS_IN_YEAR);
+//        SequentialJointTreatmentExpansion high_wjlwtp("High WJLWTP", 21, 6, 1, {20, 21}, capacities_wjlwtp_upgrade_2,
+//                                                      wjlwtp_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR);
+
+//    (const char *name, const int id, const int contract_type, const int parent_reservoir_ID,
+//    vector<int> connected_sources, const double total_treatment_capacity,
+//    Bond &bond, vector<double> fixed_allocations,
+//            double fixed_external_allocation, const vector<double> &construction_time_range,
+//    double permitting_period)
+
+        vector<int> wjlwtp_utils_with_allocations = {0,1,2,3};
+        vector<double> wjlwtp_allocations_fixed = {0.05,0.3,0.0,0.10};
+
+//        JointWTP low_wjlwtp_fixed("Low Fixed WJLWTP", 20, 0, 6,
+//                                  &wjlwtp_utils_with_allocations,
+//                                  {20, 21}, (33*7),
+//                                  wjlwtp_bonds_capacity_1, wjlwtp_allocations_fixed, 0.31,
+//                                  construction_time_interval, 3 * WEEKS_IN_YEAR);
+//        JointWTP high_wjlwtp_fixed("High Fixed WJLWTP", 21, 0, 6,
+//                                   &wjlwtp_utils_with_allocations,
+//                                   {20, 21}, (54*7),
+//                                   wjlwtp_bonds_capacity_2, wjlwtp_allocations_fixed, 0.31,
+//                                   construction_time_interval, 11 * WEEKS_IN_YEAR);
+
+        // peaking factors vector includes peaking factors for external utility
+        // Cary, Durham, OWASA, Raleigh, plus Pittsboro/Chatham
+        vector<double> peaking_factors = {1,1,1,1,1};
+
+//        JointWTP low_wjlwtp_uniform_rate("Low Uniform Rate WJLWTP", 20, 1, 6,
+//                                         &wjlwtp_utils_with_allocations, {20,21}, (33*7),
+//                                         wjlwtp_bonds_capacity_1, construction_time_interval, 2*WEEKS_IN_YEAR,
+//                                         peaking_factors, joint_wtp_demand, external_joint_wtp_demand.at(0));
+//        JointWTP high_wjlwtp_uniform_rate("High Uniform Rate WJLWTP", 21, 1, 6,
+//                                     &wjlwtp_utils_with_allocations, {20,21}, (54*7),
+//                                     wjlwtp_bonds_capacity_2, construction_time_interval, 10*WEEKS_IN_YEAR,
+//                                     peaking_factors, joint_wtp_demand, external_joint_wtp_demand.at(0));
+
+
+        int past_weeks_to_use = 52;
+
+        JointWTP low_wjlwtp_square_one("Low Adjustable Rate WJLWTP", 20, 2, 6,
+                                     &wjlwtp_utils_with_allocations, {20,21}, (33*7),
+                                     wjlwtp_bonds_capacity_1, construction_time_interval, 3*WEEKS_IN_YEAR,
+                                     peaking_factors, joint_wtp_demand, external_joint_wtp_demand.at(0),
+                                     past_weeks_to_use);
+
+        JointWTP high_wjlwtp_square_one("High Adjustable Rate WJLWTP", 21, 2, 6,
+                                       &wjlwtp_utils_with_allocations, {20,21}, (33*7),
+                                       wjlwtp_bonds_capacity_2, construction_time_interval, 10*WEEKS_IN_YEAR,
+                                       peaking_factors, joint_wtp_demand, external_joint_wtp_demand.at(0),
+                                       past_weeks_to_use);
 
         /// Bonds Cary treatment plant expansion
         vector<double> cost_cary_wtp_upgrades = {0, 0, 243. / 2, 0};
@@ -737,10 +811,15 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         water_sources.push_back(&caryWtpUpgrade1);
         water_sources.push_back(&caryWtpUpgrade2);
-        water_sources.push_back(&low_wjlwtp);
-        water_sources.push_back(&high_wjlwtp);
+//        water_sources.push_back(&low_wjlwtp_fixed);
+//        water_sources.push_back(&high_wjlwtp_fixed);
+//        water_sources.push_back(&low_wjlwtp_uniform_rate);
+//        water_sources.push_back(&high_wjlwtp_uniform_rate);
+        water_sources.push_back(&low_wjlwtp_square_one);
+        water_sources.push_back(&high_wjlwtp_square_one);
 
-        water_sources.push_back(&dummy_endpoint);
+
+    water_sources.push_back(&dummy_endpoint);
 
         /*
          * System connection diagram (water
@@ -819,8 +898,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         vector<vector<int>> wjlwtp_remove_from_to_build_list;// = {{21, 20}};
 
 
-        vector<int> demand_triggered_infra_order_cary = {22, 23};
-        vector<double> demand_infra_cary = {caryupgrades_2 * 7, caryupgrades_3 * 7};
+        vector<int> demand_triggered_infra_order_cary = {20, 21, 22, 23};
+        vector<double> demand_infra_cary = {0,0,caryupgrades_2 * 7, caryupgrades_3 * 7};
         Utility cary((char *) "Cary", 2, demand_cary, demand_n_weeks, cary_annual_payment, &caryDemandClassesFractions,
                      &caryUserClassesWaterPrices, wwtp_discharge_cary, cary_inf_buffer, vector<int>(),
                      demand_triggered_infra_order_cary, demand_infra_cary, discount_rate, bond_term[0], bond_rate[0]);
@@ -848,8 +927,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         vector<vector<int>> reservoir_utility_connectivity_matrix = {
                 {3, 4,  5, 6,  12, 13, 14, 20, 21, 24}, //OWASA
                 {0, 6,  9, 15, 16, 18, 19, 20, 21}, //Durham
-                {6, 22, 23},                    //Cary
-                {1, 2,  6, 7,  8,  15, 16, 17, 10, 20, 21}  //Raleigh
+                {6,20, 21, 22, 23},                    //Cary
+                {1, 2,  6, 7,  8, 17, 10, 20, 21}  //Raleigh
         };
 
         auto table_storage_shift = std::vector<std::vector<double>>(4, vector<double>(25, 0.));
@@ -939,6 +1018,21 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                     vector<double>(),
                     vector<int>());
         drought_mitigation_policies.push_back(&t);
+
+        /// Direct Treated Water Transfer policy
+        ///     from Jordan Lake utilities to Raleigh
+        cout << "Assign direct treated water transfer policy." << endl;
+
+        DirectTreatedWaterTransfer jordan_lake_to_raleigh_direct_transfer(
+                0,
+                "Joint WTP Direct Interruptible Transfers to Raleigh (Small WTP)",
+                6,
+                20,
+                3,
+                0.001,
+                0.0035);
+
+        drought_mitigation_policies.push_back(&jordan_lake_to_raleigh_direct_transfer);
 
         /// Raw Water Transfer policy
         ///     utility ids: 0 OWASA, 1 Durham, 2 Cary, 3 Raleigh
@@ -1253,7 +1347,12 @@ void Triangle::readInputData() {
 #pragma omp single
     demand_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/owasa_demand.csv", n_realizations);
 
-    //cout << "Reading others." << endl;
+#pragma omp single
+        joint_wtp_demand = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/triangle_annualunmetdemandprojections_2015_to_2060_MGD.csv");
+#pragma omp single
+        external_joint_wtp_demand = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/chathamcountypittsboro_annualunmetdemandprojections_2015_to_2060_MGD.csv");
+
+        //cout << "Reading others." << endl;
 #pragma omp single
 {
     demand_to_wastewater_fraction_owasa_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");

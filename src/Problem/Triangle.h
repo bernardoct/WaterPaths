@@ -33,6 +33,10 @@ private:
     vector<vector<double>> demand_durham;
     vector<vector<double>> demand_raleigh;
     vector<vector<double>> demand_owasa;
+
+    vector<vector<double>> joint_wtp_demand;
+    vector<vector<double>> external_joint_wtp_demand;
+
     vector<vector<double>> evap_durham;
     vector<vector<double>> evap_falls_lake;
     vector<vector<double>> evap_owasa;

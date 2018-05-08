@@ -305,10 +305,11 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
     /// Run realizations.
     int had_catch = 0;
     string error_m = "Error in realizations ";
+//    std::reverse(realizations_to_run.begin(), realizations_to_run.end());
 #pragma omp parallel for ordered num_threads(n_threads) shared(had_catch)
 //    for (int r = (int) n_realizations - 1; r >= 0; --r) {
     for (unsigned long r = 0; r < n_realizations; ++r) {
-        try {
+//        try {
             unsigned long realization = realizations_to_run.at(r);
 
             /// Create continuity models.
@@ -362,18 +363,23 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
 
             delete realization_model;
             delete rof_model;
-        } catch (...) {
-#pragma omp atomic
-                ++had_catch;
-            error_m += to_string(r) + " ";
-        }
+//        } catch (...) {
+//#pragma omp atomic
+//                ++had_catch;
+//            error_m += to_string(r) + " ";
+//        }
     }
     /// Handle exception from the OpenMP region and pass it up to the
     /// problem class.
     if (had_catch) {
-	    int world_rank;
+	int world_rank;
 #ifdef  PARALLEL
-        MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+	int mpi_initialized;
+	MPI_Initialized(&mpi_initialized);
+	if (mpi_initialized)
+            MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+	else
+	    world_rank = 0;
 #else
         world_rank = 0;
 #endif

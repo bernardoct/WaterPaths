@@ -167,7 +167,7 @@ void Transfers::addSystemComponents(vector<Utility *> system_utilities,
                                     vector<MinEnvFlowControl *> min_env_flow_controls) {
 
     if (!realization_utilities.empty())
-        throw std::invalid_argument("Utilities were already assigned to "
+        throw std::invalid_argument("Utility were already assigned to "
                                             "transfer policy.");
 
     //FIXME: RIGHT NOW TRANSFERS CAN ONLY HAVE ONE SOURCE. THIS NEEDS TO BE EXPANDED.

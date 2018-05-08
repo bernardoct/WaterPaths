@@ -13,19 +13,18 @@ private:
 
     double total_treatment_capacity;
     vector<double> &added_treatment_capacities;
-    vector<double> &construction_costs;
 
 public:
     const int expansion_sequence_id;
 
     SequentialJointTreatmentExpansion(const char *name, const int id,
-                                          const int parent_reservoir_ID,
-                                          const int expansion_sequence_id,
-                                          vector<int> connected_sources,
-                                          vector<double> &sequential_treatment_capacity,
-                                          vector<double> &sequential_cost,
-                                          const vector<double> &construction_time_range,
-                                          double permitting_period);
+                                      const int parent_reservoir_ID,
+                                      const int expansion_sequence_id,
+                                      vector<int> connected_sources,
+                                      vector<double> &sequential_treatment_capacity,
+                                      vector<Bond *> &bonds,
+                                      const vector<double> &construction_time_range,
+                                      double permitting_period);
 
     SequentialJointTreatmentExpansion(
             const SequentialJointTreatmentExpansion &joint_water_treatment_plant);
@@ -41,22 +40,7 @@ public:
 
     double implementTreatmentCapacity(int utility_id);
 
-    double calculateConstructionCost(int utility_id);
-
-    double calculateNetPresentConstructionCost(
-            int week, int utility_id, double discount_rate,
-            vector<double>& debt_service_payments, double bond_term,
-            double bond_interest_rate) const override;
-
     ~SequentialJointTreatmentExpansion() override;
-
-    void setSequential_treatment_capacity(vector<vector<double>> *sequential_treatment_capacity);
-
-    void setSequential_cost(vector<vector<double>> *sequential_cost);
-
-    vector<vector<double>> *getSequential_treatment_capacity() const;
-
-    vector<vector<double>> *getSequential_cost() const;
 
 
 };

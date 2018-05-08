@@ -7,6 +7,19 @@
 #include <sys/stat.h>
 #include <numeric>
 #include <random>
+
+#ifdef NETCDF
+#include <netcdf> 
+using namespace std;
+using namespace netCDF;
+using namespace netCDF::exceptions;
+// Return this in event of a problem.
+#define ERRCODE 2
+#define ERR(e) {printf("Error: %s\n", nc_strerror(e)); exit(ERRCODE);}
+static const int NC_ERR = 2;
+#define DEFLATE_LEVEL_9 9
+#endif
+
 #include "MasterDataCollector.h"
 #include "../Utils/ObjectivesCalculator.h"
 #include "../Utils/Utils.h"
@@ -27,7 +40,6 @@
 using namespace Constants;
 
 
-
 MasterDataCollector::MasterDataCollector(unsigned long n_realizations) : n_realizations(n_realizations) {}
 
 MasterDataCollector::~MasterDataCollector() {
@@ -43,6 +55,104 @@ MasterDataCollector::~MasterDataCollector() {
     for (vector<UtilitiesDataCollector *> dcs : utility_collectors)
         for (UtilitiesDataCollector *dc : dcs)
             delete dc;
+}
+
+int MasterDataCollector::printNETCDFUtilities(string base_file_name) {
+#ifdef NETCDF
+    unsigned long n_weeks = utility_collectors[0][0]->getCombined_storage().size();
+    unsigned long n_realizations = utility_collectors[0].size();
+    unsigned long n_utilities = utility_collectors.size();
+    unsigned long n_vars = 6;
+
+    try {
+	string file_name = output_directory + base_file_name + ".nc";
+	printf("Printing NetCDF output in %s.\n", file_name.c_str());
+	int ncid, dimid, csid, strofid, retval;
+	vector<int> group_ids(n_realizations);
+	vector<int> utilities_group_ids(n_utilities * n_realizations);
+	vector<int> vars_ids(n_utilities * n_realizations * n_vars);
+
+        /* Create the file. The NC_NETCDF4 flag tells netCDF to
+         * create a netCDF-4/HDF5 file.
+	 * */
+        if ((retval = nc_create(file_name.c_str(), NC_NETCDF4|NC_CLOBBER, &ncid)))
+		               ERR(retval);
+
+        nc_def_dim(ncid, "weeks", n_weeks, &dimid);
+        for (int r = 0; r < (int) n_realizations; ++r) {
+	    if ((retval = nc_def_grp(ncid, (string("realization_") + to_string(r)).c_str(), &group_ids[r])))
+		             ERR (retval);
+	    for (int u = 0; u < (int) n_utilities; ++u) {
+	        if ((retval = nc_def_grp(group_ids[r], utility_collectors[u][r]->name, &utilities_group_ids[n_utilities * r + u])))
+		                 ERR (retval);	    
+
+                if ((retval = nc_def_var(utilities_group_ids[n_utilities * r + u], "storage", 
+						NC_FLOAT, 1, &dimid, &vars_ids[n_utilities * r * n_vars + u])))
+                    ERR(retval);
+                if ((retval = nc_def_var(utilities_group_ids[n_utilities * r + u], "st_rof", 
+						NC_FLOAT, 1, &dimid, &vars_ids[n_utilities * r * n_vars + u + 1])))
+                    ERR(retval);
+                if ((retval = nc_def_var(utilities_group_ids[n_utilities * r + u], "lt_rof", 
+						NC_FLOAT, 1, &dimid, &vars_ids[n_utilities * r * n_vars + u + 2])))
+                    ERR(retval);
+                if ((retval = nc_def_var(utilities_group_ids[n_utilities * r + u], "res_demand", 
+						NC_FLOAT, 1, &dimid, &vars_ids[n_utilities * r * n_vars + u + 3])))
+                    ERR(retval);
+                if ((retval = nc_def_var(utilities_group_ids[n_utilities * r + u], "cf_size", 
+						NC_FLOAT, 1, &dimid, &vars_ids[n_utilities * r * n_vars + u+ 4])))
+                    ERR(retval);
+                if ((retval = nc_def_var(utilities_group_ids[n_utilities * r + u], "infr_pmts", 
+						NC_FLOAT, 1, &dimid, &vars_ids[n_utilities * r * n_vars + u + 5])))
+                    ERR(retval);
+
+                if ((retval = nc_def_var_deflate(utilities_group_ids[n_utilities * r + u], 
+						vars_ids[n_utilities * r * n_vars + u], 1, 1, DEFLATE_LEVEL_9)))
+                    ERR(retval);
+                if ((retval = nc_def_var_deflate(utilities_group_ids[n_utilities * r + u], 
+						vars_ids[n_utilities * r * n_vars + u + 1], 1, 1, DEFLATE_LEVEL_9)))
+                    ERR(retval);
+                if ((retval = nc_def_var_deflate(utilities_group_ids[n_utilities * r + u], 
+						vars_ids[n_utilities * r * n_vars + u + 2], 1, 1, DEFLATE_LEVEL_9)))
+                    ERR(retval);
+                if ((retval = nc_def_var_deflate(utilities_group_ids[n_utilities * r + u], 
+						vars_ids[n_utilities * r * n_vars + u + 3], 1, 1, DEFLATE_LEVEL_9)))
+                    ERR(retval);
+                if ((retval = nc_def_var_deflate(utilities_group_ids[n_utilities * r + u], 
+						vars_ids[n_utilities * r * n_vars + u + 4], 1, 1, DEFLATE_LEVEL_9)))
+                    ERR(retval);
+                if ((retval = nc_def_var_deflate(utilities_group_ids[n_utilities * r + u], 
+						vars_ids[n_utilities * r * n_vars + u + 5], 1, 1, DEFLATE_LEVEL_9)))
+                    ERR(retval);
+
+                if ((retval = nc_put_var_double(utilities_group_ids[n_utilities * r + u], vars_ids[n_utilities * r * n_vars + u],
+						utility_collectors[u][r]->getCombined_storage().data())))
+	            ERR(retval);
+                if ((retval = nc_put_var_double(utilities_group_ids[n_utilities * r + u], vars_ids[n_utilities * r * n_vars + u + 1],
+						utility_collectors[u][r]->getSt_rof().data())))
+	            ERR(retval);
+                if ((retval = nc_put_var_double(utilities_group_ids[n_utilities * r + u], vars_ids[n_utilities * r * n_vars + u + 2],
+						utility_collectors[u][r]->getLt_rof().data())))
+	            ERR(retval);
+                if ((retval = nc_put_var_double(utilities_group_ids[n_utilities * r + u], vars_ids[n_utilities * r * n_vars + u + 3],
+						utility_collectors[u][r]->getRestricted_demand().data())))
+	            ERR(retval);
+                if ((retval = nc_put_var_double(utilities_group_ids[n_utilities * r + u], vars_ids[n_utilities * r * n_vars + u + 4],
+						utility_collectors[u][r]->getContingency_fund_size().data())))
+	            ERR(retval);
+                if ((retval = nc_put_var_double(utilities_group_ids[n_utilities * r + u], vars_ids[n_utilities * r * n_vars + u + 5],
+						utility_collectors[u][r]->getDebt_service_payments().data())))
+	            ERR(retval);
+	    }
+	}
+	return 0;
+    } catch(NcException& e){
+        e.what();
+        return NC_ERR;
+    }
+#else
+    printf("This version of WaterPaths was not compiled with NetCDF. NetCDF result files will not be printed.\n");
+    return 1;
+#endif
 }
 
 void MasterDataCollector::printPoliciesOutputCompact(

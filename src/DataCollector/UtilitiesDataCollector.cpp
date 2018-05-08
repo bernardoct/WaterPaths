@@ -275,3 +275,15 @@ const vector<double> &
 UtilitiesDataCollector::getNet_present_infrastructure_cost() const {
     return net_present_infrastructure_cost;
 }
+
+const vector<double> &UtilitiesDataCollector::getSt_rof() const {
+    return st_rof;
+}
+
+const vector<double> &UtilitiesDataCollector::getLt_rof() const {
+    return lt_rof;
+}
+
+const vector<double> &UtilitiesDataCollector::getRestricted_demand() const {
+    return restricted_demand;
+}

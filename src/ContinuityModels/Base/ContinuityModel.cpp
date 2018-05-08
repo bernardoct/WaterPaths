@@ -128,7 +128,6 @@ ContinuityModel::~ContinuityModel() {
  * @param week current week.
  * @param rof_realization rof realization id (between 0 and 49 inclusive).
  */
-//#pragma GCC optimize("O0")
 void ContinuityModel::continuityStep(
         int week, int rof_realization, bool apply_demand_buffer) {
     double* upstream_spillage = new double[n_sources];

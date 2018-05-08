@@ -1,4 +1,4 @@
-CFLAGS=-std=c++14 -fopenmp
+CFLAGS=-std=c++14 #-fsanitize=address -fno-omit-frame-pointer #-fno-sanitize-address-use-after-scope
 
 # List of sources and objects (include all .cpp files)
 SOURCES=$(shell find ./src -name "*.cpp")
@@ -18,7 +18,7 @@ borg: CFLAGS += -DPARALLEL -fopenmp -march=ivybridge -O0 -g
 borg: all
 
 gcc: CC=g++
-gcc: CFLAGS+=-O0 -march=ivybridge -fopenmp
+gcc: CFLAGS+=-O1 -march=ivybridge -fopenmp
 gcc: all
 
 intel: CC=icc

@@ -5,7 +5,7 @@
 #ifndef TRIANGLEMODEL_DROUGHTMITIGATIONPOLICY_H
 #define TRIANGLEMODEL_DROUGHTMITIGATIONPOLICY_H
 
-#include "../../SystemComponents/Utility.h"
+#include "../../SystemComponents/Utility/Utility.h"
 #include "../../Utils/Constants.h"
 #include "../../Utils/Graph/Graph.h"
 #include "../../Utils/Matrices.h"

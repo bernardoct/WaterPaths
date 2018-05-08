@@ -73,6 +73,10 @@ namespace Constants {
     const int JORDAN_CONTROLS = 4;
     const int FALLS_CONTROLS = 5;
 
+    const int LEVEL_DEBT_SERVICE = 0;
+    const int BALLOON_PAYMENT = 1;
+    const int FLOATING_INTEREST = 2;
+
     const int N_RDM_FACTORS_UTILITIES = 4;
     const int N_RDM_FACTORS_WATER_SOURCES = 2;
     const int N_RDM_FACTORS_EVAPORATION = 1;

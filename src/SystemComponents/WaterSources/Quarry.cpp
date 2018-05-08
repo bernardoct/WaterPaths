@@ -24,9 +24,9 @@ Quarry::Quarry(
 Quarry::Quarry(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
                const double max_treatment_capacity, EvaporationSeries &evaporation_series,
                DataSeries *storage_area_curve, const vector<double> &construction_time_range,
-               double permitting_period, double construction_cost, double max_diversion)
+               double permitting_period, Bond &bond, double max_diversion)
         : Reservoir(name, id, catchments, capacity, max_treatment_capacity, evaporation_series, storage_area_curve,
-                    construction_time_range, permitting_period, construction_cost, QUARRY), max_diversion(max_diversion) {}
+                    construction_time_range, permitting_period, bond, QUARRY), max_diversion(max_diversion) {}
 
 Quarry::Quarry(
         const char *name, const int id,
@@ -45,10 +45,10 @@ Quarry::Quarry(
 
 Quarry::Quarry(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
                const double max_treatment_capacity, EvaporationSeries &evaporation_series, double storage_area,
-               const vector<double> &construction_time_range, double permitting_period, double construction_cost,
+               const vector<double> &construction_time_range, double permitting_period, Bond &bond,
                double max_diversion)
         : Reservoir(name, id, catchments, capacity, max_treatment_capacity, evaporation_series, storage_area,
-                    construction_time_range, permitting_period, construction_cost, QUARRY), max_diversion(max_diversion) {}
+                    construction_time_range, permitting_period, bond, QUARRY), max_diversion(max_diversion) {}
 
 Quarry::Quarry(const Quarry &quarry, const double max_diversion) :
         Reservoir(quarry), max_diversion(max_diversion) {}

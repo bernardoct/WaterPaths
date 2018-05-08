@@ -28,11 +28,11 @@ public:
             *allocated_treatment_fractions);
 
     AllocatedReservoir(const char *name, const int id, const vector<Catchment *> &catchments,
-                           const double capacity, const double max_treatment_capacity,
-                           EvaporationSeries &evaporation_series, DataSeries *storage_area_curve,
-                           const vector<double> &construction_time_range, double construction_cost,
-                           vector<int> *utilities_with_allocations, vector<double> *allocated_fractions,
-                           vector<double> *allocated_treatment_fractions);
+                       const double capacity, const double max_treatment_capacity,
+                       EvaporationSeries &evaporation_series, DataSeries *storage_area_curve,
+                       const vector<double> &construction_time_range, double permitting_period, Bond &bond,
+                       vector<int> *utilities_with_allocations, vector<double> *allocated_fractions,
+                       vector<double> *allocated_treatment_fractions);
 
     AllocatedReservoir(
             const char *name, const int id,
@@ -44,7 +44,14 @@ public:
             *allocated_treatment_fractions);
 
     AllocatedReservoir(const char *name, const int id, const vector<Catchment *> &catchments,
-                           const double capacity, const double max_treatment_capacity,
+                       const double capacity, const double max_treatment_capacity,
+                       EvaporationSeries &evaporation_series, double storage_area,
+                       const vector<double> &construction_time_range, double permitting_period, Bond &bond,
+                       vector<int> *utilities_with_allocations, vector<double> *allocated_fractions,
+                       vector<double> *allocated_treatment_fractions);
+
+    AllocatedReservoir(const char *name, const int id, const vector<Catchment *> &catchments,
+                       const double capacity, const double max_treatment_capacity,
                            EvaporationSeries &evaporation_series, double storage_area,
                            const vector<double> &construction_time_range, double construction_cost,
                            vector<int> *utilities_with_allocations, vector<double> *allocated_fractions,

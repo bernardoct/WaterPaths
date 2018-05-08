@@ -7,6 +7,7 @@
 #include <numeric>
 #include <algorithm>
 #include "WaterSource.h"
+#include "../../../Utils/Utils.h"
 
 using namespace std;
 
@@ -25,7 +26,6 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
                          const int source_type)
         : available_volume(capacity),
           permitting_time(NON_INITIALIZED),
-          construction_cost_of_capital(NON_INITIALIZED),
           capacity(capacity),
           built_in_sequence(connected_sources),
           online(ONLINE),
@@ -57,10 +57,10 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
 WaterSource::WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
                          const double capacity, double treatment_capacity, vector<int> connected_sources,
                          const int source_type, const vector<double> construction_time_range,
-                         double permitting_period, double construction_cost_of_capital)
+                         double permitting_period, Bond &bond)
         : available_volume(capacity),
           permitting_time(permitting_period),
-          construction_cost_of_capital(construction_cost_of_capital),
+          bonds(vector<Bond *>(1, &bond)),
           capacity(capacity),
           built_in_sequence(connected_sources),
           online(OFFLINE),
@@ -76,7 +76,47 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
                   (rand() % (int) WEEKS_IN_YEAR)) {
 
     for (Catchment *c : catchments) {
-        this->catchments.push_back(Catchment(*c));
+        this->catchments.emplace_back(*c);
+    }
+    checkForInputErrorsConstruction();
+}
+
+/**
+ * Constructor for when shared water source does not exist in the beginning of the simulation.
+ * @param name
+ * @param id
+ * @param catchments
+ * @param capacity
+ * @param treatment_capacity
+ * @param connected_sources
+ * @param source_type
+ * @param construction_time_range
+ * @param permitting_period
+ * @param bonds
+ */
+WaterSource::WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
+                         const double capacity, double treatment_capacity, vector<int> connected_sources,
+                         const int source_type, const vector<double> construction_time_range,
+                         double permitting_period, vector<Bond *> bonds)
+        : available_volume(capacity),
+          permitting_time(permitting_period),
+          bonds(bonds),
+          capacity(capacity),
+          built_in_sequence(connected_sources),
+          online(OFFLINE),
+          total_treatment_capacity(treatment_capacity),
+          highest_alloc_id(NOT_ALLOCATED),
+          id(id),
+          name(name),
+          source_type(source_type),
+          construction_time(
+                  construction_time_range[0] * WEEKS_IN_YEAR +
+                  (construction_time_range[1] -
+                   construction_time_range[0]) *
+                  (rand() % (int) WEEKS_IN_YEAR)) {
+
+    for (Catchment *c : catchments) {
+        this->catchments.emplace_back(*c);
     }
     checkForInputErrorsConstruction();
 }
@@ -98,7 +138,6 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
                          vector<double> *allocated_fractions, vector<int> *utilities_with_allocations)
         : available_volume(capacity),
           permitting_time(NON_INITIALIZED),
-          construction_cost_of_capital(NON_INITIALIZED),
           capacity(capacity),
           built_in_sequence(connected_sources),
           utilities_with_allocations(utilities_with_allocations),
@@ -136,11 +175,10 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
                          const double capacity, double treatment_capacity, vector<int> built_in_sequence,
                          const int source_type, vector<double> *allocated_treatment_fractions,
                          vector<double> *allocated_fractions, vector<int> *utilities_with_allocations,
-                         const vector<double> construction_time_range, double permitting_period,
-                         double construction_cost_of_capital)
+                         const vector<double> construction_time_range, double permitting_period, Bond &bond)
         : available_volume(capacity),
           permitting_time(permitting_period),
-          construction_cost_of_capital(construction_cost_of_capital),
+          bonds(vector<Bond *>(1, &bond)),
           capacity(capacity),
           built_in_sequence(built_in_sequence),
           utilities_with_allocations(utilities_with_allocations),
@@ -161,7 +199,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
                    allocated_treatment_fractions);
 
     for (Catchment *c : catchments) {
-        this->catchments.push_back(Catchment(*c));
+        this->catchments.emplace_back(*c);
     }
 
     checkForInputErrorsConstruction();
@@ -178,11 +216,6 @@ void WaterSource::checkForInputErrorsConstruction() {
         string error = "Invalid construction time for water source " + to_string(id);
         __throw_invalid_argument(error.c_str());
     }
-
-    if (std::isnan(construction_cost_of_capital) || construction_cost_of_capital < 0) {
-        string error = "Invalid construction cost of capital for water source " + to_string(id);
-        __throw_invalid_argument(error.c_str());
-    }
 }
 
 /**
@@ -195,9 +228,9 @@ WaterSource::WaterSource(const WaterSource &water_source) :
         upstream_source_inflow(water_source.upstream_source_inflow),
         upstream_catchment_inflow(water_source.upstream_catchment_inflow),
         permitting_time(water_source.permitting_time),
-        construction_cost_of_capital(water_source.construction_cost_of_capital),
+        bonds(Utils::copyBonds(water_source.bonds)),
         upstream_min_env_inflow(water_source.upstream_min_env_inflow),
-        capacity(water_source.capacity),
+        capacity(water_source.capacity), 
         built_in_sequence(water_source.built_in_sequence),
         available_allocated_volumes(water_source.available_allocated_volumes),
         allocated_capacities(water_source.allocated_capacities),
@@ -231,8 +264,8 @@ WaterSource::WaterSource(const WaterSource &water_source) :
     }
 
     catchments.clear();
-    for (int i = 0; i < (int) water_source.catchments.size(); ++i) {
-        catchments.push_back(Catchment(water_source.catchments[i]));
+    for (const auto &catchment : water_source.catchments) {
+        catchments.emplace_back(catchment);
     }
 }
 
@@ -267,11 +300,11 @@ WaterSource &WaterSource::operator=(const WaterSource &water_source) {
         allocated_treatment_capacities = water_source.allocated_treatment_capacities;
 
         annual_source_demand = water_source.annual_source_demand;
-    } 
+    }
 
     catchments.clear();
     for (Catchment &c : catchments) {
-        this->catchments.push_back(Catchment(c));
+        this->catchments.emplace_back(c);
     }
 
     return *this;
@@ -534,12 +567,6 @@ bool WaterSource::skipConstruction(int utility_id) const {
     return false;
 }
 
-void WaterSource::connectSource(WaterSource *water_source) {
-    char error[1024];
-    sprintf(error, "Water source %d is not a connecting type.\n", id);
-    throw_with_nested(invalid_argument(error));
-}
-
 /**
  * Set inflows, evaporation and rdm values for water source for a given utility r
  * @param r
@@ -558,9 +585,15 @@ void WaterSource::setRealization(unsigned long r, vector<double> &rdm_factors) {
         this->upstream_catchment_inflow = c.getStreamflow(0);
     }
 
-    /// Set permitting times and construction cost overruns according to corresponding rdm factors.
+    /// Set permitting times according to corresponding rdm factors.
     permitting_time *= rdm_factors.at((unsigned int) 1 + 2 * id);
-    construction_cost_of_capital *= rdm_factors.at((unsigned int) 1 + 2 * id + 1);
+
+    /// Set construction cost overruns according to corresponding rdm factors.
+    double construction_cost_multiplier = rdm_factors.at((unsigned int) 1 + 2 * id + 1);
+    vector<double> construction_cost_multiplier_vec = vector<double>(1, construction_cost_multiplier);
+    for (Bond *bond : bonds) {
+        bond->setRealizationWaterSource(r, construction_cost_multiplier_vec);
+    }
 }
 
 double WaterSource::getAvailableVolume() const {
@@ -734,20 +767,16 @@ double WaterSource::getPermitting_period() const {
     return permitting_time;
 }
 
-void WaterSource::setPermitting_period(double permitting_period) {
-    WaterSource::permitting_time = permitting_period;
-}
-
-double WaterSource::getConstruction_cost_of_capital() const {
-    return construction_cost_of_capital;
-}
-
-void WaterSource::setConstruction_cost_of_capital(double construction_cost_of_capital) {
-    WaterSource::construction_cost_of_capital = construction_cost_of_capital;
-}
-
 const vector<int> &WaterSource::getBuilt_in_sequence() const {
     return built_in_sequence;
+}
+
+Bond &WaterSource::getBond(int utility_id) {
+    if (bonds.size() == 1) {
+        return *bonds[0];
+    } else {
+        return *bonds[utility_id];
+    }
 }
 
 void WaterSource::addAllocatedTreatmentCapacity(const double added_allocated_treatment_capacity, int utility_id) {

@@ -419,7 +419,7 @@ void ContinuityModelROF::shiftStorages(
 void ContinuityModelROF::printROFTable(const string &folder) {
 
 //    try {
-        printf("Tables printed in folder %s for realization %lu.\n", folder.c_str(), realization_id);
+//        printf("Tables printed in folder %s for realization %lu.\n", folder.c_str(), realization_id);
         for (int u = 0; u < n_utilities; ++u) {
             string file_name = folder + "/tables_r" + to_string(realization_id) + "_u" + to_string(u);
             ofstream output_file(file_name, std::ofstream::binary);
@@ -523,7 +523,7 @@ void ContinuityModelROF::updateOnlineInfrastructure(int week) {
                 auto u = (unsigned long) uu;
                 water_sources_online_to_utilities.at(u).push_back((int) ws);
                 continuity_utilities.at(u)
-                        ->setWaterSourceOnline((int) ws, 0);
+                        ->setWaterSourceOnline((int) ws, week);
 
 
                 /// Update the shift in storage to be used to calculate the

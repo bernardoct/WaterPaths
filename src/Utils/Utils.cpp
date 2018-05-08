@@ -19,6 +19,9 @@
 #include "../Controls/StorageMinEnvFlowControl.h"
 #include "../Controls/Custom/JordanLakeMinEnvFlowControl.h"
 #include "../Controls/Custom/FallsLakeMinEnvFlowControl.h"
+#include "../SystemComponents/Bonds/LevelDebtServiceBond.h"
+#include "../SystemComponents/Bonds/BalloonPaymentBond.h"
+#include "../SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.h"
 #include <fstream>
 #include <algorithm>
 #include <climits>
@@ -241,6 +244,25 @@ Utils::copyDroughtMitigationPolicyVector(
     }
 
     return drought_mitigation_policy_new;
+}
+
+vector<Bond *> Utils::copyBonds(vector<Bond *> bonds_original) {
+    vector<Bond *> bonds_new;
+
+    for (Bond *bond : bonds_original) {
+        if (bond->type == LEVEL_DEBT_SERVICE)
+            bonds_new.push_back(new LevelDebtServiceBond(*dynamic_cast<LevelDebtServiceBond *>(bond)));
+        else if (bond->type == BALLOON_PAYMENT)
+            bonds_new.push_back(new BalloonPaymentBond(*dynamic_cast<BalloonPaymentBond *>(bond)));
+        else if (bond->type == FLOATING_INTEREST)
+            bonds_new.push_back(new FloatingInterestBalloonPaymentBond(
+                    *dynamic_cast<FloatingInterestBalloonPaymentBond *>(bond)));
+        else
+            __throw_invalid_argument("Your bond type does not have a corresponding "
+                                     "copy function in Utils::copyBonds yet.\n");
+    }
+
+    return bonds_new;
 }
 
 bool Utils::isFirstWeekOfTheYear(int week) {

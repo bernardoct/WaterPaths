@@ -127,6 +127,10 @@ public:
             int week, vector<vector<double>> &demands, bool
     apply_demand_buffer = false);
 
+    void checkErrorsAddWaterSourceOnline(WaterSource *water_source);
+
+    void issueBond(int new_infra_triggered, int week);
+
     void calculateWeeklyAverageWaterPrices(
             const vector<vector<double>> *typesMonthlyDemandFraction,
             const vector<vector<double>> *typesMonthlyWaterPrice);
@@ -225,7 +229,7 @@ public:
 
     double getTotal_stored_volume() const;
 
-    void checkErrorsAddWaterSourceOnline(WaterSource *water_source);
+    const InfrastructureManager &getInfrastructure_construction_manager() const;
 
     void recordWeeklyDemand(int week, vector<vector<double>> &demands, bool apply_demand_buffer,
                             vector<vector<vector<double>>> &realization_demands);

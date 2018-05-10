@@ -66,8 +66,9 @@ double BalloonPaymentBond::getNetPresentValueAtIssuance(double yearly_discount_r
     return npv_at_first_payment_date / pow(1. + yearly_discount_rate, begin_repayment_after_n_years);
 }
 
-void BalloonPaymentBond::issueBond(int week, double bond_term_multiplier, double bond_interest_rate_multiplier) {
-    Bond::issueBond(week, bond_term_multiplier, bond_interest_rate_multiplier);
+void BalloonPaymentBond::issueBond(int week, int construction_time, double bond_term_multiplier,
+                                   double bond_interest_rate_multiplier) {
+    Bond::issueBond(week, 0, bond_term_multiplier, bond_interest_rate_multiplier);
 
     /// Interest to be paid every pay period.
     interest_payments = coupon_rate * cost_of_capital;

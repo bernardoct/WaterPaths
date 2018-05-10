@@ -169,6 +169,13 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
 
     double direct_demand = total_demand;
 
+    /// Constrain outflow to what is available on water quality pool.
+    min_environmental_outflow = (has_water_quality_pool ?
+                                 min(min_environmental_outflow, available_allocated_volumes.back()) :
+                                 min_environmental_outflow);
+    double outflow_new = min_environmental_outflow;
+    total_outflow = outflow_new;
+
     /// Calculate total runoff inflow reaching reservoir from its watershed.
     upstream_catchment_inflow = 0;
     for (Catchment &c : catchments)
@@ -187,8 +194,6 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
                                   - total_demand
                                   - min_environmental_outflow
                                   - evaporated_volume;
-    double outflow_new = min_environmental_outflow;
-    total_outflow = outflow_new;
 
     /// Check if spillage is needed and, if so, correct stored volume and
     /// calculate spillage and set all allocations to full. Otherwise,
@@ -563,6 +568,7 @@ bool AllocatedReservoir::mass_balance_with_wq_pool(double net_inflow,
                                                      &demand_outflow) {
     bool overallocation = false;
     int u;
+    double negative_utility_allocation = 0;
     for (int i = 0; i < (int) utilities_with_allocations->size() - 1; ++i) {
         u = (*utilities_with_allocations)[i];
         /// Split inflows and evaporation among allocations and
@@ -572,22 +578,39 @@ bool AllocatedReservoir::mass_balance_with_wq_pool(double net_inflow,
                 demand_outflow[u];
 
         /// Flag the occurrence of an allocation exceeding its capacity
-        if (!overallocation)
+        if (!overallocation) {
             overallocation = available_allocated_volumes[u] >
                              allocated_capacities[u];
+        }
+
+        /**
+         * If allocated volume gets negative for any utility, charge that consumption (basically evaporation)
+         * to the water quality pool. Improvements can be made to this, but it may make code significantly slower.
+         */
+        if (available_allocated_volumes[u] < 0) {
+            negative_utility_allocation += available_allocated_volumes[u];
+            available_allocated_volumes[u] = 0;
+        }
     }
 
-    /// the water quality pool has no demand and provided the
+    /// the water quality pool has no demand but provides the
     /// minimum environmental flows.
     u = utilities_with_allocations->back();
     available_allocated_volumes[u] +=
             net_inflow * allocated_fractions[u] -
-            min_environmental_outflow;
+            min_environmental_outflow + negative_utility_allocation;
 
     /// Flag the occurrence of an allocation exceeding its capacity
-    if (!overallocation)
+    if (!overallocation) {
         overallocation = available_allocated_volumes[u] >
                          allocated_capacities[u];
+    }
+
+    if (available_allocated_volumes[u] < 0) {
+        total_outflow += available_allocated_volumes[u];
+        available_volume -= available_allocated_volumes[u];
+        available_allocated_volumes[u] = 0;
+    }
 
     return overallocation;
 }

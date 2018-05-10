@@ -29,6 +29,8 @@ public:
     SequentialJointTreatmentExpansion(
             const SequentialJointTreatmentExpansion &joint_water_treatment_plant);
 
+    ~SequentialJointTreatmentExpansion() override;
+
     SequentialJointTreatmentExpansion &operator=(
             const SequentialJointTreatmentExpansion &joint_water_treatment_plant);
 
@@ -39,9 +41,6 @@ public:
     const unsigned int parent_reservoir_ID;
 
     double implementTreatmentCapacity(int utility_id);
-
-    ~SequentialJointTreatmentExpansion() override;
-
 
 };
 

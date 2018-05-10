@@ -79,31 +79,27 @@ vector<double> ContinuityModelROF::calculateShortTermROFTable(int week) {
     vector<double> risk_of_failure((unsigned long) n_utilities, 0.0);
     double m;
     for (int u = 0; u < n_utilities; ++u) {
-//        try {
-            /// Get current stored volume for utility u.
-            double utility_storage =
-                    realization_utilities[u]->getTotal_stored_volume();
-            /// Ratio of current and status-quo utility storage capacities
-            //        double m = current_and_base_storage_capacity_ratio[u];
-            m = realization_utilities[u]->getTotal_storage_capacity() /
-                       utility_base_storage_capacity[u];
-            /// Calculate base table tier that contains the desired ROF by
-            /// shifting the table around based on new infrastructure -- the
-            /// shift is made by the part (m - 1) * STORAGE_CAPACITY_RATIO_FAIL *
-            /// utility_base_storage_capacity[u] - current_storage_table_shift[u]
-            double storage_convert = utility_storage +
-                                     STORAGE_CAPACITY_RATIO_FAIL * utility_base_storage_capacity[u] *
-                                     (1. - m) + current_storage_table_shift[u];
-            int tier = (int) (storage_convert * NO_OF_INSURANCE_STORAGE_TIERS /
-                              utility_base_storage_capacity[u]);
-            /// Mean ROF between the two tiers of the ROF table where
-            /// current storage is located.
-            risk_of_failure[u] = ut_storage_to_rof_table[u](week, tier);
+        /// Get current stored volume for utility u.
+        double utility_storage =
+                realization_utilities[u]->getTotal_stored_volume();
+        /// Ratio of current and status-quo utility storage capacities
+        //        double m = current_and_base_storage_capacity_ratio[u];
+        m = realization_utilities[u]->getTotal_storage_capacity() /
+            utility_base_storage_capacity[u];
+        /// Calculate base table tier that contains the desired ROF by
+        /// shifting the table around based on new infrastructure -- the
+        /// shift is made by the part (m - 1) * STORAGE_CAPACITY_RATIO_FAIL *
+        /// utility_base_storage_capacity[u] - current_storage_table_shift[u]
+        double storage_convert = utility_storage +
+                                 STORAGE_CAPACITY_RATIO_FAIL * utility_base_storage_capacity[u] *
+                                 (1. - m) + current_storage_table_shift[u];
+        int tier = (int) (storage_convert * NO_OF_INSURANCE_STORAGE_TIERS /
+                          utility_base_storage_capacity[u]);
+        /// Mean ROF between the two tiers of the ROF table where
+        /// current storage is located.
+        risk_of_failure[u] = ut_storage_to_rof_table[u](week, tier);
 //            risk_of_failure[u] = (ut_storage_to_rof_table[u](week, tier) +
 //                                  ut_storage_to_rof_table[u](week, tier + 1)) / 2;
-//        } catch (...) {
-//            tableROFExceptionHandler(m, u, week);
-//        }
     }
 
     return risk_of_failure;

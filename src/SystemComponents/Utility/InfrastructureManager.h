@@ -47,9 +47,8 @@ public:
                                            const vector<int> &rof_infra_construction_order,
                                            const vector<int> &demand_infra_construction_order);
 
-    void setWaterSourceOnline(unsigned int source_id, int week, double &total_storage_capacity,
-                         double &total_treatment_capacity, double &total_available_volume,
-                         double &total_stored_volume, vector<vector<double>> &debt_payment_streams);
+    void setWaterSourceOnline(unsigned int source_id, int week, double &total_storage_capacity, double &total_treatment_capacity,
+                                  double &total_available_volume, double &total_stored_volume);
 
     void waterTreatmentPlantConstructionHandler(unsigned int source_id, double &total_storage_capacity);
 
@@ -61,13 +60,9 @@ public:
 
     void removeRelatedSourcesFromQueue(int next_construction);
 
-    int infrastructureConstructionHandler(double long_term_rof, int week,
-                                              double past_year_average_demand,
-                                              double &total_storage_capacity,
-                                              double &total_treatment_capacity,
-                                              double &total_available_volume,
-                                              double &total_stored_volume,
-                                              vector<vector<double>> &debt_payment_streams);
+    int infrastructureConstructionHandler(double long_term_rof, int week, double past_year_average_demand,
+                                              double &total_storage_capacity, double &total_treatment_capacity,
+                                              double &total_available_volume, double &total_stored_volume);
 
     void forceInfrastructureConstruction(int week, vector<int> new_infra_triggered);
 
@@ -78,8 +73,9 @@ public:
 
     void addWaterSource(WaterSource *water_source);
 
-    void connectWaterSourcesVectors(vector<WaterSource *> &water_sources, vector<int> &priority_draw_water_source,
-                                    vector<int> &non_priority_draw_water_source);
+    void connectWaterSourcesVectorsToUtilitys(vector<WaterSource *> &water_sources,
+                                              vector<int> &priority_draw_water_source,
+                                              vector<int> &non_priority_draw_water_source);
 
     const vector<int> &getRof_infra_construction_order() const;
 
@@ -87,6 +83,7 @@ public:
 
     const vector<int> &getInfra_built_last_week() const;
 
+    const vector<bool> &getUnder_construction() const;
 };
 
 

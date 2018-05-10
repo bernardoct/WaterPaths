@@ -132,11 +132,9 @@ void InfrastructureManager::addWaterSourceToOnlineLists(int source_id, double &t
 }
 
 
-void InfrastructureManager::setWaterSourceOnline(unsigned int source_id, int week, double &total_storage_capacity,
-                                                 double &total_treatment_capacity,
-                                                 double &total_available_volume,
-                                                 double &total_stored_volume,
-                                                 vector<vector<double>> &debt_payment_streams) {
+void
+InfrastructureManager::setWaterSourceOnline(unsigned int source_id, int week, double &total_storage_capacity, double &total_treatment_capacity,
+                                            double &total_available_volume, double &total_stored_volume) {
 
     /// Sets water source online and add its ID to appropriate
     /// priority/non-priority ID vector. If reservoir expansion, add its
@@ -388,13 +386,9 @@ void InfrastructureManager::forceInfrastructureConstruction(
  * @param long_term_rof
  * @param week
  */
-int InfrastructureManager::infrastructureConstructionHandler(double long_term_rof, int week,
-                                                             double past_year_average_demand,
-                                                             double &total_storage_capacity,
-                                                             double &total_treatment_capacity,
-                                                             double &total_available_volume,
-                                                             double &total_stored_volume,
-                                                             vector<vector<double>> &debt_payment_streams) {
+int InfrastructureManager::infrastructureConstructionHandler(double long_term_rof, int week, double past_year_average_demand,
+                                                             double &total_storage_capacity, double &total_treatment_capacity,
+                                                             double &total_available_volume, double &total_stored_volume) {
 
     int new_infra_triggered = NON_INITIALIZED;
     bool under_construction_any = (find(under_construction.begin(),
@@ -491,9 +485,8 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
 
                 /// Set online all sources that at to be set online now.
                 for (const int &wss : set_online_now) {
-                    setWaterSourceOnline((unsigned int) wss, week, total_storage_capacity,
-                                                                   total_treatment_capacity, total_available_volume,
-                                                                   total_stored_volume, debt_payment_streams);
+                    setWaterSourceOnline((unsigned int) wss, week, total_storage_capacity, total_treatment_capacity,
+                                         total_available_volume, total_stored_volume);
 
                     /// Record ID of and when infrastructure option construction was
                     /// completed. (utility_id, week, new source id)
@@ -554,15 +547,18 @@ void InfrastructureManager::beginConstruction(int week, int infra_id) {
 
     /// Make water utility as under construction and determine construction
     /// end date (I wish that was how it worked in real constructions...)
-    under_construction[infra_id] = true;
-
-    construction_end_date[infra_id] =
-            week + (int) water_sources->at((unsigned long) infra_id)->construction_time;
+    try {
+        under_construction[infra_id] = true;
+        construction_end_date[infra_id] =
+                week + (int) water_sources->at((unsigned long) infra_id)->construction_time;
+    } catch (...) {
+        __throw_out_of_range("Infrastructure not present in infrastructure manager (in utility).");
+    }
 }
 
-void InfrastructureManager::connectWaterSourcesVectors(vector<WaterSource *> &water_sources,
-                                                       vector<int> &priority_draw_water_source,
-                                                       vector<int> &non_priority_draw_water_source) {
+void InfrastructureManager::connectWaterSourcesVectorsToUtilitys(vector<WaterSource *> &water_sources,
+                                                                 vector<int> &priority_draw_water_source,
+                                                                 vector<int> &non_priority_draw_water_source) {
     this->water_sources = &water_sources;
     this->priority_draw_water_source = &priority_draw_water_source;
     this->non_priority_draw_water_source = &non_priority_draw_water_source;
@@ -578,4 +574,8 @@ const vector<int> &InfrastructureManager::getDemand_infra_construction_order() c
 
 const vector<int> &InfrastructureManager::getInfra_built_last_week() const {
     return infra_built_last_week;
+}
+
+const vector<bool> &InfrastructureManager::getUnder_construction() const {
+    return under_construction;
 }

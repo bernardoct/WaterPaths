@@ -532,12 +532,12 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         // the capacity for both is relative to current conditions - if Lake Michie is expanded small it will gain 2.5BG,
         // and a high expansion will provide 7.7BG more water than current. if small expansion happens, followed by a large
         // expansion, the maximum capacity through expansion is 7.7BG, NOT 2.5BG + 7.7BG.
-        LevelDebtServiceBond lrr_bond(7, 263.0, 25, 0.05, vector<int>(1, 0), 3);
+        LevelDebtServiceBond lrr_bond(7, 263.0, 25, 0.05, vector<int>(1, 0));
         Reservoir little_river_reservoir("Little River Reservoir (Raleigh)", 7, catchment_little_river_raleigh, 3700.0,
                                          ILLIMITED_TREATMENT_CAPACITY, evaporation_little_river, &little_river_storage_area,
                                          construction_time_interval, 100 * WEEKS_IN_YEAR, lrr_bond);
 
-        LevelDebtServiceBond rcq_bond(8, 400.0, 25, 0.05, vector<int>(1, 0), 3);
+        LevelDebtServiceBond rcq_bond(8, 400.0, 25, 0.05, vector<int>(1, 0));
         Quarry richland_creek_quarry("Richland Creek Quarry", 8, gage_clayton, 4000.0, ILLIMITED_TREATMENT_CAPACITY,
                                      evaporation_falls_lake, 100., construction_time_interval, 100*WEEKS_IN_YEAR, rcq_bond,
                                      50. * 7);
@@ -547,13 +547,14 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                            evaporation_falls_lake, &teer_storage_area, construction_time_interval, 100*WEEKS_IN_YEAR, tq_bond,
                            15 * 7);
 
-        LevelDebtServiceBond neuse_bond(10, 225.5, 25, 0.05, vector<int>(1, 0), 3);
+        LevelDebtServiceBond neuse_bond(10, 225.5, 25, 0.05, vector<int>(1, 0));
         Intake neuse_river_intake("Neuse River Intake", 10, catchment_flat, 16 * 7, construction_time_interval,
                                   100 * WEEKS_IN_YEAR, neuse_bond);
 
 //        auto it10 = std::find(rof_triggered_infra_order_raleigh.begin(),
 //                             rof_triggered_infra_order_raleigh.end(), 10);
 //        rof_triggered_infra_order_raleigh.erase(it10);
+
         // diversions to Teer Quarry for Durham based on inflows to downstream Falls Lake from the Flat River
         // FYI: spillage from Eno River also helps determine Teer quarry diversion, but Eno spillage isn't factored into
         // downstream water balance?
@@ -563,78 +564,43 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                 fl_storage_capacity,
                 (fl_wq_capacity - falls_lake_reallocation) / fl_storage_capacity};
 
-        LevelDebtServiceBond fl_bond(17, 68.2, 25, 0.05, vector<int>(1, 0), 3);
+        LevelDebtServiceBond fl_bond(17, 68.2, 25, 0.05, vector<int>(1, 0));
         Relocation fl_reallocation("Falls Lake Reallocation", 17, 1, &fl_relocation_fractions, &fl_allocations_ids,
                                    construction_time_interval, 100 * WEEKS_IN_YEAR, fl_bond);
 
-        LevelDebtServiceBond ccr_exp_bond(24, 127.0, 25, 0.05, vector<int>(1, 0), 3);
+        LevelDebtServiceBond ccr_exp_bond(24, 127.0, 25, 0.05, vector<int>(1, 0));
         ReservoirExpansion ccr_expansion("Cane Creek Reservoir Expansion", 24, 4, 3000.0, construction_time_interval,
                                          100*WEEKS_IN_YEAR, ccr_exp_bond);
 
-        LevelDebtServiceBond low_sq_exp_bond(12, 1.4, 25, 0.05, vector<int>(1, 0), 3);
+        LevelDebtServiceBond low_sq_exp_bond(12, 1.4, 25, 0.05, vector<int>(1, 0));
         ReservoirExpansion low_sq_expansion("Low Stone Quarry Expansion", 12, 3, 1500.0, construction_time_interval,
                                             200 * WEEKS_IN_YEAR, low_sq_exp_bond);
 
-        LevelDebtServiceBond high_sq_exp_bond(13, 64.6, 25, 0.05, vector<int>(1, 0), 3);
+        LevelDebtServiceBond high_sq_exp_bond(13, 64.6, 25, 0.05, vector<int>(1, 0));
         ReservoirExpansion high_sq_expansion("High Stone Quarry Expansion", 13, 3, 2200.0, construction_time_interval,
                                              200 * WEEKS_IN_YEAR, high_sq_exp_bond);
 
-        LevelDebtServiceBond ul_exp_bond(14, 107.0, 25, 0.05, vector<int>(1, 0), 3);
+        LevelDebtServiceBond ul_exp_bond(14, 107.0, 25, 0.05, vector<int>(1, 0));
         ReservoirExpansion univ_lake_expansion("University Lake Expansion", 14, 5, 2550.0, construction_time_interval,
                                                100*WEEKS_IN_YEAR, ul_exp_bond);
 
-        LevelDebtServiceBond low_mi_exp_bond(15, 158.3, 25, 0.05, vector<int>(1, 0), 3);
+        LevelDebtServiceBond low_mi_exp_bond(15, 158.3, 25, 0.05, vector<int>(1, 0));
         ReservoirExpansion low_michie_expansion("Low Lake Michie Expansion", 15, 0, added_storage_michie_expansion_low,
                                                 construction_time_interval, 100 * WEEKS_IN_YEAR, low_mi_exp_bond);
 
-        LevelDebtServiceBond high_mi_exp_bond(16, 203.3, 25, 0.05, vector<int>(1, 0), 3);
+        LevelDebtServiceBond high_mi_exp_bond(16, 203.3, 25, 0.05, vector<int>(1, 0));
         ReservoirExpansion high_michie_expansion("High Lake Michie Expansion", 16, 0, added_storage_michie_expansion_high,
                                                  construction_time_interval, 100 * WEEKS_IN_YEAR, high_mi_exp_bond);
 
-        LevelDebtServiceBond low_rec_bond(18, 27.5, 25, 0.05, vector<int>(1, 0), 3);
-
-//        ReservoirExpansion low_michie_expansion("Low Lake Michie Expansion", 15, 0, added_storage_michie_expansion_low,
-//                                                construction_time_interval, 17 * WEEKS_IN_YEAR, 158.3);
-//        ReservoirExpansion high_michie_expansion("High Lake Michie Expansion", 16, 0, added_storage_michie_expansion_high,
-//                                                 construction_time_interval, 17 * WEEKS_IN_YEAR, 203.3);
-
-        /// Lake Michie Allocated Expansion Parameters
-//        double lm_total_new_capacity_low = 6349.0 + added_storage_michie_expansion_low;
-//        double lm_total_new_capacity_high = 6349.0 + added_storage_michie_expansion_high;
-//        vector <double> lm_new_allocation_fractions = {0.6,0.4};
-//        vector <double> lm_new_treatment_fractions = {0.0,0.6,0.0,0.4};
-//
-//        AllocatedReservoirExpansion low_michie_expansion("Low Lake Michie Expansion (Allocated)",
-//                                                         15,
-//                                                         0,
-//                                                         lm_total_new_capacity_low,
-//                                                         &lm_allocations_ids,
-//                                                         &lm_new_allocation_fractions,
-//                                                         &lm_new_treatment_fractions,
-//                                                         city_infrastructure_rof_triggers[1],
-//                                                         construction_time_interval,
-//                                                         17 * WEEKS_IN_YEAR,
-//                                                         158.3);
-//        AllocatedReservoirExpansion high_michie_expansion("High Lake Michie Expansion (Allocated)",
-//                                                          16,
-//                                                          0,
-//                                                          lm_total_new_capacity_high,
-//                                                          &lm_allocations_ids,
-//                                                          &lm_new_allocation_fractions,
-//                                                          &lm_new_treatment_fractions,
-//                                                          city_infrastructure_rof_triggers[1],
-//                                                          construction_time_interval,
-//                                                          17 * WEEKS_IN_YEAR,
-//                                                          203.3);
-
+        LevelDebtServiceBond low_rec_bond(18, 27.5, 25, 0.05, vector<int>(1, 0));
         WaterReuse low_reclaimed("Low Reclaimed Water System", 18, reclaimed_capacity_low, construction_time_interval,
                                  100*WEEKS_IN_YEAR, low_rec_bond);
 
-        LevelDebtServiceBond high_rec_bond(19, 104.4, 25, 0.05, vector<int>(1, 0), 3);
+        LevelDebtServiceBond high_rec_bond(19, 104.4, 25, 0.05, vector<int>(1, 0));
         WaterReuse high_reclaimed("High Reclaimed Water System", 19, reclaimed_capacity_high, construction_time_interval,
                                   100*WEEKS_IN_YEAR, high_rec_bond);
 
-        //WEEKS_IN_YEAR = Constants::WEEKS_IN_YEAR;
+        WEEKS_IN_YEAR = Constants::WEEKS_IN_YEAR;
 
         vector<double> wjlwtp_treatment_capacity_fractions =
                 {western_wake_treatment_plant_owasa_frac,
@@ -687,18 +653,17 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                 (316.8 - 243.3)
         };
 
-
         /// Bonds West Jordan Lake treatment plant
         vector<Bond *> wjlwtp_bonds_capacity_1;
         int uid = 0;
         for (double &cost : cost_wjlwtp_upgrade_1) {
-            wjlwtp_bonds_capacity_1.emplace_back(new AllocatedLevelDebtServiceBond(20 + uid, cost, 25, 0.05, vector<int>(1, 0), 20, 3));
+            wjlwtp_bonds_capacity_1.emplace_back(new LevelDebtServiceBond(20 + uid, cost, 25, 0.05, vector<int>(1, 0)));
             uid++;
         }
         vector<Bond *> wjlwtp_bonds_capacity_2;
         uid = 0;
         for (double &cost : cost_wjlwtp_upgrade_2) {
-            wjlwtp_bonds_capacity_2.emplace_back(new AllocatedLevelDebtServiceBond(21 + uid, cost, 25, 0.05, vector<int>(1, 0), 21, 3));
+            wjlwtp_bonds_capacity_2.emplace_back(new LevelDebtServiceBond(21 + uid, cost, 25, 0.05, vector<int>(1, 0)));
             uid++;
         }
 
@@ -724,13 +689,13 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         vector<Bond *> bonds_cary_wtp_upgrades_1;
         uid = 0;
         for (double &cost : cost_cary_wtp_upgrades) {
-            bonds_cary_wtp_upgrades_1.emplace_back(new LevelDebtServiceBond(22 + uid, cost, 25, 0.05, vector<int>(1, 0), 3));
+            bonds_cary_wtp_upgrades_1.emplace_back(new LevelDebtServiceBond(22 + uid, cost, 25, 0.05, vector<int>(1, 0)));
             uid++;
         }
         vector<Bond *> bonds_cary_wtp_upgrades_2;
         uid = 0;
         for (double &cost : cost_cary_wtp_upgrades) {
-            bonds_cary_wtp_upgrades_2.emplace_back(new LevelDebtServiceBond(23 + uid, cost, 25, 0.05, vector<int>(1, 0), 3));
+            bonds_cary_wtp_upgrades_2.emplace_back(new LevelDebtServiceBond(23 + uid, cost, 25, 0.05, vector<int>(1, 0)));
             uid++;
         }
         /// Cary treatment plant expansion
@@ -742,8 +707,9 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                                           capacity_cary_wtp_upgrades, bonds_cary_wtp_upgrades_2,
                                                           construction_time_interval, 100*WEEKS_IN_YEAR);
 
+        LevelDebtServiceBond dummy_bond(11, 1., 1, 1., vector<int>(1, 0));
         Reservoir dummy_endpoint("Dummy Node", 11, vector<Catchment *>(), 1., 0, evaporation_durham, 1,
-                                 construction_time_interval, 0, high_rec_bond);
+                                 construction_time_interval, 0, dummy_bond);
 
         vector<WaterSource *> water_sources;
         water_sources.push_back(&durham_reservoirs);
@@ -1159,8 +1125,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         objs[5] = OWASA_JLA + Durham_JLA + Cary_JLA + Raleigh_JLA;
 
         objectives.push_back(objs[5]);
-
-        if (s != nullptr) {
+        
+        if (s != nullptr) {	
             delete s;
 	}
 	s = nullptr;
@@ -1169,6 +1135,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 //        simulationExceptionHander(e, s, objs, vars);
 //	return 1;
 //    }
+
+        delete s;
 
     return 0;
 }
@@ -1300,7 +1268,7 @@ Triangle::setRofTables(unsigned long n_realizations, int n_utilities, string rof
 void Triangle::readInputData() {
     cout << "Reading input data." << endl;
 
-#pragma omp parallel num_threads(1) // was 20
+#pragma omp parallel num_threads(1)
 {
 #pragma omp single
     streamflows_durham = Utils::parse2DCsvFile(output_directory +
@@ -1376,7 +1344,7 @@ void Triangle::readInputData() {
 #pragma omp single
         external_joint_wtp_demand = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/external_demand_projection_scenario_" + message + ".csv");
 
-        //cout << "Reading others." << endl;
+    //cout << "Reading others." << endl;
 #pragma omp single
 {
     demand_to_wastewater_fraction_owasa_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");

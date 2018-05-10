@@ -12,7 +12,6 @@
 
 using namespace std;
 using namespace Constants;
-const int BOND_INTEREST_PAYMENTS_PER_YEAR = 1;
 
 class WaterSource {
 protected:
@@ -41,7 +40,6 @@ protected:
 
     vector<int> *utilities_with_allocations = nullptr;
     int wq_pool_id = NON_INITIALIZED;
-    bool wq_pool_locator = false;
     double total_allocated_fraction = NON_INITIALIZED;
     bool online;
     vector<Catchment> catchments;
@@ -49,7 +47,6 @@ protected:
     double evaporated_volume = 0;
     double total_treatment_capacity = 0;
     int highest_alloc_id = NON_INITIALIZED;
-    double base_wq_pool_fraction = 0;
 
     virtual void applyContinuity(int week, double upstream_source_inflow,
                                      double wastewater_inflow,
@@ -60,7 +57,7 @@ protected:
 public:
     const int id;
     const char *name;
-    int source_type;
+    const int source_type;
     const double construction_time;
 
     WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
@@ -165,7 +162,7 @@ public:
 
     double getTotal_treatment_capacity(int utility_id) const;
 
-    virtual void setAllocations(
+    void setAllocations(
             vector<int> *utilities_with_allocations,
             vector<double> *allocated_fractions,
             vector<double> *allocated_treatment_fractions);
@@ -192,6 +189,8 @@ public:
     Bond &getBond(int utility_id);
 
     void checkForInputErrorsConstruction();
+
+
 
     virtual void addWater(int allocation_id, double volume);
 

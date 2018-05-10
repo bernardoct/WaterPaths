@@ -63,9 +63,9 @@ double FloatingInterestBalloonPaymentBond::getNetPresentValueAtIssuance(double y
     return cost_of_capital * (1. + interest_rate_series[week]) / (1. + yearly_discount_rate);
 }
 
-void FloatingInterestBalloonPaymentBond::issueBond(int week, double bond_term_multiplier,
+void FloatingInterestBalloonPaymentBond::issueBond(int week, int construction_time, double bond_term_multiplier,
                                                    double bond_interest_rate_multiplier) {
-    Bond::issueBond(week, bond_term_multiplier, bond_interest_rate_multiplier);
+    Bond::issueBond(week, 0, bond_term_multiplier, bond_interest_rate_multiplier);
 
     /// Multiply entire interest time time series by RDM factor.
     for (double &i : interest_rate_series) {

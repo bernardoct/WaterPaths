@@ -535,21 +535,21 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         LevelDebtServiceBond lrr_bond(7, 263.0, 25, 0.05, vector<int>(1, 0), 3);
         Reservoir little_river_reservoir("Little River Reservoir (Raleigh)", 7, catchment_little_river_raleigh, 3700.0,
                                          ILLIMITED_TREATMENT_CAPACITY, evaporation_little_river, &little_river_storage_area,
-                                         construction_time_interval, 17 * WEEKS_IN_YEAR, lrr_bond);
+                                         construction_time_interval, 100 * WEEKS_IN_YEAR, lrr_bond);
 
         LevelDebtServiceBond rcq_bond(8, 400.0, 25, 0.05, vector<int>(1, 0), 3);
         Quarry richland_creek_quarry("Richland Creek Quarry", 8, gage_clayton, 4000.0, ILLIMITED_TREATMENT_CAPACITY,
-                                     evaporation_falls_lake, 100., construction_time_interval, 17 * WEEKS_IN_YEAR, rcq_bond,
+                                     evaporation_falls_lake, 100., construction_time_interval, 100*WEEKS_IN_YEAR, rcq_bond,
                                      50. * 7);
 
         BalloonPaymentBond tq_bond(9, 22.6, 25, 0.05, vector<int>(1, 0), 3);
         Quarry teer_quarry("Teer Quarry", 9, vector<Catchment *>(), 1315.0, ILLIMITED_TREATMENT_CAPACITY,
-                           evaporation_falls_lake, &teer_storage_area, construction_time_interval, 7 * WEEKS_IN_YEAR, tq_bond,
+                           evaporation_falls_lake, &teer_storage_area, construction_time_interval, 100*WEEKS_IN_YEAR, tq_bond,
                            15 * 7);
 
         LevelDebtServiceBond neuse_bond(10, 225.5, 25, 0.05, vector<int>(1, 0), 3);
         Intake neuse_river_intake("Neuse River Intake", 10, catchment_flat, 16 * 7, construction_time_interval,
-                                  17 * WEEKS_IN_YEAR, neuse_bond);
+                                  100 * WEEKS_IN_YEAR, neuse_bond);
 
 //        auto it10 = std::find(rof_triggered_infra_order_raleigh.begin(),
 //                             rof_triggered_infra_order_raleigh.end(), 10);
@@ -565,31 +565,31 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         LevelDebtServiceBond fl_bond(17, 68.2, 25, 0.05, vector<int>(1, 0), 3);
         Relocation fl_reallocation("Falls Lake Reallocation", 17, 1, &fl_relocation_fractions, &fl_allocations_ids,
-                                   construction_time_interval, 12 * WEEKS_IN_YEAR, fl_bond);
+                                   construction_time_interval, 100 * WEEKS_IN_YEAR, fl_bond);
 
         LevelDebtServiceBond ccr_exp_bond(24, 127.0, 25, 0.05, vector<int>(1, 0), 3);
         ReservoirExpansion ccr_expansion("Cane Creek Reservoir Expansion", 24, 4, 3000.0, construction_time_interval,
-                                         17 * WEEKS_IN_YEAR, ccr_exp_bond);
+                                         100*WEEKS_IN_YEAR, ccr_exp_bond);
 
         LevelDebtServiceBond low_sq_exp_bond(12, 1.4, 25, 0.05, vector<int>(1, 0), 3);
         ReservoirExpansion low_sq_expansion("Low Stone Quarry Expansion", 12, 3, 1500.0, construction_time_interval,
-                                            23 * WEEKS_IN_YEAR, low_sq_exp_bond);
+                                            200 * WEEKS_IN_YEAR, low_sq_exp_bond);
 
         LevelDebtServiceBond high_sq_exp_bond(13, 64.6, 25, 0.05, vector<int>(1, 0), 3);
         ReservoirExpansion high_sq_expansion("High Stone Quarry Expansion", 13, 3, 2200.0, construction_time_interval,
-                                             23 * WEEKS_IN_YEAR, high_sq_exp_bond);
+                                             200 * WEEKS_IN_YEAR, high_sq_exp_bond);
 
         LevelDebtServiceBond ul_exp_bond(14, 107.0, 25, 0.05, vector<int>(1, 0), 3);
         ReservoirExpansion univ_lake_expansion("University Lake Expansion", 14, 5, 2550.0, construction_time_interval,
-                                               17 * WEEKS_IN_YEAR, ul_exp_bond);
+                                               100*WEEKS_IN_YEAR, ul_exp_bond);
 
         LevelDebtServiceBond low_mi_exp_bond(15, 158.3, 25, 0.05, vector<int>(1, 0), 3);
         ReservoirExpansion low_michie_expansion("Low Lake Michie Expansion", 15, 0, added_storage_michie_expansion_low,
-                                                construction_time_interval, 17 * WEEKS_IN_YEAR, low_mi_exp_bond);
+                                                construction_time_interval, 100 * WEEKS_IN_YEAR, low_mi_exp_bond);
 
         LevelDebtServiceBond high_mi_exp_bond(16, 203.3, 25, 0.05, vector<int>(1, 0), 3);
         ReservoirExpansion high_michie_expansion("High Lake Michie Expansion", 16, 0, added_storage_michie_expansion_high,
-                                                 construction_time_interval, 17 * WEEKS_IN_YEAR, high_mi_exp_bond);
+                                                 construction_time_interval, 100 * WEEKS_IN_YEAR, high_mi_exp_bond);
 
         LevelDebtServiceBond low_rec_bond(18, 27.5, 25, 0.05, vector<int>(1, 0), 3);
 
@@ -628,11 +628,11 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 //                                                          203.3);
 
         WaterReuse low_reclaimed("Low Reclaimed Water System", 18, reclaimed_capacity_low, construction_time_interval,
-                                 7 * WEEKS_IN_YEAR, low_rec_bond);
+                                 100*WEEKS_IN_YEAR, low_rec_bond);
 
         LevelDebtServiceBond high_rec_bond(19, 104.4, 25, 0.05, vector<int>(1, 0), 3);
         WaterReuse high_reclaimed("High Reclaimed Water System", 19, reclaimed_capacity_high, construction_time_interval,
-                                  7 * WEEKS_IN_YEAR, high_rec_bond);
+                                  100*WEEKS_IN_YEAR, high_rec_bond);
 
         //WEEKS_IN_YEAR = Constants::WEEKS_IN_YEAR;
 
@@ -717,47 +717,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 //            double fixed_external_allocation, const vector<double> &construction_time_range,
 //    double permitting_period)
 
-        vector<int> wjlwtp_utils_with_allocations = {0,1,2,3};
-        vector<double> wjlwtp_allocations_fixed = {0.05,0.3,0.0,0.10};
-
-//        JointWTP low_wjlwtp_fixed("Low Fixed WJLWTP", 20, 0, 6,
-//                                  &wjlwtp_utils_with_allocations,
-//                                  {20, 21}, (33*7),
-//                                  wjlwtp_bonds_capacity_1, wjlwtp_allocations_fixed, 0.31,
-//                                  construction_time_interval, 3 * WEEKS_IN_YEAR);
-//        JointWTP high_wjlwtp_fixed("High Fixed WJLWTP", 21, 0, 6,
-//                                   &wjlwtp_utils_with_allocations,
-//                                   {20, 21}, (54*7),
-//                                   wjlwtp_bonds_capacity_2, wjlwtp_allocations_fixed, 0.31,
-//                                   construction_time_interval, 11 * WEEKS_IN_YEAR);
-
-        // peaking factors vector includes peaking factors for external utility
-        // Cary, Durham, OWASA, Raleigh, plus Pittsboro/Chatham
-        vector<double> peaking_factors = {1,1,1,1,1};
-
-//        JointWTP low_wjlwtp_uniform_rate("Low Uniform Rate WJLWTP", 20, 1, 6,
-//                                         &wjlwtp_utils_with_allocations, {20,21}, (33*7),
-//                                         wjlwtp_bonds_capacity_1, construction_time_interval, 2*WEEKS_IN_YEAR,
-//                                         peaking_factors, joint_wtp_demand, external_joint_wtp_demand.at(0));
-//        JointWTP high_wjlwtp_uniform_rate("High Uniform Rate WJLWTP", 21, 1, 6,
-//                                     &wjlwtp_utils_with_allocations, {20,21}, (54*7),
-//                                     wjlwtp_bonds_capacity_2, construction_time_interval, 10*WEEKS_IN_YEAR,
-//                                     peaking_factors, joint_wtp_demand, external_joint_wtp_demand.at(0));
-
-
-        int past_weeks_to_use = 52;
-
-        JointWTP low_wjlwtp_square_one("Low Adjustable Rate WJLWTP", 20, 2, 6,
-                                     &wjlwtp_utils_with_allocations, {20,21}, (33*7),
-                                     wjlwtp_bonds_capacity_1, construction_time_interval, 3*WEEKS_IN_YEAR,
-                                     peaking_factors, joint_wtp_demand, external_joint_wtp_demand.at(0),
-                                     past_weeks_to_use);
-
-        JointWTP high_wjlwtp_square_one("High Adjustable Rate WJLWTP", 21, 2, 6,
-                                       &wjlwtp_utils_with_allocations, {20,21}, (33*7),
-                                       wjlwtp_bonds_capacity_2, construction_time_interval, 10*WEEKS_IN_YEAR,
-                                       peaking_factors, joint_wtp_demand, external_joint_wtp_demand.at(0),
-                                       past_weeks_to_use);
 
         /// Bonds Cary treatment plant expansion
         vector<double> cost_cary_wtp_upgrades = {0, 0, 243. / 2, 0};
@@ -778,10 +737,10 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         vector<double> capacity_cary_wtp_upgrades = {0, 0, 56, 0};
         SequentialJointTreatmentExpansion caryWtpUpgrade1("Cary WTP upgrade 1", 22, 6, 0, {22, 23},
                                                           capacity_cary_wtp_upgrades, bonds_cary_wtp_upgrades_1,
-                                                          construction_time_interval, NONE);
+                                                          construction_time_interval, 100*WEEKS_IN_YEAR);
         SequentialJointTreatmentExpansion caryWtpUpgrade2("Cary WTP upgrade 2", 23, 6, 1, {22, 23},
                                                           capacity_cary_wtp_upgrades, bonds_cary_wtp_upgrades_2,
-                                                          construction_time_interval, NONE);
+                                                          construction_time_interval, 100*WEEKS_IN_YEAR);
 
         Reservoir dummy_endpoint("Dummy Node", 11, vector<Catchment *>(), 1., 0, evaporation_durham, 1,
                                  construction_time_interval, 0, high_rec_bond);
@@ -811,13 +770,57 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         water_sources.push_back(&caryWtpUpgrade1);
         water_sources.push_back(&caryWtpUpgrade2);
-//        water_sources.push_back(&low_wjlwtp_fixed);
-//        water_sources.push_back(&high_wjlwtp_fixed);
-//        water_sources.push_back(&low_wjlwtp_uniform_rate);
-//        water_sources.push_back(&high_wjlwtp_uniform_rate);
-        water_sources.push_back(&low_wjlwtp_square_one);
-        water_sources.push_back(&high_wjlwtp_square_one);
 
+        vector<int> wjlwtp_utils_with_allocations = {0,1,2,3};
+        vector<double> wjlwtp_allocations_fixed = {0.05,0.3,0.0,0.10};
+        // peaking factors vector includes peaking factors for external utility
+        // Cary, Durham, OWASA, Raleigh, plus Pittsboro/Chatham
+        vector<double> peaking_factors = {1,1,1,1,1};
+
+
+    int past_weeks_to_use = 52;
+    int temp_super_long_permit_period = 100;
+
+    JointWTP low_wjlwtp_square_one("Low Adjustable Rate WJLWTP", 20, 2, 6,
+                                   &wjlwtp_utils_with_allocations, {20,21}, (33*7),
+                                   wjlwtp_bonds_capacity_1, construction_time_interval, NONE,
+                                   peaking_factors, joint_wtp_demand, external_joint_wtp_demand.at(0),
+                                   past_weeks_to_use);
+
+    JointWTP high_wjlwtp_square_one("High Adjustable Rate WJLWTP", 21, 2, 6,
+                                    &wjlwtp_utils_with_allocations, {20,21}, (33*7),
+                                    wjlwtp_bonds_capacity_2, construction_time_interval, temp_super_long_permit_period*WEEKS_IN_YEAR,
+                                    peaking_factors, joint_wtp_demand, external_joint_wtp_demand.at(0),
+                                    past_weeks_to_use);
+    JointWTP low_wjlwtp_uniform_rate("Low Uniform Rate WJLWTP", 20, 1, 6,
+                                     &wjlwtp_utils_with_allocations, {20,21}, (33*7),
+                                     wjlwtp_bonds_capacity_1, construction_time_interval, NONE,
+                                     peaking_factors, joint_wtp_demand, external_joint_wtp_demand.at(0));
+    JointWTP high_wjlwtp_uniform_rate("High Uniform Rate WJLWTP", 21, 1, 6,
+                                      &wjlwtp_utils_with_allocations, {20,21}, (54*7),
+                                      wjlwtp_bonds_capacity_2, construction_time_interval, temp_super_long_permit_period*WEEKS_IN_YEAR,
+                                      peaking_factors, joint_wtp_demand, external_joint_wtp_demand.at(0));
+    JointWTP low_wjlwtp_fixed("Low Fixed WJLWTP", 20, 0, 6,
+                              &wjlwtp_utils_with_allocations,
+                              {20, 21}, (33*7),
+                              wjlwtp_bonds_capacity_1, wjlwtp_allocations_fixed, 0.31,
+                              construction_time_interval, NONE);
+    JointWTP high_wjlwtp_fixed("High Fixed WJLWTP", 21, 0, 6,
+                               &wjlwtp_utils_with_allocations,
+                               {20, 21}, (54*7),
+                               wjlwtp_bonds_capacity_2, wjlwtp_allocations_fixed, 0.31,
+                               construction_time_interval, temp_super_long_permit_period * WEEKS_IN_YEAR);
+
+        if (formulation == 0) {
+            water_sources.push_back(&low_wjlwtp_fixed);
+            water_sources.push_back(&high_wjlwtp_fixed);
+        } else if (formulation == 1) {
+            water_sources.push_back(&low_wjlwtp_uniform_rate);
+            water_sources.push_back(&high_wjlwtp_uniform_rate);
+        } else if (formulation == 2) {
+            water_sources.push_back(&low_wjlwtp_square_one);
+            water_sources.push_back(&high_wjlwtp_square_one);
+        }
 
     water_sources.push_back(&dummy_endpoint);
 
@@ -1019,57 +1022,59 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                     vector<int>());
         drought_mitigation_policies.push_back(&t);
 
-        /// Direct Treated Water Transfer policy
-        ///     from Jordan Lake utilities to Raleigh
-        cout << "Assign direct treated water transfer policy." << endl;
+    /// Direct Treated Water Transfer policy
+    ///     from Jordan Lake utilities to Raleigh
+    cout << "Assign direct treated water transfer policy." << endl;
 
-        DirectTreatedWaterTransfer jordan_lake_to_raleigh_direct_transfer(
-                0,
-                "Joint WTP Direct Interruptible Transfers to Raleigh (Small WTP)",
-                6,
-                20,
-                3,
-                0.001,
-                0.0035);
+    DirectTreatedWaterTransfer jordan_lake_to_raleigh_direct_transfer(
+            0,
+            "Joint WTP Direct Interruptible Transfers to Raleigh (Small WTP)",
+            6,
+            20,
+            3,
+            0.001,
+            0.0035);
 
-        drought_mitigation_policies.push_back(&jordan_lake_to_raleigh_direct_transfer);
+        if (formulation > 2) {
+            drought_mitigation_policies.push_back(&jordan_lake_to_raleigh_direct_transfer);
+        }
 
         /// Raw Water Transfer policy
         ///     utility ids: 0 OWASA, 1 Durham, 2 Cary, 3 Raleigh
         ///     reservoir ids (in parentheses)
-        cout << "Assign raw water transfer/release policies." << endl;
-        /*
-         *      1(0)-->-->--3(1)
-         *
-         *      0(x)        2(y)
-         */
-
-        /// Utility IDs for party's of each raw water transfer agreement (only 2 partys per agreement)
-        int upstream_party_id0 = 1;
-        int downstream_party_id0 = 3;
-        int upstream_reservoir_id0 = 0;
-        int downstream_reservoir_id0 = 1;
-
-        /// other necessary arguments
-        double raw_water_transfer_weekly_volume_cap = 500; // cap in MG
-        double raw_water_transfer_downstream_allocation_ratio = 0.423;
-        double raw_water_transfer_cost_per_MG = 0.0035; // cost in millions of dollars per MG
-
-        /// raw water transfer triggers for ALL regional utilities (in order of their ids)
-        vector<double> party_raw_water_transfer_triggers = {owasa_raw_water_transfer_trigger,
-                                                            durham_raw_water_transfer_trigger,
-                                                            cary_raw_water_transfer_trigger,
-                                                            raleigh_raw_water_transfer_trigger};
-
-        RawWaterReleases flat_river_raw_water_transfer(0, "Flat River RWT",
-                                                       upstream_party_id0, downstream_party_id0,
-                                                       upstream_reservoir_id0, downstream_reservoir_id0,
-                                                       raw_water_transfer_weekly_volume_cap,
-                                                       party_raw_water_transfer_triggers,
-                                                       raw_water_transfer_downstream_allocation_ratio,
-                                                       raw_water_transfer_cost_per_MG);
-
-        drought_mitigation_policies.push_back(&flat_river_raw_water_transfer);
+//        cout << "Assign raw water transfer/release policies." << endl;
+//        /*
+//         *      1(0)-->-->--3(1)
+//         *
+//         *      0(x)        2(y)
+//         */
+//
+//        /// Utility IDs for party's of each raw water transfer agreement (only 2 partys per agreement)
+//        int upstream_party_id0 = 1;
+//        int downstream_party_id0 = 3;
+//        int upstream_reservoir_id0 = 0;
+//        int downstream_reservoir_id0 = 1;
+//
+//        /// other necessary arguments
+//        double raw_water_transfer_weekly_volume_cap = 500; // cap in MG
+//        double raw_water_transfer_downstream_allocation_ratio = 0.423;
+//        double raw_water_transfer_cost_per_MG = 0.0035; // cost in millions of dollars per MG
+//
+//        /// raw water transfer triggers for ALL regional utilities (in order of their ids)
+//        vector<double> party_raw_water_transfer_triggers = {owasa_raw_water_transfer_trigger,
+//                                                            durham_raw_water_transfer_trigger,
+//                                                            cary_raw_water_transfer_trigger,
+//                                                            raleigh_raw_water_transfer_trigger};
+//
+//        RawWaterReleases flat_river_raw_water_transfer(0, "Flat River RWT",
+//                                                       upstream_party_id0, downstream_party_id0,
+//                                                       upstream_reservoir_id0, downstream_reservoir_id0,
+//                                                       raw_water_transfer_weekly_volume_cap,
+//                                                       party_raw_water_transfer_triggers,
+//                                                       raw_water_transfer_downstream_allocation_ratio,
+//                                                       raw_water_transfer_cost_per_MG);
+//
+//        drought_mitigation_policies.push_back(&flat_river_raw_water_transfer);
 
         vector<double> insurance_triggers = {owasa_insurance_use,
                                              durham_insurance_use, cary_insurance_use,
@@ -1338,19 +1343,38 @@ void Triangle::readInputData() {
 }
 
     //cout << "Reading demands." << endl;
+
+        string message;
+        if (scenario == 0)
+            message = "as_projected";
+        else if (scenario == 1)
+            message = "fast_growth";
+        else if (scenario == 2)
+            message = "slow_growth";
+        else if (scenario == 3)
+            message = "delayed";
+        else if (scenario == 4)
+            message = "plateauing";
+        else if (scenario == 5)
+            message = "abrupt_drop";
+        else if (scenario == 6)
+            message = "peak_then_decline";
+
+        cout << "Reading data for scenario " << scenario << ". Message: " << message << endl;
+
 #pragma omp single
-    demand_cary = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/cary_demand.csv", n_realizations);
+    demand_cary = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/cary_demands_scenario_" + message + ".csv", n_realizations);
 #pragma omp single
-    demand_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/durham_demand.csv", n_realizations);
+    demand_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/durham_demands_scenario_" + message + ".csv", n_realizations);
 #pragma omp single
-    demand_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/raleigh_demand.csv", n_realizations);
+    demand_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/raleigh_demands_scenario_" + message + ".csv", n_realizations);
 #pragma omp single
-    demand_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/owasa_demand.csv", n_realizations);
+    demand_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/owasa_demands_scenario_" + message + ".csv", n_realizations);
 
 #pragma omp single
         joint_wtp_demand = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/triangle_annualunmetdemandprojections_2015_to_2060_MGD.csv");
 #pragma omp single
-        external_joint_wtp_demand = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/chathamcountypittsboro_annualunmetdemandprojections_2015_to_2060_MGD.csv");
+        external_joint_wtp_demand = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/external_demand_projection_scenario_" + message + ".csv");
 
         //cout << "Reading others." << endl;
 #pragma omp single

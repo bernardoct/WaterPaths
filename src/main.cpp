@@ -73,10 +73,11 @@ int main(int argc, char *argv[]) {
     vector<vector<double>> utilities_rdm;
     vector<vector<double>> water_sources_rdm;
     vector<vector<double>> policies_rdm;
-    int scenario = 0;
+    int scenario = -1;
+    int formulation = -1;
 
     int c;
-    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:S:A:R:U:P:W:I:C:O:B:X:")) != -1) {
+    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:S:A:R:U:P:W:I:C:O:B:X:F:")) != -1) {
     //while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:S:A:R:U:P:W:I:C:O:B:X:")) != -1) {
         switch (c) {
             case '?':
@@ -116,8 +117,9 @@ int main(int argc, char *argv[]) {
                         "ROF table binaries\n"
                         "\t-C: Import/export rof tables (-1: export, 0:"
                         " do nothing (standard), 1: import)\n"
-                        "\t-B: Export objectives for all utilities on a single line",
-                        "\t-X: Scenario (0: Triangle Model, 1-4: Durham Model)",
+                        "\t-B: Export objectives for all utilities on a single line\n",
+                        "\t-X: Scenario (0: as projected, 1-6: different demand scenarios)\n",
+                        "\t-F: Formulation (0: fixed 1: uniform rate 2: square one 3: add interruptable contracts)",
                         argv[0], n_realizations, n_weeks, system_io.c_str());
                 return -1;
             case 's':
@@ -207,6 +209,9 @@ int main(int argc, char *argv[]) {
             case 'X':
                 scenario = atoi(optarg);
                 break;
+            case 'F':
+                formulation = atoi(optarg);
+                break;
             default:
                 fprintf(stderr, "Unknown option (-%c)\n", c);
                 return -1;
@@ -217,7 +222,9 @@ int main(int argc, char *argv[]) {
     //DurhamModel triangle(n_weeks, import_export_rof_table); // set up cube for runs
 
     triangle.setScenario(scenario);
+    triangle.setFormulation(formulation);
 
+    cout << "Formulation " << formulation << endl;
     cout << "Scenario " << scenario << endl;
 
     /// Set basic realization parameters.
@@ -340,7 +347,7 @@ int main(int argc, char *argv[]) {
                      << s << endl;
                 triangle.setSol_number((unsigned long) s);
                 trianglePtr->functionEvaluation(solutions[s].data(), c_obj, c_constr);
-                vector<double> objectives = trianglePtr->calculateAndPrintObjectives(false);
+                vector<double> objectives = trianglePtr->calculateAndPrintObjectives(true);
                 triangle.printTimeSeriesAndPathways();
                 trianglePtr->destroyDataCollector();
                 string line;

@@ -10,7 +10,9 @@
 vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
     if (this->master_data_collector != nullptr) {
         this->master_data_collector->setOutputDirectory(output_directory);
-        string fo = "/TestFiles/output/Objectives";
+        string fo = output_directory + "/TestFiles/jointwtpoutput/formulation" + std::to_string(formulation)
+                + "/scenario" + std::to_string(scenario) + "/Objectives";
+        //string fo = "/TestFiles/output/Objectives";
         objectives = this->master_data_collector->calculatePrintObjectives(
                 fo + "_s" + std::to_string(solution_no) + fname_sufix, print_files);
 
@@ -27,12 +29,18 @@ void Problem::printTimeSeriesAndPathways() {
     this->master_data_collector->setOutputDirectory(output_directory);
 
     /// Print output files.
-    string fu = "/TestFiles/output/Utilities";
-    string fws = "/TestFiles/output/WaterSources";
-    string fp = "/TestFiles/output/Policies";
-    string fpw = "/TestFiles/output/Pathways";
+//    string fu = "/TestFiles/output/Utilities";
+//    string fws = "/TestFiles/output/WaterSources";
+//    string fp = "/TestFiles/output/Policies";
+//    string fpw = "/TestFiles/output/Pathways";
 
-    //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
+    /// Print output files.
+    string fu = "/TestFiles/jointwtpoutput/formulation" + std::to_string(formulation) + "/scenario" + std::to_string(scenario) + "/Utilities";
+    string fws = "/TestFiles/jointwtpoutput/formulation" + std::to_string(formulation) + "/scenario" + std::to_string(scenario) + "/WaterSources";
+    string fp = "/TestFiles/jointwtpoutput/formulation" + std::to_string(formulation) + "/scenario" + std::to_string(scenario) + "/Policies";
+    string fpw = "/TestFiles/jointwtpoutput/formulation" + std::to_string(formulation) + "/scenario" + std::to_string(scenario) + "/Pathways";
+
+        //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
     cout << "Printing Pathways" << endl;
     this->master_data_collector->printPathways(
             fpw + "_s" + std::to_string(solution_no) + fname_sufix);
@@ -178,4 +186,10 @@ Problem::Problem(unsigned long n_weeks) : n_weeks(n_weeks) {
 
 }
 
-void Problem::setScenario(int scen) {}
+void Problem::setScenario(int scen) {
+    scenario = scen;
+}
+
+void Problem::setFormulation(int f) {
+    formulation = f;
+}

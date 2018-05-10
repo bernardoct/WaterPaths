@@ -42,6 +42,7 @@ protected:
     bool print_output_files = true;
 
     int scenario;
+    int formulation;
 
     unsigned long  rdm_no;
     vector<vector<double>> utilities_rdm;
@@ -97,6 +98,8 @@ public:
     void performBootstrapAnalysis(int n_sets, int n_samples);
 
     virtual void setScenario(int scen);
+
+    virtual void setFormulation(int f);
 };
 
 

@@ -357,10 +357,10 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name, b
 
     if (print) {
         cout << "Calculating and printing Objectives" << endl;
-        string obj_file_path = output_directory + "/" + file_name + ".out";
+        //string obj_file_path = output_directory + "/" + file_name + ".out";
         // doesnt work on windows
         // cant have "/" in front of C:\ in the path name
-        //string obj_file_path = output_directory + "" + file_name + ".out";
+        string obj_file_path = file_name + ".out";
         cout << obj_file_path << endl;
 
         std::ofstream outStream;

@@ -11,6 +11,7 @@
 class AllocatedReservoir : public Reservoir {
 protected:
     const bool has_water_quality_pool;
+    double continuity_error;
 
 public:
     AllocatedReservoir(

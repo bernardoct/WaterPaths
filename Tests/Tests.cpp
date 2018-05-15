@@ -9,6 +9,8 @@
 #include "../src/SystemComponents/Bonds/LevelDebtServiceBond.h"
 #include "../src/SystemComponents/Utility/Utility.h"
 #include "../src/Utils/Utils.h"
+#include "../src/SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
+#include "../src/ContinuityModels/ContinuityModelRealization.h"
 
 
 TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance]") {
@@ -164,10 +166,11 @@ TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance
         REQUIRE(allocated_lake.getAvailableAllocatedVolume(2) == 11135.);
         REQUIRE(allocated_lake.getAvailableAllocatedVolume(3) == 18180.);
         REQUIRE(allocated_lake.getAvailableAllocatedVolume(4) == 0.);
+        REQUIRE(allocated_lake.getTotal_outflow() >= 0.);
     }
 }
 
-TEST_CASE("Infrastructure construction", "[Infrastructure][Utility][Bonds]") {
+TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][Utility][Bonds]") {
     // Reservoir data
     int streamflow_n_weeks = 52 * (70 + 50);
     vector<vector<double>> streamflows =
@@ -221,12 +224,18 @@ TEST_CASE("Infrastructure construction", "[Infrastructure][Utility][Bonds]") {
                                                   {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7}};
 
     // Setup Infrastructure construction manager holding reservoir
-    vector<double> rof_triggers = {0.};
+    vector<double> rof_triggers = vector<double>(10, 0.);
     auto infra_built_remove = vector<vector<int>>();
     vector<int> construction_order = {7};
     vector<int> construction_order_empty;
 
-    SECTION("Infrastructure manager") {
+    Utility utility("U1", 0, demands, streamflow_n_weeks, 0.03, &demand_class_fractions, &user_classes_prices,
+                    wwtp_discharge_durham, 0., construction_order, construction_order_empty, rof_triggers, 0.07, 25,
+                    0.05);
+
+    utility.addWaterSource(&reservoir);
+
+    SECTION("Infrastructure manager", "[InfrastructureManager]") {
         InfrastructureManager infrastructure_construction_manager(0, rof_triggers, infra_built_remove, 0.06, 25, 0.05,
                                                                   construction_order, vector<int>());
 
@@ -273,33 +282,168 @@ TEST_CASE("Infrastructure construction", "[Infrastructure][Utility][Bonds]") {
         }
     }
 
-    SECTION("Utility") {
-        Utility utility("U1", 0, demands, streamflow_n_weeks, 0.03, &demand_class_fractions, &user_classes_prices,
-                        wwtp_discharge_durham, 0., construction_order, construction_order_empty, rof_triggers, 0.07, 25,
-                        0.05);
-
-        utility.addWaterSource(&reservoir);
+    SECTION("Utility infrastructure construction", "[Utility][Infrastructure]") {
 
         vector<double> utility_rdm(4, 1.);
         utility.setRealization(0, utility_rdm);
 
-        SECTION("Infrastruture handler high LT-ROF but week < permitting period", "[Infrastructure]") {
+        SECTION("Infrastruture handler high LT-ROF but week < permitting period") {
             utility.infrastructureConstructionHandler(1., 0);
             REQUIRE(!utility.getInfrastructure_construction_manager().getUnder_construction()[7]);
         }
 
-        SECTION("Infrastruture handler high LT-ROF but week > permitting period", "[Infrastructure]") {
+        SECTION("Infrastruture handler high LT-ROF but week > permitting period") {
             utility.infrastructureConstructionHandler(1., 1461);
             REQUIRE(utility.getInfrastructure_construction_manager().getUnder_construction()[7]);
         }
 
-        SECTION("Infrastructure beginning and finishing", "[Infrastructure]") {
+        SECTION("Infrastructure beginning and finishing") {
             utility.infrastructureConstructionHandler(1., 1461);
             utility.infrastructureConstructionHandler(1., 1461 + (int) reservoir.construction_time + 1);
             REQUIRE(!utility.getInfrastructure_construction_manager().getUnder_construction()[7]);
         }
     }
+
+
+    SECTION("Joint infrastructure", "[Infrastructure][Joint infrastructure]") {
+        vector<double> rof_triggers_non_zero = vector<double>(10, 0.1);
+        vector<int> construction_order_seq = {0};
+        Utility utility1("U1", 0, demands, streamflow_n_weeks, 0.03, &demand_class_fractions, &user_classes_prices,
+                        wwtp_discharge_durham, 0., construction_order_seq, construction_order_empty, rof_triggers,
+                        0.07, 25, 0.05);
+        Utility utility2("U2", 1, demands, streamflow_n_weeks, 0.03, &demand_class_fractions, &user_classes_prices,
+                         wwtp_discharge_durham, 0., construction_order_seq, construction_order_empty, rof_triggers,
+                         0.07, 25, 0.05);
+        LevelDebtServiceBond bond1(0, 200.0, 25, 0.05, vector<int>(1, 0));
+        LevelDebtServiceBond bond2(1, 300.0, 25, 0.05, vector<int>(1, 0));
+
+        // Allocated Reservoir
+        vector<int> utilities_with_allocations = {0, 1};
+        vector<double> allocated_fractions = {0.2, 0.4};
+        vector<double> allocated_treatment_fractions = {0.3, 0.5};
+
+        AllocatedReservoir allocated_reservoir("My allocated reservoir", 1,
+                                               vector<Catchment *>(), 1000.0,
+                                               100., evaporation_series, 1.,
+                                               &utilities_with_allocations,
+                                               &allocated_fractions,
+                                               &allocated_treatment_fractions);
+
+        vector<double> capacity_to_be_added = {10, 20};
+        vector<Bond *> bonds = Utils::copyBonds({&bond1, &bond2});
+        // Sequential joint wtp expansion to be added to allocated reservoir ID 1.
+        SequentialJointTreatmentExpansion wtp("WTP expansion", 0, 1, 0,
+                                              vector<int>(2),
+                                              capacity_to_be_added, bonds,
+                                              {3.000, 3.0001}, 0.);
+
+        vector<WaterSource *> water_sources =
+                Utils::copyWaterSourceVector({&allocated_reservoir, &wtp});
+        vector<Utility *> utilities =
+                Utils::copyUtilityVector({&utility1, &utility2});
+
+        vector<vector<int>> water_sources_to_utilities = {{0, 1}, {0, 1}};
+        vector<DroughtMitigationPolicy *> dmps;
+        vector<MinEnvFlowControl *> mev;
+        auto rdm = vector<vector<double>>(2, vector<double>(50, 1.));
+
+        ContinuityModelRealization model(water_sources, Graph(1),
+                                         water_sources_to_utilities,
+                                         utilities, dmps, mev, rdm[0],
+                                         rdm[0], rdm[0], 0);
+
+        vector<double> lt_rofs = {1., 0.};
+
+        SECTION("Test triggering and forced construction for joint infarstructure.") {
+            // Begin construction
+            model.setLongTermROFs(lt_rofs, 100);
+
+            // Check triggering
+            REQUIRE(model.getContinuity_utilities()[0]->
+                    getInfrastructure_construction_manager().getUnder_construction()[0]);
+            REQUIRE(model.getContinuity_utilities()[1]->
+                    getInfrastructure_construction_manager().getUnder_construction()[0]);
+            REQUIRE(!model.getContinuity_water_sources()[0]->isOnline());
+
+            // Check financial
+            //FIXME: BOND FOR UTILITY 1 BEING ISSUED TWICE.
+            REQUIRE(model.getContinuity_utilities()[0]->
+                    getInfrastructure_net_present_cost() == Approx(134.99));
+            REQUIRE(model.getContinuity_utilities()[1]->
+                    getInfrastructure_net_present_cost() ==
+                    Approx(202.49).epsilon(0.005));
+        }
+
+        SECTION("Test setting joint infrastructure online after construction "
+                "period.") {
+            // Begin construction
+            model.setLongTermROFs(lt_rofs, 100);
+            // Finish construction and set source online
+            model.setLongTermROFs(lt_rofs, 257);
+            REQUIRE(!model.getContinuity_utilities()[0]->
+                    getInfrastructure_construction_manager()
+                    .getUnder_construction()[0]);
+            REQUIRE(!model.getContinuity_utilities()[1]->
+                    getInfrastructure_construction_manager()
+                    .getUnder_construction()[0]);
+            REQUIRE(model.getContinuity_water_sources()[1]->
+                    getAllocatedTreatmentCapacity(0) == 40);
+            REQUIRE(model.getContinuity_water_sources()[1]->
+                    getAllocatedTreatmentCapacity(1) == 70);
+        }
+    }
+
+
+    SECTION("Utility other functions", "[Utility]") {
+
+        vector<double> utility_rdm(4, 1.);
+        utility.setRealization(0, utility_rdm);
+
+        SECTION("Utility split demands", "[splitDemands]") {
+            Reservoir reservoir2("R2", 0, vector<Catchment *>(), 3700. * 3,
+                                ILLIMITED_TREATMENT_CAPACITY,
+                                 evaporation_series, 1.);
+
+            vector<double> rdm_reservoir(20, 1.);
+            reservoir.setRealization(0, rdm_reservoir);
+            reservoir2.setRealization(0, rdm_reservoir);
+
+            utility.addWaterSource(&reservoir2);
+            vector<vector<double>> split_demands(8, vector<double>(1));
+
+            SECTION("One source online and other offline") {
+                utility.splitDemands(0, split_demands);
+
+                REQUIRE(split_demands[0][0] == 100.);
+                REQUIRE(split_demands[7][0] == 0.);
+            }
+
+            SECTION("Two sources online") {
+                utility.setWaterSourceOnline(7, 0);
+                reservoir.applyContinuity(0, 10000, 0, split_demands[0]); // Fill reservoir
+                utility.updateTotalAvailableVolume();
+                utility.splitDemands(0, split_demands);
+
+                REQUIRE(split_demands[0][0] == 75.);
+                REQUIRE(split_demands[7][0] == 25.);
+            }
+
+            SECTION("Two sources online, unfulfilled demand") {
+                utility.setWaterSourceOnline(7, 0);
+                reservoir.applyContinuity(0, 260, 0, split_demands[0]); // Fill reservoir
+                vector<double> demand_reservoir2(1, 3700. * 3 - 270.);
+                reservoir2.applyContinuity(0, 0, 0, demand_reservoir2); // Fill reservoir
+                utility.updateTotalAvailableVolume();
+                utility.splitDemands(0, split_demands);
+
+                REQUIRE(split_demands[0][0] == 20.);
+                REQUIRE(split_demands[7][0] == 10.);
+                REQUIRE(utility.getUnfulfilled_demand() == 70.);
+            }
+        }
+    }
 }
+
 
 TEST_CASE("Bonds") {
     double e = 0.005;

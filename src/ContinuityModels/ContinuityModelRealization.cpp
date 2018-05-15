@@ -73,8 +73,7 @@ void ContinuityModelRealization::setLongTermROFs(const vector<double> &risks_of_
     /// option is in the list of sources to be built for other utilities.
     if (!new_infra_triggered.empty())
         for (Utility *u : continuity_utilities) {
-            u->forceInfrastructureConstruction(week,
-                                               new_infra_triggered);
+            u->forceInfrastructureConstruction(week, new_infra_triggered);
         }
 }
 

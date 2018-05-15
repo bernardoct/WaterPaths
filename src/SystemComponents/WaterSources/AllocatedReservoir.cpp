@@ -96,6 +96,7 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
                                          double wastewater_inflow, vector<double> &demand_outflow) {
 
     double total_upstream_inflow;
+    continuity_error = 0;
 
     total_upstream_inflow = upstream_source_inflow +
             wastewater_inflow;
@@ -245,7 +246,11 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
 
     double cont_error = abs(available_volume_old - direct_demand + total_upstream_inflow +
                             upstream_catchment_inflow - evaporated_volume -
-                            total_outflow - available_volume);
+                            total_outflow - available_volume) - abs(continuity_error);
+
+    if (continuity_error > 0) {
+        printf("Warning: continuity error of %f in allocated reservoir %d.\n", continuity_error, id);
+    }
 
     if ((int) abs(sum_allocations - available_volume) > 1) {
         char error[4000];
@@ -399,8 +404,14 @@ bool AllocatedReservoir::mass_balance_with_wq_pool(double net_inflow,
                          allocated_capacities[u];
     }
 
+    /// Get water from water quality pool for supply. Check continuity for errors.
     if (available_allocated_volumes[u] < 0) {
-        total_outflow += available_allocated_volumes[u];
+        if (total_outflow + available_allocated_volumes[u] < 0) {
+            continuity_error = total_outflow + available_allocated_volumes[u];
+            total_outflow = 0;
+        } else {
+            total_outflow += available_allocated_volumes[u];
+        }
         available_volume -= available_allocated_volumes[u];
         available_allocated_volumes[u] = 0;
     }

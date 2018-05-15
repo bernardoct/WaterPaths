@@ -178,8 +178,12 @@ InfrastructureManager::waterTreatmentPlantConstructionHandler(unsigned int sourc
 
     /// Add treatment capacity to source
     double added_capacity = wtp->implementTreatmentCapacity(id);
-    water_sources->at(wtp->parent_reservoir_ID)
-            ->addTreatmentCapacity(added_capacity, id);
+    try {
+        water_sources->at(wtp->parent_reservoir_ID)
+                ->addTreatmentCapacity(added_capacity, id);
+    } catch (...) {
+        __throw_runtime_error("Could not add treatment capacity to reservoir.");
+    }
 
     /// If source is intake or reuse and is not in the list of active
     /// sources, add it to the priority list.

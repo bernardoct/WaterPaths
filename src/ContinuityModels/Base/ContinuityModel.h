@@ -26,7 +26,6 @@ protected:
     vector<vector<int> > water_sources_to_utilities;
     vector<vector<int> > water_sources_online_to_utilities;
     vector<vector<int> > utilities_to_water_sources;
-    vector<vector<int> > non_priority_water_sources_online_to_utilities;
     vector<int> downstream_sources;
     const vector<int> sources_topological_order;
     vector<double> water_sources_capacities;

@@ -73,3 +73,7 @@ void FloatingInterestBalloonPaymentBond::issueBond(int week, int construction_ti
     }
 }
 
+double FloatingInterestBalloonPaymentBond::printDebtService(int week) {
+    return cost_of_capital * interest_rate_series.at((unsigned long) n_payments_made - 1);;
+}
+

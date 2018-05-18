@@ -53,3 +53,7 @@ void LevelDebtServiceBond::issueBond(int week, int construction_time, double bon
                                  (pow(1. + coupon_rate, n_payments) - 1.);
 }
 
+double LevelDebtServiceBond::printDebtService(int week) {
+    return level_debt_service_payment;
+}
+

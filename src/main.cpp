@@ -115,8 +115,8 @@ int main(int argc, char *argv[]) {
                         "inflows_high)\n"
                         "\t-O: Directory containing the pre-computed "
                         "ROF table binaries\n"
-                        "\t-C: Import/export rof tables (-1: export, 0:"
-                        " do nothing (standard), 1: import)\n"
+                        "\t-C: Import/export rof tables (1: export, 0:"
+                        " do nothing (standard), -1: import)\n"
                         "\t-B: Export objectives for all utilities on a single line\n",
                         "\t-X: Scenario (0: as projected, 1-6: different demand scenarios)\n",
                         "\t-F: Formulation (0: fixed 1: uniform rate 2: square one 3: add interruptable contracts)",

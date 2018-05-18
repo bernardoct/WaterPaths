@@ -418,8 +418,12 @@ void Utility::splitDemands(
         demands[ws][id] = source_demand;
 
         /// Check if allocated demand was greater than treatment capacity.
+        /// include any caps on plant capacity (i.e. should a utility only
+        /// use 80% of its treatment capacity in one week, running the plant
+        /// at 100% except for extreme conditions may be unwanted)
         double over_allocated_demand_ws =
-                source_demand - source->getAllocatedTreatmentCapacity(id);
+                source_demand - source->getAllocatedTreatmentCapacity(id)
+                                * source->getAllocatedTreatmentCapacityFractionalPlantAvailability(id);
 
         /// Set reallocation variables for the sake of reallocating demand.
         if (over_allocated_demand_ws > 0.) {
@@ -479,6 +483,7 @@ void Utility::updateContingencyFundAndDebtService(
     } else if (week_of_year == 1) {
         infra_net_present_cost = 0.;
         current_debt_payment = 0.;
+        retroactive_payment = 0.;
     }
 
     /// Set current water price, contingent on restrictions being enacted.
@@ -551,6 +556,7 @@ void Utility::setWaterSourceOnline(unsigned int source_id, int week) {
 double Utility::updateCurrent_debt_payment(int week) {
 
     double current_debt_payment = 0;
+    retroactive_payment = 0;
 
     /// Checks if it's the first week of the year, when outstanding debt
     /// payments should be made.
@@ -566,11 +572,12 @@ double Utility::updateCurrent_debt_payment(int week) {
             double allocation_adjustment = water_sources[bond->water_source_id]->getAllocationAdjustment(id);
             double period_retroactive_debt_service_payment =
                     bond->setRetroactiveDebtServicePayment(week, allocation_adjustment);
+            retroactive_payment += period_retroactive_debt_service_payment;
             current_debt_payment += period_retroactive_debt_service_payment;
 
             if (WEEK_OF_YEAR[week] == 0)
                 cout << name << " is paying periodic debt service on bond (id " << bond->id << ") of "
-                     << bond->getDebtService(week) << " million dollars, as well as "
+                     << bond->printDebtService(week) << " million dollars, as well as "
                      << period_retroactive_debt_service_payment
                      << " million in retroactive payment. This corresponds to the water source "
                      << water_sources[bond->water_source_id]->name
@@ -578,7 +585,7 @@ double Utility::updateCurrent_debt_payment(int week) {
         } else {
             if (WEEK_OF_YEAR[week] == 0)
                 cout << name << " is paying periodic debt service on bond (id " << bond->id << ") of "
-                     << bond->getDebtService(week) << " million dollars." << endl;
+                     << bond->printDebtService(week) << " million dollars." << endl;
 //                        "This corresponds to the water source "
 //                     << water_sources[bond->id]->name << endl; // seg fault for cary plant bc it has multiple bonds
         }
@@ -591,8 +598,10 @@ double Utility::updateCurrent_debt_payment(int week) {
 
 void Utility::issueBond(int new_infra_triggered, int week) {
     if (new_infra_triggered != NON_INITIALIZED) {
+        cout << "A bond is issued for " << name << " in week " << week << endl;
         Bond &bond = water_sources.at((unsigned long) new_infra_triggered)->getBond(id);
-        bond.issueBond(week, 0, bond_term_multiplier, bond_interest_rate_multiplier);
+        bond.issueBond(week, (int) round(water_sources.at((unsigned long) new_infra_triggered)->construction_time),
+                       bond_term_multiplier, bond_interest_rate_multiplier);
         issued_bonds.push_back(&bond);
         infra_net_present_cost += bond.getNetPresentValueAtIssuance(infra_discount_rate, week);
     }
@@ -606,6 +615,7 @@ void Utility::forceInfrastructureConstruction(int week, vector<int> new_infra_tr
     auto under_construction = infrastructure_construction_manager.getUnder_construction();
     for (int ws : new_infra_triggered) {
         if (under_construction.size() > ws && under_construction.at((unsigned long) ws)) {
+            cout << "A bond is issued by force for " << name << " in week " << week << endl;
             issueBond(ws, week);
         }
     }
@@ -643,7 +653,7 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
 
     /// Issue and add bond of triggered water source to list of outstanding bonds, and update total new
     /// infrastructure NPV.
-    issueBond(new_infra_triggered, week);
+    //issueBond(new_infra_triggered, week);
 
     return new_infra_triggered;
 }
@@ -817,6 +827,10 @@ double Utility::getInfrastructure_net_present_cost() const {
 
 double Utility::getCurrent_debt_payment() const {
     return current_debt_payment;
+}
+
+double Utility::getRetroactive_payment() const {
+    return retroactive_payment;
 }
 
 double Utility::getCurrent_contingency_fund_contribution() const {

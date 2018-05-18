@@ -18,6 +18,7 @@ Bond::Bond(const int id, const double cost_of_capital, const int n_payments,
         string error = "Invalid construction cost of capital for bond " + to_string(id);
         __throw_invalid_argument(error.c_str());
     }
+
 }
 
 Bond::Bond(const int id, const double cost_of_capital, const int n_payments, vector<int> pay_on_weeks,
@@ -34,6 +35,7 @@ Bond::Bond(const int id, const double cost_of_capital, const int n_payments, vec
         string error = "Invalid construction cost of capital for bond " + to_string(id);
         __throw_invalid_argument(error.c_str());
     }
+
 }
 
 Bond::Bond() : id(NON_INITIALIZED), n_payments(NON_INITIALIZED), cost_of_capital(NON_INITIALIZED),

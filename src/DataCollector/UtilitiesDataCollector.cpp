@@ -45,7 +45,10 @@ string UtilitiesDataCollector::printTabularString(int week) {
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << net_present_infrastructure_cost[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-              << debt_service_payments[week];
+              << debt_service_payments[week]
+              << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+              << retroactive_payments[week];
+
 
     return outStream.str();
 }
@@ -83,7 +86,8 @@ string UtilitiesDataCollector::printCompactString(int week) {
               << net_present_infrastructure_cost[week]
               << ","
               << debt_service_payments[week]
-              << ",";
+              << ","
+              << retroactive_payments[week] << ",";
 
     return outStream.str();
 }
@@ -106,7 +110,8 @@ string UtilitiesDataCollector::printTabularStringHeaderLine1() {
               << setw(COLUMN_WIDTH) << "Insurance"
               << setw(COLUMN_WIDTH) << "Insurance"
               << setw(COLUMN_WIDTH) << "Infra."
-              << setw(COLUMN_WIDTH) << "Debt";
+              << setw(COLUMN_WIDTH) << "Debt"
+              << setw(COLUMN_WIDTH) << "Retro";
 
     return outStream.str();
 }
@@ -129,7 +134,8 @@ string UtilitiesDataCollector::printTabularStringHeaderLine2() {
               << setw(COLUMN_WIDTH) << "Payout"
               << setw(COLUMN_WIDTH) << "Price"
               << setw(COLUMN_WIDTH) << "NPV"
-              << setw(COLUMN_WIDTH) << "Service";
+              << setw(COLUMN_WIDTH) << "Service"
+              << setw(COLUMN_WIDTH) << "Payment";
 
     return outStream.str();
 }
@@ -151,7 +157,8 @@ string UtilitiesDataCollector::printCompactStringHeader() {
               << id << "ins_pout" << ","
               << id << "ins_price" << ","
               << id << "infra_npv" << ","
-              << id << "debt_serv" << ",";
+              << id << "debt_serv" << ","
+              << id << "retro_pmt" << ",";
 
     return outStream.str();
 }
@@ -177,6 +184,7 @@ void UtilitiesDataCollector::collect_data() {
     unfulfilled_demand.push_back(utility->getUnfulfilled_demand());
     net_stream_inflow.push_back(utility->getNet_stream_inflow());
     total_treatment_capacity.push_back(utility->getTotal_treatment_capacity());
+    retroactive_payments.push_back(utility->getRetroactive_payment());
 
 //    checkForNans();
 
@@ -225,6 +233,8 @@ void UtilitiesDataCollector::checkForNans() const {
         throw_with_nested(runtime_error(error.c_str()));
     if (std::isnan(net_stream_inflow.back()))
         throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(retroactive_payments.back()))
+        throw_with_nested(runtime_error(error.c_str()));
 
     error = "NPV absurdly high when collecting data for utility " + to_string(id) + " in week " + to_string(lt_rof.size
             ()) + ", realization " + to_string(realization) + "\n";
@@ -251,6 +261,10 @@ UtilitiesDataCollector::getContingency_fund_contribution() const {
 
 const vector<double> &UtilitiesDataCollector::getDebt_service_payments() const {
     return debt_service_payments;
+}
+
+const vector<double> &UtilitiesDataCollector::getRetroactive_payments() const {
+    return retroactive_payments;
 }
 
 const vector<double> &

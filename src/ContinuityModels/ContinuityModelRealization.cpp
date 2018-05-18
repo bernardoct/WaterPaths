@@ -47,100 +47,8 @@ void ContinuityModelRealization::setLongTermROFs(const vector<double> &risks_of_
     vector<int> new_infra_triggered;
     int nit; // new infrastruction triggered - id.
 
-
     /// At the beginning of each year, update allocations in shared reservoirs as desired
-    vector<vector<double>> temp_allocations(continuity_water_sources.size(),
-                                            vector<double>(continuity_utilities.size()));
-    vector<int> temp_parent_source_ids;
-    vector<int> temp_actual_source_ids;
-    for (unsigned long ws = 0; ws < continuity_water_sources.size(); ++ws) {
-        continuity_water_sources[ws]->updateTreatmentAndCapacityAllocations(week);
-
-        /// Hold treatment allocation capacity from last year as they are updated
-        /// And pass to JointWTP the parent reservoir treatment capacity for calculating
-        /// demand fractions
-        for (unsigned long u = 0; u < continuity_utilities.size(); ++u) {
-            temp_allocations[ws][u] = continuity_water_sources[ws]->getAllocatedTreatmentCapacity(u);
-        }
-
-        if (continuity_water_sources[ws]->getUtilities_with_allocations() != NULL
-            && continuity_water_sources[ws]->getParentSourceID() != NON_INITIALIZED)
-            for (int u : *continuity_water_sources[ws]->getUtilities_with_allocations())
-                continuity_water_sources[ws]->
-                        recordParentReservoirTreatmentCapacity(u,
-                                                               continuity_water_sources[continuity_water_sources[ws]->
-                                                                       getParentSourceID()]->
-                                                                       getAllocatedTreatmentCapacity(u));
-
-        continuity_water_sources[ws]->updateTreatmentAllocations(week, realization_demands);
-
-        /// Check if each water source has its allocations changed, and if so record the parent source id
-        for (unsigned long u = 0; u < continuity_utilities.size(); ++u)
-            if (temp_allocations[ws][u] != continuity_water_sources[ws]->getAllocatedTreatmentCapacity(u)) {
-                temp_parent_source_ids.push_back(continuity_water_sources[ws]->getParentSourceID());
-                temp_actual_source_ids.push_back(continuity_water_sources[ws]->id);
-            }
-    }
-
-    /// Remove repeated ids from temporary source id vectors created above
-    sort(temp_parent_source_ids.begin(),
-         temp_parent_source_ids.end());
-    temp_parent_source_ids.erase(unique(temp_parent_source_ids.begin(),
-                                        temp_parent_source_ids.end()),
-                                 temp_parent_source_ids.end());
-
-    sort(temp_actual_source_ids.begin(),
-         temp_actual_source_ids.end());
-    temp_actual_source_ids.erase(unique(temp_actual_source_ids.begin(),
-                                        temp_actual_source_ids.end()),
-                                 temp_actual_source_ids.end());
-
-
-    /// Do treatment allocations at parent water sources need to be updated?
-    for (int ws = 0; ws < temp_actual_source_ids.size(); ws++) {
-        if (temp_actual_source_ids.size() != temp_parent_source_ids.size()) {
-            cout << "Error in treatment allocation adjustment: parent ID and source ID vectors must be equal length." << endl;
-            cout << "For now, assuming this means the same parent reservoir is tied to two different source ids." << endl;
-            for (int i = temp_parent_source_ids.size(); i < temp_actual_source_ids.size(); i++)
-                temp_parent_source_ids.push_back(temp_parent_source_ids[i-1]);
-        }
-
-        if (temp_parent_source_ids[ws] == NON_INITIALIZED) {} else {
-            for (unsigned long u = 0; u < continuity_utilities.size(); ++u) {
-                /// Add capacity to each utility treatment allocation based on observed change
-
-                cout << "Utility " << u << " treatment allocation fraction (before):" << endl;
-                cout << continuity_water_sources[temp_parent_source_ids[ws]]->getAllocatedTreatmentFraction(u) << endl;
-
-                double allocation_adjustment =
-                        continuity_water_sources[temp_actual_source_ids[ws]]->getAllocatedTreatmentCapacity(u)
-                        - temp_allocations[temp_actual_source_ids[ws]][u];
-
-                continuity_water_sources[temp_parent_source_ids[ws]]->
-                        addAllocatedTreatmentCapacity(allocation_adjustment, u);
-
-                cout << "Utility " << u << " treatment allocation fraction (after):" << endl;
-                cout << continuity_water_sources[temp_parent_source_ids[ws]]->getAllocatedTreatmentFraction(u) << endl;
-
-                /// Similarily, add capacity to each utility capacity allocation
-                /// The previous statements re-allocate the parent source treatment allocations
-                /// Adjust the storage capacity allocations to be proportionately equal
-                continuity_water_sources[temp_parent_source_ids[ws]]
-                        ->setAllocatedSupplyCapacity(
-                                continuity_water_sources[temp_parent_source_ids[ws]]
-                                        ->getAllocatedTreatmentFraction(u),
-                                u);
-
-                /// Record allocation adjustment to determine retroactive debt service payments
-                continuity_water_sources[temp_actual_source_ids[ws]]->setAllocationAdjustment(u, allocation_adjustment);
-            }
-            /// Make sure that these allocations do not disrupt water balance, entire capacity of
-            /// parent reservoir must be accounted for
-            continuity_water_sources[temp_parent_source_ids[ws]]->normalizeAllocatedSupplyCapacity();
-
-        }
-    }
-
+    updateAllocations(week);
 
     /// Loop over utilities to see if any of them will build new infrastructure.
     for (unsigned long u = 0; u < continuity_utilities.size(); ++u) {
@@ -163,22 +71,6 @@ void ContinuityModelRealization::setLongTermROFs(const vector<double> &risks_of_
                                      new_infra_triggered.end()),
                               new_infra_triggered.end());
 
-    /// Issue bonds for triggered project to triggering utility
-    /// as well as any that are partners
-    for (int it : new_infra_triggered) {
-        for (unsigned long u = 0; u < continuity_utilities.size(); ++u) {
-            auto temp_infra_options = continuity_utilities[u]->getRof_infrastructure_construction_order();
-            auto temp_infra_options_demand = continuity_utilities[u]->getDemand_infra_construction_order();
-
-            temp_infra_options.insert(temp_infra_options.end(),
-                                      temp_infra_options_demand.begin(), temp_infra_options_demand.end());
-            /// If a utility has the triggered project on its list of potential projects
-            auto irange = find(temp_infra_options.begin(), temp_infra_options.end(), it);
-            if (temp_infra_options.end() != irange)
-                continuity_utilities[u]->infrastructureBondHandler(week, it);
-        }
-    }
-
     /// If infrastructure was built, force utilities to build their share of
     /// that infrastructure option (which will only happen it the listed
     /// option is in the list of sources to be built for other utilities.
@@ -187,16 +79,99 @@ void ContinuityModelRealization::setLongTermROFs(const vector<double> &risks_of_
             u->forceInfrastructureConstruction(week,
                                                new_infra_triggered);
         }
-
 }
 
 void ContinuityModelRealization::applyDroughtMitigationPolicies(int week) {
     for (DroughtMitigationPolicy* dmp : drought_mitigation_policies) {
-
         dmp->applyPolicy(week);
     }
 }
 
 const vector<DroughtMitigationPolicy *> ContinuityModelRealization::getDrought_mitigation_policies() const {
     return drought_mitigation_policies;
+}
+
+void ContinuityModelRealization::updateAllocations(const int week) {
+    vector<vector<double>> temp_allocations(continuity_water_sources.size(),
+                                            vector<double>(continuity_utilities.size()));
+
+    vector<int> temp_actual_source_ids;
+    for (unsigned long ws = 0; ws < continuity_water_sources.size(); ++ws) {
+        continuity_water_sources[ws]->updateTreatmentAndCapacityAllocations(week);
+
+        /// Hold treatment allocation capacity from last year as they are updated
+        /// And pass to JointWTP the parent reservoir treatment capacity for calculating
+        /// demand fractions
+        for (int u = 0; u < continuity_utilities.size(); ++u)
+            temp_allocations[ws][u] = continuity_water_sources[ws]->getAllocatedTreatmentCapacity(u);
+
+        if (continuity_water_sources[ws]->getUtilities_with_allocations() != nullptr
+            && continuity_water_sources[ws]->getParentSourceID() != NON_INITIALIZED)
+            for (int u : *continuity_water_sources[ws]->getUtilities_with_allocations())
+                continuity_water_sources[ws]->
+                        recordParentReservoirTreatmentCapacity(u,
+                                                               continuity_water_sources[continuity_water_sources[ws]->
+                                                                       getParentSourceID()]->
+                                                                       getAllocatedTreatmentCapacity(u));
+
+        continuity_water_sources[ws]->updateTreatmentAllocations(week, realization_demands);
+
+        /// Check if each water source has its allocations changed, and if so record the parent source id
+        for (int u = 0; u < continuity_utilities.size(); ++u)
+            if (temp_allocations[ws][u] != continuity_water_sources[ws]->getAllocatedTreatmentCapacity(u))
+                temp_actual_source_ids.push_back(continuity_water_sources[ws]->id);
+    }
+
+    /// Remove repeated ids from temporary source id vector created above
+    sort(temp_actual_source_ids.begin(),
+         temp_actual_source_ids.end());
+    temp_actual_source_ids.erase(unique(temp_actual_source_ids.begin(),
+                                        temp_actual_source_ids.end()),
+                                 temp_actual_source_ids.end());
+
+    /// If source above was flagged as having its treatment capacities changed,
+    /// then if that source has a parent reservoir, its allocations must also change.
+    int parent_source_id;
+    for (int actual_ws_id : temp_actual_source_ids) {
+        /// Determine parent source id
+        parent_source_id = continuity_water_sources[actual_ws_id]->getParentSourceID();
+
+        cout << "Treatment allocations are being adjusted for actual source " << actual_ws_id
+             << " and its parent source " << parent_source_id << endl;
+
+        if (parent_source_id == NON_INITIALIZED) {} else {
+            for (int u = 0; u < continuity_utilities.size(); ++u) {
+                /// Add capacity to each utility treatment allocation based on observed change
+
+                cout << "Utility " << u << " parent source treatment allocation fraction (before):" << endl;
+                cout << continuity_water_sources[parent_source_id]->getAllocatedTreatmentFraction(u) << endl;
+
+                /// This quantity is the difference between the past period allocation for a utility
+                /// and the quantity it was changed to in the above loop
+                double allocation_adjustment =
+                        continuity_water_sources[actual_ws_id]->getAllocatedTreatmentCapacity(u)
+                        - temp_allocations[actual_ws_id][u];
+
+                /// The difference in capacity is applied to allocations on the parent source
+                /// This may result temporarily in mis-calculated allocation fractions, which are
+                /// properly normalized below
+                continuity_water_sources[parent_source_id]->addAllocatedTreatmentCapacity(allocation_adjustment, u);
+
+                cout << "Utility " << u << " parent source treatment allocation fraction (after):" << endl;
+                cout << continuity_water_sources[parent_source_id]->getAllocatedTreatmentFraction(u) << endl;
+
+                /// Similarly, add capacity to each utility capacity allocation
+                /// The previous statements re-allocate the parent source treatment allocations
+                /// Adjust the storage capacity allocations to be proportionately equal
+                continuity_water_sources[parent_source_id]->setAllocatedSupplyCapacity(
+                                continuity_water_sources[parent_source_id]->getAllocatedTreatmentFraction(u), u);
+
+                /// Record allocation adjustment to determine retroactive debt service payments
+                continuity_water_sources[actual_ws_id]->setAllocationAdjustment(u, allocation_adjustment);
+            }
+            /// Make sure that these allocations do not disrupt water balance, entire capacity of
+            /// parent reservoir must be accounted for
+            continuity_water_sources[parent_source_id]->normalizeAllocations();
+        }
+    }
 }

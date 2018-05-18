@@ -9,9 +9,7 @@ ReservoirExpansion::ReservoirExpansion(const char *name, const int id, const uns
                                        double permitting_period, Bond &bond)
         : WaterSource(name, id, vector<Catchment *>(), capacity, NON_INITIALIZED, vector<int>(), RESERVOIR_EXPANSION,
                       construction_time_range, permitting_period, bond),
-          parent_reservoir_ID(parent_reservoir_ID) {
-
-}
+          parent_reservoir_ID(parent_reservoir_ID) {}
 
 /**
  * Copy constructor.

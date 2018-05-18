@@ -38,10 +38,11 @@ public:
 
     virtual double getDebtService(int week) = 0;
 
+    virtual double printDebtService(int week) = 0;
+
     virtual double getNetPresentValueAtIssuance(double discount_rate, int week) const = 0;
 
-    virtual void
-    issueBond(int week, int construction_time, double bond_term_multiplier, double bond_interest_rate_multiplier);
+    virtual void issueBond(int week, int construction_time, double bond_term_multiplier, double bond_interest_rate_multiplier);
 
     virtual void setRealizationWaterSource(unsigned long r, vector<double> &rdm_factors);
 

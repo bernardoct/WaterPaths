@@ -136,10 +136,6 @@ vector<double> ContinuityModelROF::calculateLongTermROF(int week) {
 
         for (int w = 0; w < WEEKS_ROF_LONG_TERM; ++w) {
             /// one week continuity time-step.
-            if (w == 40 & yr == 4) {
-                //cout << w << endl;
-            }
-
             continuityStep(w + week, yr, APPLY_DEMAND_BUFFER);
 
             /// check total available storage for each utility and, if smaller
@@ -324,31 +320,8 @@ void ContinuityModelROF::updateStorageToROFTable(
             }
         }
 
-//        for (unsigned int u = 0; u < n_utilities; ++u) {
-//            /// CHECK FOR CONTINUITY FAILURES
-//
-//            if (utilities_storages[u]/utilities_capacities[u] > 1.01) {
-//                /// if there is more than a 1% error in continuity
-//
-//                cout << "Utility (name and ID): " << continuity_utilities[u]->name << ", "
-//                     << continuity_utilities[u]->id << endl;
-//                cout << "Storage: " << utilities_storages[u] << endl;
-//                cout << "Capacity: " << utilities_capacities[u] << endl;
-//
-//                for (int ws : water_sources_online_to_utilities[u]) {
-//                    cout << "Member Source: " << continuity_water_sources[ws]->name << ", (Allocated) Storage: "
-//                         << continuity_water_sources[ws]->getAvailableAllocatedVolume(u) << ", (Allocated) Capacity: "
-//                         << continuity_water_sources[ws]->getAllocatedCapacity(u) << ", Assigned Storage during Calc: "
-//                         << available_volumes[topo_sorted_to_all_sources[ws]]*
-//                            continuity_water_sources[ws]->getAllocatedFraction(u) *
-//                            (continuity_water_sources[ws]->getAllocatedTreatmentCapacity(u) > 0) << endl;
-//                }
-//                __throw_out_of_range("Storage-to-Capacity ratio for Utility is greater than 1 "
-//                                             "within Storage-to-ROF table calculations.");
-//            }
-//        }
-
-        /// If all utilities have failed, stop dropping storage level
+        /// If all utilities have failed, stop dropping storage level and label
+        /// all storage levels below failures.
         if (count_fails == n_utilities) {
             for (int ss = s; ss <= NO_OF_INSURANCE_STORAGE_TIERS; ++ss) {
                 for (unsigned long u = 0; u < (unsigned long) n_utilities; ++u) {

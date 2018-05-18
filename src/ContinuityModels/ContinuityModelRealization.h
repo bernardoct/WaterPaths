@@ -40,6 +40,7 @@ public:
     void setLongTermROFs(const vector<double> &risks_of_failure, const int week);
 
 
+    void updateAllocations(const int week);
 };
 
 

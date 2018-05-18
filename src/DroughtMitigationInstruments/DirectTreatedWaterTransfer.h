@@ -24,6 +24,12 @@ class DirectTreatedWaterTransfer : public DroughtMitigationPolicy {
     const double sales_rate;
     const double sales_rof_trigger;
 
+    double initial_request = 0;
+
+    vector<double> quantities_sold;
+    vector<double> available_excess_treatment_capacity;
+    vector<double> available_excess_supply_capacity;
+
 public:
     DirectTreatedWaterTransfer(const int id,
                                const char *name,
@@ -43,6 +49,19 @@ public:
                         vector<double> &water_sources_rdm, vector<double> &policy_rdm) override;
 
     const double getBuyerStorageFromROF(int week, const vector<Matrix2D<double>> storage_to_rof_table, const int u_id);
+
+    const vector<int> getPotentialSellingUtilities();
+
+    const vector<double> getSoldQuantities();
+
+    const vector<double> getAvailableExcessTreatmentCapacityToSell();
+
+    const vector<double> getAvailableExcessSupplyCapacityToSell();
+
+    const double getInitialTransferRequest();
+
+    const int getBuyingUtilityID();
+
 };
 
 

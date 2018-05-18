@@ -73,3 +73,7 @@ void BalloonPaymentBond::issueBond(int week, int construction_time, double bond_
     /// Interest to be paid every pay period.
     interest_payments = coupon_rate * cost_of_capital;
 }
+
+double BalloonPaymentBond::printDebtService(int week) {
+    return interest_payments;
+}

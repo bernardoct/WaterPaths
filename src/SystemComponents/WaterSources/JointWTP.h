@@ -12,10 +12,10 @@ class JointWTP : public WaterSource {
 private:
 
     int build_year = 0;
-    int EXTERNAL_SOURCE_ID = -1;
-    int PROJECTED_YEARS = -1;
-    int N_UTILITIES_INCLUDING_EXTERNAL = -1;
-    int N_INTERNAL_UTILITIES = -1;
+    unsigned long EXTERNAL_SOURCE_ID = -1;
+    unsigned long PROJECTED_YEARS = -1;
+    unsigned long N_UTILITIES_INCLUDING_EXTERNAL = -1;
+    unsigned long N_INTERNAL_UTILITIES = -1;
 
     double external_allocation;
     int contract_type;
@@ -131,6 +131,8 @@ public:
     double getExternalTreatmentAllocation();
 
     void setExternalAllocatedTreatmentCapacity(const int year) override;
+
+    vector<double> getPreviousPeriodAllocatedCapacities() const override;
 };
 
 

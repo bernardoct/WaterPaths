@@ -332,9 +332,12 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                 cout << w << endl;
 
                 /// Calculate long-term risk-of-failre if current week is first week of the year.
-                if (Utils::isFirstWeekOfTheYear(w))
+                if (Utils::isFirstWeekOfTheYear(w)) {
                     realization_model->setLongTermROFs(
                             rof_model->calculateLongTermROF(w), w);
+//                    realization_model->setLongTermROFs({0.05,0.05,0.05,0.05}, w);
+                }
+
                 /// Calculate short-term risk-of-failure
                 if (import_export_rof_tables == IMPORT_ROF_TABLES) {
                     realization_model->setShortTermROFs(
@@ -342,6 +345,8 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
 		        } else {
                     realization_model->setShortTermROFs(
                             rof_model->calculateShortTermROF(w));
+//                    realization_model->setShortTermROFs({0.05,0.05,0.05,0.05});
+
                 }
                 /// Apply drought mitigation policies
                 realization_model->applyDroughtMitigationPolicies(w);

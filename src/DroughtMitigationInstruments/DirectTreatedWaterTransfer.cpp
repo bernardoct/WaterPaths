@@ -39,6 +39,10 @@ void DirectTreatedWaterTransfer::addSystemComponents(vector<Utility *> utilities
             cout << u->name << " (ID " << u->id << ")" << " is a potential selling utility" << endl;
         }
     }
+
+    quantities_sold = vector<double>(realization_utilities.size(),0.0);
+    available_excess_treatment_capacity = vector<double>(realization_utilities.size(),0.0);
+    available_excess_supply_capacity = vector<double>(realization_utilities.size(),0.0);
 }
 
 void DirectTreatedWaterTransfer::applyPolicy(int week) {
@@ -62,89 +66,101 @@ void DirectTreatedWaterTransfer::applyPolicy(int week) {
                                               * buying_utility->getTotal_storage_capacity();
 
         cout << "The initial requested transfer volume is " << buyer_requested_transfer_volume << endl;
+        initial_request = buyer_requested_transfer_volume;
 
-        /// 2. Any of the utilities with (a) spare treatment capacity and (b) spare reservoir supply storage
-        ///    may sell transfers to the buyer.
-        vector<int> available_selling_utility_ids;
-        vector<double> available_selling_utility_treatment_capacity_in_joint_wtp;
-        vector<double> available_selling_utility_spare_reservoir_storage;
-        for (Utility *u : realization_utilities) {
-            if (joint_wtp->getAllocatedTreatmentCapacity(u->id) > 0
-                && parent_allocated_reservoir->getAllocatedTreatmentCapacity(u->id)
-                   - parent_allocated_reservoir->getAllocatedDemand(u->id) > 0
-                && parent_allocated_reservoir->getAvailableAllocatedVolume(u->id)
-                   - parent_allocated_reservoir->getAllocatedDemand(u->id)
-                   > STORAGE_CAPACITY_RATIO_FAIL * parent_allocated_reservoir->getAllocatedCapacity(u->id)) {
+        if (buyer_requested_transfer_volume > 0) {
+            /// 2. Any of the utilities with (a) spare treatment capacity and (b) spare reservoir supply storage
+            ///    may sell transfers to the buyer.
+            vector<int> available_selling_utility_ids;
+            vector<double> available_selling_utility_treatment_capacity_in_joint_wtp;
+            vector<double> available_selling_utility_spare_reservoir_storage;
+            for (Utility *u : realization_utilities) {
+                if (joint_wtp->getAllocatedTreatmentCapacity(u->id) > 0
+                    && parent_allocated_reservoir->getAllocatedTreatmentCapacity(u->id)
+                       - parent_allocated_reservoir->getAllocatedDemand(u->id) > 0
+                    && parent_allocated_reservoir->getAvailableAllocatedVolume(u->id)
+                       > STORAGE_CAPACITY_RATIO_FAIL * parent_allocated_reservoir->getAllocatedCapacity(u->id)) {
 
-                available_selling_utility_ids.push_back(u->id);
+                    available_selling_utility_ids.push_back(u->id);
 
-                vector<double> temp_utility_treatment_capacity_options =
-                        {joint_wtp->getAllocatedTreatmentCapacity(u->id),
-                         parent_allocated_reservoir->getAllocatedTreatmentCapacity(u->id)
-                         - parent_allocated_reservoir->getAllocatedDemand(u->id)};
-                available_selling_utility_treatment_capacity_in_joint_wtp.
-                        push_back(*std::min_element(temp_utility_treatment_capacity_options.begin(),
-                                                    temp_utility_treatment_capacity_options.end()));
+                    vector<double> temp_utility_treatment_capacity_options =
+                            {joint_wtp->getAllocatedTreatmentCapacity(u->id),
+                             parent_allocated_reservoir->getAllocatedTreatmentCapacity(u->id)
+                             - parent_allocated_reservoir->getAllocatedDemand(u->id)};
+                    available_selling_utility_treatment_capacity_in_joint_wtp.
+                            push_back(*std::min_element(temp_utility_treatment_capacity_options.begin(),
+                                                        temp_utility_treatment_capacity_options.end()));
 
-                available_selling_utility_spare_reservoir_storage.push_back(
-                        (parent_allocated_reservoir->getAvailableAllocatedVolume(u->id)
-                         - parent_allocated_reservoir->getAllocatedDemand(u->id))
-                        - STORAGE_CAPACITY_RATIO_FAIL * parent_allocated_reservoir->getAllocatedCapacity(u->id));
+                    available_selling_utility_spare_reservoir_storage.push_back(
+                            parent_allocated_reservoir->getAvailableAllocatedVolume(u->id)
+                            - STORAGE_CAPACITY_RATIO_FAIL * parent_allocated_reservoir->getAllocatedCapacity(u->id));
 
-                cout << u->name << " has available storage and treatment capacity to sell transfers" << endl;
-            }
-        }
-
-        /// 3. Sales will be allocated based on (a) which utility has most excess at time of request, and
-        ///    (b - FUTURE??) which selling party is cheapest
-
-        /// 3a. Sort to get utility ids in order from most excess available to least
-        vector<double> temp_sorted_selling_utility_joint_wtp =
-                available_selling_utility_treatment_capacity_in_joint_wtp;
-        sort(temp_sorted_selling_utility_joint_wtp.begin(),
-             temp_sorted_selling_utility_joint_wtp.end());
-        vector<int> sorted_selling_utility_ids;
-        while (temp_sorted_selling_utility_joint_wtp.size() > 0) {
-            for (int i = 0; i < available_selling_utility_treatment_capacity_in_joint_wtp.size(); i++) {
-                if (available_selling_utility_treatment_capacity_in_joint_wtp[i]
-                    == temp_sorted_selling_utility_joint_wtp[temp_sorted_selling_utility_joint_wtp.size()-1]) {
-                    sorted_selling_utility_ids.push_back(available_selling_utility_ids[i]);
-                    temp_sorted_selling_utility_joint_wtp.erase(
-                            temp_sorted_selling_utility_joint_wtp.begin()
-                            + temp_sorted_selling_utility_joint_wtp.size()-1);
-                    cout << "Utility " << available_selling_utility_ids[i] << " has "
-                         << temp_sorted_selling_utility_joint_wtp[temp_sorted_selling_utility_joint_wtp.size()-1]
-                         << " MG of excess treatment capacity available to transfer water" << endl;
+                    cout << u->name << " has available storage and treatment capacity to sell transfers" << endl;
                 }
             }
-        }
 
-        /// 3b. Cycle through selling utilities and transfer/sell as much water as possible.
-        vector<double> water_transferred(available_selling_utility_ids.size(),0.0);
-        for (int i = 0; i < sorted_selling_utility_ids.size(); i++) {
-            vector<double> temp_possible_water_to_transfer = {buyer_requested_transfer_volume,
-                                                              available_selling_utility_treatment_capacity_in_joint_wtp[
-                                                                      sorted_selling_utility_ids[i]],
-                                                              available_selling_utility_spare_reservoir_storage[
-                                                                      sorted_selling_utility_ids[i]]};
-            water_transferred[i] = *min_element(temp_possible_water_to_transfer.begin(),
-                                                temp_possible_water_to_transfer.end());
-            buyer_requested_transfer_volume -= water_transferred[i];
+            /// 3. Sales will be allocated based on (a) which utility has most excess at time of request, and
+            ///    (b - FUTURE??) which selling party is cheapest
 
-            cout << "Utility " << sorted_selling_utility_ids[i]
-                 << " has transferred " << water_transferred[i]
-                 << " and " << buyer_requested_transfer_volume
-                 << " request remains to be met (if available)" << endl;
+            /// 3a. Sort to get utility ids in order from most excess available to least
+            vector<double> temp_sorted_selling_utility_joint_wtp =
+                    available_selling_utility_treatment_capacity_in_joint_wtp;
+            sort(temp_sorted_selling_utility_joint_wtp.begin(),
+                 temp_sorted_selling_utility_joint_wtp.end());
+            vector<int> sorted_selling_utility_ids;
+            while (temp_sorted_selling_utility_joint_wtp.size() > 0) {
+                for (int i = 0; i < available_selling_utility_treatment_capacity_in_joint_wtp.size(); i++) {
+                    if (available_selling_utility_treatment_capacity_in_joint_wtp[i]
+                        == temp_sorted_selling_utility_joint_wtp[temp_sorted_selling_utility_joint_wtp.size()-1]) {
+                        sorted_selling_utility_ids.push_back(available_selling_utility_ids[i]);
 
-            parent_allocated_reservoir->removeWater(sorted_selling_utility_ids[i], water_transferred[i]);
-            buying_utility->addDemand_offset(water_transferred[i]);
+                        cout << "Utility " << available_selling_utility_ids[i] << " has "
+                             << temp_sorted_selling_utility_joint_wtp[temp_sorted_selling_utility_joint_wtp.size()-1]
+                             << " MG of excess treatment capacity available to transfer water" << endl;
 
-            buying_utility->purchaseDirectTreatedWaterTransfer(sales_rate, water_transferred[i]);
-            realization_utilities[sorted_selling_utility_ids[i]]->
-                    sellDirectTreatedWaterTransfer(sales_rate, water_transferred[i]);
+                        temp_sorted_selling_utility_joint_wtp.erase(
+                                temp_sorted_selling_utility_joint_wtp.begin()
+                                + temp_sorted_selling_utility_joint_wtp.size()-1);
+                    }
+                }
+            }
 
-            if (buyer_requested_transfer_volume <= 0)
-                break;
+            /// 3b. Cycle through selling utilities and transfer/sell as much water as possible.
+            vector<double> water_transferred(available_selling_utility_ids.size(),0.0);
+            for (int i = 0; i < sorted_selling_utility_ids.size(); i++) {
+                vector<double> temp_possible_water_to_transfer = {buyer_requested_transfer_volume,
+                                                                  available_selling_utility_treatment_capacity_in_joint_wtp[
+                                                                          sorted_selling_utility_ids[i]],
+                                                                  available_selling_utility_spare_reservoir_storage[
+                                                                          sorted_selling_utility_ids[i]]};
+                water_transferred[i] = *min_element(temp_possible_water_to_transfer.begin(),
+                                                    temp_possible_water_to_transfer.end());
+                buyer_requested_transfer_volume -= water_transferred[i];
+
+                cout << "Utility " << sorted_selling_utility_ids[i]
+                     << " has transferred " << water_transferred[i]
+                     << " and " << buyer_requested_transfer_volume
+                     << " request remains to be met (if available)" << endl;
+
+                parent_allocated_reservoir->removeWater(sorted_selling_utility_ids[i], water_transferred[i]);
+                buying_utility->addDemand_offset(water_transferred[i]);
+
+                buying_utility->purchaseDirectTreatedWaterTransfer(sales_rate, water_transferred[i]);
+                realization_utilities[sorted_selling_utility_ids[i]]->
+                        sellDirectTreatedWaterTransfer(sales_rate, water_transferred[i]);
+
+                /// Record values for data collector
+                quantities_sold[sorted_selling_utility_ids[i]] = water_transferred[i];
+                available_excess_treatment_capacity[sorted_selling_utility_ids[i]] =
+                        available_selling_utility_treatment_capacity_in_joint_wtp[sorted_selling_utility_ids[i]];
+                available_excess_supply_capacity[sorted_selling_utility_ids[i]] =
+                        available_selling_utility_spare_reservoir_storage[sorted_selling_utility_ids[i]];
+
+//                if (buyer_requested_transfer_volume <= 0)
+//                    break;
+            }
+        } else {
+            cout << "Because buyer did not request any transfer, none was calculated." << endl;
         }
     }
 }
@@ -166,9 +182,42 @@ const double DirectTreatedWaterTransfer::getBuyerStorageFromROF(
         const vector<Matrix2D<double>> storage_to_rof_table,
         const int u_id) {
     /// Determine the storage associated with an ROF level
-    for (int s = NO_OF_INSURANCE_STORAGE_TIERS - 1; s > -1; --s) {
-        if (*storage_to_rof_table.at(u_id).getPointerToElement(week,s) >= sales_rof_trigger) {
-            return (((double)s + 1) / (double)NO_OF_INSURANCE_STORAGE_TIERS);
+    // TODO: IS THIS TABLE NOW INVERTED??? check with raw water transfers later
+    for (int s = 0; s < NO_OF_INSURANCE_STORAGE_TIERS; ++s) {
+        double tier_rof = *storage_to_rof_table.at(u_id).getPointerToElement(week,s);
+        double storage_target_level = (((double)s + 1) / (double)NO_OF_INSURANCE_STORAGE_TIERS);
+        if (tier_rof <= sales_rof_trigger && storage_target_level >= buying_utility->getStorageToCapacityRatio()) {
+            return storage_target_level;
         }
+        if (s == NO_OF_INSURANCE_STORAGE_TIERS-1)
+            return 1;
     }
+}
+
+const vector<double> DirectTreatedWaterTransfer::getSoldQuantities() {
+    return quantities_sold;
+}
+
+const double DirectTreatedWaterTransfer::getInitialTransferRequest() {
+    return initial_request;
+}
+
+const vector<double> DirectTreatedWaterTransfer::getAvailableExcessSupplyCapacityToSell() {
+    return available_excess_supply_capacity;
+}
+
+const vector<double> DirectTreatedWaterTransfer::getAvailableExcessTreatmentCapacityToSell() {
+    return available_excess_treatment_capacity;
+}
+
+const vector<int> DirectTreatedWaterTransfer::getPotentialSellingUtilities() {
+    vector<int> realization_utility_ids;
+    for (Utility *u : realization_utilities)
+        realization_utility_ids.push_back(u->id);
+
+    return realization_utility_ids;
+}
+
+const int DirectTreatedWaterTransfer::getBuyingUtilityID() {
+    return buyer_id;
 }

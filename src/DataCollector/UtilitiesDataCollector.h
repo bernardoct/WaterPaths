@@ -29,6 +29,7 @@ private:
     vector<double> unfulfilled_demand;
     vector<double> net_stream_inflow;
     vector<double> total_treatment_capacity;
+    vector<double> retroactive_payments;
     vector<vector<int>> pathways;
     const Utility *utility;
 
@@ -77,6 +78,8 @@ public:
     const vector<double> &getRestricted_demand() const;
 
     void checkForNans() const;
+
+    const vector<double> &getRetroactive_payments() const;
 };
 
 

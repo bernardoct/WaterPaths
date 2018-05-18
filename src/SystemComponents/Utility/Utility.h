@@ -63,6 +63,7 @@ private:
 
     /// Infrastructure cost
     double current_debt_payment = 0;
+    double retroactive_payment = 0;
     vector<vector<double>> debt_payment_streams;
     double infra_net_present_cost = 0;
     vector<Bond *> issued_bonds;
@@ -241,6 +242,8 @@ public:
     void purchaseDirectTreatedWaterTransfer(double payment_per_volume, double water_transferred);
 
     void sellDirectTreatedWaterTransfer(double payment_per_volume, double water_transferred);
+
+    double getRetroactive_payment() const;
 };
 
 

@@ -119,9 +119,13 @@ public:
 
     double getAllocatedTreatmentFraction(int utility_id) const override;
 
-    void normalizeAllocatedSupplyCapacity() override;
+    void normalizeAllocations() override;
 
     double getAllocatedDemand(int utility_id);
+
+    void increaseAllocatedSupplyCapacity(double capacity_allocation_fraction, int utility_id) override;
+
+    double getAllocatedTreatmentCapacityFractionalPlantAvailability(int utility_id) const override;
 };
 
 

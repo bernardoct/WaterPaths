@@ -18,7 +18,7 @@ borg: CFLAGS += -DPARALLEL -fopenmp -march=ivybridge -O0 -g
 borg: all
 
 gcc: CC=g++
-gcc: CFLAGS+=-O0 -march=ivybridge -fopenmp
+gcc: CFLAGS+=-O1 -march=ivybridge -fopenmp
 gcc: all
 
 intel: CC=icc

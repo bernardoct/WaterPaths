@@ -37,6 +37,7 @@ static const int NC_ERR = 2;
 #include "../DroughtMitigationInstruments/RawWaterReleases.h"
 #include "RawWaterReleaseDataCollector.h"
 #include "JointWTPDataCollector.h"
+#include "DirectTreatedWaterTransferDataCollector.h"
 
 using namespace Constants;
 
@@ -640,7 +641,8 @@ void MasterDataCollector::addRealization(
         else if (drought_mitigation_policies_realization[dmp]->type ==
                  DIRECT_TRANSFERS)
             drought_mitigation_policy_collectors[dmp][r] =
-                    new EmptyDataCollector();
+                    new DirectTreatedWaterTransferDataCollector
+                            (dynamic_cast<DirectTreatedWaterTransfer *> (drought_mitigation_policies_realization[dmp]), r);
         else
             __throw_invalid_argument("Drought mitigation policy not recognized. "
                                              "Did you forget to add it to the "
@@ -697,7 +699,7 @@ void MasterDataCollector::collectData(unsigned long r) {
     for (vector<UtilitiesDataCollector *> &uc : utility_collectors)
         uc[r]->collect_data();
     for (vector<DataCollector *> dmp : drought_mitigation_policy_collectors)
-        dmp[r]->collect_data(); // seg fault here
+        dmp[r]->collect_data();
     for (vector<DataCollector *> ws : water_source_collectors)
         ws[r]->collect_data();
 }

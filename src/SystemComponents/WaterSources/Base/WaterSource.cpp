@@ -39,7 +39,6 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
     for (Catchment *c : catchments) {
         this->catchments.push_back(Catchment(*c));
     }
-
 }
 
 /**
@@ -80,7 +79,6 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
         this->catchments.emplace_back(*c);
     }
     checkForInputErrorsConstruction();
-
 }
 
 /**
@@ -121,7 +119,6 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
         this->catchments.emplace_back(*c);
     }
     checkForInputErrorsConstruction();
-
 }
 
 
@@ -159,7 +156,6 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
     for (Catchment *c : catchments) {
         this->catchments.push_back(Catchment(*c));
     }
-
 }
 
 /**
@@ -285,10 +281,12 @@ WaterSource::WaterSource(const WaterSource &water_source) :
         id(water_source.id),
         name(water_source.name),
         source_type(water_source.source_type),
-        wq_pool_locator(water_source.wq_pool_locator),
         construction_time(water_source.construction_time),
         adjusted_allocated_treatment_capacities(water_source.adjusted_allocated_treatment_capacities),
         base_wq_pool_fraction(water_source.base_wq_pool_fraction),
+        unallocated_supply_capacity(water_source.unallocated_supply_capacity),
+        unallocated_supply_fraction(water_source.unallocated_supply_fraction),
+        fraction_of_treatment_capacity_for_use(water_source.fraction_of_treatment_capacity_for_use),
         parent_reservoir_treatment_capacities(water_source.parent_reservoir_treatment_capacities) {
 
     if (water_source.wq_pool_id != NON_INITIALIZED) {
@@ -301,6 +299,7 @@ WaterSource::WaterSource(const WaterSource &water_source) :
         allocated_treatment_capacities.reserve(length);
         allocated_treatment_fractions.reserve(length);
         allocated_fractions.reserve(length);
+        fraction_of_treatment_capacity_for_use.reserve(length);
 
     }
 
@@ -340,6 +339,8 @@ WaterSource &WaterSource::operator=(const WaterSource &water_source) {
         allocated_capacities.reserve(length);
         allocated_treatment_capacities.reserve(length);
 
+        fraction_of_treatment_capacity_for_use.reserve(length);
+
         allocated_fractions = water_source.allocated_fractions;
         allocated_treatment_fractions = water_source.allocated_treatment_fractions;
         available_allocated_volumes = water_source.available_allocated_volumes;
@@ -350,6 +351,11 @@ WaterSource &WaterSource::operator=(const WaterSource &water_source) {
         parent_reservoir_treatment_capacities = water_source.parent_reservoir_treatment_capacities;
 
         base_wq_pool_fraction = water_source.base_wq_pool_fraction;
+
+        unallocated_supply_capacity = water_source.unallocated_supply_capacity;
+        unallocated_supply_fraction = water_source.unallocated_supply_fraction;
+
+        fraction_of_treatment_capacity_for_use = water_source.fraction_of_treatment_capacity_for_use;
     }
 
     catchments.clear();
@@ -451,8 +457,6 @@ void WaterSource::setAllocations(
     this->supply_allocated_fractions.reserve(length - 1);
     this->supply_allocated_fractions.assign(length - 1, 0.0);
 
-
-
     /// Populate vectors.
     for (unsigned long i = 0; i < utilities_with_allocations->size(); ++i) {
         auto u = (unsigned int) utilities_with_allocations->at(i);
@@ -466,10 +470,8 @@ void WaterSource::setAllocations(
                     allocated_treatment_fractions->at(u);
             this->allocated_treatment_capacities[u] = total_treatment_capacity *
                                                       this->allocated_treatment_fractions[u];
-        } else {
+        } else
             (*this->utilities_with_allocations)[i] = u;
-            wq_pool_locator = true;
-        }
 
         this->allocated_fractions[u] = (*allocated_fractions)[i];
         (*this->utilities_with_allocations)[i] = u;
@@ -480,16 +482,10 @@ void WaterSource::setAllocations(
     for (int i = 0; i < wq_pool_id; ++i) {
         supply_allocated_fractions[i] = this->allocated_fractions[i] /
                 (1. - this->allocated_fractions[wq_pool_id]);
-
     }
 
     base_wq_pool_fraction = this->allocated_fractions[wq_pool_id];
 
-    /// if none of the allocations looped over above are the WQ pool, the reservoir does not have one
-    /// and the WQ pool ID should be returned to non-initialized status.
-    if (!wq_pool_locator) {
-        wq_pool_id = NON_INITIALIZED;
-    }
 }
 
 /**
@@ -556,11 +552,6 @@ void WaterSource::addCapacity(double capacity) {
 void WaterSource::setCapacity(double new_capacity) {
     WaterSource::capacity = new_capacity;
 }
-
-//void WaterSource::addTreatmentCapacity(
-//        const double added_treatment_capacity,
-//        double allocations_added_treatment_capacity,
-//        int utility_id) {}
 
 void WaterSource::addTreatmentCapacity(const double added_treatment_capacity, int utility_id) {
     total_treatment_capacity += added_treatment_capacity;
@@ -812,10 +803,20 @@ double WaterSource::getAllocatedTreatmentFraction(int utility_id) const {
     return 1;
 }
 
-void WaterSource::normalizeAllocatedSupplyCapacity() {}
+void WaterSource::normalizeAllocations() {}
 
 void WaterSource::setAllocatedSupplyCapacity(double capacity_allocation_fraction, int utility_id) {}
 
 void WaterSource::recordParentReservoirTreatmentCapacity(const int utility_id, const double capacity_value) {}
 
 void WaterSource::setExternalAllocatedTreatmentCapacity(const int year) {}
+
+vector<double> WaterSource::getPreviousPeriodAllocatedCapacities() const {
+    return vector<double>();
+}
+
+void WaterSource::increaseAllocatedSupplyCapacity(double capacity_allocation_fraction, int utility_id) {}
+
+double WaterSource::getAllocatedTreatmentCapacityFractionalPlantAvailability(int utility_id) const {
+    return 1;
+}

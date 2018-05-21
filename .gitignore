@@ -1,5 +1,7 @@
 *.optrpt
 *.o
-TestFiles/*
+TestFiles/demands
+TestFiles/evaporation
+TestFiles/inflows
 Borg/*
 core*

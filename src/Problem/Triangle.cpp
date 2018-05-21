@@ -1136,13 +1136,13 @@ void Triangle::readInputData() {
 
     //cout << "Reading demands." << endl;
 #pragma omp single
-    demand_cary = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/cary_demand.csv", n_realizations);
+    demand_cary = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands" + evap_inflows_suffix + "/cary_demand.csv", n_realizations);
 #pragma omp single
-    demand_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/durham_demand.csv", n_realizations);
+    demand_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands" + evap_inflows_suffix + "/durham_demand.csv", n_realizations);
 #pragma omp single
-    demand_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/raleigh_demand.csv", n_realizations);
+    demand_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands" + evap_inflows_suffix + "/raleigh_demand.csv", n_realizations);
 #pragma omp single
-    demand_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands/owasa_demand.csv", n_realizations);
+    demand_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands" + evap_inflows_suffix + "/owasa_demand.csv", n_realizations);
 
     //cout << "Reading others." << endl;
 #pragma omp single

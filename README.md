@@ -24,6 +24,8 @@ There are three options for decreasing runtime for testing purposes that can be 
 - Generating pre-computed risk-of-failure tables to be used during runs. Keep in mind that if using a different set of inflow, evaporation, of RDM files will warrant new tables. To generate tables, run `./triangleSimulation -T 4 -t 2344 -r 88 -d /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/ -I _few_records -s decvars.csv -m 0 -C 1`. To use the tables, set value of -C flag to -1.
 
 ### Runnning WaterPaths with Borg in optimization mode
+To get a copy of Borg, go to Borg's [official website](http://borgmoea.org/) and request access to the source  code (free for non-commercial use). You should soon after get an e-mail with a link to its repository, where you can download the source code from.
+
 To run WaterPaths in optimization mode, WaterPaths needs to be re-compiled with Borg and the appropriate flags must be passed when calling it from the command line with a program like mpirun. To do so, follow the following steps:
 1. In order to run WaterPaths with Borg, the library libborgmm.a must be provided in the /lib folder. To do so, borgmoea.org/ and request a licence, move Borg files to the folder /borg, compile borg by running `make mpi` in /borg, and finally move the file libborgmm.a to the /lib folder.
 2. After libborgmm.a is compiled and place in /lib, compile WaterPaths with `make borg`.

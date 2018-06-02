@@ -59,7 +59,8 @@ Bond::issueBond(int week, int construction_time, double bond_term_multiplier, do
 
     /// Set date to begin repayment
     if (begin_repayment_after_n_years == NON_INITIALIZED) {
-        begin_repayment_after_n_years = (int) ((week + construction_time) / WEEKS_IN_YEAR) + 1;
+//        begin_repayment_after_n_years = (int) ((week + construction_time) / WEEKS_IN_YEAR) + 1;
+        begin_repayment_after_n_years = (int) ((construction_time) / WEEKS_IN_YEAR) + 1;
     }
 
     week_issued = week;

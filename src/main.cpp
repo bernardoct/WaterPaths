@@ -338,7 +338,11 @@ int main(int argc, char *argv[]) {
             trianglePtr->destroyDataCollector();
         } else {
             ofstream objs_file;
-            string file_name = system_io + "TestFiles/output/Objectives_RDM" + to_string(rdm_no) + "_sols" + to_string(first_solution) +
+//            string file_name = system_io + "TestFiles/output/Objectives_RDM" + to_string(rdm_no) + "_sols" + to_string(first_solution) +
+//                               "_to_" + to_string(last_solution) + ".csv";
+            string file_name = system_io + "TestFiles/jointwtpoutput/formulation" + to_string(formulation) +
+                                                   "/scenario" + to_string(scenario) +
+                                                   "/Objectives_sols" + to_string(first_solution) +
                                "_to_" + to_string(last_solution) + ".csv";
             objs_file.open(file_name);
             printf("Objectives file will be printed at %s.\n", file_name.c_str());

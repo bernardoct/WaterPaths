@@ -98,8 +98,20 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
             continuity_water_sources.size(),
             vector<double>(continuity_utilities.size(), 0.));
 
+    supply_based_demands = std::vector<vector<double>>(
+            continuity_water_sources.size(),
+            vector<double>(continuity_utilities.size(), 0.));
+
+    unmet_demands = std::vector<vector<double>>(
+            continuity_water_sources.size(),
+            vector<double>(continuity_utilities.size(), 0.));
+
     /// Initialize a 3D array to hold weekly demands for every water source
+    /// and another to hold demands when they are allocated as if treatment capacity isn't a constraint
     realization_demands = std::vector<vector<vector<double>>>(continuity_water_sources.size(),
+                                                              std::vector<vector<double>>(continuity_utilities.size(),
+                                                                                          vector<double>()));
+    realization_supply_demands = std::vector<vector<vector<double>>>(continuity_water_sources.size(),
                                                               std::vector<vector<double>>(continuity_utilities.size(),
                                                                                           vector<double>()));
     
@@ -150,10 +162,11 @@ void ContinuityModel::continuityStep(
      */
     for (Utility *u : continuity_utilities) {
         u->calculateWastewater_releases(week, wastewater_discharges);
-        u->splitDemands(week, demands, apply_demand_buffer);
+        u->splitDemands(week, demands, supply_based_demands, apply_demand_buffer);
 
         /// Keep a record of each week's demands
-        u->recordWeeklyDemand(week, demands, apply_demand_buffer, realization_demands);
+        u->recordWeeklyDemand(week, demands, supply_based_demands, apply_demand_buffer,
+                              realization_demands, realization_supply_demands);
     }
 
     /**

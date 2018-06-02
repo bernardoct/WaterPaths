@@ -10,7 +10,7 @@
 vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
     if (this->master_data_collector != nullptr) {
         this->master_data_collector->setOutputDirectory(output_directory);
-        string fo = output_directory + "/TestFiles/jointwtpoutput/formulation" + std::to_string(formulation)
+        string fo = output_directory + "TestFiles/jointwtpoutput/formulation" + std::to_string(formulation)
                 + "/scenario" + std::to_string(scenario) + "/Objectives";
         //string fo = "/TestFiles/output/Objectives";
         objectives = this->master_data_collector->calculatePrintObjectives(

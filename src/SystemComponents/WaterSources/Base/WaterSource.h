@@ -205,7 +205,9 @@ public:
 
     virtual void updateTreatmentAndCapacityAllocations(int week);
 
-    virtual void updateTreatmentAllocations(int week, vector<vector<vector<double>>> weekly_demands);
+    virtual void updateTreatmentAllocations(int week,
+                                            vector<vector<vector<double>>> weekly_demands,
+                                            vector<vector<vector<double>>> weekly_supply_based_demands);
 
     virtual double calculateJointWTPDebtServiceFraction(int utility_id, int week);
 

@@ -377,7 +377,9 @@ void Utility::checkErrorsAddWaterSourceOnline(WaterSource *water_source) {
  * @param week
  */
 void Utility::splitDemands(
-        int week, vector<vector<double>> &demands,
+        int week,
+        vector<vector<double>> &demands,
+        vector<vector<double>> &unconstrained_supply_demands,
         bool apply_demand_buffer) {
     unrestricted_demand = demand_series_realization[week] +
                           apply_demand_buffer * demand_buffer *
@@ -393,6 +395,7 @@ void Utility::splitDemands(
         double source_demand =
                 min(restricted_demand,
                     water_sources[ws]->getAvailableAllocatedVolume(id));
+        unconstrained_supply_demands[ws][this->id] = source_demand;
         demands[ws][this->id] = source_demand;
     }
 
@@ -416,14 +419,15 @@ void Utility::splitDemands(
         /// Calculate demand allocated to a given source.
         double source_demand = restricted_demand * demand_fraction[ws];
         demands[ws][id] = source_demand;
+        unconstrained_supply_demands[ws][this->id] = source_demand;
 
         /// Check if allocated demand was greater than treatment capacity.
         /// include any caps on plant capacity (i.e. should a utility only
         /// use 80% of its treatment capacity in one week, running the plant
         /// at 100% except for extreme conditions may be unwanted)
-        double over_allocated_demand_ws =
-                source_demand - source->getAllocatedTreatmentCapacity(id)
-                                * source->getAllocatedTreatmentCapacityFractionalPlantAvailability(id);
+        double over_allocated_demand_ws = source_demand - source->getAllocatedTreatmentCapacity(id);
+//                source_demand - source->getAllocatedTreatmentCapacity(id)
+//                                * source->getAllocatedTreatmentCapacityFractionalPlantAvailability(id);
 
         /// Set reallocation variables for the sake of reallocating demand.
         if (over_allocated_demand_ws > 0.) {
@@ -902,15 +906,23 @@ const InfrastructureManager &Utility::getInfrastructure_construction_manager() c
     return infrastructure_construction_manager;
 }
 
-void Utility::recordWeeklyDemand(int week, vector<vector<double>> &demands,
-                                 bool apply_demand_buffer, vector<vector<vector<double>>> &realization_demands) {
+void Utility::recordWeeklyDemand(int week,
+                                 vector<vector<double>> &demands,
+                                 vector<vector<double>> &supply_demands,
+                                 bool apply_demand_buffer,
+                                 vector<vector<vector<double>>> &realization_demands,
+                                 vector<vector<vector<double>>> &realization_supply_demands) {
 //    if (week > 365) {
 //        cout << "Pause here to check demands on Jordan Lake in week " << week << endl;
 //        cout << demands[6][3] << endl;
 //    }
 
-    for (int &ws : priority_draw_water_source)
+    for (int &ws : priority_draw_water_source) {
         realization_demands[ws][id].push_back(demands[ws][id]);
-    for (int &ws : non_priority_draw_water_source)
+        realization_supply_demands[ws][id].push_back(supply_demands[ws][id]);
+    }
+    for (int &ws : non_priority_draw_water_source) {
         realization_demands[ws][id].push_back(demands[ws][id]);
+        realization_supply_demands[ws][id].push_back(supply_demands[ws][id]);
+    }
 }

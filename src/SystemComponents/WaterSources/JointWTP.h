@@ -97,7 +97,8 @@ public:
 
     double getAdjustableTreatmentCapacity(int utility_id, int year);
 
-    void updateTreatmentAllocations(int week, vector<vector<vector<double>>> weekly_demands) override;
+    void updateTreatmentAllocations(int week, vector<vector<vector<double>>> weekly_demands,
+                                    vector<vector<vector<double>>> weekly_supply_based_demands) override;
 
     double getAddedTotalTreatmentCapacity();
 

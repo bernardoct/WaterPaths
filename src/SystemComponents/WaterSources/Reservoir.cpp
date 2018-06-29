@@ -284,7 +284,7 @@ void Reservoir::applyContinuity(int week, double upstream_source_inflow,
         outflow_new += stored_volume_new - capacity;
         stored_volume_new = capacity;
     } else if (stored_volume_new < 0) {
-        outflow_new = max(outflow_new - stored_volume_new, 0.);
+        outflow_new = max(outflow_new + stored_volume_new, 0.);
 	    stored_volume_new = 0.;
     }
 

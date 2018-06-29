@@ -12,6 +12,41 @@
 #include "../src/SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
 #include "../src/ContinuityModels/ContinuityModelRealization.h"
 
+TEST_CASE("Mass balance reservoir", "[Reservoir][Mass Balance]") {
+    int streamflow_n_weeks = 52 * (1 + 50);
+    vector<vector<double>> streamflows_haw =
+            vector<vector<double>>(1, vector<double>((unsigned long) streamflow_n_weeks, 30.));
+    vector<vector<double>> evap_jordan_lake =
+            vector<vector<double>>(1, vector<double>((unsigned long) streamflow_n_weeks, 2.));
+    Catchment lower_haw_river(&streamflows_haw, streamflow_n_weeks);
+    vector<Catchment *> catchment_haw;
+    catchment_haw.push_back(&lower_haw_river);
+
+    EvaporationSeries evaporation_jordan_lake(
+            &evap_jordan_lake,
+            streamflow_n_weeks);
+
+    Reservoir r("test", 0, catchment_haw, 100., 20., evaporation_jordan_lake, 10.);
+
+    vector<double> rdm_factors = {1., 1., 1.};
+    r.setRealization(0, rdm_factors);
+
+    SECTION("Overflow") {
+        vector<double> demands = {5.};
+        r.applyContinuity(0, 7., 0, demands);
+
+        REQUIRE(r.getAvailableVolume() == 100.);
+        REQUIRE(r.getTotal_outflow() == 12.);
+    }
+
+    SECTION("Attempted negative flow") {
+        vector<double> demands = {505.};
+        r.applyContinuity(0, 7., 0, demands);
+
+        REQUIRE(r.getAvailableVolume() == 0.);
+        REQUIRE(r.getTotal_outflow() == 0.);
+    }
+}
 
 TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance]") {
     int streamflow_n_weeks = 52 * (1 + 50);

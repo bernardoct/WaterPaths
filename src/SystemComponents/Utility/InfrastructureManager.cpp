@@ -140,20 +140,20 @@ InfrastructureManager::setWaterSourceOnline(unsigned int source_id, int week, do
     /// priority/non-priority ID vector. If reservoir expansion, add its
     /// capacity to the corresponding existing reservoir.
     if (water_sources->at(source_id)->source_type == NEW_WATER_TREATMENT_PLANT) {
-        cout << "WTP, source ID " << source_id << ", is set online in week " << week << endl;
+        //cout << "WTP, source ID " << source_id << ", is set online in week " << week << endl;
         waterTreatmentPlantConstructionHandler(source_id, total_storage_capacity);
     } else if (water_sources->at(source_id)->source_type ==
                RESERVOIR_EXPANSION) {
-        cout << "Reservoir Expansion, source ID " << source_id << ", is set online in week " << week << endl;
+        //cout << "Reservoir Expansion, source ID " << source_id << ", is set online in week " << week << endl;
         reservoirExpansionConstructionHandler(source_id);
     } else if (water_sources->at(source_id)->source_type == SOURCE_RELOCATION) {
-        cout << "Source Reallocation, source ID " << source_id << ", is set online in week " << week << endl;
+        //cout << "Source Reallocation, source ID " << source_id << ", is set online in week " << week << endl;
         sourceRelocationConstructionHandler(source_id);
     } else if (water_sources->at(source_id)->source_type == NEW_JOINT_WTP) {
         jointWTPConstructionHandler(source_id, week, total_storage_capacity);
     } else {
         water_sources->at(source_id)->setOnline();
-        cout << "Miscellaneous Project, source ID " << source_id << ", is set online in week " << week << endl;
+        //cout << "Miscellaneous Project, source ID " << source_id << ", is set online in week " << week << endl;
         addWaterSourceToOnlineLists(source_id, total_storage_capacity, total_treatment_capacity,
                                     total_available_volume, total_stored_volume);
     }
@@ -181,7 +181,7 @@ void InfrastructureManager::jointWTPConstructionHandler(unsigned int source_id, 
                                                         double &total_storage_capacity) {
     auto wtp = dynamic_cast<JointWTP *>(water_sources->at(source_id));
 
-    cout << "Joint WTP, " << wtp->name << ", is set online in week " << week << endl;
+    //cout << "Joint WTP, " << wtp->name << ", is set online in week " << week << endl;
 
     /// Determine financing split based on type of contract
     double added_total_capacity = 0.0;
@@ -533,6 +533,9 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
                     setWaterSourceOnline((unsigned int) wss, week, total_storage_capacity, total_treatment_capacity,
                                          total_available_volume, total_stored_volume);
 
+//                    cout << "Project " << wss
+//                         << " is complete. Now removing from construction order vectors for utility " << id << endl;
+
                     /// Record ID of and when infrastructure option construction was
                     /// completed. (utility_id, week, new source id)
                     infra_built_last_week = {id, week, wss};
@@ -544,10 +547,17 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
 
                     else if (!demand_infra_construction_order.empty())
                         Utils::removeIntFromVector(demand_infra_construction_order, wss);
-                    else
+                    else {
+                        cout << "Inf option " << wss << ", utility " << id << ", week " << week << endl;
+                        for (int i : rof_infra_construction_order)
+                            cout << "available infra option " << i << endl;
+                        for (int i : demand_infra_construction_order)
+                            cout << "available infra option " << i << endl;
                         __throw_logic_error("Infrastructure option whose construction was"
-                                            " complete is not in the demand or "
-                                            "rof triggered construction lists.");
+                                                    " complete is not in the demand or "
+                                                    "rof triggered construction lists.");
+                    }
+
 
                     under_construction[wss] = false;
                 }
@@ -558,17 +568,32 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
 }
 
 /**
- * Checks is piece of infrastructure to be built next prevents another one
- * from being build and, if so, removes the latter from the queue.
+ * Checks if piece of infrastructure to be built next prevents another one
+ * from being built and, if so, removes the latter from the queue.
  * @param next_construction
  */
 void InfrastructureManager::removeRelatedSourcesFromQueue(int next_construction) {
     if (!infra_if_built_remove.empty()) {
         for (auto &v : infra_if_built_remove) {
+            /// Assumes that the vector 'v' here contains ids of linked infrastructure
+            /// (i.e. a vector of all expansions for a single project that can occur)
+            /// AND assumes that the ids are sorted, such that if the project whose id is
+            /// the third index of 'v', then the projects ids in the first two indices
+            /// of 'v' should be removed from construction order vectors, for they can
+            /// no longer be built once the 'next_construction' project begins
+            vector<int> potential_projects_to_remove;
             for (int i : v) {
+                /// Assuming projects "overwrite" each other as you iterate further into 'v'
+                /// collect project ids until arriving at the index where id == next_construction
+                if (i != next_construction)
+                    potential_projects_to_remove.push_back(i);
+
                 if (i == next_construction) {
-                    Utils::removeIntFromVector(rof_infra_construction_order, i);
-                    Utils::removeIntFromVector(demand_infra_construction_order, i);
+                    for (int j : potential_projects_to_remove) {
+                        Utils::removeIntFromVector(rof_infra_construction_order, j);
+                        Utils::removeIntFromVector(demand_infra_construction_order, j);
+                    }
+                    break;
                 }
             }
         }
@@ -586,7 +611,7 @@ void InfrastructureManager::beginConstruction(int week, int infra_id) {
     /// Checks is piece of infrastructure to be built next prevents
     /// another one from being build and, if so, removes the latter
     /// from the queue. E.g. if the large expansion of a reservoir is
-    /// triggered the small expansion must be removed from the to
+    /// triggered the small expansion must be removed from the to-
     /// build list.
     removeRelatedSourcesFromQueue(infra_id);
 

@@ -66,7 +66,7 @@ AllocatedReservoir::AllocatedReservoir(
           modified_allocations(false), allocation_modifier(nullptr) {
 
     /// SET SO THAT USE OF TREATMENT CAPACITIES IS SET TO 90% OF CAPACITY IN A GIVEN WEEK
-    fraction_of_treatment_capacity_for_use = vector<double>(utilities_with_allocations->size(),0.9);
+    fraction_of_treatment_capacity_for_use = vector<double>(utilities_with_allocations->size(),1.0);
 
 }
 
@@ -346,7 +346,13 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
 //        throw_with_nested(runtime_error(error));
     }
 
-    if (abs(cont_error) > 1.f || available_volume < 0 || sum_allocations < 0) {
+    if (total_upstream_inflow < 0) {
+        cout << "week " << week << ", source " << name << endl;
+        cout << "total_upstream_inflow is negative: upstream_source_flow is "
+             << upstream_source_inflow << ", wastewater_inflow is " << wastewater_inflow << endl;
+    }
+
+    if (abs(cont_error) > 1.f || available_volume < -0.1 || sum_allocations < 0) {
         char error[4000];
         sprintf(error, "Continuity error in %s\n\n"
                         "week: %d\nsum_allocations: %f\n"

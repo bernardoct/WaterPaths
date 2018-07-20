@@ -31,7 +31,9 @@ protected:
     vector<double> water_sources_capacities;
     vector<double> utilities_capacities;
     vector<vector<double>> demands;
+    vector<vector<double>> supply_based_demands;
     vector<vector<vector<double>>> realization_demands;
+    vector<vector<vector<double>>> realization_supply_demands;
     vector<double> utilities_rdm;
     vector<double> water_sources_rdm;
     const int n_utilities;

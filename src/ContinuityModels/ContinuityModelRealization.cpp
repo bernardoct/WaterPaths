@@ -48,7 +48,7 @@ void ContinuityModelRealization::setLongTermROFs(const vector<double> &risks_of_
     int nit; // new infrastruction triggered - id.
 
     /// At the beginning of each year, update allocations in shared reservoirs as desired
-    updateAllocations(week);
+    //updateAllocations(week);
 
     /// Loop over utilities to see if any of them will build new infrastructure.
     for (unsigned long u = 0; u < continuity_utilities.size(); ++u) {
@@ -114,7 +114,7 @@ void ContinuityModelRealization::updateAllocations(const int week) {
                                                                        getParentSourceID()]->
                                                                        getAllocatedTreatmentCapacity(u));
 
-        continuity_water_sources[ws]->updateTreatmentAllocations(week, realization_demands);
+        continuity_water_sources[ws]->updateTreatmentAllocations(week, realization_demands, realization_supply_demands);
 
         /// Check if each water source has its allocations changed, and if so record the parent source id
         for (int u = 0; u < continuity_utilities.size(); ++u)
@@ -163,8 +163,9 @@ void ContinuityModelRealization::updateAllocations(const int week) {
                 /// Similarly, add capacity to each utility capacity allocation
                 /// The previous statements re-allocate the parent source treatment allocations
                 /// Adjust the storage capacity allocations to be proportionately equal
-                continuity_water_sources[parent_source_id]->setAllocatedSupplyCapacity(
-                                continuity_water_sources[parent_source_id]->getAllocatedTreatmentFraction(u), u);
+                /// UPDATE: CAPACITY ALLOCATIONS SHOULD NOT BE ADJUSTED, ONLY TREATMENT CAPACITY
+//                continuity_water_sources[parent_source_id]->setAllocatedSupplyCapacity(
+//                                continuity_water_sources[parent_source_id]->getAllocatedTreatmentFraction(u), u);
 
                 /// Record allocation adjustment to determine retroactive debt service payments
                 continuity_water_sources[actual_ws_id]->setAllocationAdjustment(u, allocation_adjustment);

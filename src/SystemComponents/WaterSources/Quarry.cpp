@@ -3,6 +3,7 @@
 //
 
 #include <numeric>
+#include <iostream>
 #include "Quarry.h"
 
 Quarry::Quarry(
@@ -113,6 +114,10 @@ void Quarry::applyContinuity(int week, double upstream_source_inflow,
     } else {
         stored_volume_new = available_volume;
         outflow_new = upstream_source_inflow + catchment_inflow;
+    }
+
+    if (outflow_new < 0) {
+        cout << "Error in Quarry continuity: outflow is negative (" << outflow_new << ") for week " << week << endl;
     }
 
     this->total_demand = total_demand;

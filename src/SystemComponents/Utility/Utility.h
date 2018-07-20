@@ -125,8 +125,10 @@ public:
     void addWaterSource(WaterSource *water_source);
 
     void splitDemands(
-            int week, vector<vector<double>> &demands, bool
-    apply_demand_buffer = false);
+            int week,
+            vector<vector<double>> &demands,
+            vector<vector<double>> &unconstrained_supply_demands,
+            bool apply_demand_buffer = false);
 
     void checkErrorsAddWaterSourceOnline(WaterSource *water_source);
 
@@ -232,10 +234,12 @@ public:
 
     const InfrastructureManager &getInfrastructure_construction_manager() const;
 
-    void recordWeeklyDemand(int week, vector<vector<double>> &demands, bool apply_demand_buffer,
-                            vector<vector<vector<double>>> &realization_demands);
-
-    void infrastructureBondHandler(int week, int infra_triggered);
+    void recordWeeklyDemand(int week,
+                            vector<vector<double>> &demands,
+                            vector<vector<double>> &supply_demands,
+                            bool apply_demand_buffer,
+                            vector<vector<vector<double>>> &realization_demands,
+                            vector<vector<vector<double>>> &realization_supply_demands);
 
     void addDemand_offset(double demand_offset);
 

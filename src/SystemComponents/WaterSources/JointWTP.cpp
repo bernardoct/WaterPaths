@@ -376,7 +376,8 @@ vector<double> JointWTP::getPreviousPeriodAllocatedCapacities() const {
     return previous_period_allocated_capacities;
 }
 
-void JointWTP::updateTreatmentAllocations(int week, vector<vector<vector<double>>> weekly_demands) {
+void JointWTP::updateTreatmentAllocations(int week, vector<vector<vector<double>>> weekly_demands,
+                                          vector<vector<vector<double>>> weekly_supply_based_demands) {
     /// MEANT TO ONLY RUN DURING ANNUAL LONG TERM ROF CALCULATION
 
     double total_past_period_source_demand = 0.0;
@@ -454,6 +455,8 @@ void JointWTP::updateTreatmentAllocations(int week, vector<vector<vector<double>
             /// THIS IS IMPORTANT take if a utility already has treatment capacity at a different wtp for the same
             /// source when this joint wtp is built, then its use of the source will always be enormous. need to judge
             /// use based on use above previously existing treatment capacity
+            /// ALSO, include randomness component related to external demand so that it is not always exactly equal
+            /// to demand projections - can vary 2% either way
 
             cout << "Current year: " << Utils::yearOfTheRealization(week) << endl;
 
@@ -493,7 +496,9 @@ void JointWTP::updateTreatmentAllocations(int week, vector<vector<vector<double>
                 for (auto w = (int)(weekly_demands[parent_reservoir_ID][u].size() - past_weeks_to_use);
                      w < weekly_demands[parent_reservoir_ID][u].size(); w++) {
 
-                    double wtp_demand_obligation = weekly_demands[parent_reservoir_ID][u][w]
+                    /// ASSUME THAT TREATMENT CAPACITY IS DETERMINED ACCORDING TO DEMAND ALLOCATION
+                    /// BEFORE TREATMENT CAPACITY CONSTRAINTS ARE CONSIDERED
+                    double wtp_demand_obligation = weekly_supply_based_demands[parent_reservoir_ID][u][w]
                                                    - parent_treatment_capacity_externally_covered;
 
 //                    if (wtp_demand_obligation > allocated_treatment_capacities[u])
@@ -505,14 +510,26 @@ void JointWTP::updateTreatmentAllocations(int week, vector<vector<vector<double>
                     total_past_period_source_demand += wtp_demand_obligation
                                                        * utility_peaking_factors.at((unsigned long)u)
                                                        / past_weeks_to_use;
+
                 }
             }
 
             /// Include demand projections from external utilities
             /// Assumed to be annual average MGD, so is converted to average MGW for most recent year
+            /// incorporate a randomness component, so that demands do not always match projections
+            /// demand can be +/- 2.5% of projected demand
+            double random_factor = (1+(((rand() % 5)-2.5)/100));
             total_past_period_source_demand +=
-                    (external_demands[Utils::yearOfTheRealization(week)] * DAYS_IN_WEEK
-                     * utility_peaking_factors.at(EXTERNAL_SOURCE_ID));
+                    (external_demands[Utils::yearOfTheRealization(week)]
+                     * DAYS_IN_WEEK
+                     * utility_peaking_factors.at(EXTERNAL_SOURCE_ID)
+                     * random_factor);
+
+            double available_treatment_cap = total_treatment_capacity;
+            if (total_past_period_source_demand > total_treatment_capacity) {
+                available_treatment_cap = total_past_period_source_demand;
+                cout << "Demand for the past period (average MGW) exceeds treatment capacity of this JointWTP" << endl;
+            }
 
             /// Determine individual utility fractional use of joint wtp
             double average_past_demand;
@@ -536,7 +553,7 @@ void JointWTP::updateTreatmentAllocations(int week, vector<vector<vector<double>
                     /// Calculate ratio of treatment capacity on parent source that this WTP accounts for
                     /// for a given utility u
                     double wtp_demand_obligation = parent_treatment_capacity_obligation
-                                                   * weekly_demands[parent_reservoir_ID][u][w];
+                                                   * weekly_supply_based_demands[parent_reservoir_ID][u][w];
 //                    if (wtp_demand_obligation > allocated_treatment_capacities[u]) {
 //                        wtp_demand_obligation = allocated_treatment_capacities[u];
 //                    }
@@ -549,7 +566,7 @@ void JointWTP::updateTreatmentAllocations(int week, vector<vector<vector<double>
 
                 /// Determine fraction of past demand attributed to utility u
                 double past_demand_fraction;
-                past_demand_fraction = average_past_demand / total_past_period_source_demand;
+                past_demand_fraction = average_past_demand / available_treatment_cap;
 
                 /// Record current allocation fraction for each utility in the project
                 utility_allocation_fractions.at((unsigned long)u)[Utils::yearOfTheRealization(week)] =
@@ -580,8 +597,9 @@ void JointWTP::updateTreatmentAllocations(int week, vector<vector<vector<double>
             /// in a joint wtp is part of the parent reservoir water quality pool)
             current_external_allocation_fraction = (external_demands[Utils::yearOfTheRealization(week)]
                                                     * DAYS_IN_WEEK
+                                                    * random_factor
                                                     * utility_peaking_factors.at(EXTERNAL_SOURCE_ID))
-                                                   / total_past_period_source_demand;
+                                                   / available_treatment_cap;
             previous_period_allocated_capacities[EXTERNAL_SOURCE_ID] =
                     current_external_allocation_fraction * total_treatment_capacity;
 
@@ -589,7 +607,7 @@ void JointWTP::updateTreatmentAllocations(int week, vector<vector<vector<double>
                                      previous_period_allocated_capacities.end(),0.0);
                 // this vector includes external allocation
 
-            if (temp/total_treatment_capacity > 1) {
+            if (temp/total_treatment_capacity > 1.0) {
                 cout << "Capacity was over-allocated in JointWTP based on past year's demands. Normalizing..." << endl;
                 cout << "Week: " << week << ", Allocated Capacity this time: " << temp << endl;
                 cout << "Total Available Capacity: " << total_treatment_capacity << endl;
@@ -724,7 +742,7 @@ double JointWTP::calculateJointWTPDebtServiceFraction(int utility_id, int week) 
 
         for (int& u : *utilities_with_allocations)
             total_allocated += allocated_treatment_capacities[u];
-        total_allocated += external_demands[Utils::yearOfTheRealization(week)] * DAYS_IN_WEEK;
+        total_allocated += previous_period_allocated_capacities[EXTERNAL_SOURCE_ID];
 
         /// If allocations fractions sum to <= 0, add factor to prevent dividing by zero below
         if (total_allocated <= 0) {

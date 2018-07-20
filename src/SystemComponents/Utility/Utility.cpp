@@ -377,7 +377,9 @@ void Utility::checkErrorsAddWaterSourceOnline(WaterSource *water_source) {
  * @param week
  */
 void Utility::splitDemands(
-        int week, vector<vector<double>> &demands,
+        int week,
+        vector<vector<double>> &demands,
+        vector<vector<double>> &unconstrained_supply_demands,
         bool apply_demand_buffer) {
     unrestricted_demand = demand_series_realization[week] +
                           apply_demand_buffer * demand_buffer *
@@ -385,7 +387,16 @@ void Utility::splitDemands(
     restricted_demand = unrestricted_demand * demand_multiplier - demand_offset;
     unfulfilled_demand = max(max(restricted_demand - total_available_volume,
                                  restricted_demand - total_treatment_capacity), 0.);
-    restricted_demand -= unfulfilled_demand;
+    restricted_demand -= unfulfilled_demand; //TODO: THIS CAN BE NEGATIVE?????
+
+    if (restricted_demand < 0 && week < 2392) { //TODO: THIS IS HARD-CODED FOR DEBUGGING
+        cout << "week: " << week << endl;
+        cout << "restricted_demand: " << restricted_demand << endl;
+        cout << "unfulfilled_demand: " << unfulfilled_demand << endl;
+        cout << "demand_offset: " << demand_offset << endl;
+        cout << "unrestricted_demand: " << unrestricted_demand << endl;
+        cout << "demand_multiplier: " << demand_multiplier << endl;
+    }
 
     /// Allocates demand to intakes and reuse based on allocated volume to
     /// this utility.
@@ -393,6 +404,7 @@ void Utility::splitDemands(
         double source_demand =
                 min(restricted_demand,
                     water_sources[ws]->getAvailableAllocatedVolume(id));
+        unconstrained_supply_demands[ws][this->id] = source_demand;
         demands[ws][this->id] = source_demand;
     }
 
@@ -416,14 +428,15 @@ void Utility::splitDemands(
         /// Calculate demand allocated to a given source.
         double source_demand = restricted_demand * demand_fraction[ws];
         demands[ws][id] = source_demand;
+        unconstrained_supply_demands[ws][this->id] = source_demand;
 
         /// Check if allocated demand was greater than treatment capacity.
         /// include any caps on plant capacity (i.e. should a utility only
         /// use 80% of its treatment capacity in one week, running the plant
         /// at 100% except for extreme conditions may be unwanted)
-        double over_allocated_demand_ws =
-                source_demand - source->getAllocatedTreatmentCapacity(id)
-                                * source->getAllocatedTreatmentCapacityFractionalPlantAvailability(id);
+        double over_allocated_demand_ws = source_demand - source->getAllocatedTreatmentCapacity(id);
+//                source_demand - source->getAllocatedTreatmentCapacity(id)
+//                                * source->getAllocatedTreatmentCapacityFractionalPlantAvailability(id);
 
         /// Set reallocation variables for the sake of reallocating demand.
         if (over_allocated_demand_ws > 0.) {
@@ -575,17 +588,17 @@ double Utility::updateCurrent_debt_payment(int week) {
             retroactive_payment += period_retroactive_debt_service_payment;
             current_debt_payment += period_retroactive_debt_service_payment;
 
-            if (WEEK_OF_YEAR[week] == 0)
-                cout << name << " is paying periodic debt service on bond (id " << bond->id << ") of "
-                     << bond->printDebtService(week) << " million dollars, as well as "
-                     << period_retroactive_debt_service_payment
-                     << " million in retroactive payment. This corresponds to the water source "
-                     << water_sources[bond->water_source_id]->name
-                     << endl;
+//            if (WEEK_OF_YEAR[week] == 0)
+//                cout << name << " is paying periodic debt service on bond (id " << bond->id << ") of "
+//                     << bond->printDebtService(week) << " million dollars, as well as "
+//                     << period_retroactive_debt_service_payment
+//                     << " million in retroactive payment. This corresponds to the water source "
+//                     << water_sources[bond->water_source_id]->name
+//                     << endl;
         } else {
-            if (WEEK_OF_YEAR[week] == 0)
-                cout << name << " is paying periodic debt service on bond (id " << bond->id << ") of "
-                     << bond->printDebtService(week) << " million dollars." << endl;
+//            if (WEEK_OF_YEAR[week] == 0)
+//                cout << name << " is paying periodic debt service on bond (id " << bond->id << ") of "
+//                     << bond->printDebtService(week) << " million dollars." << endl;
 //                        "This corresponds to the water source "
 //                     << water_sources[bond->id]->name << endl; // seg fault for cary plant bc it has multiple bonds
         }
@@ -598,7 +611,7 @@ double Utility::updateCurrent_debt_payment(int week) {
 
 void Utility::issueBond(int new_infra_triggered, int week) {
     if (new_infra_triggered != NON_INITIALIZED) {
-        cout << "A bond is issued for " << name << " in week " << week << endl;
+        //cout << "A bond is issued for " << name << " in week " << week << endl;
         Bond &bond = water_sources.at((unsigned long) new_infra_triggered)->getBond(id);
         bond.issueBond(week, (int) round(water_sources.at((unsigned long) new_infra_triggered)->construction_time),
                        bond_term_multiplier, bond_interest_rate_multiplier);
@@ -615,7 +628,7 @@ void Utility::forceInfrastructureConstruction(int week, vector<int> new_infra_tr
     auto under_construction = infrastructure_construction_manager.getUnder_construction();
     for (int ws : new_infra_triggered) {
         if (under_construction.size() > ws && under_construction.at((unsigned long) ws)) {
-            cout << "A bond is issued by force for " << name << " in week " << week << endl;
+            //cout << "A bond is issued by force for " << name << " in week " << week << endl;
             issueBond(ws, week);
         }
     }
@@ -667,6 +680,13 @@ void Utility::calculateWastewater_releases(int week, double *discharges) {
         discharge = restricted_demand * wwtp_discharge_rule
                 .get_dependent_variable(id, Utils::weekOfTheYear(week));
         discharges[id] += discharge;
+
+//        if (discharge < 0) {
+//            cout << "Discharge is negative in calculated WW releases." << endl;
+//            cout << "Restricted demand: " << restricted_demand << endl;
+//            cout << "WWTP fraction of discharge for source id " << id << ": "
+//                 << wwtp_discharge_rule.get_dependent_variable(id, Utils::weekOfTheYear(week)) << endl;
+//        }
 
         waste_water_discharge += discharge;
     }
@@ -902,15 +922,23 @@ const InfrastructureManager &Utility::getInfrastructure_construction_manager() c
     return infrastructure_construction_manager;
 }
 
-void Utility::recordWeeklyDemand(int week, vector<vector<double>> &demands,
-                                 bool apply_demand_buffer, vector<vector<vector<double>>> &realization_demands) {
+void Utility::recordWeeklyDemand(int week,
+                                 vector<vector<double>> &demands,
+                                 vector<vector<double>> &supply_demands,
+                                 bool apply_demand_buffer,
+                                 vector<vector<vector<double>>> &realization_demands,
+                                 vector<vector<vector<double>>> &realization_supply_demands) {
 //    if (week > 365) {
 //        cout << "Pause here to check demands on Jordan Lake in week " << week << endl;
 //        cout << demands[6][3] << endl;
 //    }
 
-    for (int &ws : priority_draw_water_source)
+    for (int &ws : priority_draw_water_source) {
         realization_demands[ws][id].push_back(demands[ws][id]);
-    for (int &ws : non_priority_draw_water_source)
+        realization_supply_demands[ws][id].push_back(supply_demands[ws][id]);
+    }
+    for (int &ws : non_priority_draw_water_source) {
         realization_demands[ws][id].push_back(demands[ws][id]);
+        realization_supply_demands[ws][id].push_back(supply_demands[ws][id]);
+    }
 }

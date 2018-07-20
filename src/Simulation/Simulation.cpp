@@ -309,7 +309,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
 #pragma omp parallel for ordered num_threads(n_threads) shared(had_catch)
 //    for (int r = (int) n_realizations - 1; r >= 0; --r) {
     for (unsigned long r = 0; r < n_realizations; ++r) {
-//        try {
+        //try {
             unsigned long realization = realizations_to_run.at(r);
 
             /// Create continuity models.
@@ -329,13 +329,13 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                 // DO NOT change the order of the steps. This would mess up
                 // important dependencies.
 
-                cout << w << endl;
+                //cout << w << endl;
 
                 /// Calculate long-term risk-of-failre if current week is first week of the year.
                 if (Utils::isFirstWeekOfTheYear(w)) {
-                    realization_model->setLongTermROFs(
-                            rof_model->calculateLongTermROF(w), w);
-//                    realization_model->setLongTermROFs({0.05,0.05,0.05,0.05}, w);
+//                    realization_model->setLongTermROFs(
+//                            rof_model->calculateLongTermROF(w), w);
+                    realization_model->setLongTermROFs({0.05,0.05,0.05,0.05}, w);
                 }
 
                 /// Calculate short-term risk-of-failure
@@ -343,9 +343,9 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                     realization_model->setShortTermROFs(
                             rof_model->calculateShortTermROFTable(w));
 		        } else {
-                    realization_model->setShortTermROFs(
-                            rof_model->calculateShortTermROF(w));
-//                    realization_model->setShortTermROFs({0.05,0.05,0.05,0.05});
+//                    realization_model->setShortTermROFs(
+//                            rof_model->calculateShortTermROF(w));
+                    realization_model->setShortTermROFs({0.05,0.05,0.05,0.05});
 
                 }
                 /// Apply drought mitigation policies
@@ -353,7 +353,8 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                 /// Continuity calculations for current week
                 realization_model->continuityStep(w);
                 /// Collect system data for output printing and objective calculations.
-                if (import_export_rof_tables != EXPORT_ROF_TABLES)
+                // TODO: WHY IS THIS EXCLUDING THE EXPORTING ROF TABLE FLAG? THROWS ERRORS?
+//                if (import_export_rof_tables != EXPORT_ROF_TABLES)
                     master_data_collector->collectData(r);
             }
             /// Export ROF tables for future simulations of the same problem with the same states-of-the-world.

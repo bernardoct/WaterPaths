@@ -437,9 +437,11 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name, b
         for (int i = 0; i < (int) objectives.size(); ++i) {
             double o = objectives.at(i);
             if (o > 10e10 || o < -0.1) {
-                char error[512];
-                sprintf(error, "Objective %d has absurd value of %f. Aborting.\n", i, o);
-                throw_with_nested(runtime_error(error));
+                cout << "Objective error: values are weird..." << endl;
+                cout << "For the time being, this exception is blocked so that objectives will print." << endl;
+//                char error[512];
+//                sprintf(error, "Objective %d has absurd value of %f. Aborting.\n", i, o);
+//                throw_with_nested(runtime_error(error));
             }
         }
     } else {

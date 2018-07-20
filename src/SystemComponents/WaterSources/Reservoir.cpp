@@ -284,7 +284,11 @@ void Reservoir::applyContinuity(int week, double upstream_source_inflow,
         outflow_new += stored_volume_new - capacity;
         stored_volume_new = capacity;
     } else if (stored_volume_new < 0) {
-        outflow_new = max(outflow_new - stored_volume_new, 0.);
+//        cout << "Error in Reservoir " << name << ", stored volume is negative:" << endl;
+//        cout << "Week " << week << ", Stored Volume " << stored_volume_new
+//             << ", outflow_new " << outflow_new << ", evaporated_volume " << evaporated_volume << endl;
+        outflow_new = max(outflow_new + stored_volume_new, 0.); // TODO: ERROR HERE??
+        //cout << "new outflow " << outflow_new << endl;
 	    stored_volume_new = 0.;
     }
 

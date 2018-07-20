@@ -2,6 +2,7 @@
 #include "Utils/QPSolver/QuadProg++.h"
 #include "Utils/Solutions.h"
 #include "Problem/Triangle.h"
+#include "Problem/CDOmodel.h"
 
 #ifdef  PARALLEL
 #include "../Borg/borgmm.h"
@@ -22,8 +23,8 @@ using namespace std;
 using namespace Constants;
 using namespace Solutions;
 
-//DurhamModel* trianglePtr;
-Triangle *trianglePtr;
+CDOmodel* trianglePtr;
+//Triangle *trianglePtr;
 int failures = 0;
 
 void eval(double *vars, double *objs, double *consts) {
@@ -218,8 +219,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    Triangle triangle(n_weeks, import_export_rof_table);
-    //DurhamModel triangle(n_weeks, import_export_rof_table); // set up cube for runs
+    //Triangle triangle(n_weeks, import_export_rof_table);
+    CDOmodel triangle(n_weeks, import_export_rof_table); // set up cube for runs
 
     triangle.setScenario(scenario);
     triangle.setFormulation(formulation);
@@ -338,7 +339,11 @@ int main(int argc, char *argv[]) {
             trianglePtr->destroyDataCollector();
         } else {
             ofstream objs_file;
-            string file_name = system_io + "TestFiles/output/Objectives_RDM" + to_string(rdm_no) + "_sols" + to_string(first_solution) +
+//            string file_name = system_io + "TestFiles/output/Objectives_RDM" + to_string(rdm_no) + "_sols" + to_string(first_solution) +
+//                               "_to_" + to_string(last_solution) + ".csv";
+            string file_name = system_io + "TestFiles/jointwtpoutput/formulation" + to_string(formulation) +
+                                                   "/scenario" + to_string(scenario) +
+                                                   "/Objectives_sols" + to_string(first_solution) +
                                "_to_" + to_string(last_solution) + ".csv";
             objs_file.open(file_name);
             printf("Objectives file will be printed at %s.\n", file_name.c_str());

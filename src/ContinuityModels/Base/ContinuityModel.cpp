@@ -98,8 +98,16 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
             continuity_water_sources.size(),
             vector<double>(continuity_utilities.size(), 0.));
 
+    supply_based_demands = std::vector<vector<double>>(
+            continuity_water_sources.size(),
+            vector<double>(continuity_utilities.size(), 0.));
+
     /// Initialize a 3D array to hold weekly demands for every water source
+    /// and another to hold demands when they are allocated as if treatment capacity isn't a constraint
     realization_demands = std::vector<vector<vector<double>>>(continuity_water_sources.size(),
+                                                              std::vector<vector<double>>(continuity_utilities.size(),
+                                                                                          vector<double>()));
+    realization_supply_demands = std::vector<vector<vector<double>>>(continuity_water_sources.size(),
                                                               std::vector<vector<double>>(continuity_utilities.size(),
                                                                                           vector<double>()));
     
@@ -150,10 +158,11 @@ void ContinuityModel::continuityStep(
      */
     for (Utility *u : continuity_utilities) {
         u->calculateWastewater_releases(week, wastewater_discharges);
-        u->splitDemands(week, demands, apply_demand_buffer);
+        u->splitDemands(week, demands, supply_based_demands, apply_demand_buffer);
 
         /// Keep a record of each week's demands
-        u->recordWeeklyDemand(week, demands, apply_demand_buffer, realization_demands);
+        u->recordWeeklyDemand(week, demands, supply_based_demands, apply_demand_buffer,
+                              realization_demands, realization_supply_demands);
     }
 
     /**
@@ -181,6 +190,12 @@ void ContinuityModel::continuityStep(
                             static_cast<unsigned long>(ws))->getTotal_outflow();
         }
 
+        if (upstream_spillage[i] < 0 || wastewater_discharges[i] < 0) {
+            cout << "Realization " << realization_id << ", Week " << week << endl;
+            cout << "Spillage from upstream to source " << i << " is " << upstream_spillage[i] << endl;
+            cout << "Wastewater discharge from upstream to source" << i << " is " << wastewater_discharges[i] << endl;
+        }
+
         /// Apply
         continuity_water_sources[i]->continuityWaterSource(
                 week - delta_realization_weeks[rof_realization],
@@ -198,6 +213,7 @@ void ContinuityModel::continuityStep(
 
 void ContinuityModel::setRealization(unsigned long realization_id, vector<double> &utilities_rdm,
                                      vector<double> &water_sources_rdm) {
+
     if (realization_id != (unsigned) NON_INITIALIZED) {
         for (Utility *u : continuity_utilities)
             u->setRealization(realization_id, utilities_rdm);
@@ -206,6 +222,7 @@ void ContinuityModel::setRealization(unsigned long realization_id, vector<double
         for (MinEnvFlowControl *mef : min_env_flow_controls)
             mef->setRealization(realization_id, water_sources_rdm);
     }
+
 }
 
 /*

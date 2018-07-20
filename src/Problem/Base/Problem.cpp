@@ -10,8 +10,10 @@
 vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
     if (this->master_data_collector != nullptr) {
         this->master_data_collector->setOutputDirectory(output_directory);
-        string fo = output_directory + "/TestFiles/jointwtpoutput/formulation" + std::to_string(formulation)
-                + "/scenario" + std::to_string(scenario) + "/Objectives";
+//        string fo = output_directory + "TestFiles/jointwtpoutput/formulation" + std::to_string(formulation)
+//                + "/scenario" + std::to_string(scenario) + "/Objectives";
+        string fo = output_directory + "/CDOTestFiles/output"
+                    + "/scenario" + std::to_string(scenario) + "/Objectives";
         //string fo = "/TestFiles/output/Objectives";
         objectives = this->master_data_collector->calculatePrintObjectives(
                 fo + "_s" + std::to_string(solution_no) + fname_sufix, print_files);
@@ -28,6 +30,8 @@ void Problem::printTimeSeriesAndPathways() {
     if (this->master_data_collector != nullptr) {
     this->master_data_collector->setOutputDirectory(output_directory);
 
+        string test_files_directory = "/CDOTestFiles/";
+
     /// Print output files.
 //    string fu = "/TestFiles/output/Utilities";
 //    string fws = "/TestFiles/output/WaterSources";
@@ -35,12 +39,17 @@ void Problem::printTimeSeriesAndPathways() {
 //    string fpw = "/TestFiles/output/Pathways";
 
     /// Print output files.
-    string fu = "/TestFiles/jointwtpoutput/formulation" + std::to_string(formulation) + "/scenario" + std::to_string(scenario) + "/Utilities";
-    string fws = "/TestFiles/jointwtpoutput/formulation" + std::to_string(formulation) + "/scenario" + std::to_string(scenario) + "/WaterSources";
-    string fp = "/TestFiles/jointwtpoutput/formulation" + std::to_string(formulation) + "/scenario" + std::to_string(scenario) + "/Policies";
-    string fpw = "/TestFiles/jointwtpoutput/formulation" + std::to_string(formulation) + "/scenario" + std::to_string(scenario) + "/Pathways";
+//    string fu = test_files_directory + "jointwtpoutput/formulation" + std::to_string(formulation) + "/scenario" + std::to_string(scenario) + "/Utilities";
+//    string fws = test_files_directory + "jointwtpoutput/formulation" + std::to_string(formulation) + "/scenario" + std::to_string(scenario) + "/WaterSources";
+//    string fp = test_files_directory + "jointwtpoutput/formulation" + std::to_string(formulation) + "/scenario" + std::to_string(scenario) + "/Policies";
+//    string fpw = test_files_directory + "jointwtpoutput/formulation" + std::to_string(formulation) + "/scenario" + std::to_string(scenario) + "/Pathways";
 
-    //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
+        string fu = test_files_directory + "output" + "/scenario" + std::to_string(scenario) + "/Utilities";
+        string fws = test_files_directory + "output" + "/scenario" + std::to_string(scenario) + "/WaterSources";
+        string fp = test_files_directory + "output" + "/scenario" + std::to_string(scenario) + "/Policies";
+        string fpw = test_files_directory + "output" + "/scenario" + std::to_string(scenario) + "/Pathways";
+
+        //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
     cout << "Printing Pathways" << endl;
     this->master_data_collector->printPathways(
             fpw + "_s" + std::to_string(solution_no) + fname_sufix);

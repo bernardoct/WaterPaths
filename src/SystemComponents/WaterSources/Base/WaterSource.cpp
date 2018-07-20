@@ -724,7 +724,8 @@ void WaterSource::resetAllocations(
 
 void WaterSource::updateTreatmentAndCapacityAllocations(int week) {}
 
-void WaterSource::updateTreatmentAllocations(int week, vector<vector<vector<double>>> weekly_demands) {}
+void WaterSource::updateTreatmentAllocations(int week, vector<vector<vector<double>>> weekly_demands,
+                                             vector<vector<vector<double>>> weekly_supply_based_demands) {}
 
 void WaterSource::resetTreatmentAllocations(const vector<double> *new_allocated_treatment_fractions) {
 

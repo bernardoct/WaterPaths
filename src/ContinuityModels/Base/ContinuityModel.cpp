@@ -110,7 +110,7 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
     realization_supply_demands = std::vector<vector<vector<double>>>(continuity_water_sources.size(),
                                                               std::vector<vector<double>>(continuity_utilities.size(),
                                                                                           vector<double>()));
-    
+
     /// populate array delta_realization_weeks so that the rounding and casting don't
     /// have to be done every time continuityStep is called, avoiding a bottleneck.
     for (int r = 0; r < NUMBER_REALIZATIONS_ROF; ++r) {
@@ -190,12 +190,6 @@ void ContinuityModel::continuityStep(
                             static_cast<unsigned long>(ws))->getTotal_outflow();
         }
 
-        if (upstream_spillage[i] < 0 || wastewater_discharges[i] < 0) {
-            cout << "Realization " << realization_id << ", Week " << week << endl;
-            cout << "Spillage from upstream to source " << i << " is " << upstream_spillage[i] << endl;
-            cout << "Wastewater discharge from upstream to source" << i << " is " << wastewater_discharges[i] << endl;
-        }
-
         /// Apply
         continuity_water_sources[i]->continuityWaterSource(
                 week - delta_realization_weeks[rof_realization],
@@ -213,7 +207,6 @@ void ContinuityModel::continuityStep(
 
 void ContinuityModel::setRealization(unsigned long realization_id, vector<double> &utilities_rdm,
                                      vector<double> &water_sources_rdm) {
-
     if (realization_id != (unsigned) NON_INITIALIZED) {
         for (Utility *u : continuity_utilities)
             u->setRealization(realization_id, utilities_rdm);
@@ -222,7 +215,6 @@ void ContinuityModel::setRealization(unsigned long realization_id, vector<double
         for (MinEnvFlowControl *mef : min_env_flow_controls)
             mef->setRealization(realization_id, water_sources_rdm);
     }
-
 }
 
 /*

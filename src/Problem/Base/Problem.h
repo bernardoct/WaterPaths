@@ -46,6 +46,8 @@ protected:
     vector<vector<double>> water_sources_rdm;
     vector<vector<double>> policies_rdm;
 
+    int scenario;
+
     double checkAndFixInfraExpansionHighLowOrder(vector<int> *order, int id_low, int id_high, double capacity_low,
                                                  double capacity_high);
 
@@ -93,6 +95,8 @@ public:
     void printTimeSeriesAndPathways();
 
     void performBootstrapAnalysis(int n_sets, int n_samples);
+
+    void setScenario(int s);
 };
 
 

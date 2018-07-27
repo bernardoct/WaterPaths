@@ -72,9 +72,10 @@ int main(int argc, char *argv[]) {
     vector<vector<double>> utilities_rdm;
     vector<vector<double>> water_sources_rdm;
     vector<vector<double>> policies_rdm;
+    int scen = -1;
 
     int c;
-    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:S:A:R:U:P:W:I:C:O:B:")) != -1) {
+    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:S:A:R:U:P:W:I:C:O:B:X:")) != -1) {
         switch (c) {
             case '?':
                 fprintf(stdout,
@@ -113,6 +114,7 @@ int main(int argc, char *argv[]) {
                         "ROF table binaries\n"
                         "\t-C: Import/export rof tables (-1: export, 0:"
                         " do nothing (standard), 1: import)\n"
+                                "\t-X: Scenario (1-4)\n"
                         "\t-B: Export objectives for all utilities on a single line",
                         argv[0], n_realizations, n_weeks, system_io.c_str());
                 return -1;
@@ -197,6 +199,9 @@ int main(int argc, char *argv[]) {
             case 'O':
                 rof_tables_directory = optarg;
                 break;
+            case 'X':
+                scen = atoi(optarg);
+                break;
             default:
                 fprintf(stderr, "Unknown option (-%c)\n", c);
                 return -1;
@@ -206,6 +211,7 @@ int main(int argc, char *argv[]) {
     Triangle triangle(n_weeks, import_export_rof_table);
 
     /// Set basic realization parameters.
+    triangle.setScenario(scen);
     triangle.setN_weeks(n_weeks);
     triangle.setOutput_directory(system_io);
     triangle.setN_threads((unsigned long) n_threads);
@@ -316,7 +322,8 @@ int main(int argc, char *argv[]) {
             trianglePtr->destroyDataCollector();
         } else {
             ofstream objs_file;
-            string file_name = system_io + "TestFiles/output/Objectives_RDM" + to_string(rdm_no) + "_sols" + to_string(first_solution) +
+            string file_name = system_io + "/CDOTestFiles/output/scenario" + std::to_string(scen) +
+                    "/Objectives_RDM" + to_string(rdm_no) + "_sols" + to_string(first_solution) +
                                "_to_" + to_string(last_solution) + ".csv";
             objs_file.open(file_name);
             printf("Objectives file will be printed at %s.\n", file_name.c_str());

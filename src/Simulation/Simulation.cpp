@@ -327,6 +327,9 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
             for (int w = 0; w < (int) total_simulation_time; ++w) {
                 // DO NOT change the order of the steps. This would mess up
                 // important dependencies.
+
+                //cout << w << endl;
+
                 /// Calculate long-term risk-of-failre if current week is first week of the year.
                 if (Utils::isFirstWeekOfTheYear(w))
                     realization_model->setLongTermROFs(

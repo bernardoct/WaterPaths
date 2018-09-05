@@ -23,14 +23,10 @@
 #include "../SystemComponents/WaterSources/AllocatedReservoir.h"
 #include "../SystemComponents/WaterSources/Quarry.h"
 #include "../SystemComponents/WaterSources/Relocation.h"
-#include "../SystemComponents/WaterSources/ReservoirExpansion.h"
-#include "../SystemComponents/WaterSources/WaterReuse.h"
-#include "../SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
 #include "../DroughtMitigationInstruments/InsuranceStorageToROF.h"
-#include "../Simulation/Simulation.h"
 #include "../SystemComponents/Bonds/LevelDebtServiceBond.h"
-#include "../SystemComponents/Bonds/BalloonPaymentBond.h"
+#include "../Simulation/Simulation.h"
 
 
 /**
@@ -127,6 +123,11 @@
  DataSeries new_river_storage_area(&new_river_res_storage,
                                          &new_river_res_area);
 
+ vector<double> sugar_creek_res_storage = {0, 2909};
+ vector<double> sugar_creek_res_area = {0, 0.3675 * 2909};
+ DataSeries sugar_creek_storage_area(&sugar_creek_res_storage,
+                                      &sugar_creek_res_area);
+
 // Create minimum environmental flow rules (controls)
 /// Autumn is combining Falls+Durham+WB
  vector<int> autumn_controls_weeks = {13, 43};
@@ -193,6 +194,26 @@
 
 // Create existing reservoirs
 
+    /// combined university lake and stone quarry
+    Reservoir college_rock_reservoir("College Rock Reservoir",
+                                     0,
+                                     catchment_college_rock,
+                                     (449+200)*table_gen_storage_multiplier,
+                                     ILLIMITED_TREATMENT_CAPACITY,
+                                     evaporation_owasa,
+                                     222);
+
+    AllocatedReservoir lake_michael("Lake Michael",
+                                    2,
+                                    catchment_lower_haw_river,
+                                    lake_michael_storage_capacity,
+                                    448,
+                                    evaporation_jordan_lake,
+                                    13940,
+                                    &lake_michael_allocations_ids,
+                                    &lake_michael_allocation_fractions,
+                                    &lake_michael_treatment_allocation_fractions);
+
     AllocatedReservoir autumn_lake("Autumn Lake",
                                   3,
                                   catchment_autumn,
@@ -204,44 +225,44 @@
                                   &autumn_lake_allocation_fractions,
                                   &autumn_lake_treatment_allocation_fractions);
 
-    AllocatedReservoir lake_michael("Lake Michael",
-                                   2,
-                                   catchment_lower_haw_river,
-                                   lake_michael_storage_capacity,
-                                   448,
-                                   evaporation_jordan_lake,
-                                   13940,
-                                   &lake_michael_allocations_ids,
-                                   &lake_michael_allocation_fractions,
-                                   &lake_michael_treatment_allocation_fractions);
-
-    /// combined university lake and stone quarry
-    Reservoir college_rock_reservoir("College Rock Reservoir",
-                  1,
-                  catchment_college_rock,
-                           (449+200)*table_gen_storage_multiplier,
-                  ILLIMITED_TREATMENT_CAPACITY,
-                  evaporation_owasa,
-                  222);
 
 
-// Create potential sources
+    // Create potential sources
 
-//FIXME ORIGINAL CODE SETS WEEKS_IN_YEAR TO 0 HERE
+    //FIXME ORIGINAL CODE SETS WEEKS_IN_YEAR TO 0 HERE
     vector<double> construction_time_interval = {3.0, 5.0};
 
-    //FIXME Why does this say the class doesn't exist? CHECK!!
-    Reservoir new_river_reservoir("New River Reservoir (Raleigh)", 4, catchment_new_river, 3700.0,
-                                     ILLIMITED_TREATMENT_CAPACITY, evaporation_falls_lake, &new_river_storage_area,
-                                     construction_time_interval, 17 * WEEKS_IN_YEAR, 263.0);
+    LevelDebtServiceBond sugar_bond(7, 263.0, 25, 0.05, vector<int>(1, 0));
+    Reservoir sugar_creek_reservoir("Sugar Creek Reservoir",
+                                    1,
+                                    catchment_sugar_creek,
+                                    2909,
+                                    ILLIMITED_TREATMENT_CAPACITY,
+                                    evaporation_owasa,
+                                    &sugar_creek_storage_area,
+                                    construction_time_interval,
+                                    17 * WEEKS_IN_YEAR,
+                                    sugar_bond);
 
-    //FIXME WHAT IS CANE CREEK AREA
-    Reservoir sugar_creek_reservoir("Sugar Creek Reservoir (Raleigh)", 1, catchment_sugar_creek, 2909,
-                                  ILLIMITED_TREATMENT_CAPACITY, evaporation_owasa, &sugar_creek_storage_area,
-                                  construction_time_interval, 17 * WEEKS_IN_YEAR, 500);
 
-    Reservoir dummy_endpoint("Dummy Node", 5, vector<Catchment *>(), 1., 0, evaporation_durham, 1,
-                             construction_time_interval, 0, 0);
+    //FIXME check bond, this one is from little river raliegh
+    LevelDebtServiceBond new_river_bond(7, 263.0, 25, 0.05, vector<int>(1, 0));
+    Reservoir new_river_reservoir("New River Reservoir",
+                                    4,
+                                    catchment_new_river,
+                                    3700.0,
+                                    ILLIMITED_TREATMENT_CAPACITY,
+                                    evaporation_falls_lake,
+                                    &new_river_storage_area,
+                                    construction_time_interval,
+                                    17 * WEEKS_IN_YEAR,
+                                    new_river_bond);
+
+
+
+    LevelDebtServiceBond dummy_bond(11, 1., 1, 1., vector<int>(1, 0));
+    Reservoir dummy_endpoint("Dummy Node", 6, vector<Catchment *>(), 1., 0, evaporation_durham, 1,
+                            construction_time_interval, 0, dummy_bond);
 
 
     vector<WaterSource *> water_sources;
@@ -250,6 +271,8 @@
     water_sources.push_back(&college_rock_reservoir);
     water_sources.push_back(&new_river_reservoir);
     water_sources.push_back(sugar_creek_reservoir)
+
+
 /*
  *
  *  0 College Rock Reservoir
@@ -259,24 +282,52 @@
  *      \ /
  *       2 Lake Michael
  *        \
- *         \        3 Autumn Lake
- *          \      /
- *           \    /
- *            \  /
- *            (4) New River Reservoir
- *             |
- *             |
- *         lillington
- *             |
- *          6 Dummy Endpoint
+ *         \                 3 Autumn Lake
+ *          \               /
+ *    Lillington           /
+ *            \           /
+ *             \         /
+ *              \       /
+ *               \    (4) New River Reservoir
+ *                \   /
+ *                 \ /
+ *                  |
+ *                  |
+ *                  5 Dummy Endpoint
  */
 
+//FIXME not recognizing graph
  Graph g(5);
  g.addEdge(0, 2);
  g.addEdge(1, 2);
  g.addEdge(2, 4);
  g.addEdge(3, 4);
- g.addEdge(4, 6);
+ g.addEdge(4, 5);
+
+ auto demand_n_weeks = (int) round(46 * WEEKS_IN_YEAR);
+
+ /*
+ //FIXME make return flows after utilities are created?
+ vector<int> watertown_ws_return_id;
+ vector<vector<double>> watertown_discharge_fraction_series;
+ WwtpDischargeRule wwtp_discharge_watertown(
+        watertown_discharge_fraction_series,
+        watertown_ws_return_id);
+
+ vector<int> dryville_ws_return_id = {4};
+ WwtpDischargeRule wwtp_discharge_dryville(
+         demand_to_wastewater_fraction_dryville,
+         dryville_ws_return_id);
+
+  vector<int> fallsland_ws_return_id = {4};
+  WwtpDischargeRule wwtp_discharge_fallsland(
+         demand_to_wastewater_fraction_fallsland,
+         fallsland_ws_return_id);
+*/
+
+ Utility watertown((char *) "Watertown", 2, demand_watertown, demand_n_weeks, watertown_annual_payment, &watertownDemandClassesFractions,
+                &watertownUserClassesWaterPrices, wwtp_discharge_watertown, watertown_inf_buffer, vector<int>(),
+                demand_triggered_infra_order_watertown, demand_infra_watertown, discount_rate, bond_term[0], bond_rate[0]);
 
 
 };

@@ -34,6 +34,8 @@ private:
     vector<vector<double>> evap_little_river;
     vector<vector<double>> evap_wheeler_benson;
     vector<vector<double>> evap_jordan_lake;
+    vector<vector<double>> demand_to_wastewater_fraction_fallsland;
+    vector<vector<double>> demand_to_wastewater_fraction_dryville;
 
 public:
     PaperTestProblem(unsigned long n_weeks, int import_export_rof_table);

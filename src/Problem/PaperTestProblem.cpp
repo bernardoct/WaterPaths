@@ -128,55 +128,155 @@
                                          &new_river_res_area);
 
 // Create minimum environmental flow rules (controls)
-/// Again, autumn is combining Falls+Durham+WB
+/// Autumn is combining Falls+Durham+WB
  vector<int> autumn_controls_weeks = {13, 43};
  vector<double> autumn_releases = {(65+4+1)*7, (39+10+2)*7};
 
  SeasonalMinEnvFlowControl autumn_min_env_control(0, autumn_controls_weeks, autumn_releases);
 
+ /// Lake Michael is based off the Jordan Lake and uses its class
  JordanLakeMinEnvFlowControl lake_michael_min_env_control(
         6, cape_fear_river_at_lillington, 64.63, 129.26, 25.85, 193.89,
         290.84, 387.79, 30825.0, 14924.0);
 
- //FIXME COLLEGE ROCK BASED ON CCR, SO LEAVING AS IS, IS THIS A GOOD IDEA?
- vector<double> college_rock_inflows = {0.1422 * 7, 0.5 * 7, 1 * 7, 1.5 * 7,
+ //FIXME SUGAR CREEK BASED ON CCR, SO LEAVING AS IS, IS THIS A GOOD IDEA?
+ vector<double> sugar_creek_inflows = {0.1422 * 7, 0.5 * 7, 1 * 7, 1.5 * 7,
                                   1.797 * 7};
- vector<double> college_rock_releases = {0.1422 * 7, 0.5 * 7, 1 * 7, 1.5 * 7,
+ vector<double> sugar_creek_releases = {0.1422 * 7, 0.5 * 7, 1 * 7, 1.5 * 7,
                                    1.797 * 7};
 
- InflowMinEnvFlowControl ccr_min_env_control(4, vector<int>(1, 4),
-                                             college_rock_inflows,
-                                             college_rock_releases);
+ InflowMinEnvFlowControl sugar_creek_min_env_control(4, vector<int>(1, 4),
+                                             sugar_creek_inflows,
+                                             sugar_creek_releases);
+
+ /// College Rock has no min flow
+  FixedMinEnvFlowControl college_rock_min_env_control(1, 0);
+
+ //FIXME made these numbers up, need to verify it works
+  vector<int> new_river_controls_weeks = {13, 43};
+  vector<double> new_river_releases = {3*7, 8*7};
+
+  SeasonalMinEnvFlowControl new_river_min_env_control(0, new_river_controls_weeks, new_river_releases);
+
+  vector<MinEnvFlowControl *> min_env_flow_controls;
+  min_env_flow_controls.push_back(&autumn_min_env_control);
+  min_env_flow_controls.push_back(&lake_michael_min_env_control);
+  min_env_flow_controls.push_back(&sugar_creek_min_env_control);
+  min_env_flow_controls.push_back(&college_rock_min_env_control);
 
 
+    /// Lake Michael parameters
+    double lake_michael_supply_capacity = 14924.0 * table_gen_storage_multiplier;
+    double lake_michael_wq_capacity = 30825.0 * table_gen_storage_multiplier;
+    double lake_michael_storage_capacity = lake_michael_wq_capacity + lake_michael_supply_capacity;
+    vector<int> lake_michael_allocations_ids = {0, 1, 2, WATER_QUALITY_ALLOCATION};
+    vector<double> lake_michael_allocation_fractions = {
+            Watertown_JLA * lake_michael_supply_capacity / lake_michael_storage_capacity,
+            Dryville_JLA * lake_michael_supply_capacity / lake_michael_storage_capacity,
+            Fallsland_JLA * lake_michael_supply_capacity / lake_michael_storage_capacity,
+            lake_michael_wq_capacity / lake_michael_storage_capacity};
+    vector<double> lake_michael_treatment_allocation_fractions = {0.0, 0.0, 1.0, 0.0};
 
+
+    /// Autumn Lake parameters
+    /// WB and Durham storage added to water supply capacity
+    double autumn_lake_supply_capacity = (14700.0+6349+2790) * table_gen_storage_multiplier;
+    double autumn_lake_wq_capacity = 20000.0 * table_gen_storage_multiplier;
+    double autumn_lake_storage_capacity = autumn_lake_wq_capacity + autumn_lake_supply_capacity;
+    //FIXME LOOK INTO THIS
+    vector<int> autumn_lake_allocations_ids = {3, 4, WATER_QUALITY_ALLOCATION};
+    vector<double> autumn_lake_allocation_fractions = {
+            0.5*autumn_lake_supply_capacity / autumn_lake_storage_capacity,
+            0.5*autumn_lake_supply_capacity / autumn_lake_storage_capacity,
+            autumn_lake_wq_capacity / autumn_lake_storage_capacity};
+    vector<double> autumn_lake_treatment_allocation_fractions = {0.0, 0.5, 0.5};
 
 // Create existing reservoirs
 
+    AllocatedReservoir autumn_lake("Autumn Lake",
+                                  3,
+                                  catchment_autumn,
+                                  autumn_lake_storage_capacity,
+                                  ILLIMITED_TREATMENT_CAPACITY,
+                                  evaporation_falls_lake,
+                                  &autumn_lake_storage_area,
+                                  &autumn_lake_allocations_ids,
+                                  &autumn_lake_allocation_fractions,
+                                  &autumn_lake_treatment_allocation_fractions);
+
+    AllocatedReservoir lake_michael("Lake Michael",
+                                   2,
+                                   catchment_lower_haw_river,
+                                   lake_michael_storage_capacity,
+                                   448,
+                                   evaporation_jordan_lake,
+                                   13940,
+                                   &lake_michael_allocations_ids,
+                                   &lake_michael_allocation_fractions,
+                                   &lake_michael_treatment_allocation_fractions);
+
+    /// combined university lake and stone quarry
+    Reservoir college_rock_reservoir("College Rock Reservoir",
+                  1,
+                  catchment_college_rock,
+                           (449+200)*table_gen_storage_multiplier,
+                  ILLIMITED_TREATMENT_CAPACITY,
+                  evaporation_owasa,
+                  222);
+
+
 // Create potential sources
 
+//FIXME ORIGINAL CODE SETS WEEKS_IN_YEAR TO 0 HERE
+    vector<double> construction_time_interval = {3.0, 5.0};
+
+    //FIXME Why does this say the class doesn't exist? CHECK!!
+    Reservoir new_river_reservoir("New River Reservoir (Raleigh)", 4, catchment_new_river, 3700.0,
+                                     ILLIMITED_TREATMENT_CAPACITY, evaporation_falls_lake, &new_river_storage_area,
+                                     construction_time_interval, 17 * WEEKS_IN_YEAR, 263.0);
+
+    //FIXME WHAT IS CANE CREEK AREA
+    Reservoir sugar_creek_reservoir("Sugar Creek Reservoir (Raleigh)", 1, catchment_sugar_creek, 2909,
+                                  ILLIMITED_TREATMENT_CAPACITY, evaporation_owasa, &sugar_creek_storage_area,
+                                  construction_time_interval, 17 * WEEKS_IN_YEAR, 500);
+
+    Reservoir dummy_endpoint("Dummy Node", 5, vector<Catchment *>(), 1., 0, evaporation_durham, 1,
+                             construction_time_interval, 0, 0);
+
+
+    vector<WaterSource *> water_sources;
+    water_sources.push_back(&autumn_lake);
+    water_sources.push_back(&lake_michael);
+    water_sources.push_back(&college_rock_reservoir);
+    water_sources.push_back(&new_river_reservoir);
+    water_sources.push_back(sugar_creek_reservoir)
 /*
  *
- *  1 College Rock Reservoir
+ *  0 College Rock Reservoir
  *   \
- *    \    (2) Sugar Creek Reservoir
+ *    \    (1) Sugar Creek Reservoir
  *     \   /
  *      \ /
- *       3 Lake Michael
+ *       2 Lake Michael
  *        \
- *         \        4 Autumn Lake
+ *         \        3 Autumn Lake
  *          \      /
  *           \    /
  *            \  /
- *            (5) New River Reservoir
+ *            (4) New River Reservoir
  *             |
  *             |
  *         lillington
  *             |
- *          6:Dummy Endpoint
+ *          6 Dummy Endpoint
  */
 
-
+ Graph g(5);
+ g.addEdge(0, 2);
+ g.addEdge(1, 2);
+ g.addEdge(2, 4);
+ g.addEdge(3, 4);
+ g.addEdge(4, 6);
 
 
 };

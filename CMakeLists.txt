@@ -225,7 +225,7 @@ set(TEST_SOURCE_FILES
         src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.cpp
         src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.h
         Tests/catch.hpp
-        Tests/Tests.cpp)
+        Tests/Tests.cpp src/Problem/PaperTestProblem.cpp src/Problem/PaperTestProblem.h)
 
 add_executable(TriangleModel ${SOURCE_FILES})
 add_executable(TestTriangleModel ${TEST_SOURCE_FILES})

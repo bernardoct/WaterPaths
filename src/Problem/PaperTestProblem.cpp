@@ -46,10 +46,13 @@
  //FIXME why do we make a null pointer here?
  Simulation *s = nullptr;
 
- //FIXME ThESE ARE TEST VALUES
+ //FIXME THESE ARE TEST VALUES
  double Watertown_LMA = 0.355;
  double Dryville_LMA = 0.10;
  double Fallsland_LMA = 0.05;
+ double watertown_annual_payment = 0.05;
+ double watertown_demand_buffer = 1.0;
+
 
  // ===================== SET UP PROBLEM COMPONENTS =====================
 //Beginning with Reservoir continuity
@@ -300,17 +303,18 @@
  *                  5 Dummy Endpoint
  */
 
-//FIXME not recognizing graph
  Graph g(5);
  g.addEdge(0, 2);
  g.addEdge(1, 2);
- g.addEdge(2, 4);
+ g.addEdge(2, 5);
  g.addEdge(3, 4);
  g.addEdge(4, 5);
 
  auto demand_n_weeks = (int) round(46 * WEEKS_IN_YEAR);
+ vector<double> bond_term = {25, 25, 25, 25};
+ vector<double> bond_rate = {0.05, 0.05, 0.05, 0.05};
+ double discount_rate = 0.05;
 
- /*
  //FIXME make return flows after utilities are created?
  vector<int> watertown_ws_return_id;
  vector<vector<double>> watertown_discharge_fraction_series;
@@ -318,20 +322,81 @@
         watertown_discharge_fraction_series,
         watertown_ws_return_id);
 
- vector<int> dryville_ws_return_id = {4};
- WwtpDischargeRule wwtp_discharge_dryville(
-         demand_to_wastewater_fraction_dryville,
-         dryville_ws_return_id);
 
-  vector<int> fallsland_ws_return_id = {4};
-  WwtpDischargeRule wwtp_discharge_fallsland(
-         demand_to_wastewater_fraction_fallsland,
-         fallsland_ws_return_id);
-*/
-
- Utility watertown((char *) "Watertown", 2, demand_watertown, demand_n_weeks, watertown_annual_payment, &watertownDemandClassesFractions,
-                &watertownUserClassesWaterPrices, wwtp_discharge_watertown, watertown_inf_buffer, vector<int>(),
-                demand_triggered_infra_order_watertown, demand_infra_watertown, discount_rate, bond_term[0], bond_rate[0]);
+//FIXME READ IN DEMAND, DEMANDCLASSESFRACTIONS, DEMANDCLASSPRICES,
+ vector<int> demand_triggered_infra_order_watertown = {4};
+ Utility watertown((char *) "Watertown", 0, demand_watertown, demand_n_weeks, watertown_annual_payment, &watertownDemandClassesFractions,
+                &watertownUserClassesWaterPrices, wwtp_discharge_watertown, watertown_demand_buffer);
 
 
 };
+
+ PaperTestProblem::~PaperTestProblem() = default;
+
+void PaperTestProblem::readInputData() {
+    cout << "Reading input data." << endl;
+
+#pragma omp parallel num_threads(20)
+    {
+#pragma omp single
+        streamflows_durham = Utils::parse2DCsvFile(output_directory +
+                                                   "/TestFiles/inflows" + evap_inflows_suffix + "/durham_inflows.csv", n_realizations);
+#pragma omp single
+        streamflows_flat = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/falls_lake_inflows.csv", n_realizations);
+#pragma omp single
+        streamflows_swift = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/lake_wb_inflows.csv", n_realizations);
+#pragma omp single
+        streamflows_llr = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/little_river_raleigh_inflows.csv", n_realizations);
+        // }
+#pragma omp single
+        streamflows_phils = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/stone_quarry_inflows.csv", n_realizations);
+#pragma omp single
+        streamflows_cane = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/cane_creek_inflows.csv", n_realizations);
+#pragma omp single
+        streamflows_morgan = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/university_lake_inflows.csv", n_realizations);
+#pragma omp single
+        streamflows_haw = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/jordan_lake_inflows.csv", n_realizations);
+#pragma omp single
+        streamflows_lillington = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/lillington_inflows.csv", n_realizations);
+// };
+        //cout << "Reading evaporations." << endl;
+#pragma omp single
+        evap_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/durham_evap.csv", n_realizations);
+#pragma omp single
+        evap_falls_lake = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/falls_lake_evap.csv", n_realizations);
+#pragma omp single
+        evap_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/owasa_evap.csv", n_realizations);
+#pragma omp single
+        evap_little_river = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/little_river_raleigh_evap.csv", n_realizations);
+#pragma omp single
+        {
+            evap_wheeler_benson = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/wb_evap.csv", n_realizations);
+            evap_jordan_lake = evap_owasa;
+        }
+
+        //cout << "Reading demands." << endl;
+#pragma omp single
+        demand_watertown = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands" + evap_inflows_suffix + "/cary_demand.csv", n_realizations);
+#pragma omp single
+        demand_dryville = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands" + evap_inflows_suffix + "/durham_demand.csv", n_realizations);
+#pragma omp single
+        demand_fallsland = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands" + evap_inflows_suffix + "/raleigh_demand.csv", n_realizations);
+
+        //cout << "Reading others." << endl;
+#pragma omp single
+        {
+            demand_to_wastewater_fraction_fallsland = Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
+            demand_to_wastewater_fraction_dryville = Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_durham.csv");
+
+            watertownDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/caryDemandClassesFractions.csv");
+            drvilleDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/durhamDemandClassesFractions.csv");
+            fallslandDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/raleighDemandClassesFractions.csv");
+
+            watertownUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/caryUserClassesWaterPrices.csv");
+            dryvilleUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/durhamUserClassesWaterPrices.csv");
+            fallslandUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/raleighUserClassesWaterPrices.csv");
+        }
+//    cout << "Done reading input data." << endl;
+    }
+
+}

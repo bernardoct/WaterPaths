@@ -34,8 +34,17 @@ private:
     vector<vector<double>> evap_little_river;
     vector<vector<double>> evap_wheeler_benson;
     vector<vector<double>> evap_jordan_lake;
+    vector<vector<double>> demand_watertown;
+    vector<vector<double>> demand_dryville;
+    vector<vector<double>> demand_fallsland;
     vector<vector<double>> demand_to_wastewater_fraction_fallsland;
     vector<vector<double>> demand_to_wastewater_fraction_dryville;
+    vector<vector<double>> watertownDemandClassesFractions;
+    vector<vector<double>> drvilleDemandClassesFractions;
+    vector<vector<double>> fallslandDemandClassesFractions;
+    vector<vector<double>> watertownUserClassesWaterPrices;
+    vector<vector<double>> dryvilleUserClassesWaterPrices;
+    vector<vector<double>> fallslandUserClassesWaterPrices;
 
 public:
     PaperTestProblem(unsigned long n_weeks, int import_export_rof_table);

@@ -46,6 +46,10 @@
  //FIXME why do we make a null pointer here?
  Simulation *s = nullptr;
 
+ //FIXME ThESE ARE TEST VALUES
+ double Watertown_LMA = 0.355;
+ double Dryville_LMA = 0.10;
+ double Fallsland_LMA = 0.05;
 
  // ===================== SET UP PROBLEM COMPONENTS =====================
 //Beginning with Reservoir continuity
@@ -172,9 +176,9 @@
     double lake_michael_storage_capacity = lake_michael_wq_capacity + lake_michael_supply_capacity;
     vector<int> lake_michael_allocations_ids = {0, 1, 2, WATER_QUALITY_ALLOCATION};
     vector<double> lake_michael_allocation_fractions = {
-            Watertown_JLA * lake_michael_supply_capacity / lake_michael_storage_capacity,
-            Dryville_JLA * lake_michael_supply_capacity / lake_michael_storage_capacity,
-            Fallsland_JLA * lake_michael_supply_capacity / lake_michael_storage_capacity,
+            Watertown_LMA * lake_michael_supply_capacity / lake_michael_storage_capacity,
+            Dryville_LMA * lake_michael_supply_capacity / lake_michael_storage_capacity,
+            Fallsland_LMA * lake_michael_supply_capacity / lake_michael_storage_capacity,
             lake_michael_wq_capacity / lake_michael_storage_capacity};
     vector<double> lake_michael_treatment_allocation_fractions = {0.0, 0.0, 1.0, 0.0};
 
@@ -270,7 +274,7 @@
     water_sources.push_back(&lake_michael);
     water_sources.push_back(&college_rock_reservoir);
     water_sources.push_back(&new_river_reservoir);
-    water_sources.push_back(sugar_creek_reservoir)
+    water_sources.push_back(&sugar_creek_reservoir);
 
 
 /*

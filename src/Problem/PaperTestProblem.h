@@ -53,7 +53,6 @@ public:
 
     int functionEvaluation(double *vars, double *objs, double *consts) override;
 
-    int functionEvaluation(double *vars, double *objs, double *consts) override;
 
     int simulationExceptionHander(const std::exception &e, Simulation *s,
                                   double *objs, const double *vars);

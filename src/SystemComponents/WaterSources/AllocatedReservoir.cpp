@@ -25,8 +25,7 @@ AllocatedReservoir::AllocatedReservoir(
                     allocated_fractions,
                     utilities_with_allocations,
                     ALLOCATED_RESERVOIR),
-          has_water_quality_pool(wq_pool_id != NON_INITIALIZED) {
-}
+          has_water_quality_pool(wq_pool_id != NON_INITIALIZED) {}
 
 AllocatedReservoir::AllocatedReservoir(const char *name, const int id, const vector<Catchment *> &catchments,
                                        const double capacity, const double max_treatment_capacity,

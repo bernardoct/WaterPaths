@@ -413,7 +413,7 @@ void WaterSource::setAllocations(
 
         if ((int) u != wq_pool_id) {
             this->allocated_treatment_fractions[u] =
-                    allocated_treatment_fractions->at(u);
+                    allocated_treatment_fractions->at(i);
             this->allocated_treatment_capacities[u] = total_treatment_capacity *
                                                       this->allocated_treatment_fractions[u];
         } else

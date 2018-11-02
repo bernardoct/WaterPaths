@@ -168,7 +168,7 @@ Problem::~Problem() {}
 void Problem::destroyDataCollector() {
     if (master_data_collector != nullptr) {
         delete master_data_collector;
-	master_data_collector = nullptr;
+	    master_data_collector = nullptr;
     } else {
         cerr << "Tried to delete nullptr master data collector.\n";
     }

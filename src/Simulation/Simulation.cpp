@@ -323,7 +323,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                     realization_model->getContinuity_utilities(),
                     r);
 
-            double start = omp_get_wtime();
+//            double start = omp_get_wtime();
             for (int w = 0; w < (int) total_simulation_time; ++w) {
                 // DO NOT change the order of the steps. This would mess up
                 // important dependencies.

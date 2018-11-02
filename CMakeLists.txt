@@ -4,7 +4,7 @@ project(TriangleModel)
 set(CMAKE_CXX_STANDARD 14)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -march=native")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -O3 -march=native")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -O0 -march=native")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -march=native")
 
 include_directories(/usr/include/mpi/)
 
@@ -116,7 +116,9 @@ set(SOURCE_FILES
         src/SystemComponents/Bonds/BalloonPaymentBond.cpp
         src/SystemComponents/Bonds/BalloonPaymentBond.h
         src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.cpp
-        src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.h)
+        src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.h
+        src/Problem/PaperTestProblem.cpp
+        src/Problem/PaperTestProblem.h)
 
 set(TEST_SOURCE_FILES
         src/ContinuityModels/Base/ContinuityModel.cpp

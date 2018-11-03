@@ -144,7 +144,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
           wq_pool_id(NON_INITIALIZED),
           online(ONLINE),
           total_treatment_capacity(treatment_capacity),
-	  highest_alloc_id(NOT_ALLOCATED),
+          highest_alloc_id(NOT_ALLOCATED),
           id(id),
           name(name),
           source_type(source_type),
@@ -361,24 +361,36 @@ void WaterSource::setAllocations(
                                          "each utility id in "
                                          "allocated_fractions.");
 
-
     total_allocated_fraction = accumulate(allocated_fractions->begin(),
                                           allocated_fractions->end(),
                                           0.0);
 
     if (total_allocated_fraction < 1.0) {
         for (int i = 0; i < (int) utilities_with_allocations->size(); ++i)
-            if ((*utilities_with_allocations)[i] == WATER_QUALITY_ALLOCATION)
+            if ((*utilities_with_allocations)[i] == WATER_QUALITY_ALLOCATION) {
                 (*allocated_fractions)[i] += 1. - total_allocated_fraction;
-    } else if (total_allocated_fraction > 1.) {
-                printf("Water Source %d has allocation fractions whose sum are"
-                               " more than 1.", id);
-                __throw_invalid_argument("Allocation fractions cannot sum to "
-                                                 "more than 1.");
             }
+    } else if (total_allocated_fraction > 1.) {
+        printf("Water Source %d has allocation fractions whose sum are"
+                               " more than 1.", id);
+        __throw_invalid_argument("Allocation fractions cannot sum to "
+                                                 "more than 1.");
+    }
 
-    /// Have water quality pool as a reservoir with ID next to highest ID
-    /// allocation.
+    // Check if treatment capacity was allocated to water quality pool
+    auto it = std::find(utilities_with_allocations->begin(),
+            utilities_with_allocations->end(), WATER_QUALITY_ALLOCATION);
+    if (it != utilities_with_allocations->end() &&
+            utilities_with_allocations->size() ==
+            allocated_treatment_fractions->size()) {
+        printf("Water Source %d has treatment capacity allocated to water "
+               "quality pool.", id);
+        __throw_invalid_argument("Water quality pool cannot have allocated "
+                                 "treatment capacity");
+    }
+
+    // Have water quality pool as a reservoir with ID next to highest ID
+    // allocation.
     wq_pool_id = static_cast<unsigned int>(
             *std::max_element(utilities_with_allocations->begin(),
                               utilities_with_allocations->end()) + 1);
@@ -403,17 +415,17 @@ void WaterSource::setAllocations(
     this->supply_allocated_fractions.reserve(length - 1);
     this->supply_allocated_fractions.assign(length - 1, 0.0);
 
-    /// Populate vectors.
+    // Populate vectors.
     for (unsigned long i = 0; i < utilities_with_allocations->size(); ++i) {
         auto u = (unsigned int) utilities_with_allocations->at(i);
 
-        /// Replace the -1 in the utilities_with_allocations vector with the
-        /// ID assigned to the water quality pool.
+        // Replace the -1 in the utilities_with_allocations vector with the
+        // ID assigned to the water quality pool.
         u = ((int) u == WATER_QUALITY_ALLOCATION ? wq_pool_id : u);
 
         if ((int) u != wq_pool_id) {
             this->allocated_treatment_fractions[u] =
-                    allocated_treatment_fractions->at(u);
+                    allocated_treatment_fractions->at(i);
             this->allocated_treatment_capacities[u] = total_treatment_capacity *
                                                       this->allocated_treatment_fractions[u];
         } else

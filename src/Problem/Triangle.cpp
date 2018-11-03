@@ -113,16 +113,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         double raleigh_inf_buffer = vars[55];
         double cary_inf_buffer = vars[56];
 
-        if (utilities_rdm.empty()) {
-            /// All matrices below have dimensions n_realizations x nr_rdm_factors
-            utilities_rdm = std::vector<vector<double>>(
-                    n_realizations, vector<double>(4, 1.));
-            water_sources_rdm = std::vector<vector<double>>(
-                    n_realizations, vector<double>(51, 1.));
-            policies_rdm = std::vector<vector<double>>(
-                    n_realizations, vector<double>(4, 1.));
-        }
-
         vector<infraRank> durham_infra_order_raw = {
                 infraRank(9, Teer_quarry_expansion_ranking),
                 infraRank(15, lake_michie_expansion_ranking_low),
@@ -222,6 +212,19 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         western_wake_treatment_frac_durham /= sum_wjlwtp;
         western_wake_treatment_plant_owasa_frac /= sum_wjlwtp;
         western_wake_treatment_plant_raleigh_frac /= sum_wjlwtp;
+
+
+        // ==================== SET UP RDM FACTORS ============================
+
+        if (utilities_rdm.empty()) {
+            /// All matrices below have dimensions n_realizations x nr_rdm_factors
+            utilities_rdm = std::vector<vector<double>>(
+                    n_realizations, vector<double>(4, 1.));
+            water_sources_rdm = std::vector<vector<double>>(
+                    n_realizations, vector<double>(51, 1.));
+            policies_rdm = std::vector<vector<double>>(
+                    n_realizations, vector<double>(4, 1.));
+        }
 
 
         // ===================== SET UP PROBLEM COMPONENTS =====================

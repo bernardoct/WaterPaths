@@ -48,7 +48,7 @@ TEST_CASE("Mass balance reservoir", "[Reservoir][Mass Balance]") {
     }
 }
 
-TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance]") {
+TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance][Exceptions]") {
     int streamflow_n_weeks = 52 * (1 + 50);
     vector<vector<double>> streamflows_haw =
             vector<vector<double>>(1, vector<double>((unsigned long) streamflow_n_weeks, 300.));
@@ -203,6 +203,26 @@ TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance
         REQUIRE(allocated_lake.getAvailableAllocatedVolume(4) == 0.);
         REQUIRE(allocated_lake.getTotal_outflow() >= 0.);
     }
+
+    SECTION("Exception for treatment capacity allocated to water quality pool.", "[Exception]") {
+
+        vector<int> jl_allocations_ids_wq_pool = {0, 1, 2, 3, WATER_QUALITY_ALLOCATION};
+        vector<double> jl_treatment_allocation_fractions_extra_for_wq_pool = {0.333, 0.333, 0.233, 0.0, 0.1};
+
+        REQUIRE_THROWS([&]() {
+            AllocatedReservoir allocated_lake("Jordan Lake",
+                                              0,
+                                              catchment_haw,
+                                              jl_storage_capacity,
+                                              1000.,
+                                              evaporation_jordan_lake,
+                                              1.,
+                                              &jl_allocations_ids_wq_pool,
+                                              &jl_allocation_fractions,
+                                              &jl_treatment_allocation_fractions_extra_for_wq_pool);
+        }());
+    }
+
 }
 
 TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][Utility][Bonds]") {

@@ -383,10 +383,10 @@ void WaterSource::setAllocations(
     if (it != utilities_with_allocations->end() &&
             utilities_with_allocations->size() ==
             allocated_treatment_fractions->size()) {
-        printf("Water Source %d has treatment capacity allocated to water "
-               "quality pool.", id);
-        __throw_invalid_argument("Water quality pool cannot have allocated "
-                                 "treatment capacity");
+        string error = "Water Source ";
+        error += to_string(id) + " has treatment capacity allocated to water "
+                                 "quality pool.";
+        __throw_invalid_argument(error.c_str());
     }
 
     // Have water quality pool as a reservoir with ID next to highest ID

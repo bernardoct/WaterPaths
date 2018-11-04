@@ -176,6 +176,8 @@ public:
 
     void checkForInputErrorsConstruction();
 
+    const vector<double> &getAllocated_treatment_fractions() const;
+
 
 };
 

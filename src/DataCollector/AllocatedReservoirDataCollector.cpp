@@ -50,7 +50,7 @@ string AllocatedReservoirDataCollector::printTabularStringHeaderLine1() {
     out_stream << output;
 
     for (unsigned long u = 0; u <allocated_reservoir->getUtilities_with_allocations()->size(); ++u)
-        out_stream << setw(COLUMN_WIDTH) << "Stored V.";
+        out_stream << setw(COLUMN_WIDTH) << "Stored number_of_vertices.";
 
     return out_stream.str();
 }

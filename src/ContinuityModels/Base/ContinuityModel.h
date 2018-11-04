@@ -50,6 +50,14 @@ public:
 
     ContinuityModel(ContinuityModel &continuity_model);
 
+    void checkInput(vector<WaterSource *> &water_sources, vector<Utility *> &utilities,
+                                     vector<MinEnvFlowControl *> &min_env_flow_controls,
+                                     const Graph &water_sources_graph,
+                                     const vector<vector<int>> &water_sources_to_utilities,
+                                     vector<double> &utilities_rdm,
+                                     vector<double> &water_sources_rdm,
+                                     unsigned long realization_id);
+
     void continuityStep(
             int week, int rof_realization = -1, bool
     apply_demand_buffer = false);

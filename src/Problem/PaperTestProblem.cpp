@@ -151,11 +151,11 @@
     vector<int> autumn_controls_weeks = {0, 13, 43, 53};
     vector<double> autumn_releases = {(39 + 10 + 2) * 7, (65 + 4 + 1) * 7, (39 + 10 + 2) * 7};
 
-    SeasonalMinEnvFlowControl autumn_min_env_control(0, autumn_controls_weeks, autumn_releases);
+    SeasonalMinEnvFlowControl autumn_min_env_control(2, autumn_controls_weeks, autumn_releases);
 
     /// Lake Michael is based off the Jordan Lake and uses its class
     JordanLakeMinEnvFlowControl lake_michael_min_env_control(
-            6, cape_fear_river_at_lillington, 64.63, 129.26, 25.85, 193.89,
+            1, cape_fear_river_at_lillington, 64.63, 129.26, 25.85, 193.89,
             290.84, 387.79, 30825.0, 14924.0);
 
     //FIXME SUGAR CREEK BASED ON CCR, SO LEAVING AS IS, IS THIS A GOOD IDEA?
@@ -164,18 +164,18 @@
     vector<double> sugar_creek_releases = {0.1422 * 7, 0.5 * 7, 1 * 7, 1.5 * 7,
                                            1.797 * 7};
 
-    InflowMinEnvFlowControl sugar_creek_min_env_control(4, vector<int>(1, 4),
+    InflowMinEnvFlowControl sugar_creek_min_env_control(3, vector<int>(1, 4),
                                                         sugar_creek_inflows,
                                                         sugar_creek_releases);
 
-    /// College Rock has no min flow
-    FixedMinEnvFlowControl college_rock_min_env_control(1, 0);
+    // College Rock has no min flow
+    FixedMinEnvFlowControl college_rock_min_env_control(0, 0);
 
     //FIXME made these numbers up
     vector<int> new_river_controls_weeks = {0, 13, 43, 53};
     vector<double> new_river_releases = {3 * 7, 8 * 7, 3 * 7};
 
-    SeasonalMinEnvFlowControl new_river_min_env_control(0, new_river_controls_weeks, new_river_releases);
+    SeasonalMinEnvFlowControl new_river_min_env_control(4, new_river_controls_weeks, new_river_releases);
 
     vector<MinEnvFlowControl *> min_env_flow_controls;
     min_env_flow_controls.push_back(&autumn_min_env_control);
@@ -183,8 +183,7 @@
     min_env_flow_controls.push_back(&sugar_creek_min_env_control);
     min_env_flow_controls.push_back(&college_rock_min_env_control);
 
-
-    /// Lake Michael parameters
+    // Lake Michael parameters
     double lake_michael_supply_capacity = 14924.0 * table_gen_storage_multiplier;
     double lake_michael_wq_capacity = 30825.0 * table_gen_storage_multiplier;
     double lake_michael_storage_capacity = lake_michael_wq_capacity + lake_michael_supply_capacity;
@@ -196,9 +195,8 @@
             lake_michael_wq_capacity / lake_michael_storage_capacity};
     vector<double> lake_michael_treatment_allocation_fractions = {0.0, 0.0, 1.0, 0.0};
 
-
-    /// Autumn Lake parameters
-    /// WB and Durham storage added to water supply capacity
+    // Autumn Lake parameters
+    // WB and Durham storage added to water supply capacity
     double autumn_lake_supply_capacity = (14700.0 + 6349 + 2790) * table_gen_storage_multiplier;
     double autumn_lake_wq_capacity = 20000.0 * table_gen_storage_multiplier;
     double autumn_lake_storage_capacity = autumn_lake_wq_capacity + autumn_lake_supply_capacity;
@@ -211,7 +209,6 @@
     vector<double> autumn_lake_treatment_allocation_fractions = {0.5, 0.5};
 
 // Create existing reservoirs
-
     /// combined university lake and stone quarry
     Reservoir college_rock_reservoir("College Rock Reservoir",
                                      0,
@@ -242,8 +239,6 @@
                                    &autumn_lake_allocations_ids,
                                    &autumn_lake_allocation_fractions,
                                    &autumn_lake_treatment_allocation_fractions);
-
-
 
     // Create potential sources
 
@@ -278,9 +273,8 @@
 
 
     LevelDebtServiceBond dummy_bond(11, 1., 1, 1., vector<int>(1, 0));
-    Reservoir dummy_endpoint("Dummy Node", 6, vector<Catchment *>(), 1., 0, evaporation_durham, 1,
+    Reservoir dummy_endpoint("Dummy Node", 5, vector<Catchment *>(), 1., 0, evaporation_durham, 1,
                              construction_time_interval, 0, dummy_bond);
-
 
     vector<WaterSource *> water_sources;
     water_sources.push_back(&autumn_lake);
@@ -288,6 +282,7 @@
     water_sources.push_back(&college_rock_reservoir);
     water_sources.push_back(&new_river_reservoir);
     water_sources.push_back(&sugar_creek_reservoir);
+    water_sources.push_back(&dummy_endpoint);
 
 
 /*

@@ -37,8 +37,12 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
     std::sort(continuity_utilities.begin(), continuity_utilities.end(), Utility::compById);
 #endif
 
-    /// Link water sources to utilities by passing pointers of the former to
-    /// the latter.
+    checkInput(water_sources, utilities, min_env_flow_controls,
+            water_sources_graph, water_sources_to_utilities,
+            utilities_rdm, water_sources_rdm, realization_id);
+
+    // Link water sources to utilities by passing pointers of the former to
+    // the latter.
     for (unsigned long u = 0; u < utilities.size(); ++u) {
         for (unsigned long ws = 0; ws < water_sources_to_utilities[u].size(); ++ws) {
             WaterSource *water_source =
@@ -47,7 +51,7 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
         }
     }
 
-    /// Create table showing which utilities draw water from each water source.
+    // Create table showing which utilities draw water from each water source.
     utilities_to_water_sources.assign(water_sources.size(), vector<int>(0));
     water_sources_online_to_utilities.assign(water_sources.size(), vector<int>(0));
     for (unsigned long u = 0; u < utilities.size(); ++u) {
@@ -119,6 +123,27 @@ ContinuityModel::~ContinuityModel() {
     for (auto mef : min_env_flow_controls){
         delete mef;
     }
+}
+
+void ContinuityModel::checkInput(vector<WaterSource *> &water_sources, vector<Utility *> &utilities,
+                                 vector<MinEnvFlowControl *> &min_env_flow_controls,
+                                 const Graph &water_sources_graph,
+                                 const vector<vector<int>> &water_sources_to_utilities,
+                                 vector<double> &utilities_rdm,
+                                 vector<double> &water_sources_rdm,
+                                 unsigned long realization_id) {
+
+    for (auto ws : water_sources) {
+        if (ws->getAllocated_treatment_fractions().size() > 1 &&
+                ws->getAllocated_treatment_fractions().size() != utilities.size()) {
+            string error = "Number of utilities with allocated treatment in "
+                           "water source ";
+            error += to_string(ws->id) + " is different than the number of "
+                                         "utilities in the system.";
+            __throw_invalid_argument(error.c_str());
+        }
+    }
+
 }
 
 /**

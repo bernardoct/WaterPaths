@@ -54,6 +54,17 @@ Utility::Utility(
 
     calculateWeeklyAverageWaterPrices(typesMonthlyDemandFraction,
                                       typesMonthlyWaterPrice);
+
+
+    infrastructure_manager = InfrastructureManager(id, vector<double>(),
+                                                   vector<vector<int>>(), infra_discount_rate,
+                                                   NON_INITIALIZED, NON_INITIALIZED,
+                                                   vector<int>(),
+                                                   vector<int>());
+
+    infrastructure_manager.connectWaterSourcesVectorsToUtilitys(water_sources,
+                                                                priority_draw_water_source,
+                                                                non_priority_draw_water_source);
 }
 
 /**
@@ -101,14 +112,14 @@ Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_r
         percent_contingency_fund_contribution(percent_contingency_fund_contribution),
         demand_buffer(demand_buffer) {
 
-    infrastructure_construction_manager =
+    infrastructure_manager =
             InfrastructureManager(id, infra_construction_triggers, infra_if_built_remove,
                                   infra_discount_rate, bond_term, bond_interest_rate,
                                   rof_infra_construction_order, demand_infra_construction_order);
 
-    infrastructure_construction_manager.connectWaterSourcesVectorsToUtilitys(water_sources,
-                                                                             priority_draw_water_source,
-                                                                             non_priority_draw_water_source);
+    infrastructure_manager.connectWaterSourcesVectorsToUtilitys(water_sources,
+            priority_draw_water_source,
+            non_priority_draw_water_source);
 
     if (rof_infra_construction_order.empty() &&
         demand_infra_construction_order.empty())
@@ -168,13 +179,13 @@ Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_r
         percent_contingency_fund_contribution(percent_contingency_fund_contribution),
         demand_buffer(demand_buffer) {
 
-    infrastructure_construction_manager = InfrastructureManager(id, infra_construction_triggers,
+    infrastructure_manager = InfrastructureManager(id, infra_construction_triggers,
                                                                 vector<vector<int>>(), infra_discount_rate,
                                                                 bond_term, bond_interest_rate,
                                                                 rof_infra_construction_order,
                                                                 demand_infra_construction_order);
 
-    infrastructure_construction_manager.connectWaterSourcesVectorsToUtilitys(water_sources,
+    infrastructure_manager.connectWaterSourcesVectorsToUtilitys(water_sources,
                                                                              priority_draw_water_source,
                                                                              non_priority_draw_water_source);
 
@@ -209,9 +220,9 @@ Utility::Utility(Utility &utility) :
         name(utility.name),
         percent_contingency_fund_contribution(utility.percent_contingency_fund_contribution),
         demand_buffer(utility.demand_buffer),
-        infrastructure_construction_manager(utility.infrastructure_construction_manager) {
+        infrastructure_manager(utility.infrastructure_manager) {
 
-    infrastructure_construction_manager.connectWaterSourcesVectorsToUtilitys(water_sources,
+    infrastructure_manager.connectWaterSourcesVectorsToUtilitys(water_sources,
                                                                              priority_draw_water_source,
                                                                              non_priority_draw_water_source);
 
@@ -227,7 +238,7 @@ Utility &Utility::operator=(const Utility &utility) {
 
     demand_series_realization = vector<double>((unsigned long) utility.number_of_week_demands);
 
-    infrastructure_construction_manager.connectWaterSourcesVectorsToUtilitys(water_sources,
+    infrastructure_manager.connectWaterSourcesVectorsToUtilitys(water_sources,
                                                                              priority_draw_water_source,
                                                                              non_priority_draw_water_source);
 
@@ -331,23 +342,23 @@ void Utility::clearWaterSources() {
 void Utility::addWaterSource(WaterSource *water_source) {
     checkErrorsAddWaterSourceOnline(water_source);
 
-    /// Add water sources with their IDs matching the water sources vector
-    /// indexes.
+    // Add water sources with their IDs matching the water sources vector
+    // indexes.
     if (water_source->id > (int) water_sources.size() - 1) {
         water_sources.resize((unsigned int) water_source->id + 1);
     }
 
-    /// Add water source
+    // Add water source
     water_sources[water_source->id] = water_source;
 
-    /// Add water source to infrastructure construction manager.
-    infrastructure_construction_manager.addWaterSource(water_source);
+    // Add water source to infrastructure construction manager.
+    infrastructure_manager.addWaterSource(water_source);
 
-    /// If watersource is online and the utility owns some of its installed
-    /// treatment capacity, make it online.
+    // If watersource is online and the utility owns some of its installed
+    // treatment capacity, make it online.
     if (water_source->isOnline() && water_source->
             getAllocatedTreatmentCapacity(id) > 0) {
-        infrastructure_construction_manager.addWaterSourceToOnlineLists(
+        infrastructure_manager.addWaterSourceToOnlineLists(
                 water_source->id, total_storage_capacity,
                 total_treatment_capacity, total_available_volume,
                 total_stored_volume);
@@ -533,7 +544,7 @@ void Utility::updateContingencyFundAndDebtService(
 }
 
 void Utility::setWaterSourceOnline(unsigned int source_id, int week) {
-    infrastructure_construction_manager.setWaterSourceOnline(source_id, week, total_storage_capacity,
+    infrastructure_manager.setWaterSourceOnline(source_id, week, total_storage_capacity,
                                                              total_treatment_capacity, total_available_volume,
                                                              total_stored_volume);
 }
@@ -575,10 +586,10 @@ void Utility::issueBond(int new_infra_triggered, int week) {
 
 void Utility::forceInfrastructureConstruction(int week, vector<int> new_infra_triggered) {
     /// Build all triggered infrastructure
-    infrastructure_construction_manager.forceInfrastructureConstruction(week, new_infra_triggered);
+    infrastructure_manager.forceInfrastructureConstruction(week, new_infra_triggered);
 
     /// Issue bonds for triggered infrastructure
-    auto under_construction = infrastructure_construction_manager.getUnder_construction();
+    auto under_construction = infrastructure_manager.getUnder_construction();
     for (int ws : new_infra_triggered) {
         if (under_construction.size() > ws && under_construction.at((unsigned long) ws)) {
             issueBond(ws, week);
@@ -609,7 +620,7 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
     long_term_risk_of_failure = long_term_rof;
 
     /// Check if new infrastructure is to be triggered and, if so, trigger it.
-    int new_infra_triggered = infrastructure_construction_manager.infrastructureConstructionHandler(long_term_rof, week,
+    int new_infra_triggered = infrastructure_manager.infrastructureConstructionHandler(long_term_rof, week,
                                                                                                     past_year_average_demand,
                                                                                                     total_storage_capacity,
                                                                                                     total_treatment_capacity,
@@ -788,15 +799,15 @@ double Utility::getInsurance_purchase() const {
 
 const vector<int> &Utility::getRof_infrastructure_construction_order()
 const {
-    return infrastructure_construction_manager.getRof_infra_construction_order();
+    return infrastructure_manager.getRof_infra_construction_order();
 }
 
 const vector<int> &Utility::getDemand_infra_construction_order() const {
-    return infrastructure_construction_manager.getDemand_infra_construction_order();
+    return infrastructure_manager.getDemand_infra_construction_order();
 }
 
 const vector<int> Utility::getInfrastructure_built() const {
-    return infrastructure_construction_manager.getInfra_built_last_week();
+    return infrastructure_manager.getInfra_built_last_week();
 }
 
 double Utility::waterPrice(int week) {
@@ -836,5 +847,5 @@ double Utility::getNet_stream_inflow() const {
 }
 
 const InfrastructureManager &Utility::getInfrastructure_construction_manager() const {
-    return infrastructure_construction_manager;
+    return infrastructure_manager;
 }

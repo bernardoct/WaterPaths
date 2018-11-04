@@ -100,7 +100,7 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
     demands = std::vector<vector<double>>(
             continuity_water_sources.size(),
             vector<double>(continuity_utilities.size(), 0.));
-    
+
     /// populate array delta_realization_weeks so that the rounding and casting don't
     /// have to be done every time continuityStep is called, avoiding a bottleneck.
     for (int r = 0; r < NUMBER_REALIZATIONS_ROF; ++r) {
@@ -134,7 +134,12 @@ void ContinuityModel::checkInput(vector<WaterSource *> &water_sources, vector<Ut
                                  unsigned long realization_id) {
 
     for (auto ws : water_sources) {
-        if (ws->getAllocated_treatment_fractions().size() > 1 &&
+        auto number_of_utilities_in_ws = ws->getAllocated_treatment_fractions().size();
+        if (number_of_utilities_in_ws > 0 &&
+            ws->getUtilities_with_allocations()->back() == ws->getWq_pool_id()) {
+            --number_of_utilities_in_ws;
+        }
+        if (number_of_utilities_in_ws > 1 &&
                 ws->getAllocated_treatment_fractions().size() != utilities.size()) {
             string error = "Number of utilities with allocated treatment in "
                            "water source ";

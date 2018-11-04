@@ -27,10 +27,10 @@ void Problem::printTimeSeriesAndPathways() {
     this->master_data_collector->setOutputDirectory(output_directory);
 
     /// Print output files.
-    string fu = "/TestFiles/output/Utilities";
-    string fws = "/TestFiles/output/WaterSources";
-    string fp = "/TestFiles/output/Policies";
-    string fpw = "/TestFiles/output/Pathways";
+    string fu = "TestFiles/output/Utilities";
+    string fws = "TestFiles/output/WaterSources";
+    string fp = "TestFiles/output/Policies";
+    string fpw = "TestFiles/output/Pathways";
 
     //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
     cout << "Printing Pathways" << endl;
@@ -59,7 +59,9 @@ void Problem::printTimeSeriesAndPathways() {
 //                                               fp + "_s"
 //                                               + std::to_string(solution_no));
     } else {
-	printf("Trying to print pathways but data collector is empty. Either your simulation crashed or you deleted the data collector too early.\n");
+	    printf("Trying to print pathways but data collector is empty. Either "
+            "your simulation crashed or you deleted the data collector too "
+            "early.\n");
     }
 
 }

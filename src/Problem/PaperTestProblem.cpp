@@ -187,13 +187,11 @@
     double lake_michael_supply_capacity = 14924.0 * table_gen_storage_multiplier;
     double lake_michael_wq_capacity = 30825.0 * table_gen_storage_multiplier;
     double lake_michael_storage_capacity = lake_michael_wq_capacity + lake_michael_supply_capacity;
-    vector<int> lake_michael_allocations_ids = {0, 1, 2, WATER_QUALITY_ALLOCATION};
+    vector<int> lake_michael_allocations_ids = {0, WATER_QUALITY_ALLOCATION};
     vector<double> lake_michael_allocation_fractions = {
-            Watertown_LMA * lake_michael_supply_capacity / lake_michael_storage_capacity,
-            Dryville_LMA * lake_michael_supply_capacity / lake_michael_storage_capacity,
-            Fallsland_LMA * lake_michael_supply_capacity / lake_michael_storage_capacity,
+            lake_michael_supply_capacity / lake_michael_storage_capacity,
             lake_michael_wq_capacity / lake_michael_storage_capacity};
-    vector<double> lake_michael_treatment_allocation_fractions = {0.0, 0.0, 1.0, 0.0};
+    vector<double> lake_michael_treatment_allocation_fractions = {1.};
 
     // Autumn Lake parameters
     // WB and Durham storage added to water supply capacity
@@ -201,12 +199,11 @@
     double autumn_lake_wq_capacity = 20000.0 * table_gen_storage_multiplier;
     double autumn_lake_storage_capacity = autumn_lake_wq_capacity + autumn_lake_supply_capacity;
     //FIXME MADE UP THESE NUMBERS
-    vector<int> autumn_lake_allocations_ids = {3, 4, WATER_QUALITY_ALLOCATION};
+    vector<int> autumn_lake_allocations_ids = {0, WATER_QUALITY_ALLOCATION};
     vector<double> autumn_lake_allocation_fractions = {
-            0.5 * autumn_lake_supply_capacity / autumn_lake_storage_capacity,
-            0.5 * autumn_lake_supply_capacity / autumn_lake_storage_capacity,
+            autumn_lake_supply_capacity / autumn_lake_storage_capacity,
             autumn_lake_wq_capacity / autumn_lake_storage_capacity};
-    vector<double> autumn_lake_treatment_allocation_fractions = {0.5, 0.5};
+    vector<double> autumn_lake_treatment_allocation_fractions = {1.};
 
 // Create existing reservoirs
     /// combined university lake and stone quarry

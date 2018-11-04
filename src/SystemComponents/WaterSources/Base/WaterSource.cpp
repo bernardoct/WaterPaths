@@ -692,3 +692,7 @@ Bond &WaterSource::getBond(int utility_id) {
 const vector<double> &WaterSource::getAllocated_treatment_fractions() const {
     return allocated_treatment_fractions;
 }
+
+int WaterSource::getWq_pool_id() const {
+    return wq_pool_id;
+}

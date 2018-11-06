@@ -27,6 +27,8 @@
 #include "../DroughtMitigationInstruments/InsuranceStorageToROF.h"
 #include "../SystemComponents/Bonds/LevelDebtServiceBond.h"
 #include "../Simulation/Simulation.h"
+#include "../SystemComponents/WaterSources/WaterReuse.h"
+#include "../SystemComponents/WaterSources/ReservoirExpansion.h"
 
 
 /**
@@ -52,6 +54,11 @@
     double Fallsland_LMA = 0.05;
     double watertown_annual_payment = 0.05;
     double watertown_demand_buffer = 1.0;
+    double dryville_annual_payment = 0.05;
+    double dryville_demand_buffer = 1.0;
+    double fallsland_annual_payment = 0.05;
+    double fallsland_demand_buffer = 1.0;
+
 
     if (utilities_rdm.empty()) {
         /// All matrices below have dimensions n_realizations x nr_rdm_factors
@@ -177,6 +184,7 @@
 
     SeasonalMinEnvFlowControl new_river_min_env_control(4, new_river_controls_weeks, new_river_releases);
 
+
     vector<MinEnvFlowControl *> min_env_flow_controls;
     min_env_flow_controls.push_back(&autumn_min_env_control);
     min_env_flow_controls.push_back(&lake_michael_min_env_control);
@@ -273,24 +281,45 @@
     Reservoir dummy_endpoint("Dummy Node", 5, vector<Catchment *>(), 1., 0, evaporation_durham, 1,
                              construction_time_interval, 0, dummy_bond);
 
+   //FIXME: Edit the expansion volumes for CRR, just made these up
+   vector<double> college_rock_expansion_low_construction_time = {3, 5};
+   LevelDebtServiceBond college_rock_expansion_low_bond(8, 50, 30, .05, vector<int>(1, 0));
+   ReservoirExpansion college_rock_expansion_low((char *) "College Rock Expansion Low", 6, 0, 500,
+           college_rock_expansion_low_construction_time, 5, college_rock_expansion_low_bond);
+
+   vector<double> college_rock_expansion_high_construction_time = {3, 5};
+   LevelDebtServiceBond college_rock_expansion_high_bond(8, 100, 30, .05, vector<int>(1, 0));
+   ReservoirExpansion college_rock_expansion_high((char *) "College Rock Expansion High", 6, 0, 1000,
+                                                  college_rock_expansion_high_construction_time, 5,
+                                                  college_rock_expansion_high_bond);
+
+    vector<double> watertown_reuse_construction_time = {3, 5};
+    LevelDebtServiceBond watertown_reuse_bond(8, 50, 30, .05, vector<int>(1, 0));
+    WaterReuse watertown_reuse((char *) "Watertwon Reuse", 8, 20, watertown_reuse_construction_time, 5,
+            watertown_reuse_bond);
+
+
     vector<WaterSource *> water_sources;
     water_sources.push_back(&autumn_lake);
     water_sources.push_back(&lake_michael);
     water_sources.push_back(&college_rock_reservoir);
     water_sources.push_back(&new_river_reservoir);
     water_sources.push_back(&sugar_creek_reservoir);
+    water_sources.push_back(&college_rock_expansion_low);
+    water_sources.push_back(&college_rock_expansion_high);
+    water_sources.push_back(&watertown_reuse);
     water_sources.push_back(&dummy_endpoint);
 
 
 /*
  *
- *  0 College Rock Reservoir
+ *  0 College Rock Reservoir (6) small expansion (7) large expansion
  *   \
- *    \    (3) Sugar Creek Reservoir
- *     \   /
- *      \ /
- *       1 Lake Michael
- *        \
+ *    \
+ *     \
+ *      \                      (3) Sugar Creek Reservoir
+ *       1 Lake Michael        /
+ *        \                   /
  *         \                 2 Autumn Lake
  *          \               /
  *    Lillington           /
@@ -299,15 +328,16 @@
  *              \       /
  *               \    (4) New River Reservoir
  *                \   /
- *                 \ /
+ *                 \ /    (8) watertown reuse
  *                  |
  *                  |
  *                  5 Dummy Endpoint
  */
 
+    //FIXME ADD CRR EXPANSION
     Graph g(6);
     g.addEdge(0, 1);
-    g.addEdge(3, 1);
+    g.addEdge(3, 2);
     g.addEdge(2, 4);
     g.addEdge(1, 5);
     g.addEdge(4, 5);
@@ -324,18 +354,50 @@
             watertown_discharge_fraction_series,
             watertown_ws_return_id);
 
+    vector<int> dryville_ws_return_id;
+    vector<vector<double>> dryville_discharge_fraction_series;
+    WwtpDischargeRule wwtp_discharge_dryville(
+            dryville_discharge_fraction_series,
+            dryville_ws_return_id);
 
-    vector<int> demand_triggered_infra_order_watertown = {4};
+    vector<int> fallsland_ws_return_id;
+    vector<vector<double>> fallsland_discharge_fraction_series;
+    WwtpDischargeRule wwtp_discharge_fallsland(
+            fallsland_discharge_fraction_series,
+            fallsland_ws_return_id);
+
+
+    //FIXME: rof triggered order needs to be changed to DV, bond etc need to be updated
+    vector<int> rof_triggered_infra_order_watertown = {4, 6, 7, 8};
     Utility watertown((char *) "Watertown", 0, demand_watertown, demand_n_weeks, watertown_annual_payment,
                       &watertownDemandClassesFractions,
-                      &watertownUserClassesWaterPrices, wwtp_discharge_watertown, watertown_demand_buffer);
+                      &watertownUserClassesWaterPrices, wwtp_discharge_watertown, watertown_demand_buffer,
+                      rof_triggered_infra_order_watertown, vector<int>(), vector<double>(1, 0.01), .7, 30, .05);
+
+    //FIXME: rof triggered order needs to be changed to DV, bond etc need to be updated
+    vector<int> rof_triggered_infra_order_dryville = {3};
+    Utility dryville((char *) "Dryville", 1, demand_dryville, demand_n_weeks, dryville_annual_payment,
+            &dryvilleDemandClassesFractions, &dryvilleUserClassesWaterPrices,
+            wwtp_discharge_dryville, dryville_demand_buffer, rof_triggered_infra_order_dryville, vector<int>(),
+                    vector<double>(1, 0.01), .7, 30, 0.05);
+
+    //FIXME: rof triggered order needs to be changed to DV, bond etc need to be updated
+    vector<int> rof_triggered_infra_order_fallsland = {4};
+    Utility fallsland((char *) "Fallsland", 2, demand_fallsland, demand_n_weeks, fallsland_annual_payment,
+                     &fallslandDemandClassesFractions, &fallslandUserClassesWaterPrices,
+                     wwtp_discharge_fallsland, fallsland_demand_buffer, rof_triggered_infra_order_fallsland,
+                     vector<int>(), vector<double>(1, 0.01), .7, 30, 0.05);
 
     vector<Utility*> utilities;
     utilities.push_back(&watertown);
+    utilities.push_back(&dryville);
+    utilities.push_back(&fallsland);
 
     //FIXME CHECK TO MAKE SURE PROPER RESERVOIRS CONNECTED
     vector<vector<int>> reservoir_utility_connectivity_matrix = {
-            {0, 1} //Watertown
+            {0, 1, 4, 8}, //Watertown
+            {2, 3}, //Dryville
+            {2, 4} //Fallsland
     };
 
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
@@ -486,7 +548,7 @@ void PaperTestProblem::readInputData() {
             demand_to_wastewater_fraction_dryville = Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_durham.csv");
 
             watertownDemandClassesFractions = Utils::parse2DCsvFile("../TestFiles/caryDemandClassesFractions.csv");
-            drvilleDemandClassesFractions = Utils::parse2DCsvFile("../TestFiles/durhamDemandClassesFractions.csv");
+            dryvilleDemandClassesFractions = Utils::parse2DCsvFile("../TestFiles/durhamDemandClassesFractions.csv");
             fallslandDemandClassesFractions = Utils::parse2DCsvFile("../TestFiles/raleighDemandClassesFractions.csv");
 
             watertownUserClassesWaterPrices = Utils::parse2DCsvFile("../TestFiles/caryUserClassesWaterPrices.csv");

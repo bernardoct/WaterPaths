@@ -40,7 +40,7 @@ private:
     vector<vector<double>> demand_to_wastewater_fraction_fallsland;
     vector<vector<double>> demand_to_wastewater_fraction_dryville;
     vector<vector<double>> watertownDemandClassesFractions;
-    vector<vector<double>> drvilleDemandClassesFractions;
+    vector<vector<double>> dryvilleDemandClassesFractions;
     vector<vector<double>> fallslandDemandClassesFractions;
     vector<vector<double>> watertownUserClassesWaterPrices;
     vector<vector<double>> dryvilleUserClassesWaterPrices;

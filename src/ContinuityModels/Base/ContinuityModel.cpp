@@ -133,21 +133,21 @@ void ContinuityModel::checkInput(vector<WaterSource *> &water_sources, vector<Ut
                                  vector<double> &water_sources_rdm,
                                  unsigned long realization_id) {
 
-    for (auto ws : water_sources) {
-        auto number_of_utilities_in_ws = ws->getAllocated_treatment_fractions().size();
-        if (number_of_utilities_in_ws > 0 &&
-            ws->getUtilities_with_allocations()->back() == ws->getWq_pool_id()) {
-            --number_of_utilities_in_ws;
-        }
-        if (number_of_utilities_in_ws > 1 &&
-                ws->getAllocated_treatment_fractions().size() != utilities.size()) {
-            string error = "Number of utilities with allocated treatment in "
-                           "water source ";
-            error += to_string(ws->id) + " is different than the number of "
-                                         "utilities in the system.";
-            __throw_invalid_argument(error.c_str());
-        }
-    }
+//    for (auto ws : water_sources) {
+//        auto number_of_utilities_in_ws = ws->getAllocated_treatment_fractions().size();
+//        if (number_of_utilities_in_ws > 0 &&
+//            ws->getUtilities_with_allocations()->back() == ws->getWq_pool_id()) {
+//            --number_of_utilities_in_ws;
+//        }
+//        if (number_of_utilities_in_ws > 1 &&
+//                ws->getAllocated_treatment_fractions().size() != utilities.size()) {
+//            string error = "Number of utilities with allocated treatment in "
+//                           "water source ";
+//            error += to_string(ws->id) + " is different than the number of "
+//                                         "utilities in the system.";
+//            __throw_invalid_argument(error.c_str());
+//        }
+//    }
 
 }
 

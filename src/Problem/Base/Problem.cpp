@@ -27,10 +27,10 @@ void Problem::printTimeSeriesAndPathways() {
     this->master_data_collector->setOutputDirectory(output_directory);
 
     /// Print output files.
-    string fu = "TestFiles/output/Utilities";
-    string fws = "TestFiles/output/WaterSources";
-    string fp = "TestFiles/output/Policies";
-    string fpw = "TestFiles/output/Pathways";
+    string fu = "/TestFiles/output/Utilities";
+    string fws = "/TestFiles/output/WaterSources";
+    string fp = "/TestFiles/output/Policies";
+    string fpw = "/TestFiles/output/Pathways";
 
     //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
     cout << "Printing Pathways" << endl;

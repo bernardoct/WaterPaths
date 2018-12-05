@@ -207,11 +207,12 @@
     double autumn_lake_wq_capacity = 20000.0 * table_gen_storage_multiplier;
     double autumn_lake_storage_capacity = autumn_lake_wq_capacity + autumn_lake_supply_capacity;
     //FIXME MADE UP THESE NUMBERS
-    vector<int> autumn_lake_allocations_ids = {0, WATER_QUALITY_ALLOCATION};
+    vector<int> autumn_lake_allocations_ids = {1, 2, WATER_QUALITY_ALLOCATION};
     vector<double> autumn_lake_allocation_fractions = {
-            autumn_lake_supply_capacity / autumn_lake_storage_capacity,
+            0.4 * autumn_lake_supply_capacity / autumn_lake_storage_capacity,
+            0.6 * autumn_lake_supply_capacity / autumn_lake_storage_capacity,
             autumn_lake_wq_capacity / autumn_lake_storage_capacity};
-    vector<double> autumn_lake_treatment_allocation_fractions = {1.};
+    vector<double> autumn_lake_treatment_allocation_fractions = {0.4, 0.6};
 
 // Create existing reservoirs
     /// combined university lake and stone quarry
@@ -250,7 +251,7 @@
     //FIXME ORIGINAL CODE SETS WEEKS_IN_YEAR TO 0 HERE
     vector<double> construction_time_interval = {3.0, 5.0};
 
-    LevelDebtServiceBond sugar_bond(7, 263.0, 25, 0.05, vector<int>(1, 0));
+    LevelDebtServiceBond sugar_bond(3, 263.0, 25, 0.05, vector<int>(1, 0));
     Reservoir sugar_creek_reservoir("Sugar Creek Reservoir",
                                     3,
                                     catchment_sugar_creek,
@@ -264,7 +265,7 @@
 
 
     //FIXME check bond, this one is from little river raliegh
-    LevelDebtServiceBond new_river_bond(7, 263.0, 25, 0.05, vector<int>(1, 0));
+    LevelDebtServiceBond new_river_bond(4, 263.0, 25, 0.05, vector<int>(1, 0));
     Reservoir new_river_reservoir("New River Reservoir",
                                   4,
                                   catchment_new_river,
@@ -277,19 +278,19 @@
                                   new_river_bond);
 
 
-    LevelDebtServiceBond dummy_bond(11, 1., 1, 1., vector<int>(1, 0));
+    LevelDebtServiceBond dummy_bond(5, 1., 1, 1., vector<int>(1, 0));
     Reservoir dummy_endpoint("Dummy Node", 5, vector<Catchment *>(), 1., 0, evaporation_durham, 1,
                              construction_time_interval, 0, dummy_bond);
 
    //FIXME: Edit the expansion volumes for CRR, just made these up
    vector<double> college_rock_expansion_low_construction_time = {3, 5};
-   LevelDebtServiceBond college_rock_expansion_low_bond(8, 50, 30, .05, vector<int>(1, 0));
+   LevelDebtServiceBond college_rock_expansion_low_bond(6, 50, 30, .05, vector<int>(1, 0));
    ReservoirExpansion college_rock_expansion_low((char *) "College Rock Expansion Low", 6, 0, 500,
            college_rock_expansion_low_construction_time, 5, college_rock_expansion_low_bond);
 
    vector<double> college_rock_expansion_high_construction_time = {3, 5};
-   LevelDebtServiceBond college_rock_expansion_high_bond(8, 100, 30, .05, vector<int>(1, 0));
-   ReservoirExpansion college_rock_expansion_high((char *) "College Rock Expansion High", 6, 0, 1000,
+   LevelDebtServiceBond college_rock_expansion_high_bond(7, 100, 30, .05, vector<int>(1, 0));
+   ReservoirExpansion college_rock_expansion_high((char *) "College Rock Expansion High", 7, 0, 1000,
                                                   college_rock_expansion_high_construction_time, 5,
                                                   college_rock_expansion_high_bond);
 
@@ -395,7 +396,7 @@
 
     //FIXME CHECK TO MAKE SURE PROPER RESERVOIRS CONNECTED
     vector<vector<int>> reservoir_utility_connectivity_matrix = {
-            {0, 1, 4, 8}, //Watertown
+            {0, 1, 4, 6, 7, 8}, //Watertown
             {2, 3}, //Dryville
             {2, 4} //Fallsland
     };

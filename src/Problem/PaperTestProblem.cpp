@@ -49,15 +49,28 @@
     Simulation *s = nullptr;
 
     //FIXME THESE ARE TEST VALUES
-    double Watertown_LMA = 0.355;
-    double Dryville_LMA = 0.10;
-    double Fallsland_LMA = 0.05;
+    double watertown_LMA = 0.7;
+    double dryville_LMA = 0.20;
+    double fallsland_LMA = 0.1;
     double watertown_annual_payment = 0.05;
     double watertown_demand_buffer = 1.0;
     double dryville_annual_payment = 0.05;
     double dryville_demand_buffer = 1.0;
     double fallsland_annual_payment = 0.05;
     double fallsland_demand_buffer = 1.0;
+    double watertown_restriction_trigger = 0.05;
+    double dryville_restriction_trigger = 0.05;
+    double fallsland_restriction_trigger = 0.05;
+    double dryville_transfer_trigger = 0.03;
+    double fallsland_transfer_trigger = 0.03;
+    double watertown_insurance_use = .15; //FIXME: CHECK THAT THIS IS RESTRICTION STAGE
+    double dryville_insurance_use = .15;
+    double fallsland_insurance_use = .15;
+    double waterland_insurance_payment = 0.15;
+    double dryville_insurance_payment = 0.15;
+    double fallsland_insurance_payment = 0.15;
+
+
 
 
     if (utilities_rdm.empty()) {
@@ -192,27 +205,30 @@
     min_env_flow_controls.push_back(&college_rock_min_env_control);
 
     // Lake Michael parameters
-    double lake_michael_supply_capacity = 14924.0 * table_gen_storage_multiplier;
+
+    double lake_michael_supply_capacity = 10300 * table_gen_storage_multiplier; // reduced to .69 of JL cap
     double lake_michael_wq_capacity = 30825.0 * table_gen_storage_multiplier;
     double lake_michael_storage_capacity = lake_michael_wq_capacity + lake_michael_supply_capacity;
-    vector<int> lake_michael_allocations_ids = {0, WATER_QUALITY_ALLOCATION};
+    vector<int> lake_michael_allocations_ids = {0, 1, 2, WATER_QUALITY_ALLOCATION};
     vector<double> lake_michael_allocation_fractions = {
-            lake_michael_supply_capacity / lake_michael_storage_capacity,
+            watertown_LMA * lake_michael_supply_capacity / lake_michael_storage_capacity,
+            dryville_LMA * lake_michael_supply_capacity / lake_michael_storage_capacity,
+            fallsland_LMA * lake_michael_supply_capacity / lake_michael_storage_capacity,
             lake_michael_wq_capacity / lake_michael_storage_capacity};
-    vector<double> lake_michael_treatment_allocation_fractions = {1.};
+    vector<double> lake_michael_treatment_allocation_fractions = {1., 0.0, 0.0};
 
     // Autumn Lake parameters
     // WB and Durham storage added to water supply capacity
     double autumn_lake_supply_capacity = (14700.0 + 6349 + 2790) * table_gen_storage_multiplier;
     double autumn_lake_wq_capacity = 20000.0 * table_gen_storage_multiplier;
     double autumn_lake_storage_capacity = autumn_lake_wq_capacity + autumn_lake_supply_capacity;
-    //FIXME MADE UP THESE NUMBERS
+    //FIXME: can reallocate to make more interesting
     vector<int> autumn_lake_allocations_ids = {1, 2, WATER_QUALITY_ALLOCATION};
     vector<double> autumn_lake_allocation_fractions = {
-            0.4 * autumn_lake_supply_capacity / autumn_lake_storage_capacity,
-            0.6 * autumn_lake_supply_capacity / autumn_lake_storage_capacity,
+            0.38 * autumn_lake_supply_capacity / autumn_lake_storage_capacity,
+            0.62 * autumn_lake_supply_capacity / autumn_lake_storage_capacity,
             autumn_lake_wq_capacity / autumn_lake_storage_capacity};
-    vector<double> autumn_lake_treatment_allocation_fractions = {0.4, 0.6};
+    vector<double> autumn_lake_treatment_allocation_fractions = {0.38, 0.62};
 
 // Create existing reservoirs
     /// combined university lake and stone quarry
@@ -344,6 +360,8 @@
     g.addEdge(4, 5);
 
     auto demand_n_weeks = (int) round(46 * WEEKS_IN_YEAR);
+
+
     vector<double> bond_term = {25, 25, 25, 25};
     vector<double> bond_rate = {0.05, 0.05, 0.05, 0.05};
     double discount_rate = 0.05;
@@ -401,8 +419,97 @@
             {2, 4} //Fallsland
     };
 
+    //FIXME: table_storage_shift ??
+    auto table_storage_shift = vector<vector<double>>(3, vector<double>(water_sources.size() + 1, 0.));
+
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
-    auto table_storage_shift = vector<vector<double>>(1, vector<double>(6, 0.));
+    vector<double> initial_restriction_triggers = {watertown_restriction_trigger,
+                                                   dryville_restriction_trigger,
+                                                   fallsland_restriction_trigger};
+
+    vector<double> restriction_stage_multipliers_watertown = {0.9, 0.8, 0.7, 0.6};
+    vector<double> restriction_stage_triggers_watertown = {initial_restriction_triggers[0],
+                                                           initial_restriction_triggers[0] + 0.15f,
+                                                           initial_restriction_triggers[0] + 0.35f,
+                                                           initial_restriction_triggers[0] + 0.6f};
+
+    vector<double> restriction_stage_multipliers_dryville = {0.9, 0.8, 0.7, 0.6};
+    vector<double> restriction_stage_triggers_dryville = {initial_restriction_triggers[1],
+                                                           initial_restriction_triggers[1] + 0.15f,
+                                                           initial_restriction_triggers[1] + 0.35f,
+                                                           initial_restriction_triggers[1] + 0.6f};
+
+    vector<double> restriction_stage_multipliers_fallsland = {0.9, 0.8, 0.7, 0.6};
+    vector<double> restriction_stage_triggers_fallsland = {initial_restriction_triggers[2],
+                                                           initial_restriction_triggers[2] + 0.15f,
+                                                           initial_restriction_triggers[2] + 0.35f,
+                                                           initial_restriction_triggers[2] + 0.6f};
+
+    Restrictions restrictions_w(0,
+                                restriction_stage_multipliers_watertown,
+                                restriction_stage_triggers_watertown);
+
+    Restrictions restrictions_d(1,
+                                restriction_stage_multipliers_dryville,
+                                restriction_stage_triggers_dryville);
+
+    Restrictions restrictions_f(2,
+                                restriction_stage_multipliers_fallsland,
+                                restriction_stage_triggers_fallsland);
+
+    drought_mitigation_policies = {&restrictions_w, &restrictions_d, &restrictions_f};
+
+
+    /// Transfer policy
+
+    /*
+     *      0
+     *     / \
+     *  0 v   v 1
+     *   /     \
+     *  1--> <--2
+     *      2
+     */
+
+    vector<int> buyers_ids = {1, 2};
+
+    //FIXME: TEST VALUES, MAY WANT TO EDIT
+    vector<double> buyer_transfer_capacities = {10.0*7, 10.0*7, 10.0*7};
+
+    vector<double> buyer_transfer_triggers = {dryville_transfer_trigger,
+                                              fallsland_transfer_trigger};
+
+    Graph ug(3);
+    ug.addEdge(0,1);
+    ug.addEdge(0,2);
+    ug.addEdge(1,2);
+
+    Transfers t(3, 0, 1, 35,
+                buyers_ids,
+                buyer_transfer_capacities,
+                buyer_transfer_triggers,
+                ug,
+                vector<double>(),
+                vector<int>());
+    drought_mitigation_policies.push_back(&t);
+
+
+    /// Set up insurance
+    vector<double> insurance_triggers = {watertown_insurance_use,
+                                         dryville_insurance_use,
+                                         fallsland_insurance_use};
+    vector<double> fixed_payouts = {waterland_insurance_payment,
+                                    dryville_insurance_payment,
+                                    fallsland_insurance_payment};
+
+    vector<int> insured_utilities = {0, 1, 2};
+
+    InsuranceStorageToROF in(4, water_sources, g, reservoir_utility_connectivity_matrix, utilities,
+            min_env_flow_controls, utilities_rdm, water_sources_rdm, insurance_triggers, 1.2,
+            fixed_payouts, n_weeks);
+
+    drought_mitigation_policies.push_back(&in);
+
 
     /// Creates simulation object depending on use (or lack thereof) ROF tables
     double realization_start;
@@ -607,7 +714,7 @@ int PaperTestProblem::simulationExceptionHander(const std::exception &e, Simulat
 
 
 PaperTestProblem::PaperTestProblem(unsigned long n_weeks, int import_export_rof_table)
-        : Problem(n_weeks) {
+        : Problem(n_weeks), import_export_rof_tables(import_export_rof_table) {
     if (import_export_rof_table == EXPORT_ROF_TABLES) {
         table_gen_storage_multiplier = BASE_STORAGE_CAPACITY_MULTIPLIER;
     } else {
@@ -684,4 +791,25 @@ PaperTestProblem::setRofTables(unsigned long n_realizations, int n_utilities, st
     }
 
     //printf("Loading tables took %f time.\n", omp_get_wtime() - start_time);
+}
+
+
+
+void PaperTestProblem::setImport_export_rof_tables(int import_export_rof_tables, int n_weeks, string rof_tables_directory) {
+    if (std::abs(import_export_rof_tables) > 1)
+        __throw_invalid_argument("Import/export ROF tables can be assigned as:\n"
+                                 "-1 - import tables\n"
+                                 "0 - ignore tables\n"
+                                 "1 - export tables.\n"
+                                 "The value entered is invalid.");
+    PaperTestProblem::import_export_rof_tables = import_export_rof_tables;
+//    this->rof_tables_directory = output_directory + "/TestFiles/" + rof_tables_directory;
+    this->rof_tables_directory = rof_tables_directory;
+
+    if (import_export_rof_tables == IMPORT_ROF_TABLES) {
+        PaperTestProblem::setRofTables(n_realizations, n_utilities, this->rof_tables_directory);
+    } else {
+        const string mkdir_command = "mkdir";
+        system((mkdir_command + " " + this->rof_tables_directory).c_str());
+    }
 }

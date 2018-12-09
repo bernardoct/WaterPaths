@@ -214,7 +214,7 @@ int main(int argc, char *argv[]) {
     paperTestProblem.setOutput_directory(system_io);
     paperTestProblem.setN_threads((unsigned long) n_threads);
     paperTestProblem.setN_realizations(n_realizations);
-    //paperTestProblem.setImport_export_rof_tables(import_export_rof_table, (int) n_weeks, rof_tables_directory);
+    paperTestProblem.setImport_export_rof_tables(import_export_rof_table, (int) n_weeks, rof_tables_directory);
     paperTestProblem.readInputData();
 
     /// Load bootstrap samples if necessary.

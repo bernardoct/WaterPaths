@@ -93,6 +93,8 @@ public:
     void printTimeSeriesAndPathways();
 
     void performBootstrapAnalysis(int n_sets, int n_samples);
+
+    void setImport_export_rof_tables(int import_export_rof_tables, int n_weeks, string rof_tables_directory);
 };
 
 

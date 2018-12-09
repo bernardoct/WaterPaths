@@ -87,7 +87,7 @@ Simulation::Simulation(
 
 Simulation::Simulation(
         vector<WaterSource *> &water_sources, 
-	Graph &water_sources_graph,
+	    Graph &water_sources_graph,
         const vector<vector<int>> &water_sources_to_utilities,
         vector<Utility *> &utilities,
         const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,

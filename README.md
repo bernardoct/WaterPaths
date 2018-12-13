@@ -10,6 +10,12 @@ WaterPaths - A utility planning and management tool based off the NC Triangle mo
 ## Compiling WaterPaths
 Use Makefile provided in source directory. E.g., if using GCC run `make gcc`
 
+### Using Nix or NixOS
+
+```
+nix-shell -I ssh-config-file=./.ssh-standard-config -I ssh-auth-sock=$SSH_AUTH_SOCK shell.nix
+```
+
 ## Running WaterPaths
 Running `triangleSimulation -?` will give you a list of flags to call WaterPaths with.
 

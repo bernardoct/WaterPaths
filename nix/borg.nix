@@ -23,12 +23,20 @@ stdenv.mkDerivation rec {
     rev = "2c7702638d42349824e305036fc6eb4a04a8a539";
   };
 
-  buildPhase = ''
-    make compile-parallel
-  '';
-
+  parallelMake = "make compile-parallel";
+  serialMake = "make compile";
+  
+  buildPhase =
+  if compileParallel
+  then ''
+    $serialMake
+    $parallelMake
+  ''
+  else serialMake;
+  
   installPhase = ''
-    mkdir $out
+    mkdir -p $out/bin
+    mv *.exe $out/bin/
     cp -R * $out
   '';
 

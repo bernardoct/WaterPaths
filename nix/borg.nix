@@ -6,13 +6,17 @@
 #
 ######
 
-{ stdenv
+{ pkgs, stdenv
+  , compileParallel ? true
+  , mpi ? pkgs.openmpi
 }:
 
 stdenv.mkDerivation rec {
   name = "Borg";
 
-  buildInputs = [ ];
+  parallelPkgs = if compileParallel then [ mpi ] else [];
+
+  buildInputs = [ ] ++ parallelPkgs;
 
   src = builtins.fetchGit {
     url = "git@bitbucket.org:dmh309/serial-borg-moea.git";
@@ -20,7 +24,7 @@ stdenv.mkDerivation rec {
   };
 
   buildPhase = ''
-    make
+    make compile-parallel
   '';
 
   installPhase = ''

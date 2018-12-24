@@ -19,8 +19,11 @@ stdenv.mkDerivation rec {
   buildInputs = [ ] ++ parallelPkgs;
 
   src = builtins.fetchGit {
-    url = "git@bitbucket.org:dmh309/serial-borg-moea.git";
-    rev = "2c7702638d42349824e305036fc6eb4a04a8a539";
+    #url = "git@bitbucket.org:dmh309/serial-borg-moea.git";
+    rev = "7c2bd969e69de11373784070c10e6e734439b6c8";
+    # For testing; normally don't need to specify 'ref':
+    url = "git@bitbucket.org:bebarker/serial-borg-moea.git";
+    ref = "nix_build";
   };
 
   parallelMake = "make compile-parallel";
@@ -36,8 +39,12 @@ stdenv.mkDerivation rec {
   
   installPhase = ''
     mkdir -p $out/bin
+    mkdir -p $out/include
+    mkdir -p $out/lib
     mv *.exe $out/bin/
-    cp -R * $out
+    mv *.a *.so $out/lib/
+    mv *.h $out/include/
+    # cp -R * $out # for debugging
   '';
 
 }

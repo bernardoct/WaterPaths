@@ -380,7 +380,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
         world_rank = 0;
 #endif
 	error_m += ". Decision variables in sol_error_rank_" + to_string(world_rank) + ".";
-	printf(error_m.c_str());
+	printf("%s", error_m.c_str());
         throw_with_nested(runtime_error(error_m.c_str()));
     }
     return master_data_collector;

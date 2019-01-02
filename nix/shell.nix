@@ -9,7 +9,7 @@
 with import <nixpkgs> {};
 let
   pkgs    = import <nixpkgs> {};
-  borg = (import ./default.nix).borg;
+  Borg = (import ./default.nix).borg;
 in
 stdenv.mkDerivation {
   name = "WaterPathsEnv";
@@ -28,10 +28,14 @@ stdenv.mkDerivation {
     # MOEAFramework
     # Pareto
     # boost
-    borg
+    Borg
     
   ];
   src = null;
+  shellHook = ''
+    mkdir -p ./Borg
+    ln -sfn ${Borg}/include/borgms.h ./Borg/borgms.h
+  '';
 }
 
 

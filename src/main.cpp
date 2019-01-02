@@ -5,8 +5,8 @@
 #include "Problem/PaperTestProblem.h"
 
 #ifdef  PARALLEL
-#include "../Borg/borgmm.h"
-#include "../Borg/borgProblemDefinition.h"
+#include "../Borg/borgms.h"
+// #include "../Borg/borgProblemDefinition.h"
 #include <mpi.h>
 #endif
 

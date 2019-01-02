@@ -1,4 +1,5 @@
 CFLAGS=-std=c++14 #-fsanitize=address -fno-omit-frame-pointer #-fno-sanitize-address-use-after-scope
+LDFLAGS=-lstdc++
 
 # List of sources and objects (include all .cpp files)
 SOURCES=$(shell find ./src -name "*.cpp")
@@ -44,7 +45,7 @@ prof: all
 # How to make objects and executables
 .cpp.o:
 	$(CC) -c $(CFLAGS) $^ -o $@
-	
+
 $(TARGET): $(OBJECTS)
 	$(CC) -I. $(LDFLAGS) $(OBJECTS) $(CFLAGS) -o $@ -L$(LIB_DIR) $(LIBS) $(DEFINES)
 

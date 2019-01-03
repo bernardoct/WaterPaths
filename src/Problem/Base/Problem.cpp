@@ -59,7 +59,9 @@ void Problem::printTimeSeriesAndPathways() {
 //                                               fp + "_s"
 //                                               + std::to_string(solution_no));
     } else {
-	printf("Trying to print pathways but data collector is empty. Either your simulation crashed or you deleted the data collector too early.\n");
+	    printf("Trying to print pathways but data collector is empty. Either "
+            "your simulation crashed or you deleted the data collector too "
+            "early.\n");
     }
 
 }
@@ -168,7 +170,7 @@ Problem::~Problem() {}
 void Problem::destroyDataCollector() {
     if (master_data_collector != nullptr) {
         delete master_data_collector;
-	master_data_collector = nullptr;
+	    master_data_collector = nullptr;
     } else {
         cerr << "Tried to delete nullptr master data collector.\n";
     }

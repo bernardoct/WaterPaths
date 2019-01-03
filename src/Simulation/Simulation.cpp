@@ -87,7 +87,7 @@ Simulation::Simulation(
 
 Simulation::Simulation(
         vector<WaterSource *> &water_sources, 
-	Graph &water_sources_graph,
+	    Graph &water_sources_graph,
         const vector<vector<int>> &water_sources_to_utilities,
         vector<Utility *> &utilities,
         const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
@@ -143,7 +143,7 @@ void Simulation::setupSimulation(
         const unsigned long total_simulation_time,
         vector<unsigned long> &realizations_to_run) {
 
-    /// Sort water sources and utilities by their IDs.
+    // Sort water sources and utilities by their IDs.
     //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
     std::sort(water_sources.begin(), water_sources.end(), WaterSource::compare);
 #ifdef _WIN32
@@ -152,13 +152,32 @@ void Simulation::setupSimulation(
     std::sort(utilities.begin(), utilities.end(), Utility::compById);
 #endif
 
-    /// Check if IDs are sequential.
+    // Check for missing water sources or vertices in graph.
+    int number_of_connected_sources = 0;
+    for (auto ws : water_sources) {
+        if (ws->source_type != WATER_REUSE &&
+                ws->source_type != RESERVOIR_EXPANSION &&
+                ws->source_type != NEW_WATER_TREATMENT_PLANT) {
+            ++number_of_connected_sources;
+        }
+    }
+    if (water_sources_graph.getNumber_of_vertices() !=
+            number_of_connected_sources) {
+        __throw_invalid_argument("Number of storage-like or intake water "
+                                 "sources in water sources vector must be "
+                                 "the same as number of vertices in the "
+                                 "connectivity graph.");
+    }
+
+    // Check if IDs are sequential.
     for (int ws = 1; ws < (int) water_sources.size(); ++ws) {
         if (water_sources[ws]->id != water_sources[ws - 1]->id + 1) {
-            cout << "The IDs of water sources " << water_sources[ws]->id << " "
-                    "and " << water_sources[ws - 1]->id << " do not follow a "
-                         "unit progression." << endl;
-            throw_with_nested(invalid_argument("Improper water source ID sequencing"));
+            string error = "The IDs of water sources ";
+            error += to_string(water_sources[ws]->id) + " and "
+                    + to_string(water_sources[ws - 1]->id) +
+                    " do not follow a unit progression. Water "
+                    "sources IDs must be sequential.";
+            throw_with_nested(invalid_argument(error.c_str()));
         }
     }
 
@@ -171,20 +190,20 @@ void Simulation::setupSimulation(
         }
     }
 
-    /// Check if sources listed in construction order array are of a utility are
-    /// listed as belonging to that utility
+    // Check if sources listed in construction order array are of a utility are
+    // listed as belonging to that utility
     for (int u = 0; u < (int) utilities.size(); ++u) {
-        /// Create a vector with rof and demand triggered infrastructure for
-        /// utility u.
+        // Create a vector with rof and demand triggered infrastructure for
+        // utility u.
         vector<int> demand_rof_infra_order =
                 utilities[u]->getRof_infrastructure_construction_order();
         demand_rof_infra_order.insert(
                 demand_rof_infra_order.begin(),
                 utilities[u]->getDemand_infra_construction_order().begin(),
                 utilities[u]->getDemand_infra_construction_order().end());
-        /// Iterate over demand and rof combined infrastructure vector
-        /// looking for sources declared as to be constructed that were not
-        /// declared as belonging to utility u.
+        // Iterate over demand and rof combined infrastructure vector
+        // looking for sources declared as to be constructed that were not
+        // declared as belonging to utility u.
         for (int ws :
                 demand_rof_infra_order)
             if (std::find(water_sources_to_utilities[u].begin(),
@@ -215,7 +234,7 @@ void Simulation::setupSimulation(
             }
     }
 
-    /// Creates the data collector for the simulation.
+    // Creates the data collector for the simulation.
     master_data_collector = new MasterDataCollector(n_realizations);
 }
 
@@ -236,7 +255,7 @@ void Simulation::createContinuityModels(unsigned long realization,
                                         ContinuityModelRealization *&realization_model,
                                         ContinuityModelROF *&rof_model) {
 
-    /// Create realization models by copying the water sources and utilities.
+    // Create realization models by copying the water sources and utilities.
     vector<WaterSource *> water_sources_realization =
             Utils::copyWaterSourceVector(water_sources);
     vector<DroughtMitigationPolicy *> drought_mitigation_policies_realization =
@@ -247,7 +266,7 @@ void Simulation::createContinuityModels(unsigned long realization,
     vector<MinEnvFlowControl *> min_env_flow_controls_realization =
             Utils::copyMinEnvFlowControlVector(min_env_flow_controls);
 
-    /// Store realization models in vector
+    // Store realization models in vector
     realization_model = new ContinuityModelRealization(
             water_sources_realization,
             water_sources_graph,
@@ -260,14 +279,14 @@ void Simulation::createContinuityModels(unsigned long realization,
             policies_rdm.at(realization),
             (int) realization);
 
-    /// Create rof models by copying the water utilities and sources.
+    // Create rof models by copying the water utilities and sources.
     vector<WaterSource *> water_sources_rof =
             Utils::copyWaterSourceVector(water_sources);
     vector<Utility *> utilities_rof = Utils::copyUtilityVector(utilities);
     vector<MinEnvFlowControl *> min_env_flow_controls_rof =
             Utils::copyMinEnvFlowControlVector(min_env_flow_controls);
 
-    /// Store realization models in vector
+    // Store realization models in vector
     rof_model = new ContinuityModelROF(
             water_sources_rof,
             water_sources_graph,
@@ -280,16 +299,16 @@ void Simulation::createContinuityModels(unsigned long realization,
             import_export_rof_tables,
             realization);
 
-    /// Initialize rof models by connecting it to realization water sources.
+    // Initialize rof models by connecting it to realization water sources.
     rof_model->connectRealizationWaterSources(water_sources_realization);
     rof_model->connectRealizationUtilities(utilities_realization);
 
-    /// Pass ROF tables to continuity model
+    // Pass ROF tables to continuity model
     if (import_export_rof_tables == IMPORT_ROF_TABLES) {
         rof_model->setROFTablesAndShifts(precomputed_rof_tables->at(realization), *table_storage_shift);
     }
 
-    /// Link storage-rof tables of policies and rof models.
+    // Link storage-rof tables of policies and rof models.
     for (DroughtMitigationPolicy *dmp :
             realization_model->getDrought_mitigation_policies())
         dmp->setStorage_to_rof_table_(
@@ -301,7 +320,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
     if (rof_tables_folder.length() == 0)
         rof_tables_folder = "rof_tables";
 
-    /// Run realizations.
+    // Run realizations.
     int had_catch = 0;
     string error_m = "Error in realizations ";
 //    std::reverse(realizations_to_run.begin(), realizations_to_run.end());
@@ -323,7 +342,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                     realization_model->getContinuity_utilities(),
                     r);
 
-            double start = omp_get_wtime();
+//            double start = omp_get_wtime();
             for (int w = 0; w < (int) total_simulation_time; ++w) {
                 // DO NOT change the order of the steps. This would mess up
                 // important dependencies.

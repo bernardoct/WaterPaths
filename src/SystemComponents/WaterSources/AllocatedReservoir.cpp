@@ -25,8 +25,7 @@ AllocatedReservoir::AllocatedReservoir(
                     allocated_fractions,
                     utilities_with_allocations,
                     ALLOCATED_RESERVOIR),
-          has_water_quality_pool(wq_pool_id != NON_INITIALIZED) {
-}
+          has_water_quality_pool(wq_pool_id != NON_INITIALIZED) {}
 
 AllocatedReservoir::AllocatedReservoir(const char *name, const int id, const vector<Catchment *> &catchments,
                                        const double capacity, const double max_treatment_capacity,
@@ -254,10 +253,24 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
 
     if ((int) abs(sum_allocations - available_volume) > 1) {
         char error[4000];
+
+        for (unsigned long u = 0; u < allocated_capacities.size(); ++u) {
+            if (demand_outflow[u] > allocated_capacities[u]) {
+                sprintf(error, "Demand for from utility %d (%f) greater than "
+                               "its allocated capacity (%f) in reservoir %d. ",
+                        utilities_with_allocations->at(u),
+                        demand_outflow[u],
+                        allocated_capacities.at(u),
+                        id);
+                __throw_length_error(error);
+            }
+        }
+
         sprintf(error, "Sum of allocated volumes in a reservoir must \n"
                         "total current storage minus unallocated \n"
                         "volume.Please report this error to \n"
                         "bct52@cornell.edu.\n\n"
+                        "ID: %d\n"
                         "week: %d\nsum_allocations: %f\n"
                         "available_volume_old: %f\navailable_volume %f\n"
                         "total_upstream_inflow: %f\n"
@@ -273,7 +286,7 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
                         "alloc_vols_2: %f\n"
                         "alloc_vols_3: %f\n"
                         "alloc_vols_4: %f\n",
-                week, sum_allocations, available_volume_old, available_volume,
+                id, week, sum_allocations, available_volume_old, available_volume,
                 total_upstream_inflow, upstream_catchment_inflow,
                 evaporated_volume, total_demand, policy_added_demand,
                 total_outflow, cont_error,
@@ -284,8 +297,7 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
                 available_allocated_volumes[0],
                 available_allocated_volumes[1],
                 available_allocated_volumes[2],
-                available_allocated_volumes[3],
-                available_allocated_volumes[4]);
+                available_allocated_volumes[3]);
 
 	__throw_runtime_error(error);
 //        throw_with_nested(runtime_error(error));

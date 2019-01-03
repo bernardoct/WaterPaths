@@ -225,8 +225,8 @@
     //FIXME: can reallocate to make more interesting
     vector<int> autumn_lake_allocations_ids = {1, 2, WATER_QUALITY_ALLOCATION};
     vector<double> autumn_lake_allocation_fractions = {
-            0.38 * autumn_lake_supply_capacity / autumn_lake_storage_capacity,
-            0.62 * autumn_lake_supply_capacity / autumn_lake_storage_capacity,
+            0.29 * autumn_lake_supply_capacity / autumn_lake_storage_capacity,
+            0.71 * autumn_lake_supply_capacity / autumn_lake_storage_capacity,
             autumn_lake_wq_capacity / autumn_lake_storage_capacity};
     vector<double> autumn_lake_treatment_allocation_fractions = {0.38, 0.62};
 

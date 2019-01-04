@@ -14,7 +14,7 @@ using namespace std;
 class Graph {
 protected:
 
-    int number_of_vertices;    // Number of water sources'
+    int V;    // Number of water sources'
     int n_edges = 0;
     // Pointer to an array containing adjacency lists
     list<int> *adj;
@@ -47,8 +47,6 @@ public:
     virtual ~Graph();
 
     const vector<vector<int>> getDownSources() const;
-
-    int getNumber_of_vertices() const;
 };
 
 

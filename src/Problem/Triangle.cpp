@@ -898,7 +898,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         	     n_weeks,
         	     realizations_to_run,
         	     rof_tables_directory);
-//            realization_start = omp_get_wtime();
+            realization_start = omp_get_wtime();
     	    this->master_data_collector = s->runFullSimulation(n_threads);
         } else if (import_export_rof_tables == IMPORT_ROF_TABLES) {
             s = new Simulation (water_sources,
@@ -915,7 +915,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         	     rof_tables,
         	     table_storage_shift,
         	     rof_tables_directory);
-//            realization_start = omp_get_wtime();
+            realization_start = omp_get_wtime();
             this->master_data_collector = s->runFullSimulation(n_threads);
         } else {
             s = new Simulation(water_sources,
@@ -929,13 +929,13 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         	     policies_rdm,
         	     n_weeks,
         	     realizations_to_run);
-//            realization_start = omp_get_wtime();
+            realization_start = omp_get_wtime();
             this->master_data_collector = s->runFullSimulation(n_threads);
         }
 
-//        double realization_end = omp_get_wtime();
-//        std::cout << "Simulation took  " << realization_end - realization_start
-//              << "s" << std::endl;
+        double realization_end = omp_get_wtime();
+        std::cout << "Simulation took  " << realization_end - realization_start
+              << "s" << std::endl;
 
     /// Calculate objectives and store them in Borg decision variables array.
 #ifdef  PARALLEL

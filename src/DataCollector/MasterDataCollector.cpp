@@ -161,9 +161,8 @@ void MasterDataCollector::printPoliciesOutputCompact(
         for (int r = 0; r < (int) drought_mitigation_policy_collectors[0].size();
              ++r) {
             std::ofstream out_stream;
-            string output_file_complete_path = output_directory + file_name +
-                                               "_r" + std::to_string(r) + ".csv";
-            out_stream.open(output_file_complete_path);
+            out_stream.open(output_directory + "/" + file_name + "_r"
+                            + std::to_string(r) + ".csv");
 
             string line;
             for (vector<DataCollector *> p : drought_mitigation_policy_collectors)
@@ -193,9 +192,8 @@ void MasterDataCollector::printPoliciesOutputTabular(
         for (int r = 0; r < (int) drought_mitigation_policy_collectors[0].size();
              ++r) {
             std::ofstream out_stream;
-            string output_file_complete_path = output_directory + file_name +
-                                               "_r" + std::to_string(r) + ".tab";
-            out_stream.open(output_file_complete_path);
+            out_stream.open(output_directory + "/" + file_name + "_r"
+                            + std::to_string(r) + ".tab");
 
             out_stream << "    ";
             for (vector<DataCollector *> p : drought_mitigation_policy_collectors)
@@ -225,9 +223,8 @@ void MasterDataCollector::printUtilitiesOutputCompact(
 #pragma omp parallel for
     for (int r = 0; r < (int) utility_collectors[0].size(); ++r) {
         std::ofstream out_stream;
-        string output_file_complete_path = output_directory + file_name +
-                                           "_r" + std::to_string(r) + ".csv";
-        out_stream.open(output_file_complete_path);
+        out_stream.open(output_directory + "/" + file_name + "_r"
+                        + std::to_string(r) + ".csv");
 
         string line;
         for (vector<UtilitiesDataCollector *> &p : utility_collectors)
@@ -254,9 +251,8 @@ void MasterDataCollector::printUtilitesOutputTabular(
 #pragma omp parallel for
     for (int r = 0; r < (int) utility_collectors[0].size(); ++r) {
         std::ofstream out_stream;
-        string output_file_complete_path = output_directory + file_name +
-                                           "_r" + std::to_string(r) + ".tab";
-        out_stream.open(output_file_complete_path);
+        out_stream.open(output_directory + "/" + file_name + "_r"
+                        + std::to_string(r) + ".tab");
 
         stringstream names;
         names << "    ";
@@ -293,9 +289,8 @@ void MasterDataCollector::printWaterSourcesOutputCompact(
 #pragma omp parallel for
     for (int r = 0; r < (int) water_source_collectors[0].size(); ++r) {
         std::ofstream out_stream;
-        string output_file_complete_path = output_directory + file_name +
-                "_r" + std::to_string(r) + ".csv";
-        out_stream.open(output_file_complete_path);
+        out_stream.open(output_directory + "/" + file_name + "_r"
+                        + std::to_string(r) + ".csv");
 
         string line;
         for (vector<DataCollector *> p : water_source_collectors)
@@ -321,9 +316,8 @@ void MasterDataCollector::printWaterSourcesOutputTabular(
 #pragma omp parallel for
     for (int r = 0; r < (int) water_source_collectors[0].size(); ++r) {
         std::ofstream out_stream;
-        string output_file_complete_path = output_directory + file_name +
-                                           "_r" + std::to_string(r) + ".tab";
-        out_stream.open(output_file_complete_path);
+        out_stream.open(output_directory + "/" + file_name + "_r"
+                        + std::to_string(r) + ".tab");
 
         stringstream names;
         names << "    ";

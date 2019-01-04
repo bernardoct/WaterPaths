@@ -2,7 +2,6 @@
 #include "Utils/QPSolver/QuadProg++.h"
 #include "Utils/Solutions.h"
 #include "Problem/Triangle.h"
-#include "Problem/PaperTestProblem.h"
 
 #ifdef  PARALLEL
 #include "../Borg/borgmm.h"
@@ -16,7 +15,6 @@
 #include <fstream>
 #include <omp.h>
 
-
 #define NUM_OBJECTIVES 6;
 #define NUM_DEC_VAR 57;
 
@@ -24,14 +22,12 @@ using namespace std;
 using namespace Constants;
 using namespace Solutions;
 
-//FIXME: make sure this is correct
-PaperTestProblem *testProblemPtr;
-//Triangle *trianglePtr;
+Triangle *trianglePtr;
 int failures = 0;
 
 void eval(double *vars, double *objs, double *consts) {
-    failures += testProblemPtr->functionEvaluation(vars, objs, consts);
-    testProblemPtr->destroyDataCollector();
+    failures += trianglePtr->functionEvaluation(vars, objs, consts);
+    trianglePtr->destroyDataCollector();
 }
 
 int main(int argc, char *argv[]) {
@@ -42,7 +38,7 @@ int main(int argc, char *argv[]) {
     double c_obj[c_num_obj];
     double c_constr[0];
 
-    unsigned long n_realizations = 1;
+    unsigned long n_realizations = 1000;
     unsigned long n_weeks = 1565;
     string system_io = "./";
     string solution_file = "-1";
@@ -207,15 +203,15 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    PaperTestProblem paperTestProblem(n_weeks, import_export_rof_table);
+    Triangle triangle(n_weeks, import_export_rof_table);
 
     /// Set basic realization parameters.
-    paperTestProblem.setN_weeks(n_weeks);
-    paperTestProblem.setOutput_directory(system_io);
-    paperTestProblem.setN_threads((unsigned long) n_threads);
-    paperTestProblem.setN_realizations(n_realizations);
-    paperTestProblem.setImport_export_rof_tables(import_export_rof_table, (int) n_weeks, rof_tables_directory);
-    paperTestProblem.readInputData();
+    triangle.setN_weeks(n_weeks);
+    triangle.setOutput_directory(system_io);
+    triangle.setN_threads((unsigned long) n_threads);
+    triangle.setN_realizations(n_realizations);
+    triangle.setImport_export_rof_tables(import_export_rof_table, (int) n_weeks, rof_tables_directory);
+    triangle.readInputData();
 
     /// Load bootstrap samples if necessary.
     if (strlen(bootstrap_file.c_str()) > 2) {
@@ -227,7 +223,7 @@ int main(int argc, char *argv[]) {
                         "Number of realizations must be higher than the ID of all realizations in the bootstrap samples file.");
 
         }
-        paperTestProblem.setPrint_output_files(false);
+        triangle.setPrint_output_files(false);
     }
 
     if (!run_optimization && strlen(system_io.c_str()) == 0) {
@@ -237,7 +233,7 @@ int main(int argc, char *argv[]) {
 
     /// Set up input/output suffix, if necessary.
     if (strlen(inflows_evap_directory_suffix.c_str()) > 2) {
-        paperTestProblem.setEvap_inflows_suffix(inflows_evap_directory_suffix);
+        triangle.setEvap_inflows_suffix(inflows_evap_directory_suffix);
     }
 
     /// Read RDM file, if any
@@ -251,14 +247,14 @@ int main(int argc, char *argv[]) {
             policies_rdm = std::vector<vector<double>>(n_realizations, policies_rdm_row);
             water_sources_rdm = std::vector<vector<double>>(n_realizations, water_sources_rdm_row);
 
-            paperTestProblem.setRDMReevaluation((unsigned long) rdm_no, utilities_rdm,
+            triangle.setRDMReevaluation((unsigned long) rdm_no, utilities_rdm,
                                         water_sources_rdm, policies_rdm);
 
             if (strlen(inflows_evap_directory_suffix.c_str()) > 2)
-                paperTestProblem.setFname_sufix("_RDM" + std::to_string(rdm_no) +
+                triangle.setFname_sufix("_RDM" + std::to_string(rdm_no) +
                                         "_infevap" + inflows_evap_directory_suffix);
             else
-                paperTestProblem.setFname_sufix("_RDM" + std::to_string(rdm_no));
+                triangle.setFname_sufix("_RDM" + std::to_string(rdm_no));
         } else {
             utilities_rdm = Utils::parse2DCsvFile(system_io + utilities_rdm_file);
             water_sources_rdm = Utils::parse2DCsvFile(system_io + water_sources_rdm_file);
@@ -267,18 +263,18 @@ int main(int argc, char *argv[]) {
                 __throw_length_error("If no rdm number is passed, the number of realizations needs to be smaller "
                                      "or equal to the number of rows in the rdm files.");
             }
-            paperTestProblem.setRDMReevaluation((unsigned long) rdm_no, utilities_rdm,
+            triangle.setRDMReevaluation((unsigned long) rdm_no, utilities_rdm,
                                         water_sources_rdm, policies_rdm);
         }
     }
 
-    testProblemPtr = &paperTestProblem;
+    trianglePtr = &triangle;
 
     /// Set realizations to be run -- otherwise, n_realizations realizations will be run.
     if (!realizations_to_run.empty() && (n_sets <= 0 || n_bs_samples <= 0)) {
         auto realizations_to_run_ul = vector<unsigned long>(realizations_to_run[0].begin(),
                                                             realizations_to_run[0].end());
-        testProblemPtr->setRealizationsToRun(realizations_to_run_ul);
+        trianglePtr->setRealizationsToRun(realizations_to_run_ul);
     }
 
     /// If Borg is not called, run in simulation mode
@@ -303,21 +299,21 @@ int main(int argc, char *argv[]) {
         if (first_solution == -1) {
             cout << endl << endl << endl << "Running solution "
                  << standard_solution << endl;
-            paperTestProblem.setSol_number(standard_solution);
-            testProblemPtr->functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
+            triangle.setSol_number(standard_solution);
+            trianglePtr->functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
             printf("Done with tables!\n");
             if (import_export_rof_table != EXPORT_ROF_TABLES) {
                 vector<double> objectives;
-                paperTestProblem.printTimeSeriesAndPathways();
-                objectives = testProblemPtr->calculateAndPrintObjectives(!print_objs_row);
+                triangle.printTimeSeriesAndPathways();
+                objectives = trianglePtr->calculateAndPrintObjectives(!print_objs_row);
 //                trianglePtr->getMaster_data_collector()->printNETCDFUtilities("netcdf_output");
             }
 
             if (n_sets > 0 && n_bs_samples > 0) {
-                testProblemPtr->getMaster_data_collector()->performBootstrapAnalysis(
+                trianglePtr->getMaster_data_collector()->performBootstrapAnalysis(
                         (int) standard_solution, n_sets, n_bs_samples, n_threads, realizations_to_run);
             }
-            testProblemPtr->destroyDataCollector();
+            trianglePtr->destroyDataCollector();
         } else {
             ofstream objs_file;
             string file_name = system_io + "TestFiles/output/Objectives_RDM" + to_string(rdm_no) + "_sols" + to_string(first_solution) +
@@ -327,11 +323,11 @@ int main(int argc, char *argv[]) {
             for (int s = first_solution; s < last_solution; ++s) {
                 cout << endl << endl << endl << "Running solution "
                      << s << endl;
-                paperTestProblem.setSol_number((unsigned long) s);
-                testProblemPtr->functionEvaluation(solutions[s].data(), c_obj, c_constr);
-                vector<double> objectives = testProblemPtr->calculateAndPrintObjectives(false);
-                paperTestProblem.printTimeSeriesAndPathways();
-                testProblemPtr->destroyDataCollector();
+                triangle.setSol_number((unsigned long) s);
+                trianglePtr->functionEvaluation(solutions[s].data(), c_obj, c_constr);
+                vector<double> objectives = trianglePtr->calculateAndPrintObjectives(false);
+                triangle.printTimeSeriesAndPathways();
+                trianglePtr->destroyDataCollector();
                 string line;
                 for (double &o : objectives) {
                     line += to_string(o) + ",";

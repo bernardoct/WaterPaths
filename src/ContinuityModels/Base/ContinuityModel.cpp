@@ -37,12 +37,8 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
     std::sort(continuity_utilities.begin(), continuity_utilities.end(), Utility::compById);
 #endif
 
-    checkInput(water_sources, utilities, min_env_flow_controls,
-            water_sources_graph, water_sources_to_utilities,
-            utilities_rdm, water_sources_rdm, realization_id);
-
-    // Link water sources to utilities by passing pointers of the former to
-    // the latter.
+    /// Link water sources to utilities by passing pointers of the former to
+    /// the latter.
     for (unsigned long u = 0; u < utilities.size(); ++u) {
         for (unsigned long ws = 0; ws < water_sources_to_utilities[u].size(); ++ws) {
             WaterSource *water_source =
@@ -51,7 +47,7 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
         }
     }
 
-    // Create table showing which utilities draw water from each water source.
+    /// Create table showing which utilities draw water from each water source.
     utilities_to_water_sources.assign(water_sources.size(), vector<int>(0));
     water_sources_online_to_utilities.assign(water_sources.size(), vector<int>(0));
     for (unsigned long u = 0; u < utilities.size(); ++u) {
@@ -100,7 +96,7 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
     demands = std::vector<vector<double>>(
             continuity_water_sources.size(),
             vector<double>(continuity_utilities.size(), 0.));
-
+    
     /// populate array delta_realization_weeks so that the rounding and casting don't
     /// have to be done every time continuityStep is called, avoiding a bottleneck.
     for (int r = 0; r < NUMBER_REALIZATIONS_ROF; ++r) {
@@ -123,32 +119,6 @@ ContinuityModel::~ContinuityModel() {
     for (auto mef : min_env_flow_controls){
         delete mef;
     }
-}
-
-void ContinuityModel::checkInput(vector<WaterSource *> &water_sources, vector<Utility *> &utilities,
-                                 vector<MinEnvFlowControl *> &min_env_flow_controls,
-                                 const Graph &water_sources_graph,
-                                 const vector<vector<int>> &water_sources_to_utilities,
-                                 vector<double> &utilities_rdm,
-                                 vector<double> &water_sources_rdm,
-                                 unsigned long realization_id) {
-
-//    for (auto ws : water_sources) {
-//        auto number_of_utilities_in_ws = ws->getAllocated_treatment_fractions().size();
-//        if (number_of_utilities_in_ws > 0 &&
-//            ws->getUtilities_with_allocations()->back() == ws->getWq_pool_id()) {
-//            --number_of_utilities_in_ws;
-//        }
-//        if (number_of_utilities_in_ws > 1 &&
-//                ws->getAllocated_treatment_fractions().size() != utilities.size()) {
-//            string error = "Number of utilities with allocated treatment in "
-//                           "water source ";
-//            error += to_string(ws->id) + " is different than the number of "
-//                                         "utilities in the system.";
-//            __throw_invalid_argument(error.c_str());
-//        }
-//    }
-
 }
 
 /**

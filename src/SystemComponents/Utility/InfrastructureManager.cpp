@@ -113,14 +113,14 @@ void InfrastructureManager::addWaterSourceToOnlineLists(int source_id, double &t
 
     auto ws = water_sources->at((unsigned long) source_id);
 
-    // Add capacities to utility.
+    /// Add capacities to utility.
     total_storage_capacity +=
             ws->getAllocatedCapacity(id);
     total_treatment_capacity +=
             ws->getAllocatedTreatmentCapacity(id);
     total_available_volume = total_storage_capacity;
 
-    // Add source to the corresponding list of online water sources.
+    /// Add source to the corresponding list of online water sources.
     if ((ws->source_type == INTAKE ||
          ws->source_type == WATER_REUSE)) {
         priority_draw_water_source->push_back(source_id);
@@ -278,12 +278,13 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
                                         under_construction.end(), true) !=
                                    under_construction.end());
 
-    // Checks whether the long-term ROF has been exceeded for the next
-    // infrastructure option in the list and, if not already under
-    // construction, starts building it.
+    /// Checks whether the long-term ROF has been exceeded for the next
+    /// infrastructure option in the list and, if not already under
+    /// construction, starts building it.
     if (!rof_infra_construction_order.empty() && !under_construction_any) {
         // if there is anything to be built
-        // Selects next water source whose permitting period is passed.
+
+        /// Selects next water source whose permitting period is passed.
         int next_construction = NON_INITIALIZED;
         for (int id : rof_infra_construction_order) {
             auto idd = (unsigned long) id;
@@ -293,8 +294,8 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
             }
         }
 
-        // Checks if ROF threshold for next infrastructure in line has been
-        // reached and if there is already infrastructure being built.
+        /// Checks if ROF threshold for next infrastructure in line has been
+        /// reached and if there is already infrastructure being built.
         if (next_construction != NON_INITIALIZED &&
             long_term_rof > infra_construction_triggers[next_construction]) {
             new_infra_triggered = next_construction;

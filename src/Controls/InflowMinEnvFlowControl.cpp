@@ -7,7 +7,7 @@
 InflowMinEnvFlowControl::InflowMinEnvFlowControl(
         int water_source_id, const vector<int> &aux_water_sources_ids,
         const vector<double>& inflows, const vector<double>& releases)
-        : MinEnvFlowControl(water_source_id, vector<int>(1, water_source_id),
+        : MinEnvFlowControl(water_source_id, aux_water_sources_ids,
                                 vector<int>(),
                                 INFLOW_CONTROLS),
           inflows(inflows),

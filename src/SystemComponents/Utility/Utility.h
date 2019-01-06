@@ -36,7 +36,7 @@ private:
     vector<vector<double>>& demands_all_realizations;
     vector<double> demand_series_realization;
     double *rdm_factors_realization;
-    InfrastructureManager infrastructure_manager;
+    InfrastructureManager infrastructure_construction_manager;
 
     /// Drought mitigation
     double fund_contribution = 0;

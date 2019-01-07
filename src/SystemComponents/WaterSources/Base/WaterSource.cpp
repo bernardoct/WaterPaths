@@ -389,6 +389,38 @@ void WaterSource::setAllocations(
         __throw_invalid_argument(error.c_str());
     }
 
+    if (it == utilities_with_allocations->end()) {
+        if (utilities_with_allocations->size() != allocated_fractions->size()) {
+            string error = "Water Source ";
+            error += to_string(id) + " either has capacity fractions allocated to "
+                                     "no utilities or utilities with no allocated "
+                                     "capacities.";
+            __throw_invalid_argument(error.c_str());
+        }
+        if (utilities_with_allocations->size() != allocated_treatment_fractions->size()) {
+            string error = "Water Source ";
+            error += to_string(id) + " either has treatment fractions allocated to "
+                                     "no utilities or utilities with no allocated "
+                                     "treatment fractions.";
+            __throw_invalid_argument(error.c_str());
+        }
+    } else {
+        if (utilities_with_allocations->size() != allocated_fractions->size()) {
+            string error = "Water Source ";
+            error += to_string(id) + " either has capacity fractions allocated to "
+                                     "no utilities or utilities with no allocated "
+                                     "capacities.";
+            __throw_invalid_argument(error.c_str());
+        }
+        if (utilities_with_allocations->size() != allocated_treatment_fractions->size() + 1) {
+            string error = "Water Source ";
+            error += to_string(id) + " either has treatment fractions allocated to "
+                                     "no utilities or utilities with no allocated "
+                                     "treatment fractions.";
+            __throw_invalid_argument(error.c_str());
+        }
+    }
+
     // Have water quality pool as a reservoir with ID next to highest ID
     // allocation.
     wq_pool_id = static_cast<unsigned int>(

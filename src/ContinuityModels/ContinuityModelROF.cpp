@@ -49,7 +49,7 @@ ContinuityModelROF::ContinuityModelROF(vector<WaterSource *> water_sources, cons
 
     /// Calculate utilities' base delta storage corresponding to one table
     /// tier and status-quo base storage capacity.
-    if (use_precomputed_rof_tables) {
+    if (use_precomputed_rof_tables == IMPORT_ROF_TABLES) {
         for (int u = 0; u < n_utilities; ++u) {
             utility_base_storage_capacity.push_back(
                     continuity_utilities[u]->getTotal_storage_capacity() * BASE_STORAGE_CAPACITY_MULTIPLIER);
@@ -518,7 +518,7 @@ void ContinuityModelROF::updateOnlineInfrastructure(int week) {
                     continuity_utilities.at(u)->getTotal_storage_capacity();
         }
 
-        if (use_precomputed_rof_tables) {
+        if (use_precomputed_rof_tables == IMPORT_ROF_TABLES) {
             for (unsigned long u = 0; u < (unsigned long) n_utilities; ++u) {
                 current_and_base_storage_capacity_ratio.at(u) =
                         utilities_capacities.at(u) /

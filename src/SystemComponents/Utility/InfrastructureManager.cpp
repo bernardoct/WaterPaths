@@ -132,8 +132,8 @@ void InfrastructureManager::addWaterSourceToOnlineLists(int source_id, double &t
 
 
 void
-InfrastructureManager::setWaterSourceOnline(unsigned int source_id, int week, double &total_storage_capacity, double &total_treatment_capacity,
-                                            double &total_available_volume, double &total_stored_volume) {
+InfrastructureManager::setWaterSourceOnline(unsigned int source_id, int week, double &total_storage_capacity,
+        double &total_treatment_capacity, double &total_available_volume, double &total_stored_volume) {
 
     /// Sets water source online and add its ID to appropriate
     /// priority/non-priority ID vector. If reservoir expansion, add its

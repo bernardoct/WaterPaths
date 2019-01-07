@@ -422,7 +422,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         vector<double> fl_allocation_fractions = {
                 fl_supply_capacity / fl_storage_capacity,
                 fl_wq_capacity / fl_storage_capacity};
-        vector<double> fl_treatment_allocation_fractions = {0.0, 0.0, 0.0, 1.0};
+//        vector<double> fl_treatment_allocation_fractions = {0.0, 0.0, 0.0, 1.0};
+        vector<double> fl_treatment_allocation_fractions = {1.0};
 
         // Existing Sources
         Reservoir durham_reservoirs("Lake Michie & Little River Res. (Durham)",
@@ -1185,6 +1186,6 @@ void Triangle::setImport_export_rof_tables(int import_export_rof_tables, int n_w
         Triangle::setRofTables(n_realizations, n_utilities, this->rof_tables_directory);
     } else {
         const string mkdir_command = "mkdir";
-        system((mkdir_command + " " + this->rof_tables_directory).c_str());
+        auto output = system((mkdir_command + " " + this->rof_tables_directory).c_str());
     }
 }

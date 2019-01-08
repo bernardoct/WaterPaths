@@ -1,7 +1,6 @@
 #include "SystemComponents/WaterSources/Reservoir.h"
 #include "Utils/QPSolver/QuadProg++.h"
 #include "Utils/Solutions.h"
-#include "Problem/Triangle.h"
 #include "Problem/PaperTestProblem.h"
 
 #ifdef  PARALLEL

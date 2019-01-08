@@ -88,6 +88,6 @@ w0 = 14 # start year
 weeks = range(52 * w0, 13 + 52*(w0 + dt))
 
 s = 0 # solution
-r = 9 # realization
+r = 0 # realization
 
 plot_utility_comparison(weeks, s, r)

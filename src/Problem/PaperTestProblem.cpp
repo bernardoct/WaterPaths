@@ -184,9 +184,12 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     vector<double> sugar_creek_releases = {0.1422 * 7, 0.5 * 7, 1 * 7, 1.5 * 7,
                                            1.797 * 7};
 
-    InflowMinEnvFlowControl sugar_creek_min_env_control(3, vector<int>(1, 4),
-                                                        sugar_creek_inflows,
-                                                        sugar_creek_releases);
+    //InflowMinEnvFlowControl sugar_creek_min_env_control(3, vector<int>(1),
+                                 //                       sugar_creek_inflows,
+                                  //                      sugar_creek_releases);
+
+    // This is a test type of flow, originally was above but caused a seg fault
+    FixedMinEnvFlowControl sugar_creek_min_env_control(0,0);
 
     // College Rock has no min flow
     FixedMinEnvFlowControl college_rock_min_env_control(0, 0);
@@ -199,10 +202,11 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
 
     vector<MinEnvFlowControl *> min_env_flow_controls;
-    min_env_flow_controls.push_back(&autumn_min_env_control);
-    min_env_flow_controls.push_back(&lake_michael_min_env_control);
-    min_env_flow_controls.push_back(&sugar_creek_min_env_control);
     min_env_flow_controls.push_back(&college_rock_min_env_control);
+    min_env_flow_controls.push_back(&lake_michael_min_env_control);
+    min_env_flow_controls.push_back(&autumn_min_env_control);
+    min_env_flow_controls.push_back(&sugar_creek_min_env_control);
+    min_env_flow_controls.push_back(&new_river_min_env_control);
 
     // Lake Michael parameters
 

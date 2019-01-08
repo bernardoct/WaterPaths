@@ -10,7 +10,7 @@ MinEnvFlowControl::MinEnvFlowControl(int water_source_id,
         : 
           water_sources_ids(water_sources_ids),
           utilities_ids(aux_utilities_ids),
-          water_source_id(water_source_id),
+	  water_source_id(water_source_id),
           type(type) {}
 
 MinEnvFlowControl::MinEnvFlowControl(
@@ -28,13 +28,6 @@ void MinEnvFlowControl::addComponents(
     this->water_sources = vector<WaterSource *>(water_sources.size());
 
     for (int i : water_sources_ids) {
-        // Check if water source with ID assigned to minimum environmental
-        // control rule exists.
-        if (i >= water_sources.size()) {
-            string error = "Minimum environmental flow control assigned to "
-                           "non-existing water source with ID " + to_string(i);
-            __throw_invalid_argument(error.c_str());
-        }
         this->water_sources[i] = water_sources[i];
     }
 

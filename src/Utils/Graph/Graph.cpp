@@ -18,7 +18,7 @@ using namespace std;
  * Constructor.
  * @param V Number of water sources (vertices.
  */
-Graph::Graph(int V) : number_of_vertices(V) {
+Graph::Graph(int V) : V(V) {
     adj = new list<int>[V];
     downstream_sources = vector<vector<int>>((unsigned long) V);
 }
@@ -56,7 +56,7 @@ void Graph::addEdge(int u, int v) {
         upstream_sources[i] = findUpstreamSources(i);
     }
 
-    vector<double> pipe_connectivity((unsigned long) number_of_vertices, 0);
+    vector<double> pipe_connectivity((unsigned long) V, 0);
     pipe_connectivity[u] = -1;
     pipe_connectivity[v] = 1;
 
@@ -70,11 +70,11 @@ void Graph::addEdge(int u, int v) {
 vector<int> Graph::topologicalSort() {
     // Create a vector to store indegrees of all
     // vertices. Initialize all indegrees as 0.
-    vector<int> in_degree((unsigned long) number_of_vertices, 0);
+    vector<int> in_degree((unsigned long) V, 0);
 
     // Traverse adjacency lists to fill indegrees of
-    // vertices.  This step takes O(number_of_vertices+E) time
-    for (int u = 0; u < number_of_vertices; u++) {
+    // vertices.  This step takes O(V+E) time
+    for (int u = 0; u < V; u++) {
         list<int>::iterator itr;
         for (itr = adj[u].begin(); itr != adj[u].end(); itr++)
             in_degree[*itr]++;
@@ -83,7 +83,7 @@ vector<int> Graph::topologicalSort() {
     // Create an queue and enqueue all vertices with
     // indegree 0
     queue<int> q;
-    for (int i = 0; i < number_of_vertices; i++)
+    for (int i = 0; i < V; i++)
         if (in_degree[i] == 0)
             q.push(i);
 
@@ -117,7 +117,7 @@ vector<int> Graph::topologicalSort() {
     }
 
     // Check if there was a cycle
-    if (cnt != number_of_vertices) {
+    if (cnt != V) {
         cout << "There exists a cycle in the graph, and topological sort cannot handle that.\n";
         return top_order;
     }
@@ -137,7 +137,7 @@ vector<int> Graph::topologicalSort() {
  */
 vector<int> Graph::findUpstreamSources(int id) const {
     vector<int> upstream_sources;
-    for (int i = 0; i < number_of_vertices; ++i) {
+    for (int i = 0; i < V; ++i) {
         /// If find function does not reach the end of the list while searching
         /// for ID is because element ID exists in list.
         if (std::find(adj[i].begin(), adj[i].end(), id) != adj[i].end())
@@ -169,7 +169,7 @@ const vector<vector<double>> Graph::getContinuityMatrix() const {
     vector<vector<double>> continuity_matrix(continuity_matrix_transpose[0].size(),
                                              vector<double>(continuity_matrix_transpose.size(), 0));
 
-    if (n_edges + 1 < number_of_vertices)
+    if (n_edges + 1 < V)
         __throw_invalid_argument("Are you sure your inputted graphs have all your edges or that you type the "
                                          "right number of sources (instead of more than you should)?");
 
@@ -189,8 +189,4 @@ const vector<vector<double>> Graph::getContinuityMatrix() const {
     }
 
     return continuity_matrix;
-}
-
-int Graph::getNumber_of_vertices() const {
-    return number_of_vertices;
 }

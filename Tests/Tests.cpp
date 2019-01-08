@@ -12,14 +12,6 @@
 #include "../src/SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
 #include "../src/ContinuityModels/ContinuityModelRealization.h"
 
-
-
-
-
-
-
-
-/*
 TEST_CASE("Mass balance reservoir", "[Reservoir][Mass Balance]") {
     int streamflow_n_weeks = 52 * (1 + 50);
     vector<vector<double>> streamflows_haw =
@@ -56,7 +48,7 @@ TEST_CASE("Mass balance reservoir", "[Reservoir][Mass Balance]") {
     }
 }
 
-TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance]") {
+TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance][Exceptions]") {
     int streamflow_n_weeks = 52 * (1 + 50);
     vector<vector<double>> streamflows_haw =
             vector<vector<double>>(1, vector<double>((unsigned long) streamflow_n_weeks, 300.));
@@ -211,6 +203,26 @@ TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance
         REQUIRE(allocated_lake.getAvailableAllocatedVolume(4) == 0.);
         REQUIRE(allocated_lake.getTotal_outflow() >= 0.);
     }
+
+    SECTION("Exception for treatment capacity allocated to water quality pool.", "[Exception]") {
+
+        vector<int> jl_allocations_ids_wq_pool = {0, 1, 2, 3, WATER_QUALITY_ALLOCATION};
+        vector<double> jl_treatment_allocation_fractions_extra_for_wq_pool = {0.333, 0.333, 0.233, 0.0, 0.1};
+
+        REQUIRE_THROWS([&]() {
+            AllocatedReservoir allocated_lake("Jordan Lake",
+                                              0,
+                                              catchment_haw,
+                                              jl_storage_capacity,
+                                              1000.,
+                                              evaporation_jordan_lake,
+                                              1.,
+                                              &jl_allocations_ids_wq_pool,
+                                              &jl_allocation_fractions,
+                                              &jl_treatment_allocation_fractions_extra_for_wq_pool);
+        }());
+    }
+
 }
 
 TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][Utility][Bonds]") {
@@ -279,7 +291,7 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
     utility.addWaterSource(&reservoir);
 
     SECTION("Infrastructure manager", "[InfrastructureManager]") {
-        InfrastructureManager infrastructure_manager(0, rof_triggers, infra_built_remove, 0.06, 25, 0.05,
+        InfrastructureManager infrastructure_construction_manager(0, rof_triggers, infra_built_remove, 0.06, 25, 0.05,
                                                                   construction_order, vector<int>());
 
         vector<WaterSource *> water_sources(8);
@@ -290,18 +302,18 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
         double total_treatment_capacity;
         double total_available_volume;
         double total_stored_volume;
-        infrastructure_manager.connectWaterSourcesVectorsToUtilitys(water_sources, priority_draw_water_source,
+        infrastructure_construction_manager.connectWaterSourcesVectorsToUtilitys(water_sources, priority_draw_water_source,
                                                                                  non_priority_draw_water_source);
         water_sources[7] = &reservoir;
-        infrastructure_manager.addWaterSource(&reservoir);
+        infrastructure_construction_manager.addWaterSource(&reservoir);
 
         SECTION("Begin building infrastructure", "[Infrastructure]") {
-            infrastructure_manager.beginConstruction(55, 7);
-            REQUIRE(infrastructure_manager.getUnder_construction()[7]);
+            infrastructure_construction_manager.beginConstruction(55, 7);
+            REQUIRE(infrastructure_construction_manager.getUnder_construction()[7]);
         }
 
         SECTION("Set watersource online", "[Infrastructure]") {
-            infrastructure_manager.setWaterSourceOnline((unsigned int) 7, 0, total_storage_capacity,
+            infrastructure_construction_manager.setWaterSourceOnline((unsigned int) 7, 0, total_storage_capacity,
                                                                      total_treatment_capacity, total_available_volume,
                                                                      total_stored_volume);
 
@@ -309,19 +321,19 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
         }
 
         SECTION("Infrastruture handler high LT-ROF but week < permitting period", "[Infrastructure]") {
-            infrastructure_manager.infrastructureConstructionHandler(1., 53, 0, total_storage_capacity,
+            infrastructure_construction_manager.infrastructureConstructionHandler(1., 53, 0, total_storage_capacity,
                                                                                   total_treatment_capacity,
                                                                                   total_available_volume,
                                                                                   total_stored_volume);
-            REQUIRE(!infrastructure_manager.getUnder_construction()[7]);
+            REQUIRE(!infrastructure_construction_manager.getUnder_construction()[7]);
         }
 
         SECTION("Infrastruture handler high LT-ROF but week > permitting period", "[Infrastructure]") {
-            infrastructure_manager.infrastructureConstructionHandler(1., 1000, 0, total_storage_capacity,
+            infrastructure_construction_manager.infrastructureConstructionHandler(1., 1000, 0, total_storage_capacity,
                                                                                   total_treatment_capacity,
                                                                                   total_available_volume,
                                                                                   total_stored_volume);
-            REQUIRE(infrastructure_manager.getUnder_construction()[7]);
+            REQUIRE(infrastructure_construction_manager.getUnder_construction()[7]);
         }
     }
 
@@ -524,4 +536,3 @@ TEST_CASE("Bonds") {
         }
     }
 }
- */

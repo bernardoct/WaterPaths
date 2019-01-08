@@ -327,7 +327,7 @@ int main(int argc, char *argv[]) {
                      << s << endl;
                 paperTestProblem.setSol_number((unsigned long) s);
                 testProblemPtr->functionEvaluation(solutions[s].data(), c_obj, c_constr);
-                vector<double> objectives = trianglePtr->calculateAndPrintObjectives(false);
+                vector<double> objectives = testProblemPtr->calculateAndPrintObjectives(false);
                 paperTestProblem.printTimeSeriesAndPathways();
                 testProblemPtr->destroyDataCollector();
                 string line;

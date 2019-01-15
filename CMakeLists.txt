@@ -115,9 +115,9 @@ set(SOURCE_FILES
         src/SystemComponents/Bonds/BalloonPaymentBond.cpp
         src/SystemComponents/Bonds/BalloonPaymentBond.h
         src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.cpp
-        src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.h
-        src/Problem/PaperTestProblem.cpp
-        src/Problem/PaperTestProblem.h)
+        src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.h)
+#        src/Problem/PaperTestProblem.cpp
+#        src/Problem/PaperTestProblem.h)
 
 set(TEST_SOURCE_FILES
         src/ContinuityModels/Base/ContinuityModel.cpp

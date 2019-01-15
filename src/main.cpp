@@ -2,6 +2,7 @@
 #include "Utils/QPSolver/QuadProg++.h"
 #include "Utils/Solutions.h"
 #include "Problem/Triangle.h"
+#include "Problem/PaperTestProblem.h"
 
 #ifdef  PARALLEL
 #include "../Borg/borgmm.h"

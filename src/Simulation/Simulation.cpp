@@ -308,30 +308,30 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
 #pragma omp parallel for ordered num_threads(n_threads) shared(had_catch)
 //    for (int r = (int) n_realizations - 1; r >= 0; --r) {
     for (unsigned long r = 0; r < n_realizations; ++r) {
-//        try {
-            unsigned long realization = realizations_to_run.at(r);
+        unsigned long realization = realizations_to_run.at(r);
 
-            /// Create continuity models.
-            ContinuityModelRealization* realization_model = nullptr;
-            ContinuityModelROF* rof_model = nullptr;
-            createContinuityModels(realization, realization_model, rof_model);
+        // Create continuity models.
+        ContinuityModelRealization *realization_model = nullptr;
+        ContinuityModelROF *rof_model = nullptr;
+        createContinuityModels(realization, realization_model, rof_model);
 
-            /// Initialize data collector.
-            master_data_collector->addRealization(
-                    realization_model->getContinuity_water_sources(),
-                    realization_model->getDrought_mitigation_policies(),
-                    realization_model->getContinuity_utilities(),
-                    r);
+        // Initialize data collector.
+        master_data_collector->addRealization(
+                realization_model->getContinuity_water_sources(),
+                realization_model->getDrought_mitigation_policies(),
+                realization_model->getContinuity_utilities(),
+                r);
 
+        try {
             double start = omp_get_wtime();
             for (int w = 0; w < (int) total_simulation_time; ++w) {
                 // DO NOT change the order of the steps. This would mess up
                 // important dependencies.
-                /// Calculate long-term risk-of-failre if current week is first week of the year.
+                // Calculate long-term risk-of-failre if current week is first week of the year.
                 if (Utils::isFirstWeekOfTheYear(w))
                     realization_model->setLongTermROFs(
                             rof_model->calculateLongTermROF(w), w);
-                /// Calculate short-term risk-of-failure
+                // Calculate short-term risk-of-failure
                 if (import_export_rof_tables == IMPORT_ROF_TABLES) {
                     realization_model->setShortTermROFs(
                             rof_model->calculateShortTermROFTable(w));
@@ -339,34 +339,30 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                     realization_model->setShortTermROFs(
                             rof_model->calculateShortTermROF(w));
                 }
-                /// Apply drought mitigation policies
+                // Apply drought mitigation policies
                 realization_model->applyDroughtMitigationPolicies(w);
-                /// Continuity calculations for current week
+                // Continuity calculations for current week
                 realization_model->continuityStep(w);
-                /// Collect system data for output printing and objective calculations.
+                // Collect system data for output printing and objective calculations.
                 if (import_export_rof_tables != EXPORT_ROF_TABLES)
                     master_data_collector->collectData(r);
             }
-            /// Export ROF tables for future simulations of the same problem with the same states-of-the-world.
-            if (import_export_rof_tables == EXPORT_ROF_TABLES)
+            // Export ROF tables for future simulations of the same problem with the same states-of-the-world.
+            if (import_export_rof_tables == EXPORT_ROF_TABLES) {
                 rof_model->printROFTable(rof_tables_folder);
-//#pragma omp critical
-//{
-//            double end = omp_get_wtime();
-//            std::cout << "Realization " << realizations_to_run[r] << ": "
-//                      << end - start << std::endl;
-//}
+            }
+        } catch (...) {
+#pragma omp atomic
+            ++had_catch;
+            error_m += to_string(r) + " ";
+            master_data_collector->removeRealization(r);
+        }
 
-            delete realization_model;
-            delete rof_model;
-//        } catch (...) {
-//#pragma omp atomic
-//                ++had_catch;
-//            error_m += to_string(r) + " ";
-//        }
+        delete realization_model;
+        delete rof_model;
     }
-    /// Handle exception from the OpenMP region and pass it up to the
-    /// problem class.
+    // Handle exception from the OpenMP region and pass it up to the
+    // problem class.
     if (had_catch) {
 	int world_rank;
 #ifdef  PARALLEL
@@ -381,7 +377,8 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
 #endif
 	error_m += ". Decision variables in sol_error_rank_" + to_string(world_rank) + ".";
 	printf("%s", error_m.c_str());
-        throw_with_nested(runtime_error(error_m.c_str()));
+	master_data_collector->cleanCollectorsOfDeletedRealizations();
+//        throw_with_nested(runtime_error(error_m.c_str()));
     }
     return master_data_collector;
 }

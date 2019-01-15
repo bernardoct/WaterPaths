@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <numeric>
 #include <random>
+#include <algorithm>
 
 #ifdef NETCDF
 #include <netcdf> 
@@ -288,25 +289,29 @@ void MasterDataCollector::printWaterSourcesOutputCompact(
 
 #pragma omp parallel for
     for (int r = 0; r < (int) water_source_collectors[0].size(); ++r) {
-        std::ofstream out_stream;
-        out_stream.open(output_directory + file_name + "_r"
-                        + std::to_string(r) + ".csv");
+        try {
+            std::ofstream out_stream;
+            out_stream.open(output_directory + file_name + "_r"
+                            + std::to_string(r) + ".csv");
 
-        string line;
-        for (vector<DataCollector *> p : water_source_collectors)
-            line += p[r]->printCompactStringHeader();
-        line.pop_back();
-        out_stream << line << endl;
-
-        for (int w = week_i; w < week_f; ++w) {
-            line = "";
+            string line;
             for (vector<DataCollector *> p : water_source_collectors)
-                line += p[r]->printCompactString(w);
+                line += p[r]->printCompactStringHeader();
             line.pop_back();
             out_stream << line << endl;
-        }
 
-        out_stream.close();
+            for (int w = week_i; w < week_f; ++w) {
+                line = "";
+                for (vector<DataCollector *> p : water_source_collectors)
+                    line += p[r]->printCompactString(w);
+                line.pop_back();
+                out_stream << line << endl;
+            }
+
+            out_stream.close();
+        } catch (...) {
+            printf("Warning: water sources data for realization %d not saved dur to error.\n", r);
+        }
     }
 }
 
@@ -664,7 +669,45 @@ void MasterDataCollector::addRealization(
                                              "MasterDataCollector::addRealization"
                                              " function?");
     }
+} 
+
+void MasterDataCollector::removeRealization(unsigned long r) {
+    for (int u = 0; u < (int) utility_collectors.size(); ++u) {
+        delete utility_collectors[u][r];
+        utility_collectors[u][r] = nullptr;
+    }
+    for (int dmp = 0; dmp < (int) drought_mitigation_policy_collectors.size(); ++dmp) {
+	delete drought_mitigation_policy_collectors[dmp][r];
+        drought_mitigation_policy_collectors[dmp][r] = nullptr;
+    }
+    for (int ws = 0; ws < (int) water_source_collectors.size(); ++ws) {
+	delete water_source_collectors[ws][r];
+        water_source_collectors[ws][r] = nullptr;
+    }
 }
+
+//void MasterDataCollector::removeNullptrs(vector<vector<void *>> vector_of_collectors) {
+//    for (auto &v : vector_of_collectors) {
+//        v.erase(remove_if(v.begin(), v.end(), [](const void *x) { return x == nullptr; }), v.end());
+//    }
+//}
+
+void MasterDataCollector::cleanCollectorsOfDeletedRealizations() {
+//    removeNullptrs(utility_collectors);
+//    removeNullptrs(drought_mitigation_policy_collectors);
+//    removeNullptrs(water_source_collectors);
+
+    for (auto &v : utility_collectors) {
+        v.erase(remove_if(v.begin(), v.end(), [](const void *x) { return x == nullptr; }), v.end());
+    }
+    for (auto &v : drought_mitigation_policy_collectors) {
+        v.erase(remove_if(v.begin(), v.end(), [](const void *x) { return x == nullptr; }), v.end());
+    }
+    for (auto &v : water_source_collectors) {
+        v.erase(remove_if(v.begin(), v.end(), [](const void *x) { return x == nullptr; }), v.end());
+    }
+}
+
 
 void MasterDataCollector::collectData(unsigned long r) {
 

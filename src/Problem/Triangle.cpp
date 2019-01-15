@@ -359,7 +359,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                                                 wb_storage,
                                                                 wb_releases);
         FixedMinEnvFlowControl sq_min_env_control(3, 0);
-        InflowMinEnvFlowControl ccr_min_env_control(4, vector<int>(1, 4),
+        InflowMinEnvFlowControl ccr_min_env_control(4,
                                                     ccr_inflows,
                                                     ccr_releases);
         FixedMinEnvFlowControl university_min_env_control(5, 0);

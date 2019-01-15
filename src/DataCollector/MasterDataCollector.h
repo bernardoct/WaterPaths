@@ -20,6 +20,8 @@ private:
     vector<vector<DataCollector *>> drought_mitigation_policy_collectors;
     vector<vector<UtilitiesDataCollector *>> utility_collectors;
 
+//    void removeNullptrs(vector<vector<void *>> vector_of_collectors);
+
 public:
 
     MasterDataCollector(unsigned long n_realizations);
@@ -54,6 +56,10 @@ public:
             vector<WaterSource *> water_sources_realization,
             vector<DroughtMitigationPolicy *> drought_mitigation_policies_realization,
             vector<Utility *> utilities_realization, unsigned long r);
+
+    void removeRealization(unsigned long r);
+
+    void cleanCollectorsOfDeletedRealizations();
 
     void collectData(unsigned long r);
 

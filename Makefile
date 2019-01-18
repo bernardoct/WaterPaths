@@ -14,7 +14,7 @@ LIBS=-static-libasan -lm
 all: $(SOURCES) $(TARGET)
 
 borg: CC=mpicxx
-borg: LIBS += -lborgmm
+borg: LIBS += -lborgms
 borg: CFLAGS += -DPARALLEL -fopenmp -march=ivybridge -O0 -g
 borg: all
 

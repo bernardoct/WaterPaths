@@ -5,3 +5,9 @@ TestFiles/evaporation
 TestFiles/inflows
 Borg/*
 core*
+
+
+#
+# Editor files
+#
+*~

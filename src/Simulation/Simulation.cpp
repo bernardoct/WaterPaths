@@ -344,8 +344,9 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                 // Continuity calculations for current week
                 realization_model->continuityStep(w);
                 // Collect system data for output printing and objective calculations.
-                if (import_export_rof_tables != EXPORT_ROF_TABLES)
+                if (import_export_rof_tables != EXPORT_ROF_TABLES) {
                     master_data_collector->collectData(r);
+                }
             }
             // Export ROF tables for future simulations of the same problem with the same states-of-the-world.
             if (import_export_rof_tables == EXPORT_ROF_TABLES) {

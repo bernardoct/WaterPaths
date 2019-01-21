@@ -39,9 +39,13 @@ public:
                        vector<double>& water_sources_rdm, unsigned long total_weeks_simulation,
                        const int use_precomputed_rof_tables, const unsigned long realization_id);
 
-    ContinuityModelROF(ContinuityModelROF &continuity_model_rof);
+//    ContinuityModelROF(ContinuityModelROF &continuity_model_rof);
 
-    vector<double> calculateShortTermROF(int week);
+    vector<double> calculateShortTermROF(int week, int import_export_rof_tables);
+
+    vector<double> calculateShortTermROFFullCalcs(int week);
+
+    vector<double> calculateShortTermROFTable(int week);
 
     vector<double> calculateLongTermROF(int week);
 
@@ -51,7 +55,7 @@ public:
 
     void connectRealizationUtilities(const vector<Utility *> &realization_utilities);
 
-    void updateOnlineInfrastructure(int week);
+    virtual void updateOnlineInfrastructure(int week);
 
     virtual ~ContinuityModelROF();
 
@@ -59,7 +63,7 @@ public:
                                  int week_of_the_year,
                                  const double *to_full_toposort);
 
-    const vector<Matrix2D<double>> &getUt_storage_to_rof_table() const;
+    vector<Matrix2D<double>> &getUt_storage_to_rof_table();
 
     void shiftStorages(double *available_volumes_shifted, const double
     *delta_storage);
@@ -68,8 +72,6 @@ public:
 
     void setROFTablesAndShifts(const vector<Matrix2D<double>> &storage_to_rof_table,
                                const vector<vector<double>> &table_storage_shift);
-
-    vector<double> calculateShortTermROFTable(int week);
 
     void tableROFExceptionHandler(double m, int u, int week);
 

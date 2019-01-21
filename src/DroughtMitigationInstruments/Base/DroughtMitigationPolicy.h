@@ -12,6 +12,9 @@
 #include "../../Controls/Base/MinEnvFlowControl.h"
 
 class DroughtMitigationPolicy {
+private:
+    vector<Matrix2D<double>> *storage_to_rof_table_;
+
 protected:
     DroughtMitigationPolicy(const DroughtMitigationPolicy &drought_mitigation_policy);
 
@@ -19,9 +22,11 @@ protected:
     vector<Utility *> realization_utilities;
     vector<WaterSource *> realization_water_sources;
     vector<MinEnvFlowControl *> realization_min_env_flow_controls;
-    vector<Matrix2D<double>> storage_to_rof_table_;
     vector<vector<double>> *rdm_factors_all;
     double *rdm_factors_realization;
+    bool use_imported_tables;
+
+    double getRofFromRealizationTable(int utility_id, int week, int tier);
 
 public:
     const int id;
@@ -43,7 +48,7 @@ public:
 
     virtual ~DroughtMitigationPolicy();
 
-    void setStorage_to_rof_table_(const vector<Matrix2D<double>> &storage_to_rof_table_);
+    void setStorage_to_rof_table_(vector<Matrix2D<double>> &storage_to_rof_table_, int use_imported_tables);
 
     virtual void setRealization(unsigned long realization_id, vector<double> &utilities_rdm,
                                 vector<double> &water_sources_rdm, vector<double> &policy_rdm)= 0;

@@ -2,6 +2,7 @@
 #include "Utils/QPSolver/QuadProg++.h"
 #include "Utils/Solutions.h"
 #include "Problem/PaperTestProblem.h"
+#include "Problem/Triangle.h"
 
 #ifdef  PARALLEL
 #include "../Borg/borgmm.h"
@@ -22,8 +23,8 @@ using namespace std;
 using namespace Constants;
 using namespace Solutions;
 
-PaperTestProblem *problem_ptr;
-//Triangle *trianglePtr;
+//PaperTestProblem *problem_ptr;
+Triangle *problem_ptr;
 int failures = 0;
 
 void eval(double *vars, double *objs, double *consts) {
@@ -204,7 +205,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    PaperTestProblem problem(n_weeks, import_export_rof_table);
+//    PaperTestProblem problem(n_weeks, import_export_rof_table);
+    Triangle problem(n_weeks, import_export_rof_table);
 
     /// Set basic realization parameters.
     problem.setN_weeks(n_weeks);

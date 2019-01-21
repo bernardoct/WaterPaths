@@ -38,11 +38,6 @@ public:
 
     void priceInsurance(int week);
 
-    void getUtilitiesApproxROFs(const vector<double> &u_storage_capacity_ratio,
-                                int week, vector<double>& utilities_approx_rof);
-
-    vector<double> UtilitiesStorageCapacityRatio();
-
     void applyPolicy(int week) override;
 
     void addSystemComponents(vector<Utility *> utilities,
@@ -51,6 +46,10 @@ public:
 
     void setRealization(unsigned long realization_id, vector<double> &utilities_rdm,
                         vector<double> &water_sources_rdm, vector<double> &policy_rdm) override;
+
+    vector<double> calculateShortTermROFTable(int week, const vector<Utility *> &utilities, const int &n_utilities);
+
+    void updateOnlineInfrastructure(int week) override;
 
 };
 

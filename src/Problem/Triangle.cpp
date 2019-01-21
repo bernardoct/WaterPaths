@@ -878,9 +878,10 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                    cary_insurance_payment,
                                    raleigh_insurance_payment};
         vector<int> insured_utilities = {0, 1, 2, 3};
+        double insurance_premium = 1.2;
         InsuranceStorageToROF in(5, water_sources, g, reservoir_utility_connectivity_matrix, utilities,
-                                 min_env_flow_controls, utilities_rdm, water_sources_rdm, insurance_triggers, 1.2,
-                                 fixed_payouts, n_weeks);
+                                 min_env_flow_controls, utilities_rdm, water_sources_rdm, insurance_triggers,
+                                 insurance_premium, fixed_payouts, n_weeks);
 
         drought_mitigation_policies.push_back(&in);
 

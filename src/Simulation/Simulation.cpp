@@ -293,7 +293,7 @@ void Simulation::createContinuityModels(unsigned long realization,
     for (DroughtMitigationPolicy *dmp :
             realization_model->getDrought_mitigation_policies())
         dmp->setStorage_to_rof_table_(
-                rof_model->getUt_storage_to_rof_table());
+                rof_model->getUt_storage_to_rof_table(), import_export_rof_tables);
 }
 
 MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
@@ -322,7 +322,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                 realization_model->getContinuity_utilities(),
                 r);
 
-        try {
+//        try {
             double start = omp_get_wtime();
             for (int w = 0; w < (int) total_simulation_time; ++w) {
                 // DO NOT change the order of the steps. This would mess up
@@ -332,13 +332,8 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                     realization_model->setLongTermROFs(
                             rof_model->calculateLongTermROF(w), w);
                 // Calculate short-term risk-of-failure
-                if (import_export_rof_tables == IMPORT_ROF_TABLES) {
-                    realization_model->setShortTermROFs(
-                            rof_model->calculateShortTermROFTable(w));
-		        } else {
-                    realization_model->setShortTermROFs(
-                            rof_model->calculateShortTermROF(w));
-                }
+                realization_model->setShortTermROFs(
+                            rof_model->calculateShortTermROF(w, import_export_rof_tables));
                 // Apply drought mitigation policies
                 realization_model->applyDroughtMitigationPolicies(w);
                 // Continuity calculations for current week
@@ -352,12 +347,12 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
             if (import_export_rof_tables == EXPORT_ROF_TABLES) {
                 rof_model->printROFTable(rof_tables_folder);
             }
-        } catch (...) {
-#pragma omp atomic
-            ++had_catch;
-            error_m += to_string(r) + " ";
-            master_data_collector->removeRealization(r);
-        }
+//        } catch (...) {
+//#pragma omp atomic
+//            ++had_catch;
+//            error_m += to_string(r) + " ";
+//            master_data_collector->removeRealization(r);
+//        }
 
         delete realization_model;
         delete rof_model;

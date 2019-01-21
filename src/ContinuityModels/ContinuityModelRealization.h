@@ -26,10 +26,7 @@ public:
             vector<double>& policy_rdm,
             const unsigned int realization_index);
 
-    ContinuityModelRealization(
-            ContinuityModelRealization &continuity_model_realization);
-
-    virtual ~ContinuityModelRealization();
+    ~ContinuityModelRealization() override;
 
     void setShortTermROFs(const vector<double> &risks_of_failure);
 

@@ -51,6 +51,8 @@ public:
     T *getPointerToElement(int i, int j) const;
 
     void add_to_position(int i, int j, T *data, int length);
+
+    const vector<vector<T>> get_vector() const;
 };
 
 template<typename T>
@@ -186,6 +188,19 @@ void Matrix2D<T>::add_to_position(int i, int j, T *data,
     for (int p = 0; p < length; ++p) {
         data_[pos0 + p] += data[p];
     }
+}
+
+template<typename T>
+const vector<vector<T>> Matrix2D<T>::get_vector() const {
+    vector<vector<T>> vector_matrix;
+    for (int i = 0; i < di_; ++i) {
+        vector<T> row;
+        for (int j = 0; j < dj_; ++j) {
+            row.push_back(data_[dj_ * i + j]);
+        }
+        vector_matrix.push_back(row);
+    }
+    return vector_matrix;
 }
 
 template<typename T>

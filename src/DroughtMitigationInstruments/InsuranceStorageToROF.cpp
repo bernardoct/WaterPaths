@@ -61,14 +61,13 @@ InsuranceStorageToROF::InsuranceStorageToROF(
         utilities_revenue_last_year(
                 vector<double>((unsigned long) n_utilities, 0.)) {
     utilities_ids = insurance.utilities_ids;
+
 }
 
 InsuranceStorageToROF::~InsuranceStorageToROF() = default;
 
 
 void InsuranceStorageToROF::applyPolicy(int week) {
-    int week_of_year = Utils::weekOfTheYear(week);
-
     /// Update utilities year revenue.
     for (unsigned long u = 0; u < continuity_utilities.size(); ++u) {
         utilities_revenue_update[u] +=
@@ -79,32 +78,18 @@ void InsuranceStorageToROF::applyPolicy(int week) {
     /// gross revenue to base payouts.
     if (Utils::isFirstWeekOfTheYear(week + 1)) {
         utilities_revenue_last_year = utilities_revenue_update;
-        utilities_revenue_update = vector<double>((unsigned long) n_utilities,
-                0.);
+        std::fill(utilities_revenue_update.begin(), utilities_revenue_update.end(), NONE);
 
-        priceInsurance(week_of_year + 1);
+        priceInsurance(week);
     }
 
     /// Do not make payouts during the first year, when no insurance was purchased.
     if (week > WEEKS_IN_YEAR) {
-
-        /// Get ROFs from table.
-        vector<double> utilities_rof(DroughtMitigationPolicy::realization_utilities.size(), 0.);
-        vector<double> utilities_storage_capa_ratio(DroughtMitigationPolicy::realization_utilities.size(), 0.0);
-
-//        for (unsigned long u = 0; u < DroughtMitigationPolicy::realization_utilities.size(); ++u) {
-//            utilities_storage_capa_ratio[u] =
-//                    DroughtMitigationPolicy::realization_utilities[u]->getStorageToCapacityRatio();
-//        }
-//        getUtilitiesApproxROFs(utilities_storage_capa_ratio,
-//                               week,
-//                               utilities_rof);
+        vector<double> utilities_rof(DroughtMitigationPolicy::realization_utilities.size(), NONE);
 
         /// Get utilities ROFs
         for (unsigned long u = 0; u < DroughtMitigationPolicy::realization_utilities.size(); ++u) {
-            utilities_rof[u] =
-                    DroughtMitigationPolicy::realization_utilities[u
-                    ]->getRisk_of_failure();
+            utilities_rof[u] = DroughtMitigationPolicy::realization_utilities[u]->getRisk_of_failure();
         }
 
         /// Make payouts, if needed.
@@ -125,6 +110,11 @@ void InsuranceStorageToROF::addSystemComponents(vector<Utility *> utilities,
         DroughtMitigationPolicy::realization_utilities[i] = utilities[i];
     }
 
+    for (Utility *u : utilities) {
+        utility_base_storage_capacity.push_back(u->getTotal_storage_capacity());
+    }
+    current_storage_table_shift = vector<double>(utilities.size());
+
     connectRealizationWaterSources(water_sources);
 }
 
@@ -144,33 +134,24 @@ void InsuranceStorageToROF::priceInsurance(int week) {
     updateOnlineInfrastructure(week);
 
     for (int r = 0; r < NUMBER_REALIZATIONS_ROF; ++r) {
-        beginning_tier = NO_OF_INSURANCE_STORAGE_TIERS;
         /// reset reservoirs' and utilities' storage and combined storage, respectively, they currently
         /// have in the corresponding realization simulation.
         resetUtilitiesAndReservoirs(SHORT_TERM_ROF);
 
-        for (int w = week; w < week + WEEKS_IN_YEAR; ++w) {
+        for (int w = week - (int) WEEKS_IN_YEAR + 1; w <= week; ++w) {
             /// one week continuity time-step.
             continuityStep(w, r);
 
             /// Get utilities' approximate rof from storage-rof-table.
-            vector<double> utilities_storage_capacity_ratio((unsigned) n_utilities);
-//                    UtilitiesStorageCapacityRatio();
-            for (int u = 0; u < n_utilities; ++u) {
-                utilities_storage_capacity_ratio[u] =
-                        this->continuity_utilities[u]->getStorageToCapacityRatio();
-            }
-            vector<double> utilities_rofs((unsigned long) n_utilities);
-            getUtilitiesApproxROFs(utilities_storage_capacity_ratio,
-                                   week - (int) WEEKS_IN_YEAR,
-                                   utilities_rofs);
+            auto utilities_rofs = InsuranceStorageToROF::calculateShortTermROFTable(
+                        w, continuity_utilities, n_utilities
+                    );
+
             /// Increase the price of the insurance if payout is triggered.
-            const vector<int> uids = utilities_ids;
-            for (const int &u : uids) {
+            for (const int &u : utilities_ids) {
                 if (utilities_rofs[u] > rof_triggers[u]) {
-                    insurance_price[u] +=
-                            fixed_payouts[u] * utilities_revenue_last_year[u] *
-                            insurance_premium;
+                    insurance_price[u] += fixed_payouts[u] *
+                            utilities_revenue_last_year[u] * insurance_premium;
                 }
             }
         }
@@ -184,49 +165,63 @@ void InsuranceStorageToROF::priceInsurance(int week) {
     }
 }
 
-/**
- *
- * @param u_storage_capacity_ratio utilities' current storage to capacity ratio.
- * @param storage_to_rof_table table correlating storage capacities to rof
- * @param week week of the year.
- * @return
- */
-void InsuranceStorageToROF::getUtilitiesApproxROFs(
-        const vector<double> &u_storage_capacity_ratio,
-        int week, vector<double>& utilities_approx_rof) {
-
-    for (int u = 0; u < n_utilities; ++u) {
-        /// get storage index in the table corresponding to the utility's combined storage.
-        auto s = (int) floor(u_storage_capacity_ratio[u] *
-                            NO_OF_INSURANCE_STORAGE_TIERS);
-        s = min(s, NO_OF_INSURANCE_STORAGE_TIERS - 1);
-
-        /// get estimated rof value from the table.
-        if (s == NO_OF_INSURANCE_STORAGE_TIERS - 1)
-            utilities_approx_rof[u] = storage_to_rof_table_[u](week, s);
-        else
-            utilities_approx_rof[u] =
-                    (storage_to_rof_table_[u](week, s) +
-                     storage_to_rof_table_[u](week, s + 1)) / 2.;
-    }
-}
-
-/**
- * Calculation of storage-capacity ratio within the rof model for insurance price.
- * @return
- */
-vector<double> InsuranceStorageToROF::UtilitiesStorageCapacityRatio() {
-
-    auto n_utilities = continuity_utilities.size();
-    vector<double> u_storage_capacity_ratio(n_utilities);
-    for (unsigned long u = 0; u < n_utilities; ++u)
-        u_storage_capacity_ratio[u] =
-                continuity_utilities[u]->getStorageToCapacityRatio();
-
-    return u_storage_capacity_ratio;
-}
-
 void InsuranceStorageToROF::setRealization(unsigned long realization_id, vector<double> &utilities_rdm,
                                            vector<double> &water_sources_rdm, vector<double> &policy_rdm) {
     ContinuityModel::setRealization(realization_id, utilities_rdm, water_sources_rdm);
 }
+
+/**
+ * Runs one the full rof calculations for realization #realization_id for a
+ * given week.
+ * @param week for which rof is to be calculated.
+ * @todo This is mostly a copy and paste from ContinuityModelROF.cpp, so
+ * although I'm now on a fix this should be done in a better way at some point.
+ */
+vector<double> InsuranceStorageToROF::calculateShortTermROFTable(int week,
+                                                              const vector<Utility *> &utilities,
+                                                              const int &n_utilities) {
+    // vector where risks of failure will be stored.
+    vector<double> risk_of_failure((unsigned long) n_utilities, 0.0);
+    double m;
+    for (int u = 0; u < n_utilities; ++u) {
+        /// Get current stored volume for utility u.
+        double utility_storage =
+                utilities[u]->getTotal_stored_volume();
+        /// Ratio of current and status-quo utility storage capacities
+        //        double m = current_and_base_storage_capacity_ratio[u];
+        m = utilities[u]->getTotal_storage_capacity() /
+            utility_base_storage_capacity[u];
+        /// Calculate base table tier that contains the desired ROF by
+        /// shifting the table around based on new infrastructure -- the
+        /// shift is made by the part (m - 1) * STORAGE_CAPACITY_RATIO_FAIL *
+        /// utility_base_storage_capacity[u] - current_storage_table_shift[u]
+        double storage_convert = utility_storage +
+                                 STORAGE_CAPACITY_RATIO_FAIL * utility_base_storage_capacity[u] *
+                                 (1. - m) + current_storage_table_shift[u];
+        int tier = (int) (storage_convert * NO_OF_INSURANCE_STORAGE_TIERS /
+                          utility_base_storage_capacity[u]);
+        /// Mean ROF between the two tiers of the ROF table where
+        /// current storage is located.
+//        risk_of_failure[u] = getRofFromRealizationTable(u, week, tier);
+        risk_of_failure[u] = (getRofFromRealizationTable(u, week, tier) +
+                getRofFromRealizationTable(u, week, min(NO_OF_INSURANCE_STORAGE_TIERS, tier + 1))) / 2;
+    }
+
+    return risk_of_failure;
+}
+
+void InsuranceStorageToROF::updateOnlineInfrastructure(int week) {
+    ContinuityModelROF::updateOnlineInfrastructure(week);
+
+    // Use capacity multiplier is using pre-computed tables (which are created with such multiplier)
+    if (week < WEEKS_IN_YEAR + 1 && use_imported_tables) {
+        for (double &u : utility_base_storage_capacity) {
+            u *= BASE_STORAGE_CAPACITY_MULTIPLIER;
+        }
+    } else if (!use_imported_tables) {
+        for (int u = 0; u < n_utilities; ++u) {
+            utility_base_storage_capacity[u] = continuity_utilities[u]->getTotal_storage_capacity();
+        }
+    }
+}
+

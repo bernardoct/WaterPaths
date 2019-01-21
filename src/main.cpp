@@ -3,9 +3,11 @@
 #include "Utils/Solutions.h"
 #include "Problem/PaperTestProblem.h"
 #include "Problem/Triangle.h"
+#include "Problem/Triangle.h"
+// #include "Problem/PaperTestProblem.h"
 
 #ifdef  PARALLEL
-#include "../Borg/borgmm.h"
+#include "../Borg/borgms.h"
 #include "../Borg/borgProblemDefinition.h"
 #include <mpi.h>
 #endif
@@ -355,8 +357,8 @@ int main(int argc, char *argv[]) {
 
 //        cout << "Defining problem" << endl;
         BORG_Algorithm_ms_startup(&argc, &argv);
-        BORG_Algorithm_ms_islands((int) n_islands);
-        BORG_Algorithm_ms_initialization(INITIALIZATION_LATIN_GLOBAL);
+//        BORG_Algorithm_ms_islands((int) n_islands);
+//        BORG_Algorithm_ms_initialization(INITIALIZATION_LATIN_GLOBAL);
         BORG_Algorithm_ms_max_evaluations((int) nfe);
         BORG_Algorithm_output_frequency((int) output_frequency);
 

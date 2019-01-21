@@ -7,3 +7,9 @@ TestFiles/output*
 TestFiles/rof_*
 Borg/*
 core*
+
+
+#
+# Editor files
+#
+*~

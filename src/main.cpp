@@ -115,8 +115,8 @@ int main(int argc, char *argv[]) {
                         "inflows_high)\n"
                         "\t-O: Directory containing the pre-computed "
                         "ROF table binaries\n"
-                        "\t-C: Import/export rof tables (-1: export, 0:"
-                        " do nothing (standard), 1: import)\n"
+                        "\t-C: Import/export rof tables (1: export, 0:"
+                        " do nothing (standard), -1: import)\n"
                         "\t-B: Export objectives for all utilities on a single line",
                         argv[0], n_realizations, n_weeks, system_io.c_str());
                 return -1;

@@ -74,4 +74,13 @@ void Bond::issueBond(int week, int construction_time,
     week_issued = week;
     n_payments *= bond_term_multiplier;
     coupon_rate *= bond_interest_rate_multiplier;
+    setIssued();
+}
+
+bool Bond::isIssued() const {
+    return issued;
+}
+
+void Bond::setIssued() {
+    Bond::issued = true;
 }

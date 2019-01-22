@@ -12,6 +12,8 @@ using namespace std;
 using namespace Constants;
 
 class Bond {
+private:
+    bool issued = false;
 protected:
     int week_issued;
     double cost_of_capital;
@@ -43,6 +45,10 @@ public:
     issueBond(int week, int construction_time, double bond_term_multiplier, double bond_interest_rate_multiplier);
 
     virtual void setRealizationWaterSource(unsigned long r, vector<double> &rdm_factors);
+
+    bool isIssued() const;
+
+    void setIssued();
 
 };
 

@@ -563,13 +563,15 @@ void Utility::issueBond(int new_infra_triggered, int week) {
     if (new_infra_triggered != NON_INITIALIZED) {
         Bond &bond = water_sources.at((unsigned long) new_infra_triggered)
                 ->getBond(id);
-        double construction_time = water_sources
-                .at((unsigned long) new_infra_triggered)->construction_time;
-        bond.issueBond(week, (int) construction_time, bond_term_multiplier,
-                       bond_interest_rate_multiplier);
-        issued_bonds.push_back(&bond);
-        infra_net_present_cost += bond.getNetPresentValueAtIssuance(
-                infra_discount_rate, week);
+        if (!bond.isIssued()) {
+            double construction_time = water_sources
+                    .at((unsigned long) new_infra_triggered)->construction_time;
+            bond.issueBond(week, (int) construction_time, bond_term_multiplier,
+                           bond_interest_rate_multiplier);
+            issued_bonds.push_back(&bond);
+            infra_net_present_cost += bond.getNetPresentValueAtIssuance(
+                    infra_discount_rate, week);
+        }
     }
 }
 

@@ -13,6 +13,7 @@ core*
 *gmon.out
 rof_tables*
 callgrind*
+serial-borg-moea
 
 
 #

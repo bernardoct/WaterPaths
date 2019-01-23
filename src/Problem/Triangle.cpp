@@ -1186,7 +1186,7 @@ void Triangle::setImport_export_rof_tables(int import_export_rof_tables, int n_w
     if (import_export_rof_tables == IMPORT_ROF_TABLES) {
         Triangle::setRofTables(n_realizations, n_utilities, this->rof_tables_directory);
     } else {
-        const string mkdir_command = "mkdir";
+        const string mkdir_command = "mkdir -p";
         auto output = system((mkdir_command + " " + this->rof_tables_directory).c_str());
     }
 }

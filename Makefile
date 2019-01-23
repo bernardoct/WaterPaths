@@ -15,15 +15,15 @@ all: $(SOURCES) $(TARGET)
 
 borg: CC=mpicxx
 borg: LIBS += -lborgms
-borg: CFLAGS += -DPARALLEL -fopenmp -march=ivybridge -O0 -g
+borg: CFLAGS += -DPARALLEL -fopenmp -march=ivybridge -O2
 borg: all
 
 gcc: CC=g++
-gcc: CFLAGS+=-O3 -march=native -fopenmp
+gcc: CFLAGS+=-O2 -march=native -fopenmp
 gcc: all
 
 intel: CC=icc
-intel: CFLAGS+=-O3 ${TACC_VEC_FLAGS} -qopenmp
+intel: CFLAGS+=-O2 ${TACC_VEC_FLAGS} -qopenmp
 intel: all
 
 gcc-debug: CC=g++
@@ -39,7 +39,7 @@ pchecking: CC=icc
 pchecking: CFLAGS+=-O0 ${TACC_VEC_FLAGS} -g -traceback -check-pointers=rw -check-pointers-undimensioned -check-pointers-dangling=all -rdynamic -qopenmp
 pchecking: all
 
-prof: CFLAGS += -fopenmp -p
+prof: CFLAGS += -fopenmp -pg
 prof: all
 
 # How to make objects and executables

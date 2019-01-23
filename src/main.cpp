@@ -310,7 +310,7 @@ int main(int argc, char *argv[]) {
             if (import_export_rof_table != EXPORT_ROF_TABLES) {
                 vector<double> objectives;
                 problem.printTimeSeriesAndPathways();
-//                objectives = problem_ptr->calculateAndPrintObjectives(!print_objs_row);
+                objectives = problem_ptr->calculateAndPrintObjectives(!print_objs_row);
 //                trianglePtr->getMaster_data_collector()->printNETCDFUtilities("netcdf_output");
             }
 

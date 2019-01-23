@@ -166,10 +166,6 @@ vector<double> ContinuityModelROF::calculateShortTermROFTable(int week) {
 //        risk_of_failure[u] = ut_storage_to_rof_table[u](week, tier);
         risk_of_failure[u] = (ut_storage_to_rof_table[u](week, tier) +
                               ut_storage_to_rof_table[u](week, tier + 1)) / 2;
-        if (week > 50 && u == 1) {
-            auto v = ut_storage_to_rof_table[u].get_vector();
-            int j = 0;
-        }
     }
 
     return risk_of_failure;

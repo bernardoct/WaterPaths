@@ -322,7 +322,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                 realization_model->getContinuity_utilities(),
                 r);
 
-//        try {
+        try {
             double start = omp_get_wtime();
             for (int w = 0; w < (int) total_simulation_time; ++w) {
                 // DO NOT change the order of the steps. This would mess up
@@ -347,12 +347,12 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
             if (import_export_rof_tables == EXPORT_ROF_TABLES) {
                 rof_model->printROFTable(rof_tables_folder);
             }
-//        } catch (...) {
-//#pragma omp atomic
-//            ++had_catch;
-//            error_m += to_string(r) + " ";
-//            master_data_collector->removeRealization(r);
-//        }
+        } catch (...) {
+#pragma omp atomic
+            ++had_catch;
+            error_m += to_string(r) + " ";
+            master_data_collector->removeRealization(r);
+        }
 
         delete realization_model;
         delete rof_model;

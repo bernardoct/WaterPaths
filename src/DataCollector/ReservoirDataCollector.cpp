@@ -13,7 +13,8 @@ ReservoirDataCollector::ReservoirDataCollector(Reservoir *reservoir, unsigned lo
 
 ReservoirDataCollector::ReservoirDataCollector(Reservoir *reservoir, int type, int table_width,
                                                unsigned long realization)
-        : DataCollector(reservoir->id, reservoir->name, realization, type, table_width), reservoir(reservoir) {
+        : DataCollector(reservoir->id, reservoir->name, realization, type, table_width), reservoir(reservoir),
+          fixed_area(reservoir->fixed_area), fixed_area_value(reservoir->getArea()) {
 }
 
 string ReservoirDataCollector::printTabularString(int week) {

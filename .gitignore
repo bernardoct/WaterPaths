@@ -3,10 +3,16 @@
 TestFiles/demands
 TestFiles/evaporation
 TestFiles/inflows
-TestFiles/output*
+TestFiles/output/
 TestFiles/rof_*
 Borg/*
+lib*
+borg*
 core*
+.idea
+*gmon.out
+rof_tables*
+callgrind*
 
 
 #

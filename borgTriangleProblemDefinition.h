@@ -5,7 +5,7 @@
 #ifndef TRIANGLEMODEL_BORGPROBLEMDEFINITION_H
 #define TRIANGLEMODEL_BORGPROBLEMDEFINITION_H
 
-#include "borgmm.h"
+#include "borgms.h"
 
 void setProblemDefinition(BORG_Problem &problem)
 {

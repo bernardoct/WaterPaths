@@ -571,10 +571,6 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
       	                  max(objectives[10 + i], objectives[15 + i]));
         }
 
-        objs[5] = OWASA_JLA + Durham_JLA + Cary_JLA + Raleigh_JLA;
-
-        objectives.push_back(objs[5]);
-
         if (s != nullptr) {
             delete s;
 	}

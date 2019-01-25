@@ -82,6 +82,7 @@ public:
     const vector<int> &getInfra_built_last_week() const;
 
     const vector<bool> &getUnder_construction() const;
+
 };
 
 

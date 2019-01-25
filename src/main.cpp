@@ -35,7 +35,6 @@ void eval(double *vars, double *objs, double *consts) {
 }
 
 int main(int argc, char *argv[]) {
-
     const int c_num_dec = NUM_DEC_VAR;
     const int c_num_obj = NUM_OBJECTIVES;
     int c_num_constr = 0;
@@ -345,7 +344,6 @@ int main(int argc, char *argv[]) {
 
         return 0;
     } else {
-
 #ifdef  PARALLEL
         printf("Running Borg with:\n"
             "n_islands: %lu\n"

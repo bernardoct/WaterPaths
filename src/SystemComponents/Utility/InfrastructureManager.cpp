@@ -57,7 +57,6 @@ InfrastructureManager& InfrastructureManager::operator=(const InfrastructureMana
  * @param water_source
  */
 void InfrastructureManager::addWaterSource(WaterSource *water_source) {
-
     /// Add water sources with their IDs matching the water sources vector
     /// indexes.
     if (water_source->id > (int) under_construction.size() - 1) {
@@ -79,7 +78,6 @@ vector<double> InfrastructureManager::rearrangeInfraRofVector(
         const vector<double>& infra_construction_triggers,
         const vector<int>& rof_infra_construction_order,
         const vector<int>& demand_infra_construction_order) {
-
     int size_rof = (rof_infra_construction_order.empty() ? 0 :
                     *max_element(rof_infra_construction_order.begin(),
                                  rof_infra_construction_order.end()));
@@ -110,7 +108,6 @@ void InfrastructureManager::addWaterSourceToOnlineLists(int source_id, double &t
                                                         double &total_treatment_capacity,
                                                         double &total_available_volume,
                                                         double &total_stored_volume) {
-
     auto ws = water_sources->at((unsigned long) source_id);
 
     /// Add capacities to utility.
@@ -134,7 +131,6 @@ void InfrastructureManager::addWaterSourceToOnlineLists(int source_id, double &t
 void
 InfrastructureManager::setWaterSourceOnline(unsigned int source_id, int week, double &total_storage_capacity,
         double &total_treatment_capacity, double &total_available_volume, double &total_stored_volume) {
-
     /// Sets water source online and add its ID to appropriate
     /// priority/non-priority ID vector. If reservoir expansion, add its
     /// capacity to the corresponding existing reservoir.
@@ -272,7 +268,6 @@ void InfrastructureManager::forceInfrastructureConstruction(
 int InfrastructureManager::infrastructureConstructionHandler(double long_term_rof, int week, double past_year_average_demand,
                                                              double &total_storage_capacity, double &total_treatment_capacity,
                                                              double &total_available_volume, double &total_stored_volume) {
-
     int new_infra_triggered = NON_INITIALIZED;
     bool under_construction_any = (find(under_construction.begin(),
                                         under_construction.end(), true) !=
@@ -336,8 +331,7 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
     /// if so, clear it from the to-build list.
     if (under_construction_any) {
         /// Loops through vector of under-construction flags and sets online
-        /// the ones for which construction period has passed. This loop
-        /// could be made more efficient but it is not a bottle neck of model.
+        /// the ones for which construction period has passed.
         for (unsigned long ws = 0; ws < under_construction.size(); ++ws)
             if (under_construction[ws] && week > construction_end_date[ws]) {
                 vector<int> set_online_now;
@@ -420,7 +414,6 @@ void InfrastructureManager::removeRelatedSourcesFromQueue(int next_construction)
  * @param week
  */
 void InfrastructureManager::beginConstruction(int week, int infra_id) {
-
     /// Checks is piece of infrastructure to be built next prevents
     /// another one from being build and, if so, removes the latter
     /// from the queue. E.g. if the large expansion of a reservoir is
@@ -462,3 +455,4 @@ const vector<int> &InfrastructureManager::getInfra_built_last_week() const {
 const vector<bool> &InfrastructureManager::getUnder_construction() const {
     return under_construction;
 }
+

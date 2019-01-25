@@ -36,7 +36,6 @@ Simulation::Simulation(
         utilities_rdm(utilities_rdm),
         water_sources_rdm(water_sources_rdm),
         policies_rdm(policies_rdm) {
-
     setupSimulation(
             water_sources, water_sources_graph,
             water_sources_to_utilities, utilities, drought_mitigation_policies,
@@ -74,7 +73,6 @@ Simulation::Simulation(
         policies_rdm(policies_rdm),
         precomputed_rof_tables(&precomputed_rof_tables),
         table_storage_shift(&table_storage_shift) {
-
     setRof_tables_folder(rof_tables_folder);
 
     setupSimulation(
@@ -111,7 +109,6 @@ Simulation::Simulation(
         utilities_rdm(utilities_rdm),
         water_sources_rdm(water_sources_rdm),
         policies_rdm(policies_rdm) {
-
     setRof_tables_folder(rof_tables_folder);
 
     setupSimulation(
@@ -142,7 +139,6 @@ void Simulation::setupSimulation(
         int import_export_rof_tables,
         const unsigned long total_simulation_time,
         vector<unsigned long> &realizations_to_run) {
-
     /// Sort water sources and utilities by their IDs.
     //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
     std::sort(water_sources.begin(), water_sources.end(), WaterSource::compare);
@@ -235,7 +231,6 @@ Simulation &Simulation::operator=(const Simulation &simulation) {
 void Simulation::createContinuityModels(unsigned long realization,
                                         ContinuityModelRealization *&realization_model,
                                         ContinuityModelROF *&rof_model) {
-
     /// Create realization models by copying the water sources and utilities.
     vector<WaterSource *> water_sources_realization =
             Utils::copyWaterSourceVector(water_sources);
@@ -297,7 +292,6 @@ void Simulation::createContinuityModels(unsigned long realization,
 }
 
 MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
-
     if (rof_tables_folder.length() == 0)
         rof_tables_folder = "rof_tables";
 

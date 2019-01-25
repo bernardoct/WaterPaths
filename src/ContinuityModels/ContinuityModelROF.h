@@ -75,7 +75,13 @@ public:
 
     void tableROFExceptionHandler(double m, int u, int week);
 
+    void setInitialTableTier(int week, const int &utilities, vector<Matrix2D<double>> &vector, int &tier);
 
+    void recordROFStorageTable(vector<Matrix2D<double>> &ut_storage_to_rof_rof_realization,
+                               vector<Matrix2D<double>> &ut_storage_to_rof_table, const int &n_utilities, int &week,
+                               int &week_of_the_year);
+
+    void calculateEmptyVolumes(vector<WaterSource *> &realization_water_sources, double *to_full);
 };
 
 

@@ -21,7 +21,6 @@ ContinuityModelROF::ContinuityModelROF(vector<WaterSource *> water_sources, cons
                           realization_id),
           n_topo_sources((int) sources_topological_order.size()),
           use_precomputed_rof_tables(use_precomputed_rof_tables) {
-
     /// update utilities' total stored volume
     for (Utility *u : this->continuity_utilities) {
         u->updateTotalAvailableVolume();
@@ -75,7 +74,6 @@ ContinuityModelROF::~ContinuityModelROF() {
  * @param week for which rof is to be calculated.
  */
 vector<double> ContinuityModelROF::calculateLongTermROF(int week) {
-
     // vector where risks of failure will be stored.
     vector<double> risk_of_failure((unsigned long) n_utilities, 0.0);
     vector<double> year_failure((unsigned long) n_utilities, 0.0);
@@ -177,20 +175,13 @@ vector<double> ContinuityModelROF::calculateShortTermROFTable(int week) {
  * @param week for which rof is to be calculated.
  */
 vector<double> ContinuityModelROF::calculateShortTermROFFullCalcs(int week) {
-
     // vector where risks of failure will be stored.
     vector<double> risk_of_failure((unsigned long) n_utilities, 0.0);
     vector<double> year_failure((unsigned long) n_utilities, 0.0);
     double to_full[n_sources];
 
-    for (int ws = 0; ws < n_sources; ++ws) {
-        if (realization_water_sources[ws]->isOnline()) {
-            to_full[ws] = realization_water_sources[ws]->getSupplyCapacity() -
-                          realization_water_sources[ws]->getAvailableSupplyVolume();
-        } else {
-            to_full[ws] = 0;
-        }
-    }
+    // Empty volumes are later used to update ROF tables.
+    calculateEmptyVolumes(realization_water_sources, to_full);
 
     int week_of_the_year = Utils::weekOfTheYear(week);
 
@@ -210,7 +201,6 @@ vector<double> ContinuityModelROF::calculateShortTermROFFullCalcs(int week) {
         resetUtilitiesAndReservoirs(SHORT_TERM_ROF);
 
         for (int w = 0; w < WEEKS_ROF_SHORT_TERM; ++w) {
-
             /// one week continuity time-step.
             continuityStep(w + week, yr, !APPLY_DEMAND_BUFFER);
 
@@ -227,14 +217,9 @@ vector<double> ContinuityModelROF::calculateShortTermROFFullCalcs(int week) {
                                     week_of_the_year, to_full);
         }
 
-        /// update storage-rof table
-        for (int u = 0; u < n_utilities; ++u) {
-            double *rof_data = (ut_storage_to_rof_rof_realization[u] / NUMBER_REALIZATIONS_ROF).
-                    getPointerToElement(week_of_the_year, 0);
-            ut_storage_to_rof_table[u].add_to_position(
-                    week, 0, rof_data, NO_OF_INSURANCE_STORAGE_TIERS
-            );
-        }
+        /// Record ROF realization results into final ROF table for that week.
+        recordROFStorageTable(ut_storage_to_rof_rof_realization, ut_storage_to_rof_table,
+                              n_utilities, week, week_of_the_year);
 
         /// Count failures and reset failures counter.
         for (int uu = 0; uu < n_utilities; ++uu) {
@@ -243,20 +228,7 @@ vector<double> ContinuityModelROF::calculateShortTermROFFullCalcs(int week) {
         }
     }
 
-    /// Set first tier for ROF table calculation close to where the first
-    /// failure was observed for last week's table, so to save computations.
-    for (int s = 0; s < NO_OF_INSURANCE_STORAGE_TIERS; ++s) {
-        int count_failures = 0;
-        for (int u = 0; u < n_utilities; ++u) {
-            if (ut_storage_to_rof_table[u](week, NO_OF_INSURANCE_STORAGE_TIERS - s) > 0.) {
-                ++count_failures;
-            }
-        }
-        if (count_failures == 0)
-            beginning_tier = max(0, s - 1);
-        else
-            break;
-    }
+    setInitialTableTier(week, n_utilities, ut_storage_to_rof_table, beginning_tier);
 
     /// Finish ROF calculations
     for (int u = 0; u < n_utilities; ++u) {
@@ -283,7 +255,6 @@ vector<double> ContinuityModelROF::calculateShortTermROFFullCalcs(int week) {
 void ContinuityModelROF::updateStorageToROFTable(
         double storage_percent_decrement, int week_of_the_year,
         const double *to_full) {
-
     double available_volumes[n_sources];
     for (int ws = 0; ws < n_sources; ++ws) {
         available_volumes[ws] =
@@ -309,7 +280,7 @@ void ContinuityModelROF::updateStorageToROFTable(
         /// decrement.
         for (int wss = 0; wss < n_sources; ++wss) {
             delta_storage[wss] = to_full[wss] - water_sources_capacities[wss] *
-                    percent_decrement_storage_level;
+                                                percent_decrement_storage_level;
         }
 
         /// Shift storages.
@@ -323,15 +294,15 @@ void ContinuityModelROF::updateStorageToROFTable(
             /// shifted storages.
             for (int ws : water_sources_online_to_utilities[u])
                 utility_storage += available_volumes_shifted[ws] *
-                        continuity_water_sources[ws]->getSupplyAllocatedFraction(u) *
-                        (realization_water_sources[ws]->getAllocatedTreatmentCapacity(u) > 0
-                         && realization_water_sources[ws]->isOnline());
+                                   continuity_water_sources[ws]->getSupplyAllocatedFraction(u) *
+                                   (realization_water_sources[ws]->getAllocatedTreatmentCapacity(u) > 0
+                                    && realization_water_sources[ws]->isOnline());
             /// Register failure in the table for each utility meeting
             /// failure criteria.
             if (utility_storage / utilities_capacities[u] <
                 STORAGE_CAPACITY_RATIO_FAIL) {
                 ut_storage_to_rof_rof_realization[u](week_of_the_year,
-                                               NO_OF_INSURANCE_STORAGE_TIERS - s) = FAILURE;
+                                                     NO_OF_INSURANCE_STORAGE_TIERS - s) = FAILURE;
                 count_fails++;
             }
         }
@@ -342,7 +313,7 @@ void ContinuityModelROF::updateStorageToROFTable(
             for (int ss = s; ss <= NO_OF_INSURANCE_STORAGE_TIERS; ++ss) {
                 for (unsigned long u = 0; u < (unsigned long) n_utilities; ++u) {
                     ut_storage_to_rof_rof_realization[u](week_of_the_year,
-                                               NO_OF_INSURANCE_STORAGE_TIERS - ss)
+                                                         NO_OF_INSURANCE_STORAGE_TIERS - ss)
                             = FAILURE;
                 }
             }
@@ -355,11 +326,9 @@ void ContinuityModelROF::updateStorageToROFTable(
 void ContinuityModelROF::shiftStorages(
         double * available_volumes_shifted,
         const double * delta_storage) {
-
     /// Add deltas to all sources following the topological order, so that
     /// upstream is calculated before downstream.
     for (int ws : sources_topological_order) {
-
         /// calculate initial estimate for shifted
         available_volumes_shifted[ws] += delta_storage[ws];
 
@@ -401,39 +370,38 @@ void ContinuityModelROF::shiftStorages(
  * @param week
  */
 void ContinuityModelROF::printROFTable(const string &folder) {
-
 //    try {
 //        printf("Tables printed in folder %s for realization %lu.\n", folder.c_str(), realization_id);
-        for (int u = 0; u < n_utilities; ++u) {
-            string file_name = folder + "/tables_r" + to_string(realization_id) + "_u" + to_string(u);
-            ofstream output_file(file_name, std::ofstream::binary);
-            /// Get tables data
-            double *matrix_data = ut_storage_to_rof_table[u].
-                    getPointerToElement(0, 0);
-            /// Calculate number of doubles to be exported
-            auto size_data = (ut_storage_to_rof_table[u].get_i() *
-                                             (NO_OF_INSURANCE_STORAGE_TIERS + 1));
+    for (int u = 0; u < n_utilities; ++u) {
+        string file_name = folder + "/tables_r" + to_string(realization_id) + "_u" + to_string(u);
+        ofstream output_file(file_name, std::ofstream::binary);
+        /// Get tables data
+        double *matrix_data = ut_storage_to_rof_table[u].
+                getPointerToElement(0, 0);
+        /// Calculate number of doubles to be exported
+        auto size_data = (ut_storage_to_rof_table[u].get_i() *
+                          (NO_OF_INSURANCE_STORAGE_TIERS + 1));
 
-            /// Check for errors
-            for (int i = 0; i < size_data; ++i) {
-                double d = matrix_data[i];
-                if (std::isnan(d) || d > 1.01 || d < 0) {
-                    string error_m = "nan or out of [0,1] rof imported "
-                                             "tables. Realization " +
-                                     to_string(realization_id) + ", week " +
-                                     to_string(i / NO_OF_INSURANCE_STORAGE_TIERS) + "\n";
-                    printf("%s", error_m.c_str());
-                    throw_with_nested(logic_error(error_m.c_str()));
-                }
+        /// Check for errors
+        for (int i = 0; i < size_data; ++i) {
+            double d = matrix_data[i];
+            if (std::isnan(d) || d > 1.01 || d < 0) {
+                string error_m = "nan or out of [0,1] rof imported "
+                                 "tables. Realization " +
+                                 to_string(realization_id) + ", week " +
+                                 to_string(i / NO_OF_INSURANCE_STORAGE_TIERS) + "\n";
+                printf("%s", error_m.c_str());
+                throw_with_nested(logic_error(error_m.c_str()));
             }
-
-            /// Export size of array
-            output_file.write(reinterpret_cast<char *>(&size_data), sizeof(unsigned));
-            /// Export data itself
-            output_file.write(reinterpret_cast<char *>(matrix_data),
-                              size_data * sizeof(double));
-            output_file.close();
         }
+
+        /// Export size of array
+        output_file.write(reinterpret_cast<char *>(&size_data), sizeof(unsigned));
+        /// Export data itself
+        output_file.write(reinterpret_cast<char *>(matrix_data),
+                          size_data * sizeof(double));
+        output_file.close();
+    }
 //    } catch (...) {
 //        char error[2048];
 //        sprintf(error, "Error saving ROF tables for realization %d.\n", realization_id);
@@ -447,7 +415,6 @@ void ContinuityModelROF::printROFTable(const string &folder) {
  * corresponding realization simulation.
  */
 void ContinuityModelROF::resetUtilitiesAndReservoirs(int rof_type) {
-
     /// update water sources info. If short-term rof, return to current
     /// storage; if long-term, make them full.
     if (rof_type == SHORT_TERM_ROF)
@@ -537,7 +504,7 @@ void ContinuityModelROF::updateOnlineInfrastructure(int week) {
             for (unsigned long u = 0; u < (unsigned long) n_utilities; ++u) {
                 current_and_base_storage_capacity_ratio.at(u) =
                         utilities_capacities.at(u) /
-                                utility_base_storage_capacity.at(u);
+                        utility_base_storage_capacity.at(u);
             }
         }
     }
@@ -559,12 +526,12 @@ void ContinuityModelROF::tableROFExceptionHandler(double m, int u, int week) {
     string error;
     if (m > 1.) {
         error = "ROF tables being extrapolated  because current "
-                        "capacity is greater than table base capacity."
-                        " Utility " + to_string(u) + ", m=" +
+                "capacity is greater than table base capacity."
+                " Utility " + to_string(u) + ", m=" +
                 to_string(m) + ". You should try regenerating "
-                        "tables with a higher value for constant "
-                        "BASE_STORAGE_CAPACITY_MULTIPLIER  and higher"
-                        " number of table tiers";
+                               "tables with a higher value for constant "
+                               "BASE_STORAGE_CAPACITY_MULTIPLIER  and higher"
+                               " number of table tiers";
         throw_with_nested(logic_error(error.c_str()));
     } else {
         error = "Exception happened in week " + to_string(week) +
@@ -575,4 +542,65 @@ void ContinuityModelROF::tableROFExceptionHandler(double m, int u, int week) {
 
 vector<Matrix2D<double>> &ContinuityModelROF::getUt_storage_to_rof_table() {
     return ut_storage_to_rof_table;
+}
+
+/**
+ * Set first tier for ROF table calculation close to where the first
+ * failure was observed for last week's table, so to save computations
+ * @param week
+ * @param n_utilities
+ * @param ut_storage_to_rof_table
+ * @param beginning_tier
+ */
+void ContinuityModelROF::setInitialTableTier(int week, const int &n_utilities,
+                                             vector<Matrix2D<double>> &ut_storage_to_rof_table, int &beginning_tier) {
+    for (int s = 0; s < NO_OF_INSURANCE_STORAGE_TIERS; ++s) {
+        int count_failures = 0;
+        for (int u = 0; u < n_utilities; ++u) {
+            if (ut_storage_to_rof_table[u](week, NO_OF_INSURANCE_STORAGE_TIERS - s) > 0.) {
+                ++count_failures;
+            }
+        }
+        if (count_failures == 0)
+            beginning_tier = max(0, s - 1);
+        else
+            break;
+    }
+}
+
+/**
+ * Records failure results for one ROF realization in overall ROF table for that week.
+ * @param ut_storage_to_rof_rof_realization
+ * @param ut_storage_to_rof_table
+ * @param n_utilities
+ * @param week
+ * @param week_of_the_year
+ */
+void ContinuityModelROF::recordROFStorageTable(vector<Matrix2D<double>> &ut_storage_to_rof_rof_realization,
+                                               vector<Matrix2D<double>> &ut_storage_to_rof_table, const int &n_utilities, int &week, int &week_of_the_year) {
+    for (int u = 0; u < n_utilities; ++u) {
+        double *rof_data = (ut_storage_to_rof_rof_realization[u] / NUMBER_REALIZATIONS_ROF).
+                getPointerToElement(week_of_the_year, 0);
+        ut_storage_to_rof_table[u].add_to_position(
+                week, 0, rof_data, NO_OF_INSURANCE_STORAGE_TIERS
+        );
+    }
+
+
+}
+
+/**
+ * Calculate empty volume in storage-based water sources. This information is later used for updating the ROF tables.
+ * @param realization_water_sources
+ * @param to_full
+ */
+void ContinuityModelROF::calculateEmptyVolumes(vector<WaterSource *> &realization_water_sources, double *to_full) {
+    for (int ws = 0; ws < n_sources; ++ws) {
+        if (realization_water_sources[ws]->isOnline()) {
+            to_full[ws] = realization_water_sources[ws]->getSupplyCapacity() -
+                          realization_water_sources[ws]->getAvailableSupplyVolume();
+        } else {
+            to_full[ws] = 0;
+        }
+    }
 }

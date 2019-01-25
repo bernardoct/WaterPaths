@@ -63,7 +63,15 @@ public:
 
     void collectData(unsigned long r);
 
-    void performBootstrapAnalysis(int sol_id, int n_sets, int n_samples, int n_threads, vector<vector<int>> bootstrap_samples = vector<vector<int>>());
+    void performBootstrapAnalysis(int sol_id, int n_sets, int n_samples, int n_threads,
+            vector<vector<int>> bootstrap_samples = vector<vector<int>>());
+
+    DataCollector* createPolicyDataCollector(DroughtMitigationPolicy* dmp, unsigned long r);
+
+    DataCollector* createWaterSourceDataCollector(WaterSource* ws, unsigned long r);
+
+    void printUtilityObjectivesToRowOutStream(vector<UtilitiesDataCollector *> &u, std::ofstream &outStream,
+            vector<double> &objectives);
 };
 
 

@@ -51,7 +51,6 @@ Utility::Utility(
         name(name),
         percent_contingency_fund_contribution(percent_contingency_fund_contribution),
         demand_buffer(demand_buffer) {
-
     calculateWeeklyAverageWaterPrices(typesMonthlyDemandFraction,
                                       typesMonthlyWaterPrice);
 }
@@ -100,7 +99,6 @@ Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_r
         name(name),
         percent_contingency_fund_contribution(percent_contingency_fund_contribution),
         demand_buffer(demand_buffer) {
-
     infrastructure_construction_manager =
             InfrastructureManager(id, infra_construction_triggers, infra_if_built_remove,
                                   infra_discount_rate, bond_term, bond_interest_rate,
@@ -167,7 +165,6 @@ Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_r
         name(name),
         percent_contingency_fund_contribution(percent_contingency_fund_contribution),
         demand_buffer(demand_buffer) {
-
     infrastructure_construction_manager = InfrastructureManager(id, infra_construction_triggers,
                                                                 vector<vector<int>>(), infra_discount_rate,
                                                                 bond_term, bond_interest_rate,
@@ -210,7 +207,6 @@ Utility::Utility(Utility &utility) :
         percent_contingency_fund_contribution(utility.percent_contingency_fund_contribution),
         demand_buffer(utility.demand_buffer),
         infrastructure_construction_manager(utility.infrastructure_construction_manager) {
-
     infrastructure_construction_manager.connectWaterSourcesVectorsToUtilitys(water_sources,
                                                                              priority_draw_water_source,
                                                                              non_priority_draw_water_source);
@@ -224,7 +220,6 @@ Utility::~Utility() {
 }
 
 Utility &Utility::operator=(const Utility &utility) {
-
     demand_series_realization = vector<double>((unsigned long) utility.number_of_week_demands);
 
     infrastructure_construction_manager.connectWaterSourcesVectorsToUtilitys(water_sources,
@@ -257,7 +252,6 @@ bool Utility::compById(Utility *a, Utility *b) {
 void Utility::calculateWeeklyAverageWaterPrices(
         const vector<vector<double>> *typesMonthlyDemandFraction,
         const vector<vector<double>> *typesMonthlyWaterPrice) {
-
     priceCalculationErrorChecking(typesMonthlyDemandFraction,
                                   typesMonthlyWaterPrice);
 
@@ -317,7 +311,6 @@ void Utility::updateTotalAvailableVolume() {
         total_stored_volume += stored_volume;
 	    net_stream_inflow += water_sources[ws]->getAllocatedInflow(id);
     }
-
 }
 
 void Utility::clearWaterSources() {
@@ -466,7 +459,6 @@ void Utility::splitDemands(
 void Utility::updateContingencyFundAndDebtService(
         double unrestricted_demand, double demand_multiplier,
         double demand_offset, double unfulfilled_demand, int week) {
-
     int week_of_year = Utils::weekOfTheYear(week);
     double unrestricted_price = weekly_average_volumetric_price[week_of_year];
     double current_price;
@@ -547,7 +539,6 @@ void Utility::setWaterSourceOnline(unsigned int source_id, int week) {
  * @return
  */
 double Utility::updateCurrent_debt_payment(int week) {
-
     double current_debt_payment = 0;
 
     /// Checks if it's the first week of the year, when outstanding debt
@@ -596,7 +587,6 @@ void Utility::forceInfrastructureConstruction(int week, vector<int> new_infra_tr
  * @return
  */
 int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
-
     double past_year_average_demand = 0;
     if (week >= (int) WEEKS_IN_YEAR) {
     //     past_year_average_demand =
@@ -626,7 +616,6 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
 }
 
 void Utility::calculateWastewater_releases(int week, double *discharges) {
-
     double discharge;
     waste_water_discharge = 0;
 
@@ -637,7 +626,6 @@ void Utility::calculateWastewater_releases(int week, double *discharges) {
 
         waste_water_discharge += discharge;
     }
-
 }
 
 void Utility::addInsurancePayout(double payout_value) {

@@ -6,6 +6,7 @@
 #include <cmath>
 #include <numeric>
 #include <algorithm>
+#include <random>
 #include "WaterSource.h"
 #include "../../../Utils/Utils.h"
 
@@ -35,7 +36,6 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
           name(name),
           source_type(source_type),
           construction_time(NON_INITIALIZED) {
-
     for (Catchment *c : catchments) {
         this->catchments.push_back(Catchment(*c));
     }
@@ -69,12 +69,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
           id(id),
           name(name),
           source_type(source_type),
-          construction_time(
-                  construction_time_range[0] * WEEKS_IN_YEAR +
-                  (construction_time_range[1] -
-                   construction_time_range[0]) *
-                  (rand() % (int) WEEKS_IN_YEAR)) {
-
+          construction_time(randomConstructionTime(construction_time_range[0], construction_time_range[1])) {
     for (Catchment *c : catchments) {
         this->catchments.emplace_back(*c);
     }
@@ -109,12 +104,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
           id(id),
           name(name),
           source_type(source_type),
-          construction_time(
-                  construction_time_range[0] * WEEKS_IN_YEAR +
-                  (construction_time_range[1] -
-                   construction_time_range[0]) *
-                  (rand() % (int) WEEKS_IN_YEAR)) {
-
+          construction_time(randomConstructionTime(construction_time_range[0], construction_time_range[1])) {
     for (Catchment *c : catchments) {
         this->catchments.emplace_back(*c);
     }
@@ -189,11 +179,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
           id(id),
           name(name),
           source_type(source_type),
-          construction_time(
-                  construction_time_range[0] * WEEKS_IN_YEAR +
-                  (construction_time_range[1] -
-                   construction_time_range[0]) *
-                  (rand() % (int) WEEKS_IN_YEAR)) {
+          construction_time(randomConstructionTime(construction_time_range[0], construction_time_range[1])) {
     setAllocations(utilities_with_allocations,
                    allocated_fractions,
                    allocated_treatment_fractions);
@@ -206,7 +192,6 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
 }
 
 void WaterSource::checkForInputErrorsConstruction() {
-
     if (std::isnan(permitting_time) || permitting_time < 0) {
         string error = "Invalid permitting period for water source " + to_string(id);
         __throw_invalid_argument(error.c_str());
@@ -247,7 +232,6 @@ WaterSource::WaterSource(const WaterSource &water_source) :
         name(water_source.name),
         source_type(water_source.source_type),
         construction_time(water_source.construction_time) {
-
     if (water_source.wq_pool_id != NON_INITIALIZED) {
         wq_pool_id = water_source.wq_pool_id;
 
@@ -284,7 +268,6 @@ WaterSource::~WaterSource() {
  * @return
  */
 WaterSource &WaterSource::operator=(const WaterSource &water_source) {
-
     if (wq_pool_id != NON_INITIALIZED) {
         wq_pool_id = water_source.wq_pool_id;
 
@@ -501,7 +484,6 @@ void WaterSource::continuityWaterSource(int week, double upstream_source_inflow,
  * catchment between both water sources.
  */
 void WaterSource::bypass(int week, double total_upstream_inflow) {
-
     upstream_catchment_inflow = 0;
     for (Catchment &c : catchments) {
         upstream_catchment_inflow += c.getStreamflow((week));
@@ -681,7 +663,6 @@ double WaterSource::getTotal_treatment_capacity(int utility_id) const {
 void WaterSource::resetAllocations(
         const vector<double>
         *new_allocated_fractions) {
-
     /// Populate vectors.
     for (unsigned long i = 0; i < utilities_with_allocations->size(); ++i) {
         int u = utilities_with_allocations->at(i);
@@ -699,7 +680,6 @@ void WaterSource::resetAllocations(
 
 void WaterSource::setAvailableAllocatedVolumes(
         vector<double> available_allocated_volumes, double available_volume) {
-
     if (  utilities_with_allocations)
       this->available_allocated_volumes = available_allocated_volumes;
     this->available_volume = available_volume;
@@ -731,4 +711,14 @@ Bond &WaterSource::getBond(int utility_id) {
     } else {
         return *bonds[utility_id];
     }
+}
+
+int WaterSource::randomConstructionTime(double t0, double tf) {
+    std::mt19937 rng;
+    rng.seed(std::random_device()());
+    std::uniform_real_distribution<> dist(t0, tf);
+
+    double time = t0 * WEEKS_IN_YEAR + dist(rng) * (tf - t0) * WEEKS_IN_YEAR;
+
+    return (int) time;
 }

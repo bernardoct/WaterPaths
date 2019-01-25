@@ -271,8 +271,7 @@ void Utils::removeIntFromVector(vector<int>& vec, int el) {
     vec.erase(std::remove(vbeg, vend, el), vend);
 }
 
-void Utils::print_exception(const std::exception& e, int level)
-{
+void Utils::print_exception(const std::exception& e, int level) {
     std::cerr << std::string(level, ' ') << "exception: " << e.what() << '\n';
     try {
         std::rethrow_if_nested(e);

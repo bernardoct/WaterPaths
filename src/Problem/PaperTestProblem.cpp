@@ -800,6 +800,6 @@ void PaperTestProblem::setImport_export_rof_tables(int import_export_rof_tables,
         PaperTestProblem::setRofTables(n_realizations, n_utilities, this->rof_tables_directory);
     } else {
         const string mkdir_command = "mkdir";
-        system((mkdir_command + " " + this->rof_tables_directory).c_str());
+        auto output = system((mkdir_command + " " + this->rof_tables_directory).c_str());
     }
 }

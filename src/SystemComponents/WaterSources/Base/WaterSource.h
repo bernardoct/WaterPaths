@@ -176,7 +176,7 @@ public:
 
     void checkForInputErrorsConstruction();
 
-
+    int randomConstructionTime(double t0, double tf);
 };
 
 

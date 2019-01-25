@@ -14,7 +14,7 @@ core*
 rof_tables*
 callgrind*
 serial-borg-moea
-
+./triangleSimulation
 
 #
 # Editor files

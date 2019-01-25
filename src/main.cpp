@@ -7,8 +7,8 @@
 // #include "Problem/PaperTestProblem.h"
 
 #ifdef  PARALLEL
-#include "../serial-borg-moea/borgms.h"
-#include "../borgTriangleProblemDefinition.h"
+#include "../Borg/borgms.h"
+#include "../Borg/borgTriangleProblemDefinition.h"
 #include <mpi.h>
 #endif
 

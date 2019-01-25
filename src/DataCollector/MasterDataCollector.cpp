@@ -55,6 +55,11 @@ MasterDataCollector::~MasterDataCollector() {
             delete dc;
 }
 
+/**
+* @todo NetCDF file being saved with hardly any compression. Someone who knows more
+* about NetCDF may be able to improve compression, which would be great given the 
+* amount of output that can be generated in one run.
+*/
 int MasterDataCollector::printNETCDFUtilities(string base_file_name) {
 #ifdef NETCDF
     unsigned long n_weeks = utility_collectors[0][0]->getCombined_storage().size();

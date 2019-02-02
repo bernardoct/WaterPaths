@@ -14,9 +14,21 @@ core*
 rof_tables*
 callgrind*
 serial-borg-moea
-
+triangleSimulation
 
 #
 # Editor files
 #
 *~
+*#
+*.#
+.#*
+
+
+#
+# Container files
+#
+ContainerFiles/ssh
+id_rsa
+
+

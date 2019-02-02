@@ -1,0 +1,24 @@
+# TODO: use giner (similar to jinja 2) to make this simpler:
+# - don't replicate highly similar services
+# - allow variable substitution
+
+version: "3"
+
+services:
+  mpi_head:
+    image: ${NIX_OMPI_IMAGE}
+    ports: 
+      - "22"
+    links: 
+      - mpi_node
+    # networks:
+    #  - net
+
+  mpi_node:
+    image: ${NIX_OMPI_IMAGE}
+    # networks:
+    #   - net
+
+# networks:
+#   net:
+#     driver: bridge

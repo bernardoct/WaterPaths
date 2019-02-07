@@ -713,12 +713,14 @@ Bond &WaterSource::getBond(int utility_id) {
     }
 }
 
+const double WaterSource::getConstruction_time() const {
+    return construction_time;
+}
+
 int WaterSource::randomConstructionTime(double t0, double tf) {
-    std::mt19937 rng;
+    std::mt19937 rng(std::random_device{}());
     rng.seed(std::random_device()());
     std::uniform_real_distribution<> dist(t0, tf);
 
-    double time = t0 * WEEKS_IN_YEAR + dist(rng) * (tf - t0) * WEEKS_IN_YEAR;
-
-    return (int) time;
+    return (int) (dist(rng) * WEEKS_IN_YEAR);
 }

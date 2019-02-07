@@ -6,6 +6,7 @@ TestFiles/inflows
 TestFiles/output/
 TestFiles/rof_*
 Borg/*
+!Borg/borgProblemDefinition.h
 lib*
 borg*
 core*

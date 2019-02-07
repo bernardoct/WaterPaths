@@ -6,6 +6,7 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 #include "../src/SystemComponents/WaterSources/AllocatedReservoir.h"
+#include "../src/SystemComponents/WaterSources/WaterReuse.h"
 #include "../src/SystemComponents/Bonds/LevelDebtServiceBond.h"
 #include "../src/SystemComponents/Utility/Utility.h"
 #include "../src/Utils/Utils.h"
@@ -290,6 +291,16 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
 
     utility.addWaterSource(&reservoir);
 
+    SECTION("Construction time within bounds.", "[WaterSource][Infrastructure]") {
+        for (int i = 0; i < 10; ++i) {
+            vector<double> construction_time_interval = {3., 5.};
+            WaterReuse reuse("Test", 18, 5., construction_time_interval,
+                             7 * WEEKS_IN_YEAR, bond);
+            REQUIRE(reuse.getConstruction_time() > WEEKS_IN_YEAR * 3);
+            REQUIRE(reuse.getConstruction_time() < WEEKS_IN_YEAR * 5);
+        }
+    }
+
     SECTION("Infrastructure manager", "[InfrastructureManager]") {
         InfrastructureManager infrastructure_construction_manager(0, rof_triggers, infra_built_remove, 0.06, 25, 0.05,
                                                                   construction_order, vector<int>());
@@ -390,7 +401,8 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
         SequentialJointTreatmentExpansion wtp("WTP expansion", 0, 1, 0,
                                               vector<int>(2),
                                               capacity_to_be_added, bonds,
-                                              {3.000, 3.0001}, 0.);
+                                              {3.000, 3.001}, 0.);
+        printf("%f\n", wtp.getConstruction_time());
 
         vector<WaterSource *> water_sources =
                 Utils::copyWaterSourceVector({&allocated_reservoir, &wtp});
@@ -409,7 +421,7 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
 
         vector<double> lt_rofs = {1., 0.};
 
-        SECTION("Test triggering and forced construction for joint infarstructure.") {
+        SECTION("Test triggering and forced construction for joint infrestructure.") {
             // Begin construction
             model.setLongTermROFs(lt_rofs, 100);
 
@@ -434,7 +446,7 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
             // Begin construction
             model.setLongTermROFs(lt_rofs, 100);
             // Finish construction and set source online
-            model.setLongTermROFs(lt_rofs, 257);
+            model.setLongTermROFs(lt_rofs, 362);
             REQUIRE(!model.getContinuity_utilities()[0]->
                     getInfrastructure_construction_manager()
                     .getUnder_construction()[0]);

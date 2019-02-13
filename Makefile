@@ -15,7 +15,7 @@ all: $(SOURCES) $(TARGET)
 
 borg: CC=mpicxx
 borg: LIBS += -lborgms
-borg: CFLAGS += -DPARALLEL -fopenmp -march=ivybridge -O2
+borg: CFLAGS += -DPARALLEL -fopenmp -march=native -O2
 borg: all
 
 gcc: CC=g++
@@ -27,7 +27,7 @@ intel: CFLAGS+=-O2 ${TACC_VEC_FLAGS} -qopenmp
 intel: all
 
 gcc-debug: CC=g++
-gcc-debug: CFLAGS+=-O0 -march=ivybridge -g -fopenmp
+gcc-debug: CFLAGS+=-O0 -march=native -g -fopenmp
 gcc-debug: all
 
 intel-debug: CC=icc

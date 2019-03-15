@@ -317,7 +317,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                 r);
 
         try {
-            double start = omp_get_wtime();
+            //double start = omp_get_wtime();
             for (int w = 0; w < (int) total_simulation_time; ++w) {
                 // DO NOT change the order of the steps. This would mess up
                 // important dependencies.
@@ -359,7 +359,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
 	int mpi_initialized;
 	MPI_Initialized(&mpi_initialized);
 	if (mpi_initialized)
-            MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+             MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 	else
 	    world_rank = 0;
 #else

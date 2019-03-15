@@ -3,13 +3,57 @@
 #include "Utils/Solutions.h"
 #include "Problem/PaperTestProblem.h"
 #include "Problem/Triangle.h"
-#include "Problem/Triangle.h"
-// #include "Problem/PaperTestProblem.h"
 
 #ifdef  PARALLEL
 #include "../Borg/borgms.h"
-#include "../Borg/borgTriangleProblemDefinition.h"
 #include <mpi.h>
+#ifdef PARALLEL
+void setProblemDefinition(BORG_Problem &problem)
+{
+    // The parameter bounds are the same for all formulations
+
+    BORG_Problem_set_bounds(problem, 0, 0.001, 1.0);    // watertown restrictions
+    BORG_Problem_set_bounds(problem, 1, 0.001, 1.0);    // dryville restrictions
+    BORG_Problem_set_bounds(problem, 2, 0.001, 1.0);    // fallsland restrictions
+    BORG_Problem_set_bounds(problem, 3, 0.001, 1.0);    // dryville transfer
+    BORG_Problem_set_bounds(problem, 4, 0.001, 1.0);    // fallsland transfer
+    BORG_Problem_set_bounds(problem, 5, 0.334, 0.9);    // watertown LMA
+    BORG_Problem_set_bounds(problem, 6, 0.05, 0.333);   // dryville LMA
+    BORG_Problem_set_bounds(problem, 7, 0.05, 0.333);   // fallsland LMA
+    BORG_Problem_set_bounds(problem, 8, 0.0, 0.1);      // watertown annual payment
+    BORG_Problem_set_bounds(problem, 9, 0.0, 0.1);      // dryville annual payment
+    BORG_Problem_set_bounds(problem, 10, 0.0, 0.1);     // fallsland annual payment 
+    BORG_Problem_set_bounds(problem, 11, 0.001, 1.0);   // watertown insurance use
+    BORG_Problem_set_bounds(problem, 12, 0.001, 1.0);   // dryville insurance use
+    BORG_Problem_set_bounds(problem, 13, 0.001, 1.0);   // fallsland insurance use
+    BORG_Problem_set_bounds(problem, 14, 0.0, 0.02);    // watertown insurance payment
+    BORG_Problem_set_bounds(problem, 15, 0.0, 0.02);    // dryville insurance payment
+    BORG_Problem_set_bounds(problem, 16, 0.0, 0.02);    // fallsland insurance payment
+    BORG_Problem_set_bounds(problem, 17, 0.001, 1.0);   // watertown inf trigger
+    BORG_Problem_set_bounds(problem, 18, 0.001, 1.0);   // dryville inf trigger
+    BORG_Problem_set_bounds(problem, 19, 0.001, 1.0);   // fallsland inf trigger
+    BORG_Problem_set_bounds(problem, 20, 0.0, 1.0);     // new river rank watertown
+    BORG_Problem_set_bounds(problem, 21, 0.0, 1.0);     // college rock expansion rank low
+    BORG_Problem_set_bounds(problem, 22, 0.0, 1.0);     // college rock expansion rank high
+    BORG_Problem_set_bounds(problem, 23, 0.0, 1.0);     // watertown reuse rank
+    BORG_Problem_set_bounds(problem, 24, 0.0, 1.0);     // sugar creek rank
+    BORG_Problem_set_bounds(problem, 25, 0.0, 1.0);     // granite quarry rank
+    BORG_Problem_set_bounds(problem, 26, 0.0, 1.0);     // new river rank fallsland
+    
+
+    // Set epsilons for objectives
+    // Original values: (works fine for Formulations 0-4)
+
+    BORG_Problem_set_epsilon(problem, 0, 0.001);
+    BORG_Problem_set_epsilon(problem, 1, 25.0);
+    BORG_Problem_set_epsilon(problem, 2, 0.02);
+    BORG_Problem_set_epsilon(problem, 3, 0.02);
+    BORG_Problem_set_epsilon(problem, 4, 0.05);
+    BORG_Problem_set_epsilon(problem, 5, 0.05);
+
+}
+#endif 
+
 #endif
 
 #include <sys/stat.h>
@@ -18,20 +62,45 @@
 #include <fstream>
 #include <omp.h>
 
+
 #define NUM_OBJECTIVES 6;
-#define NUM_DEC_VAR 57;
+//#define NUM_DEC_VAR 27;
+#define NUM_DEC_VAR 27; // infrastructure turned off
 
 using namespace std;
 using namespace Constants;
 using namespace Solutions;
 
-//PaperTestProblem *problem_ptr;
-Triangle *problem_ptr;
+PaperTestProblem *problem_ptr;
+//Triangle *problem_ptr;
 int failures = 0;
-
+ofstream sol_out; // for debugging borg
 void eval(double *vars, double *objs, double *consts) {
-    failures += problem_ptr->functionEvaluation(vars, objs, consts);
-    problem_ptr->destroyDataCollector();
+    try {
+        //cout << "DVs: ";
+        for (int i = 0; i < 27; ++i){
+            sol_out << vars[i] << ",";
+            //cout << vars[i] << ",";
+        }
+        //cout << endl;
+        sol_out << endl;
+        failures += problem_ptr->functionEvaluation(vars, objs, consts);
+    	problem_ptr->destroyDataCollector();
+        
+	}
+	catch(...){
+		sol_out << endl;
+        sol_out << "Failure! Decision Variable values: " << endl;
+        cout << endl;
+        cout << "Failure! Decision variable values: " << endl;
+        for (int i = 0; i < 27; ++i){
+			sol_out << vars[i] << ",";
+            cout << vars[i] << ",";
+		}
+		cout << endl;
+        sol_out << endl;
+		sol_out << endl;
+	}
 }
 
 int main(int argc, char *argv[]) {
@@ -205,9 +274,9 @@ int main(int argc, char *argv[]) {
                 return -1;
         }
     }
-
-//    PaperTestProblem problem(n_weeks, import_export_rof_table);
-    Triangle problem(n_weeks, import_export_rof_table);
+    cout << "creating testproblem" << endl;
+    PaperTestProblem problem(n_weeks, import_export_rof_table);
+    //Triangle problem(n_weeks, import_export_rof_table);
 
     /// Set basic realization parameters.
     problem.setN_weeks(n_weeks);
@@ -239,7 +308,7 @@ int main(int argc, char *argv[]) {
     if (strlen(inflows_evap_directory_suffix.c_str()) > 2) {
         problem.setEvap_inflows_suffix(inflows_evap_directory_suffix);
     }
-
+    cout << "reading RDM file" << endl;
     /// Read RDM file, if any
     if (strlen(utilities_rdm_file.c_str()) > 2) {
         if (rdm_no != NON_INITIALIZED) {
@@ -271,7 +340,6 @@ int main(int argc, char *argv[]) {
                                                 water_sources_rdm, policies_rdm);
         }
     }
-
     problem_ptr = &problem;
 
     /// Set realizations to be run -- otherwise, n_realizations realizations will be run.
@@ -345,6 +413,7 @@ int main(int argc, char *argv[]) {
         return 0;
     } else {
 #ifdef  PARALLEL
+        
         printf("Running Borg with:\n"
             "n_islands: %lu\n"
             "nfe: %lu\n"
@@ -352,8 +421,9 @@ int main(int argc, char *argv[]) {
             "n_weeks: %lu\n"
             "n_realizations: %lu\n\n",
             n_islands, nfe, output_frequency, n_weeks, n_realizations);
-
-//        cout << "Defining problem" << endl;
+         
+        // for debugging borg, creating file to print each ranks DVs which isdone in Eval function   
+        
         BORG_Algorithm_ms_startup(&argc, &argv);
 //        BORG_Algorithm_ms_islands((int) n_islands);
 //        BORG_Algorithm_ms_initialization(INITIALIZATION_LATIN_GLOBAL);
@@ -364,8 +434,8 @@ int main(int argc, char *argv[]) {
         BORG_Problem problem = BORG_Problem_create(c_num_dec, c_num_obj,
                                                    c_num_constr,
                                                    eval);
-
         // Set all the parameter bounds and epsilons
+        cout << "setting up problem" << endl;
         setProblemDefinition(problem);
 
     if (seed > -1) {
@@ -374,29 +444,38 @@ int main(int argc, char *argv[]) {
         char outputFilename[256];
         char runtime[256];
         FILE* outputFile = nullptr;
-        sprintf(outputFilename, "%s/TestFiles/output/NC_output_MM_S%d_N%lu.set", system_io.c_str(), seed, nfe);
+        sprintf(outputFilename, "%s/TestFiles/output/TestProblem_output_MS_S%d_N%lu.set", system_io.c_str(), seed, nfe);
     printf("Reference set will be in %s.\n", outputFilename);
         // output path (make sure this exists)
-        sprintf(runtime, "%s/TestFiles/output/NC_runtime_MM_S%d_N%lu_M%%d.runtime", system_io.c_str(), seed, nfe); // runtime
+        sprintf(runtime, "%s/TestFiles/output/TestProblem_runtime_MS_S%d_N%lu.runtime", system_io.c_str(), seed, nfe); // runtime
     printf("Runtime files will be in %s.\n", runtime);
         // path (make sure this exists)
 
         BORG_Algorithm_output_runtime(runtime);
 
-        // int rank; // different seed on each processor
-        // MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-        // BORG_Random_seed(37*seed*(rank+1));
+        int rank; // different seed on each processor
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        string rank_out_file = "diagnostic_output/DVs_rank_" + to_string(rank) + ".csv";
+        sol_out.open(rank_out_file.c_str());
+
+        //int rank; // different seed on each processor
+        //MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        //BORG_Random_seed(37*seed*(rank+1));
+        
         BORG_Random_seed(seed);
         BORG_Archive result = BORG_Algorithm_ms_run(problem); // this actually runs the optimization
-
+        //BORG_Archive result = BORG_Algorithm_run(problem, nfe);
         // If this is the master node, print out the final archive
+
         if (result != nullptr) {
             outputFile = fopen(outputFilename, "w");
+            cout << "master node print, should see only once" << endl;
             if (!outputFile) {
                 BORG_Debug("Unable to open final output file\n");
             }
             BORG_Archive_print(result, outputFile);
             BORG_Archive_destroy(result);
+            sol_out.close();
             fclose(outputFile);
         }
 

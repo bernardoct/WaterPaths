@@ -12,6 +12,8 @@
 
 using namespace std;
 
+int WaterSource::seed = NON_INITIALIZED;
+
 /**
  * Constructor for when water source is built and operational.
  * @param name
@@ -194,12 +196,12 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
 void WaterSource::checkForInputErrorsConstruction() {
     if (std::isnan(permitting_time) || permitting_time < 0) {
         string error = "Invalid permitting period for water source " + to_string(id);
-        __throw_invalid_argument(error.c_str());
+        throw invalid_argument(error.c_str());
     }
 
     if (std::isnan(construction_time) || construction_time < 0) {
         string error = "Invalid construction time for water source " + to_string(id);
-        __throw_invalid_argument(error.c_str());
+        throw invalid_argument(error.c_str());
     }
 }
 
@@ -339,7 +341,7 @@ void WaterSource::setAllocations(
         vector<double> *allocated_fractions,
         vector<double> *allocated_treatment_fractions) {
     if (utilities_with_allocations->size() != allocated_fractions->size())
-        __throw_invalid_argument("There must be one allocation fraction in "
+        throw invalid_argument("There must be one allocation fraction in "
                                          "utilities_with_allocations for "
                                          "each utility id in "
                                          "allocated_fractions.");
@@ -356,7 +358,7 @@ void WaterSource::setAllocations(
     } else if (total_allocated_fraction > 1.) {
         printf("Water Source %d has allocation fractions whose sum are"
                                " more than 1.", id);
-        __throw_invalid_argument("Allocation fractions cannot sum to "
+        throw invalid_argument("Allocation fractions cannot sum to "
                                                  "more than 1.");
     }
 
@@ -369,7 +371,7 @@ void WaterSource::setAllocations(
         string error = "Water Source ";
         error += to_string(id) + " has treatment capacity allocated to water "
                                  "quality pool.";
-        __throw_invalid_argument(error.c_str());
+        throw invalid_argument(error.c_str());
     }
 
     if (it == utilities_with_allocations->end()) {
@@ -378,14 +380,14 @@ void WaterSource::setAllocations(
             error += to_string(id) + " either has capacity fractions allocated to "
                                      "no utilities or utilities with no allocated "
                                      "capacities.";
-            __throw_invalid_argument(error.c_str());
+            throw invalid_argument(error.c_str());
         }
         if (utilities_with_allocations->size() != allocated_treatment_fractions->size()) {
             string error = "Water Source ";
             error += to_string(id) + " either has treatment fractions allocated to "
                                      "no utilities or utilities with no allocated "
                                      "treatment fractions.";
-            __throw_invalid_argument(error.c_str());
+            throw invalid_argument(error.c_str());
         }
     } else {
         if (utilities_with_allocations->size() != allocated_fractions->size()) {
@@ -393,14 +395,14 @@ void WaterSource::setAllocations(
             error += to_string(id) + " either has capacity fractions allocated to "
                                      "no utilities or utilities with no allocated "
                                      "capacities.";
-            __throw_invalid_argument(error.c_str());
+            throw invalid_argument(error.c_str());
         }
         if (utilities_with_allocations->size() != allocated_treatment_fractions->size() + 1) {
             string error = "Water Source ";
             error += to_string(id) + " either has treatment fractions allocated to "
                                      "no utilities or utilities with no allocated "
                                      "treatment fractions.";
-            __throw_invalid_argument(error.c_str());
+            throw invalid_argument(error.c_str());
         }
     }
 
@@ -719,8 +721,21 @@ const double WaterSource::getConstruction_time() const {
 
 int WaterSource::randomConstructionTime(double t0, double tf) {
     std::mt19937 rng(std::random_device{}());
-    rng.seed(std::random_device()());
+    if (seed > NON_INITIALIZED) {
+        rng.seed((unsigned long) id + seed);
+    } else {
+        rng.seed(std::random_device()());
+    }
     std::uniform_real_distribution<> dist(t0, tf);
+    int construction_time = (int) (dist(rng) * WEEKS_IN_YEAR);
 
-    return (int) (dist(rng) * WEEKS_IN_YEAR);
+    return construction_time;
+}
+
+void WaterSource::setSeed(int seed) {
+    WaterSource::seed = seed;
+}
+
+void WaterSource::unsetSeed() {
+    WaterSource::seed = NON_INITIALIZED;
 }

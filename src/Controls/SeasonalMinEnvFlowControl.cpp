@@ -13,13 +13,13 @@ SeasonalMinEnvFlowControl::SeasonalMinEnvFlowControl(
         week_thresholds(week_thresholds),
         min_env_flows(min_env_flows) {
     if (week_thresholds.size() != min_env_flows.size() + 1)
-        __throw_invalid_argument("Number of week threshold needs to be one "
+        throw invalid_argument("Number of week threshold needs to be one "
                                          "more than number of flow rates for "
                                          "seasonal minimum environmental "
                                          "outflow requirements.");
     if (week_thresholds.back() != (int) WEEKS_IN_YEAR + 1 &&
         week_thresholds.at(0) != 0)
-        __throw_invalid_argument("Seasonal minimum environmental flow "
+        throw invalid_argument("Seasonal minimum environmental flow "
                                          "requirements must have first week "
                                          "interval as 0 and last as 53 (for "
                                          "years with 53 weeks.");

@@ -95,7 +95,7 @@ vector<double> InfrastructureManager::rearrangeInfraRofVector(
     for (int i = 0; i < (int) demand_infra_construction_order.size(); ++i) {
         int ws = demand_infra_construction_order[i];
         if (infra_construction_triggers_new[ws] != 1e10)
-            __throw_invalid_argument("A source can be triggered only by "
+            throw invalid_argument("A source can be triggered only by "
                                      "either rof or by demand.");
         infra_construction_triggers_new[demand_infra_construction_order[i]] =
                 infra_construction_triggers[i];
@@ -178,7 +178,7 @@ InfrastructureManager::waterTreatmentPlantConstructionHandler(unsigned int sourc
         water_sources->at(wtp->parent_reservoir_ID)
                 ->addTreatmentCapacity(added_capacity, id);
     } catch (...) {
-        __throw_runtime_error("Could not add treatment capacity to reservoir.");
+        throw runtime_error("Could not add treatment capacity to reservoir.");
     }
 
     /// If source is intake or reuse and is not in the list of active
@@ -377,7 +377,7 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
                     else if (!demand_infra_construction_order.empty())
                         Utils::removeIntFromVector(demand_infra_construction_order, wss);
                     else
-                        __throw_logic_error("Infrastructure option whose construction was"
+                        throw logic_error("Infrastructure option whose construction was"
                                             " complete is not in the demand or "
                                             "rof triggered construction lists.");
 
@@ -428,7 +428,7 @@ void InfrastructureManager::beginConstruction(int week, int infra_id) {
         construction_end_date[infra_id] =
                 week + (int) water_sources->at((unsigned long) infra_id)->construction_time;
     } catch (...) {
-        __throw_out_of_range("Infrastructure not present in infrastructure manager (in utility).");
+        throw out_of_range("Infrastructure not present in infrastructure manager (in utility).");
     }
 }
 

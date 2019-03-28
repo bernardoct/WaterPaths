@@ -729,7 +729,7 @@ PaperTestProblem::setRofTables(unsigned long n_realizations, int n_utilities, st
     ifstream in(file_name, ios_base::binary);
     if (!in.good()) {
         string error_table_file = "Tables file not found: " + file_name;
-        __throw_invalid_argument(error_table_file.c_str());
+        throw invalid_argument(error_table_file.c_str());
     }
 
     unsigned n_weeks_in_table;
@@ -750,7 +750,7 @@ PaperTestProblem::setRofTables(unsigned long n_realizations, int n_utilities, st
             ifstream in(file_name, ios_base::binary);
             if (!in.good()) {
                 string error_table_file = "Tables file not found: " + file_name;
-                __throw_invalid_argument(error_table_file.c_str());
+                throw invalid_argument(error_table_file.c_str());
             }
 
             /// Get table file size from table files.
@@ -772,7 +772,7 @@ PaperTestProblem::setRofTables(unsigned long n_realizations, int n_utilities, st
                                      "tables. Realization " +
                                      to_string(r) + "\n";
                     printf("%s", error_m.c_str());
-                    __throw_logic_error(error_m.c_str());
+                    throw logic_error(error_m.c_str());
                 }
             }
 
@@ -787,7 +787,7 @@ PaperTestProblem::setRofTables(unsigned long n_realizations, int n_utilities, st
 
 void PaperTestProblem::setImport_export_rof_tables(int import_export_rof_tables, int n_weeks, string rof_tables_directory) {
     if (std::abs(import_export_rof_tables) > 1)
-        __throw_invalid_argument("Import/export ROF tables can be assigned as:\n"
+        throw invalid_argument("Import/export ROF tables can be assigned as:\n"
                                  "-1 - import tables\n"
                                  "0 - ignore tables\n"
                                  "1 - export tables.\n"

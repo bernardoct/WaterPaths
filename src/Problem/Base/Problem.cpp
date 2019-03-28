@@ -10,7 +10,7 @@
 vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
     if (this->master_data_collector != nullptr) {
         this->master_data_collector->setOutputDirectory(output_directory);
-        string fo = "/TestFiles/output/Objectives";
+        string fo = BAR + DEFAULT_OUTPUT_DIR + BAR + "Objectives";
         objectives = this->master_data_collector->calculatePrintObjectives(
                 fo + "_s" + std::to_string(solution_no) + fname_sufix, print_files);
     
@@ -27,10 +27,10 @@ void Problem::printTimeSeriesAndPathways() {
     this->master_data_collector->setOutputDirectory(output_directory);
 
     /// Print output files.
-    string fu = "/TestFiles/output/Utilities";
-    string fws = "/TestFiles/output/WaterSources";
-    string fp = "/TestFiles/output/Policies";
-    string fpw = "/TestFiles/output/Pathways";
+    string fu = BAR + DEFAULT_OUTPUT_DIR + BAR + "Utilities";
+    string fws = BAR + DEFAULT_OUTPUT_DIR + BAR + "WaterSources";
+    string fp = BAR + DEFAULT_OUTPUT_DIR + BAR + "Policies";
+    string fpw = BAR + DEFAULT_OUTPUT_DIR + BAR + "Pathways";
 
     //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
     cout << "Printing Pathways" << endl;
@@ -63,8 +63,6 @@ void Problem::printTimeSeriesAndPathways() {
     }
 
 }
-
-
 
 vector<int> Problem::vecInfraRankToVecInt(vector<infraRank> v) {
     vector<int> sorted;
@@ -175,5 +173,5 @@ void Problem::destroyDataCollector() {
 }
 
 Problem::Problem(unsigned long n_weeks) : n_weeks(n_weeks) {
-
+    Reservoir::unsetSeed();
 }

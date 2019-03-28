@@ -7,7 +7,7 @@
 
 
 #include <map>
-#include <bits/unique_ptr.h>
+#include <memory>
 #include "../WaterSources/Reservoir.h"
 #include "../../Utils/Constants.h"
 #include "../../Controls/WwtpDischargeRule.h"

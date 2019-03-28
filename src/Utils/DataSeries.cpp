@@ -8,7 +8,7 @@ DataSeries::DataSeries(vector<double> *series_x, vector<double> *series_y) : ser
                                                                              series_y(series_y),
                                                                              length(series_x->size()) {
     if (series_x->size() != series_y->size())
-        __throw_invalid_argument("Data series: lengths of x (independent variable) and y (dependent variable) series "
+        throw invalid_argument("Data series: lengths of x (independent variable) and y (dependent variable) series "
                                          "must match.");
 
     /// Add a copy of the last element for interpolation purposes.
@@ -41,14 +41,14 @@ const vector<double> &DataSeries::getSeries_x() const {
 }
 
 double DataSeries::get_dependent_variable(int x) {
-    __throw_invalid_argument("Data series get_dependent_variable cannot be called with ints");
+    throw invalid_argument("Data series get_dependent_variable cannot be called with ints");
 }
 
 double DataSeries::get_dependent_variable(double x, int week) {
-    __throw_invalid_argument("Data series get_dependent_variable cannot be called two independent variables.");
+    throw invalid_argument("Data series get_dependent_variable cannot be called two independent variables.");
 }
 
 double DataSeries::get_dependent_variable(int x, int week) {
-    __throw_invalid_argument("Data series get_dependent_variable cannot be called two independent variables.");
+    throw invalid_argument("Data series get_dependent_variable cannot be called two independent variables.");
 }
 

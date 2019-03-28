@@ -45,6 +45,7 @@ protected:
     double total_treatment_capacity = 0;
     int highest_alloc_id = NON_INITIALIZED;
 
+    static int seed;
     virtual void applyContinuity(int week, double upstream_source_inflow,
                                      double wastewater_inflow,
                                      vector<double> &demand_outflow) = 0;
@@ -176,7 +177,11 @@ public:
 
     void checkForInputErrorsConstruction();
 
-    static int randomConstructionTime(double t0, double tf);
+    int randomConstructionTime(double t0, double tf);
+
+    static void setSeed(int seed); 
+
+    static void unsetSeed();
 
     const double getConstruction_time() const;
 };

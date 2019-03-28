@@ -17,6 +17,7 @@ private:
     const int n_utilities = 4;
     double table_gen_storage_multiplier;
     string rof_tables_directory;
+    bool seeded = false;
 
     vector<vector<double>> streamflows_durham;
     vector<vector<double>> streamflows_flat;
@@ -52,7 +53,7 @@ private:
     vector<vector<double>> owasaPriceSurcharges;
 
 public:
-    Triangle(unsigned long n_weeks, int import_export_rof_table);
+    Triangle(unsigned long n_weeks, int import_export_rof_table, bool seeded = false);
 
     ~Triangle();
 

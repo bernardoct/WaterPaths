@@ -32,7 +32,7 @@ SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(const char 
           parent_reservoir_ID((unsigned int) parent_reservoir_ID) {
 
     if (sequential_treatment_capacity.empty())
-        __throw_invalid_argument("max_sequential_capacity is initialized "
+        throw invalid_argument("max_sequential_capacity is initialized "
                                          "within "
                                          "SequentialJointTreatmentExpansion "
                                          "and must be an empty vector.");
@@ -69,7 +69,7 @@ SequentialJointTreatmentExpansion &SequentialJointTreatmentExpansion::operator=(
 void SequentialJointTreatmentExpansion::applyContinuity(int week, double upstream_source_inflow,
                                                         double wastewater_discharge,
                                                         vector<double> &demand_outflow) {
-    __throw_logic_error("Reservoir expansion only add storage volume to the "
+    throw logic_error("Reservoir expansion only add storage volume to the "
                                 "reservoir they're assigned to.  Continuity "
                                 "cannot be called on it, but only on the "
                                 "reservoir it's  assigned to expand.");

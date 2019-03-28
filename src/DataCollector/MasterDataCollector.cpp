@@ -592,7 +592,7 @@ void MasterDataCollector::setOutputDirectory(string directory) {
         cout << "Output will be printed to folder " << output_directory << endl;
     else {
         cout << output_directory << endl;
-        __throw_invalid_argument("Output folder does not exist.");
+        throw invalid_argument("Output folder does not exist.");
     }
 }
 
@@ -604,7 +604,7 @@ DataCollector* MasterDataCollector::createPolicyDataCollector(DroughtMitigationP
     else if (dmp->type == INSURANCE_STORAGE_ROF)
         return new EmptyDataCollector();
     else
-        __throw_invalid_argument("Drought mitigation policy not recognized. "
+        throw invalid_argument("Drought mitigation policy not recognized. "
                                  "Did you forget to add it to the "
                                  "MasterDataCollector::addRealization"
                                  " function?");
@@ -629,7 +629,7 @@ DataCollector* MasterDataCollector::createWaterSourceDataCollector(WaterSource* 
              SOURCE_RELOCATION)
         return new EmptyDataCollector();
     else
-        __throw_invalid_argument("Water source not recognized. "
+        throw invalid_argument("Water source not recognized. "
                                  "Did you forget to add it to the "
                                  "MasterDataCollector::addRealization"
                                  " function?");

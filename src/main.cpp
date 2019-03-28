@@ -1,4 +1,4 @@
-#include "SystemComponents/WaterSources/Reservoir.h"
+#include "SystemComponents/WaterSources/Base/WaterSource.h"
 #include "Utils/QPSolver/QuadProg++.h"
 #include "Utils/Solutions.h"
 #include "Problem/PaperTestProblem.h"
@@ -114,7 +114,8 @@ int main(int argc, char *argv[]) {
 
     unsigned long n_realizations = 1000;
     unsigned long n_weeks = 1565;
-    string system_io = "./";
+
+    string system_io = DEFAULT_DATA_DIR;
     string solution_file = "-1";
     string uncertainty_file = "-1";
     string bootstrap_file = "-1";
@@ -122,7 +123,7 @@ int main(int argc, char *argv[]) {
     string policies_rdm_file = "-1";
     string water_sources_rdm_file = "-1";
     string inflows_evap_directory_suffix = "-1";
-    string rof_tables_directory = "rof_tables";
+    string rof_tables_directory = DEFAULT_ROF_TABLES_DIR;
     unsigned long standard_solution = 0;
     int n_threads;// = omp_get_num_procs();
     int standard_rdm = 0;
@@ -279,6 +280,9 @@ int main(int argc, char *argv[]) {
 
 //    PaperTestProblem problem(n_weeks, import_export_rof_table);
     Triangle problem(n_weeks, import_export_rof_table);
+    if (seed > -1) {
+	WaterSource::setSeed(seed);
+    }
 
     /// Set basic realization parameters.
     problem.setN_weeks(n_weeks);
@@ -294,7 +298,7 @@ int main(int argc, char *argv[]) {
         for (auto &v : bootstrap_samples_double) {
             realizations_to_run.push_back(vector<int>(v.begin(), v.end()));
             if (*std::max_element(v.begin(), v.end()) >= n_realizations)
-                __throw_invalid_argument(
+                throw invalid_argument(
                         "Number of realizations must be higher than the ID of all realizations in the bootstrap samples file.");
 
         }
@@ -302,7 +306,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (!run_optimization && strlen(system_io.c_str()) == 0) {
-        __throw_invalid_argument(
+        throw invalid_argument(
                 "You must specify an input output directory.");
     }
 
@@ -335,7 +339,7 @@ int main(int argc, char *argv[]) {
             water_sources_rdm = Utils::parse2DCsvFile(system_io + water_sources_rdm_file);
             policies_rdm = Utils::parse2DCsvFile(system_io + policies_rdm_file);
             if (n_realizations > utilities_rdm.size()) {
-                __throw_length_error("If no rdm number is passed, the number of realizations needs to be smaller "
+                throw length_error("If no rdm number is passed, the number of realizations needs to be smaller "
                                      "or equal to the number of rows in the rdm files.");
             }
             problem.setRDMReevaluation((unsigned long) rdm_no, utilities_rdm,
@@ -358,16 +362,16 @@ int main(int argc, char *argv[]) {
         /// Check for basic input errors.
         if ((first_solution == -1 && last_solution != -1) ||
             (first_solution != -1 && last_solution == -1))
-            __throw_invalid_argument("If you set a first or last solution, you "
+            throw invalid_argument("If you set a first or last solution, you "
                                      "must set the other as well.");
 
         vector<vector<double>> solutions;
         if (strlen(solution_file.c_str()) > 2) {
             solutions = Utils::parse2DCsvFile(system_io + solution_file);
             if (standard_solution >= solutions.size())
-                __throw_invalid_argument("Number of solutions in file <= solution ID.\n");
+                throw invalid_argument("Number of solutions in file <= solution ID.\n");
         } else {
-            __throw_invalid_argument("You must specify a solutions file.\n");
+            throw invalid_argument("You must specify a solutions file.\n");
         }
 
         /// Run model
@@ -391,8 +395,8 @@ int main(int argc, char *argv[]) {
             problem_ptr->destroyDataCollector();
         } else {
             ofstream objs_file;
-            string file_name = system_io + "TestFiles/output/Objectives_RDM" + to_string(rdm_no) + "_sols" + to_string(first_solution) +
-                               "_to_" + to_string(last_solution) + ".csv";
+            string file_name = system_io + "TestFiles" + BAR + "output" + BAR + "Objectives_RDM" + to_string(rdm_no) +
+                    "_sols" + to_string(first_solution) + "_to_" + to_string(last_solution) + ".csv";
             objs_file.open(file_name);
             printf("Objectives file will be printed at %s.\n", file_name.c_str());
             for (int s = first_solution; s < last_solution; ++s) {
@@ -439,17 +443,20 @@ int main(int argc, char *argv[]) {
         // Set all the parameter bounds and epsilons
         setProblemDefinition(problem);
 
-    if (seed > -1) {
+        if (seed > -1) {
             srand(seed);
-    }
+            WaterSource::setSeed(seed);
+        }
         char outputFilename[256];
         char runtime[256];
         FILE* outputFile = nullptr;
-        sprintf(outputFilename, "%s/TestFiles/output/NC_output_MM_S%d_N%lu.set", system_io.c_str(), seed, nfe);
-    printf("Reference set will be in %s.\n", outputFilename);
+        sprintf(outputFilename, "%s%s%s%sNC_output_MM_S%d_N%lu.set", system_io.c_str(), BAR, DEFAULT_OUTPUT_DIR, BAR,
+                seed, nfe);
+        printf("Reference set will be in %s.\n", outputFilename);
         // output path (make sure this exists)
-        sprintf(runtime, "%s/TestFiles/output/NC_runtime_MM_S%d_N%lu_M%%d.runtime", system_io.c_str(), seed, nfe); // runtime
-    printf("Runtime files will be in %s.\n", runtime);
+        sprintf(runtime, "%s%s%s%sNC_runtime_MM_S%d_N%lu_M%%d.runtime", system_io.c_str(), BAR, DEFAULT_OUTPUT_DIR, BAR,
+                seed, nfe); // runtime
+        printf("Runtime files will be in %s.\n", runtime);
         // path (make sure this exists)
 
         BORG_Algorithm_output_runtime(runtime);
@@ -471,12 +478,12 @@ int main(int argc, char *argv[]) {
             fclose(outputFile);
         }
 
-    printf("Number of failed function evaluations: %d.\n", failures);
+        printf("Number of failed function evaluations: %d.\n", failures);
 
         BORG_Algorithm_ms_shutdown();
         BORG_Problem_destroy(problem);
 #else
-        __throw_invalid_argument("This version of WaterPaths was not compiled with Borg.");
+        throw invalid_argument("This version of WaterPaths was not compiled with Borg.");
 #endif
 
         return 0;

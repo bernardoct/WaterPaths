@@ -74,7 +74,7 @@ vector<vector<double>> Utils::parse2DCsvFile(string file_name, unsigned long max
         }
     } else {
         cerr << "Could not read file " << file_name << "\n";
-        __throw_invalid_argument("File not found.");
+        throw invalid_argument("File not found.");
     }
 
     if (rows_to_read.empty())
@@ -116,7 +116,7 @@ vector<double> Utils::parse1DCsvFile(string file_name, unsigned long max_lines,
 
     if (!infile.eof() && l < max_lines) {
         cerr << "Could not read file " << file_name << "\n";
-        __throw_invalid_argument("File not found.");
+        throw invalid_argument("File not found.");
     }
 
     return data;
@@ -146,7 +146,7 @@ vector<MinEnvFlowControl *> Utils::copyMinEnvFlowControlVector(
             min_env_flow_controls_new.push_back(
                     new FallsLakeMinEnvFlowControl(*dynamic_cast<FallsLakeMinEnvFlowControl *>(mef)));
         else
-            __throw_invalid_argument("One of the minimum environmental flow controls "
+            throw invalid_argument("One of the minimum environmental flow controls "
                                              "does not have an implementation in the "
                                              "Utils::copyWaterSourceVector function. "
                                              "Please add your control to it.");
@@ -190,7 +190,7 @@ vector<WaterSource *> Utils::copyWaterSourceVector(
                     new Relocation(
                             *dynamic_cast<Relocation *>(ws)));
         else
-            __throw_invalid_argument("One of the water sources does not have "
+            throw invalid_argument("One of the water sources does not have "
                                              "an implementation in the "
                                              "Utils::copyWaterSourceVector "
                                              "function. Please add your "
@@ -249,7 +249,7 @@ vector<Bond *> Utils::copyBonds(vector<Bond *> bonds_original) {
             bonds_new.push_back(new FloatingInterestBalloonPaymentBond(
                     *dynamic_cast<FloatingInterestBalloonPaymentBond *>(bond)));
         else
-            __throw_invalid_argument("Your bond type does not have a corresponding "
+            throw invalid_argument("Your bond type does not have a corresponding "
                                      "copy function in Utils::copyBonds yet.\n");
     }
 

@@ -27,7 +27,7 @@ intel: CFLAGS+=-O2 ${TACC_VEC_FLAGS} -qopenmp
 intel: all
 
 gcc-debug: CC=g++
-gcc-debug: CFLAGS+=-O0 -march=native -g -fopenmp
+gcc-debug: CFLAGS+=-Og -march=native -g -fopenmp
 gcc-debug: all
 
 intel-debug: CC=icc

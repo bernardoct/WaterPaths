@@ -96,8 +96,8 @@ void setProblemDefinition(BORG_Problem &problem)
 }
 #endif 
 
-//PaperTestProblem *problem_ptr;
-Triangle *problem_ptr;
+PaperTestProblem *problem_ptr;
+//Triangle *problem_ptr;
 int failures = 0;
 
 void eval(double *vars, double *objs, double *consts) {
@@ -278,8 +278,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
-//    PaperTestProblem problem(n_weeks, import_export_rof_table);
-    Triangle problem(n_weeks, import_export_rof_table);
+    PaperTestProblem problem(n_weeks, import_export_rof_table);
+//    Triangle problem(n_weeks, import_export_rof_table);
     if (seed > -1) {
 	WaterSource::setSeed(seed);
     }
@@ -380,19 +380,19 @@ int main(int argc, char *argv[]) {
                  << standard_solution << endl;
             problem.setSol_number(standard_solution);
             problem_ptr->functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
-            printf("Done with tables!\n");
-            if (import_export_rof_table != EXPORT_ROF_TABLES) {
-                vector<double> objectives;
+            
+	    // Export pathways and objectives, otherwise, if required, run bootstrap sub-sampling.
+	    if (n_sets > 0 && n_bs_samples > 0) {
+		printf("\ngetting here\n\n");
+                problem_ptr->getMaster_data_collector()->performBootstrapAnalysis(
+                        (int) standard_solution, n_sets, n_bs_samples, n_threads, realizations_to_run);
+            } else if (import_export_rof_table != EXPORT_ROF_TABLES) {
                 problem.printTimeSeriesAndPathways();
-                objectives = problem_ptr->calculateAndPrintObjectives(!print_objs_row);
+                auto objectives = problem_ptr->calculateAndPrintObjectives(!print_objs_row);
 //                trianglePtr->getMaster_data_collector()->printNETCDFUtilities("netcdf_output");
             }
 
-            if (n_sets > 0 && n_bs_samples > 0) {
-                problem_ptr->getMaster_data_collector()->performBootstrapAnalysis(
-                        (int) standard_solution, n_sets, n_bs_samples, n_threads, realizations_to_run);
-            }
-            problem_ptr->destroyDataCollector();
+	    problem_ptr->destroyDataCollector();
         } else {
             ofstream objs_file;
             string file_name = system_io + "TestFiles" + BAR + "output" + BAR + "Objectives_RDM" + to_string(rdm_no) +
@@ -450,11 +450,11 @@ int main(int argc, char *argv[]) {
         char outputFilename[256];
         char runtime[256];
         FILE* outputFile = nullptr;
-        sprintf(outputFilename, "%s%s%s%sNC_output_MM_S%d_N%lu.set", system_io.c_str(), BAR, DEFAULT_OUTPUT_DIR, BAR,
+        sprintf(outputFilename, "%s%s%s%sNC_output_MM_S%d_N%lu.set", system_io.c_str(), BAR.c_str(), DEFAULT_OUTPUT_DIR.c_str(), BAR.c_str(),
                 seed, nfe);
         printf("Reference set will be in %s.\n", outputFilename);
         // output path (make sure this exists)
-        sprintf(runtime, "%s%s%s%sNC_runtime_MM_S%d_N%lu_M%%d.runtime", system_io.c_str(), BAR, DEFAULT_OUTPUT_DIR, BAR,
+        sprintf(runtime, "%s%s%s%sNC_runtime_MM_S%d_N%lu.runtime", system_io.c_str(), BAR.c_str(), DEFAULT_OUTPUT_DIR.c_str(), BAR.c_str(),
                 seed, nfe); // runtime
         printf("Runtime files will be in %s.\n", runtime);
         // path (make sure this exists)

@@ -1,0 +1,77 @@
+==18129== Memcheck, a memory error detector
+==18129== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==18129== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+==18129== Command: ./triangleSimulation -T 16 -t 2344 -r 16 -d /scratch/bct52/ -s problem_dvs.csv -C -1 -O rof_tables/ -m 0
+==18129== Parent PID: 18126
+==18129== 
+==18129== Invalid read of size 8
+==18129==    at 0x451DC4: InfrastructureManager::rearrangeInfraRofVector(std::vector<double, std::allocator<double> > const&, std::vector<int, std::allocator<int> > const&, std::vector<int, std::allocator<int> > const&) (InfrastructureManager.cpp:92)
+==18129==    by 0x4528CF: InfrastructureManager::InfrastructureManager(int, std::vector<double, std::allocator<double> > const&, std::vector<std::vector<int, std::allocator<int> >, std::allocator<std::vector<int, std::allocator<int> > > > const&, double, double, double, std::vector<int, std::allocator<int> >, std::vector<int, std::allocator<int> >) (InfrastructureManager.cpp:26)
+==18129==    by 0x45803B: Utility::Utility(char const*, int, std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >&, int, double, std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > > const*, std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > > const*, WwtpDischargeRule, double, std::vector<int, std::allocator<int> > const&, std::vector<int, std::allocator<int> > const&, std::vector<double, std::allocator<double> > const&, double, double, double) (Utility.cpp:168)
+==18129==    by 0x43CC5D: PaperTestProblem::functionEvaluation(double*, double*, double*) (PaperTestProblem.cpp:553)
+==18129==    by 0x47329E: main (main.cpp:333)
+==18129==  Address 0xd49d8f8 is 0 bytes after a block of size 8 alloc'd
+==18129==    at 0x4A08DB3: operator new(unsigned long) (vg_replace_malloc.c:332)
+==18129==    by 0x43CB73: allocate (new_allocator.h:111)
+==18129==    by 0x43CB73: allocate (alloc_traits.h:436)
+==18129==    by 0x43CB73: _M_allocate (stl_vector.h:172)
+==18129==    by 0x43CB73: _M_create_storage (stl_vector.h:187)
+==18129==    by 0x43CB73: _Vector_base (stl_vector.h:138)
+==18129==    by 0x43CB73: vector (stl_vector.h:297)
+==18129==    by 0x43CB73: PaperTestProblem::functionEvaluation(double*, double*, double*) (PaperTestProblem.cpp:553)
+==18129==    by 0x47329E: main (main.cpp:333)
+==18129== 
+==18129== Invalid read of size 8
+==18129==    at 0x451DC4: InfrastructureManager::rearrangeInfraRofVector(std::vector<double, std::allocator<double> > const&, std::vector<int, std::allocator<int> > const&, std::vector<int, std::allocator<int> > const&) (InfrastructureManager.cpp:92)
+==18129==    by 0x4528CF: InfrastructureManager::InfrastructureManager(int, std::vector<double, std::allocator<double> > const&, std::vector<std::vector<int, std::allocator<int> >, std::allocator<std::vector<int, std::allocator<int> > > > const&, double, double, double, std::vector<int, std::allocator<int> >, std::vector<int, std::allocator<int> >) (InfrastructureManager.cpp:26)
+==18129==    by 0x45803B: Utility::Utility(char const*, int, std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >&, int, double, std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > > const*, std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > > const*, WwtpDischargeRule, double, std::vector<int, std::allocator<int> > const&, std::vector<int, std::allocator<int> > const&, std::vector<double, std::allocator<double> > const&, double, double, double) (Utility.cpp:168)
+==18129==    by 0x43CE01: PaperTestProblem::functionEvaluation(double*, double*, double*) (PaperTestProblem.cpp:560)
+==18129==    by 0x47329E: main (main.cpp:333)
+==18129==  Address 0xd49dd48 is 0 bytes after a block of size 8 alloc'd
+==18129==    at 0x4A08DB3: operator new(unsigned long) (vg_replace_malloc.c:332)
+==18129==    by 0x43CD17: allocate (new_allocator.h:111)
+==18129==    by 0x43CD17: allocate (alloc_traits.h:436)
+==18129==    by 0x43CD17: _M_allocate (stl_vector.h:172)
+==18129==    by 0x43CD17: _M_create_storage (stl_vector.h:187)
+==18129==    by 0x43CD17: _Vector_base (stl_vector.h:138)
+==18129==    by 0x43CD17: vector (stl_vector.h:297)
+==18129==    by 0x43CD17: PaperTestProblem::functionEvaluation(double*, double*, double*) (PaperTestProblem.cpp:560)
+==18129==    by 0x47329E: main (main.cpp:333)
+==18129== 
+==18129== 
+==18129== HEAP SUMMARY:
+==18129==     in use at exit: 13,896 bytes in 30 blocks
+==18129==   total heap usage: 15,469,206 allocs, 15,469,176 frees, 1,886,204,156 bytes allocated
+==18129== 
+==18129== 128 (56 direct, 72 indirect) bytes in 1 blocks are definitely lost in loss record 11 of 16
+==18129==    at 0x4A08930: operator new[](unsigned long) (vg_replace_malloc.c:421)
+==18129==    by 0x461C0D: Graph::Graph(int) (Graph.cpp:22)
+==18129==    by 0x43DC4A: PaperTestProblem::functionEvaluation(double*, double*, double*) (PaperTestProblem.cpp:640)
+==18129==    by 0x47329E: main (main.cpp:333)
+==18129== 
+==18129== 264 (120 direct, 144 indirect) bytes in 1 blocks are definitely lost in loss record 14 of 16
+==18129==    at 0x4A08930: operator new[](unsigned long) (vg_replace_malloc.c:421)
+==18129==    by 0x461C0D: Graph::Graph(int) (Graph.cpp:22)
+==18129==    by 0x43C770: PaperTestProblem::functionEvaluation(double*, double*, double*) (PaperTestProblem.cpp:515)
+==18129==    by 0x47329E: main (main.cpp:333)
+==18129== 
+==18129== 8,880 bytes in 15 blocks are possibly lost in loss record 16 of 16
+==18129==    at 0x4A06F1D: calloc (vg_replace_malloc.c:710)
+==18129==    by 0x356A811A82: _dl_allocate_tls (in /lib64/ld-2.12.so)
+==18129==    by 0x356B8072CC: pthread_create@@GLIBC_2.2.5 (in /lib64/libpthread-2.12.so)
+==18129==    by 0x356DC0D2AD: ??? (in /usr/lib64/libgomp.so.1.0.0)
+==18129==    by 0x356DC09AE7: GOMP_parallel (in /usr/lib64/libgomp.so.1.0.0)
+==18129==    by 0x435288: PaperTestProblem::readInputData() (PaperTestProblem.cpp:778)
+==18129==    by 0x47252D: main (main.cpp:245)
+==18129== 
+==18129== LEAK SUMMARY:
+==18129==    definitely lost: 176 bytes in 2 blocks
+==18129==    indirectly lost: 216 bytes in 9 blocks
+==18129==      possibly lost: 8,880 bytes in 15 blocks
+==18129==    still reachable: 4,624 bytes in 4 blocks
+==18129==         suppressed: 0 bytes in 0 blocks
+==18129== Reachable blocks (those to which a pointer was found) are not shown.
+==18129== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==18129== 
+==18129== For counts of detected and suppressed errors, rerun with: -v
+==18129== ERROR SUMMARY: 7 errors from 5 contexts (suppressed: 4 from 4)

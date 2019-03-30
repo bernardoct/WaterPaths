@@ -5,6 +5,9 @@
 #ifndef TRIANGLEMODEL_TRIANGLE_H
 #define TRIANGLEMODEL_TRIANGLE_H
 
+#ifdef PARALLEL
+#include "../../Borg/borgms.h"
+#endif
 #include "Base/Problem.h"
 #include "../Simulation/Simulation.h"
 
@@ -17,7 +20,6 @@ private:
     const int n_utilities = 4;
     double table_gen_storage_multiplier;
     string rof_tables_directory;
-    bool seeded = false;
 
     vector<vector<double>> streamflows_durham;
     vector<vector<double>> streamflows_flat;
@@ -53,9 +55,13 @@ private:
     vector<vector<double>> owasaPriceSurcharges;
 
 public:
-    Triangle(unsigned long n_weeks, int import_export_rof_table, bool seeded = false);
+    Triangle(unsigned long n_weeks, int import_export_rof_table);
 
     ~Triangle();
+
+#ifdef PARALLEL
+    void setProblemDefinition(BORG_Problem &problem);
+#endif
 
     int functionEvaluation(double *vars, double *objs, double *consts) override;
 

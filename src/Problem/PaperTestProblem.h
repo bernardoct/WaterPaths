@@ -5,6 +5,9 @@
 #ifndef TRIANGLEMODEL_PAPERTESTPROBLEM_H
 #define TRIANGLEMODEL_PAPERTESTPROBLEM_H
 
+#ifdef  PARALLEL
+#include "../../Borg/borgms.h"
+#endif
 #include "Base/Problem.h"
 #include "../Simulation/Simulation.h"
 
@@ -51,11 +54,11 @@ public:
 
     ~PaperTestProblem();
 
+#ifdef PARALLEL
+    void setProblemDefinition(BORG_Problem &problem);
+#endif
+
     int functionEvaluation(double *vars, double *objs, double *consts) override;
-
-
-    int simulationExceptionHander(const std::exception &e, Simulation *s,
-                                  double *objs, const double *vars);
 
     void setRofTables(unsigned long n_realizations, int n_utilities, string rof_tables_directory);
 

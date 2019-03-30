@@ -13,4 +13,4 @@ set OMP_NUM_THREADS=16
 N_REALIZATIONS=16
 SOLUTION=0
 #./triangleSimulation_o2 -T 16 -t 2344 -r ${N_REALIZATIONS} -d /scratch/bct52/ -s problem_dvs.csv -C 1 -O rof_tables_valgrind -m 0 -e 0
-valgrind --tool=memcheck --leak-check=full --track-origins=yes --log-file=valgrind_output_long_run.out ./triangleSimulation_debug -T 16 -t 2344 -r ${N_REALIZATIONS} -d /scratch/bct52/ -s problem_dvs.csv -C -1 -O rof_tables/ -m ${SOLUTION} 
+valgrind --tool=memcheck --leak-check=full --track-origins=yes --log-file=valgrind_output_long_run.out ./triangleSimulation -T 16 -t 2344 -r ${N_REALIZATIONS} -d /scratch/bct52/ -s problem_dvs.csv -C -1 -O rof_tables/ -m ${SOLUTION} 

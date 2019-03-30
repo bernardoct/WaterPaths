@@ -86,19 +86,27 @@ vector<double> InfrastructureManager::rearrangeInfraRofVector(
                                     demand_infra_construction_order.end()));
     int size = max(size_rof, size_demand) + 1;
 
-    vector<double> infra_construction_triggers_new((unsigned long) size, 1e10);
-    for (int i = 0; i < (int) rof_infra_construction_order.size(); ++i) {
-        int ws = rof_infra_construction_order[i];
-        infra_construction_triggers_new[ws] = infra_construction_triggers[i];
+    auto n_options = max(rof_infra_construction_order.size(), demand_infra_construction_order.size());
+    if (infra_construction_triggers.size() != n_options) {
+        char error[100];
+        sprintf(error, "Number of ROF or demand triggers (%llu) must match the number of "
+                            "infrastructure options (%llu).", infra_construction_triggers.size(), n_options);
+        throw invalid_argument(error);
     }
 
-    for (int i = 0; i < (int) demand_infra_construction_order.size(); ++i) {
-        int ws = demand_infra_construction_order[i];
-        if (infra_construction_triggers_new[ws] != 1e10)
+    vector<double> infra_construction_triggers_new((unsigned long) size, 1e10);
+    for (unsigned long i = 0; i < rof_infra_construction_order.size(); ++i) {
+        auto ws = (unsigned long) rof_infra_construction_order.at(i);
+        infra_construction_triggers_new.at(ws) = infra_construction_triggers.at(i);
+    }
+
+    for (unsigned long i = 0; i < demand_infra_construction_order.size(); ++i) {
+        auto ws = (unsigned long) demand_infra_construction_order.at(i);
+        if (infra_construction_triggers_new.at(ws) != 1e10)
             throw invalid_argument("A source can be triggered only by "
                                      "either rof or by demand.");
-        infra_construction_triggers_new[demand_infra_construction_order[i]] =
-                infra_construction_triggers[i];
+        infra_construction_triggers_new.at((unsigned long) demand_infra_construction_order.at(i)) =
+                infra_construction_triggers.at(i);
     }
 
     return infra_construction_triggers_new;

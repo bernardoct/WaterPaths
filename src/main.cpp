@@ -3,8 +3,6 @@
 #include "Utils/Solutions.h"
 #include "Problem/PaperTestProblem.h"
 #include "Problem/Triangle.h"
-#include "Problem/Triangle.h"
-// #include "Problem/PaperTestProblem.h"
 
 #ifdef  PARALLEL
 #include "../Borg/borgms.h"
@@ -17,92 +15,44 @@
 #include <fstream>
 #include <omp.h>
 
+
 #define NUM_OBJECTIVES 6;
-#define NUM_DEC_VAR 57;
+#define NUM_DEC_VAR 56;
+//#define NUM_DEC_VAR 27; // infrastructure turned off
 
 using namespace std;
 using namespace Constants;
 using namespace Solutions;
 
-#ifdef PARALLEL
-void setProblemDefinition(BORG_Problem &problem)
-{
-    // The parameter bounds are the same for all formulations
-    BORG_Problem_set_bounds(problem, 0, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 1, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 2, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 3, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 4, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 5, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 6, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 7, 0.1, 0.47);
-    BORG_Problem_set_bounds(problem, 8, 0.0, 0.37);
-    BORG_Problem_set_bounds(problem, 9, 0.05, 0.42);
-    BORG_Problem_set_bounds(problem, 10, 0.355, 0.725);
-    BORG_Problem_set_bounds(problem, 11, 0.0, 0.1);
-    BORG_Problem_set_bounds(problem, 12, 0.0, 0.1);
-    BORG_Problem_set_bounds(problem, 13, 0.0, 0.1);
-    BORG_Problem_set_bounds(problem, 14, 0.0, 0.1);
-    BORG_Problem_set_bounds(problem, 15, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 16, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 17, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 18, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 19, 0.0, 0.02);
-    BORG_Problem_set_bounds(problem, 20, 0.0, 0.02);
-    BORG_Problem_set_bounds(problem, 21, 0.0, 0.02);
-    BORG_Problem_set_bounds(problem, 22, 0.0, 0.02);
-    BORG_Problem_set_bounds(problem, 23, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 24, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 25, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 26, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 27, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 28, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 29, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 30, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 31, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 32, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 33, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 34, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 35, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 36, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 37, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 38, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 39, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 40, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 41, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 42, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 43, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 44, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 45, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 46, 0.0, 100.0);
-    BORG_Problem_set_bounds(problem, 47, 0.0, 100.0);
-    BORG_Problem_set_bounds(problem, 48, 0.0, 100.0);
-    BORG_Problem_set_bounds(problem, 49, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 50, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 51, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 52, 0.0, 10000.0);
-    BORG_Problem_set_bounds(problem, 53, 0.0, 20.0);
-    BORG_Problem_set_bounds(problem, 54, 0.0, 20.0);
-    BORG_Problem_set_bounds(problem, 55, 0.0, 20.0);
-    BORG_Problem_set_bounds(problem, 56, 0.0, 20.0);
-
-    // Set epsilons for objectives
-    BORG_Problem_set_epsilon(problem, 0, 0.002);
-    BORG_Problem_set_epsilon(problem, 1, 0.02);
-    BORG_Problem_set_epsilon(problem, 2, 10.);
-    BORG_Problem_set_epsilon(problem, 3, 0.02);
-    BORG_Problem_set_epsilon(problem, 4, 0.01);
-    BORG_Problem_set_epsilon(problem, 5, 0.025);
-}
-#endif 
-
 PaperTestProblem *problem_ptr;
 //Triangle *problem_ptr;
 int failures = 0;
+ofstream sol_out; // for debugging borg
+
+void print_decision_vars(double* vars) {
+    int nsols = NUM_DEC_VAR;
+    for (int i = 0; i < nsols; ++i){
+        sol_out << vars[i] << ",";
+        cout << vars[i] << ",";
+    }
+    cout << endl;
+}
 
 void eval(double *vars, double *objs, double *consts) {
-    failures += problem_ptr->functionEvaluation(vars, objs, consts);
-    problem_ptr->destroyDataCollector();
+    try {
+//        print_decision_vars(vars);
+        failures += problem_ptr->functionEvaluation(vars, objs, consts);
+    	problem_ptr->destroyDataCollector();
+	}
+	catch(...){
+		sol_out << endl;
+        sol_out << "Failure! Decision Variable values: " << endl;
+        cout << endl;
+        cout << "Failure! Decision variable values: " << endl;
+        print_decision_vars(vars);
+        sol_out << endl;
+		sol_out << endl;
+	}
 }
 
 int main(int argc, char *argv[]) {
@@ -206,7 +156,7 @@ int main(int argc, char *argv[]) {
             case 't':
                 n_weeks = (unsigned long) atoi(optarg);
                 break;
-            case 'd':
+            case 'd': 
                 system_io = optarg;
                 break;
             case 'f':
@@ -286,6 +236,7 @@ int main(int argc, char *argv[]) {
 
     /// Set basic realization parameters.
     problem.setN_weeks(n_weeks);
+//    printf("%s\n", system_io.c_str());
     problem.setOutput_directory(system_io);
     problem.setN_threads((unsigned long) n_threads);
     problem.setN_realizations(n_realizations);
@@ -314,7 +265,7 @@ int main(int argc, char *argv[]) {
     if (strlen(inflows_evap_directory_suffix.c_str()) > 2) {
         problem.setEvap_inflows_suffix(inflows_evap_directory_suffix);
     }
-
+    cout << "reading RDM file" << endl;
     /// Read RDM file, if any
     if (strlen(utilities_rdm_file.c_str()) > 2) {
         if (rdm_no != NON_INITIALIZED) {
@@ -346,7 +297,6 @@ int main(int argc, char *argv[]) {
                                                 water_sources_rdm, policies_rdm);
         }
     }
-
     problem_ptr = &problem;
 
     /// Set realizations to be run -- otherwise, n_realizations realizations will be run.
@@ -383,14 +333,14 @@ int main(int argc, char *argv[]) {
             
 	    // Export pathways and objectives, otherwise, if required, run bootstrap sub-sampling.
 	    if (n_sets > 0 && n_bs_samples > 0) {
-		printf("\ngetting here\n\n");
-                problem_ptr->getMaster_data_collector()->performBootstrapAnalysis(
+		    printf("\ngetting here\n\n");
+             problem_ptr->getMaster_data_collector()->performBootstrapAnalysis(
                         (int) standard_solution, n_sets, n_bs_samples, n_threads, realizations_to_run);
-            } else if (import_export_rof_table != EXPORT_ROF_TABLES) {
-                problem.printTimeSeriesAndPathways();
-                auto objectives = problem_ptr->calculateAndPrintObjectives(!print_objs_row);
-//                trianglePtr->getMaster_data_collector()->printNETCDFUtilities("netcdf_output");
-            }
+	    } else if (import_export_rof_table != EXPORT_ROF_TABLES) {
+	        problem.printTimeSeriesAndPathways();
+	        auto objectives = problem_ptr->calculateAndPrintObjectives(!print_objs_row);
+//            trianglePtr->getMaster_data_collector()->printNETCDFUtilities("netcdf_output");
+	    }
 
 	    problem_ptr->destroyDataCollector();
         } else {
@@ -420,6 +370,7 @@ int main(int argc, char *argv[]) {
         return 0;
     } else {
 #ifdef  PARALLEL
+        
         printf("Running Borg with:\n"
             "n_islands: %lu\n"
             "nfe: %lu\n"
@@ -427,8 +378,9 @@ int main(int argc, char *argv[]) {
             "n_weeks: %lu\n"
             "n_realizations: %lu\n\n",
             n_islands, nfe, output_frequency, n_weeks, n_realizations);
-
-//        cout << "Defining problem" << endl;
+         
+        // for debugging borg, creating file to print each ranks DVs which isdone in Eval function   
+        
         BORG_Algorithm_ms_startup(&argc, &argv);
 //        BORG_Algorithm_ms_islands((int) n_islands);
 //        BORG_Algorithm_ms_initialization(INITIALIZATION_LATIN_GLOBAL);
@@ -439,9 +391,9 @@ int main(int argc, char *argv[]) {
         BORG_Problem problem = BORG_Problem_create(c_num_dec, c_num_obj,
                                                    c_num_constr,
                                                    eval);
-
         // Set all the parameter bounds and epsilons
-        setProblemDefinition(problem);
+        cout << "setting up problem" << endl;
+        problem_ptr->setProblemDefinition(problem);
 
         if (seed > -1) {
             srand(seed);
@@ -461,20 +413,29 @@ int main(int argc, char *argv[]) {
 
         BORG_Algorithm_output_runtime(runtime);
 
-        // int rank; // different seed on each processor
-        // MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-        // BORG_Random_seed(37*seed*(rank+1));
+        int rank; // different seed on each processor
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        string rank_out_file = "diagnostic_output/DVs_rank_" + to_string(rank) + ".csv";
+        sol_out.open(rank_out_file.c_str());
+
+        //int rank; // different seed on each processor
+        //MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        //BORG_Random_seed(37*seed*(rank+1));
+        
         BORG_Random_seed(seed);
         BORG_Archive result = BORG_Algorithm_ms_run(problem); // this actually runs the optimization
-
+        //BORG_Archive result = BORG_Algorithm_run(problem, nfe);
         // If this is the master node, print out the final archive
+
         if (result != nullptr) {
             outputFile = fopen(outputFilename, "w");
+            cout << "master node print, should see only once" << endl;
             if (!outputFile) {
                 BORG_Debug("Unable to open final output file\n");
             }
             BORG_Archive_print(result, outputFile);
             BORG_Archive_destroy(result);
+            sol_out.close();
             fclose(outputFile);
         }
 

@@ -24,7 +24,7 @@ vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
 void Problem::printTimeSeriesAndPathways() {
     /// Calculate objective values.
     if (this->master_data_collector != nullptr) {
-    this->master_data_collector->setOutputDirectory(output_directory);
+//    this->master_data_collector->setOutputDirectory(output_directory);
 
     /// Print output files.
     string fu = BAR + DEFAULT_OUTPUT_DIR + BAR + "Utilities";
@@ -105,8 +105,7 @@ void Problem::setSol_number(unsigned long sol_number) {
 }
 
 void Problem::setOutput_directory(const string &output_directory) {
-    cout << "Output will be printed in " << output_directory << endl;
-    Problem::output_directory = output_directory;
+    this->output_directory = output_directory;
 }
 
 void Problem::setRDMOptimization(vector<vector<double>> &utilities_rdm,

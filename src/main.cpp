@@ -17,8 +17,8 @@
 
 
 #define NUM_OBJECTIVES 6;
-#define NUM_DEC_VAR 56;
-//#define NUM_DEC_VAR 27; // infrastructure turned off
+//#define NUM_DEC_VAR 56;
+#define NUM_DEC_VAR 27; // infrastructure turned off
 
 using namespace std;
 using namespace Constants;
@@ -31,28 +31,28 @@ ofstream sol_out; // for debugging borg
 
 void print_decision_vars(double* vars) {
     int nsols = NUM_DEC_VAR;
-    for (int i = 0; i < nsols; ++i){
+    for (int i = 0; i < nsols; ++i) {
         sol_out << vars[i] << ",";
-        cout << vars[i] << ",";
     }
-    cout << endl;
+    sol_out << endl;
+    cout << "eval\n" << endl;
+    sol_out.flush();
 }
 
 void eval(double *vars, double *objs, double *consts) {
     try {
-//        print_decision_vars(vars);
+        print_decision_vars(vars);
         failures += problem_ptr->functionEvaluation(vars, objs, consts);
     	problem_ptr->destroyDataCollector();
-	}
-	catch(...){
-		sol_out << endl;
+    } catch(...) {
+	sol_out << endl;
         sol_out << "Failure! Decision Variable values: " << endl;
         cout << endl;
         cout << "Failure! Decision variable values: " << endl;
         print_decision_vars(vars);
         sol_out << endl;
-		sol_out << endl;
-	}
+	sol_out << endl;
+    }
 }
 
 int main(int argc, char *argv[]) {

@@ -9,11 +9,13 @@
 
 vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
     if (this->master_data_collector != nullptr) {
-        this->master_data_collector->setOutputDirectory(output_directory);
+	if (print_files) {
+            this->master_data_collector->setOutputDirectory(output_directory);
+	}
         string fo = BAR + DEFAULT_OUTPUT_DIR + BAR + "Objectives";
         objectives = this->master_data_collector->calculatePrintObjectives(
                 fo + "_s" + std::to_string(solution_no) + fname_sufix, print_files);
-    
+        printf("Objectives size %llu\n", objectives.size());
         return objectives;
     } else {
 	objectives = vector<double>(25, 1e5);

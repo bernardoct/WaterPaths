@@ -233,16 +233,10 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         vector<int> rof_triggered_infra_order_durham =
                 vecInfraRankToVecInt(durham_infra_order_raw);
-        vector<double> rofs_infra_durham = vector<double>
-                (rof_triggered_infra_order_durham.size(), durham_inftrigger);
         vector<int> rof_triggered_infra_order_owasa =
                 vecInfraRankToVecInt(owasa_infra_order_raw);
-        vector<double> rofs_infra_owasa = vector<double>
-                (rof_triggered_infra_order_owasa.size(), owasa_inftrigger);
         vector<int> rof_triggered_infra_order_raleigh =
                 vecInfraRankToVecInt(raleigh_infra_order_raw);
-        vector<double> rofs_infra_raleigh = vector<double>
-                (rof_triggered_infra_order_raleigh.size(), raleigh_inftrigger);
 
         /// Remove small expansions being built after big expansions that would
         /// encompass the smal expansions.
@@ -262,6 +256,14 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                         reclaimed_capacity_low,
                         reclaimed_capacity_high);
 
+	// Create vectors with each utility's long-term ROF values assigned to all 
+	// infrastructure options.
+        vector<double> rofs_infra_durham = vector<double>
+                (rof_triggered_infra_order_durham.size(), durham_inftrigger);
+        vector<double> rofs_infra_owasa = vector<double>
+                (rof_triggered_infra_order_owasa.size(), owasa_inftrigger);
+        vector<double> rofs_infra_raleigh = vector<double>
+                (rof_triggered_infra_order_raleigh.size(), raleigh_inftrigger);
 
         /// Normalize Jordan Lake Allocations in case they exceed 1.
         double sum_jla_allocations = OWASA_JLA + Durham_JLA + Cary_JLA +
@@ -558,8 +560,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         // other than Cary WTP for Jordan Lake, assume no WTP constraints - each
         // city can meet its daily demands with available treatment infrastructure
 
-        double WEEKS_IN_YEAR = 0;
-
         // Potential Sources
         // The capacities listed here for expansions are what additional capacity is gained relative to existing capacity,
         // NOT the total capacity after the expansion is complete. For infrastructure with a high and low option, this means
@@ -633,8 +633,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         LevelDebtServiceBond high_rec_bond(19, 104.4, 25, 0.05, vector<int>(1, 0));
         WaterReuse high_reclaimed("High Reclaimed Water System", 19, reclaimed_capacity_high, construction_time_interval,
                                   7 * WEEKS_IN_YEAR, high_rec_bond);
-
-        WEEKS_IN_YEAR = Constants::WEEKS_IN_YEAR;
 
         vector<double> wjlwtp_treatment_capacity_fractions =
                 {western_wake_treatment_plant_owasa_frac,
@@ -822,7 +820,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         vector<vector<int>> wjlwtp_remove_from_to_build_list;// = {{21, 20}};
 
-
         vector<int> demand_triggered_infra_order_cary = {22, 23};
         vector<double> demand_infra_cary = {caryupgrades_2 * 7, caryupgrades_3 * 7};
         Utility cary((char *) "Cary", 2, demand_cary, demand_n_weeks, cary_annual_payment, &caryDemandClassesFractions,
@@ -960,7 +957,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         drought_mitigation_policies.push_back(&in);
 
         /// Creates simulation object depending on use (or lack thereof) ROF tables
-        double realization_start;
+        double start_time = omp_get_wtime();
         if (import_export_rof_tables == EXPORT_ROF_TABLES) {
             s = new Simulation(water_sources,
         	     g,
@@ -1008,6 +1005,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
             //realization_start = omp_get_wtime();
             this->master_data_collector = s->runFullSimulation(n_threads);
         }
+        double end_time = omp_get_wtime();
+	printf("Function evaluation time: %f\n", end_time - start_time);
 
         //double realization_end = omp_get_wtime();
         //std::cout << "Simulation took  " << realization_end - realization_start

@@ -670,7 +670,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
 
     /// Creates simulation object depending on use (or lack thereof) ROF tables
-    double realization_start;
+    double start_time = omp_get_wtime();
     if (import_export_rof_tables == EXPORT_ROF_TABLES) {
         s = new Simulation(water_sources,
                            g,
@@ -684,7 +684,6 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                            n_weeks,
                            realizations_to_run,
                            rof_tables_directory);
-        realization_start = omp_get_wtime();
         this->master_data_collector = s->runFullSimulation(n_threads);
     } else if (import_export_rof_tables == IMPORT_ROF_TABLES) {
         s = new Simulation (water_sources,
@@ -701,7 +700,6 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                             rof_tables,
                             table_storage_shift,
                             rof_tables_directory);
-        realization_start = omp_get_wtime();
         this->master_data_collector = s->runFullSimulation(n_threads);
     } else {
         s = new Simulation(water_sources,
@@ -715,11 +713,10 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                            policies_rdm,
                            n_weeks,
                            realizations_to_run);
-        realization_start = omp_get_wtime();
         this->master_data_collector = s->runFullSimulation(n_threads);
     }
-
-    double realization_end = omp_get_wtime();
+    double end_time = omp_get_wtime();
+    //printf("Function evaluation time: %f\n", end_time - start_time);
 
     /// Calculate objectives and store them in Borg decision variables array.
 #ifdef  PARALLEL
@@ -727,10 +724,10 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
         int i = 0;
         objs[i] = 1. - min(min(objectives[i], objectives[5 + i]),
-        		   min(objectives[10 + i], objectives[15 + i]));
+        		   objectives[10 + i]);
         for (i = 1; i < 5; ++i) {
             objs[i] = max(max(objectives[i], objectives[5 + i]),
-      	                  max(objectives[10 + i], objectives[15 + i]));
+      	                  objectives[10 + i]);
         }
 
         if (s != nullptr) {

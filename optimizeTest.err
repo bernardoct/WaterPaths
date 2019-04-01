@@ -1,3 +1,0 @@
---------------------------------------------------------------------------
-mpirun noticed that process rank 64 with PID 48236 on node compute-2-4 exited on signal 11 (Segmentation fault).
---------------------------------------------------------------------------

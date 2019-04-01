@@ -1,4 +1,0 @@
-/var/spool/torque/mom_priv/jobs/456707.thecube.cac.cornell.edu.SC: line 8: module: command not found
---------------------------------------------------------------------------
-mpiexec noticed that process rank 20 with PID 1813 on node compute-2-6 exited on signal 11 (Segmentation fault).
---------------------------------------------------------------------------

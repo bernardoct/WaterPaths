@@ -29,10 +29,12 @@ void Problem::printTimeSeriesAndPathways() {
 //    this->master_data_collector->setOutputDirectory(output_directory);
 
     /// Print output files.
-    string fu = BAR + DEFAULT_OUTPUT_DIR + BAR + "Utilities";
-    string fws = BAR + DEFAULT_OUTPUT_DIR + BAR + "WaterSources";
-    string fp = BAR + DEFAULT_OUTPUT_DIR + BAR + "Policies";
-    string fpw = BAR + DEFAULT_OUTPUT_DIR + BAR + "Pathways";
+    // Fix by DG 4/1/19: removed BAR from the beginning of these strings
+    // for some reason that BAR was preventing the output files from printing
+    string fu = DEFAULT_OUTPUT_DIR + BAR + "Utilities";
+    string fws = DEFAULT_OUTPUT_DIR + BAR + "WaterSources";
+    string fp = DEFAULT_OUTPUT_DIR + BAR + "Policies";
+    string fpw = DEFAULT_OUTPUT_DIR + BAR + "Pathways";
 
     //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
     cout << "Printing Pathways" << endl;

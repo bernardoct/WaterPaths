@@ -31,10 +31,11 @@ void Problem::printTimeSeriesAndPathways() {
     /// Print output files.
     // Fix by DG 4/1/19: removed BAR from the beginning of these strings
     // for some reason that BAR was preventing the output files from printing
-    string fu = DEFAULT_OUTPUT_DIR + BAR + "Utilities";
-    string fws = DEFAULT_OUTPUT_DIR + BAR + "WaterSources";
-    string fp = DEFAULT_OUTPUT_DIR + BAR + "Policies";
-    string fpw = DEFAULT_OUTPUT_DIR + BAR + "Pathways";
+    // also adding DEFAULT_DATA_DIR constant so output is printed to data directory
+    string fu = DEFAULT_DATA_DIR + DEFAULT_OUTPUT_DIR + BAR + "Utilities";
+    string fws = DEFAULT_DATA_DIR + DEFAULT_OUTPUT_DIR + BAR + "WaterSources";
+    string fp = DEFAULT_DATA_DIR + DEFAULT_OUTPUT_DIR + BAR + "Policies";
+    string fpw = DEFAULT_DATA_DIR + DEFAULT_OUTPUT_DIR + BAR + "Pathways";
 
     //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
     cout << "Printing Pathways" << endl;
@@ -78,7 +79,7 @@ vector<int> Problem::vecInfraRankToVecInt(vector<infraRank> v) {
 }
 
 double Problem::checkAndFixInfraExpansionHighLowOrder(
-        vector<int> *order, int id_low,
+        vector<int> *order, vector<double> *triggers, int id_low,
         int id_high, double capacity_low, double capacity_high) {
 
     long pos_low = distance(order->begin(),
@@ -94,6 +95,7 @@ double Problem::checkAndFixInfraExpansionHighLowOrder(
     if (pos_high < pos_low) {
         capacity_high += capacity_low;
         order->erase(order->begin() + pos_low);
+        triggers->erase(triggers->begin() + pos_low);
     }
 
     return capacity_high;

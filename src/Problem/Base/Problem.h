@@ -47,7 +47,7 @@ protected:
     vector<vector<double>> water_sources_rdm;
     vector<vector<double>> policies_rdm;
 
-    double checkAndFixInfraExpansionHighLowOrder(vector<int> *order, int id_low, int id_high, double capacity_low,
+    double checkAndFixInfraExpansionHighLowOrder(vector<int> *order, vector<double> *trigger, int id_low, int id_high, double capacity_low,
                                                  double capacity_high);
 
     vector<int> vecInfraRankToVecInt(vector<infraRank> v);

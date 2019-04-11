@@ -60,7 +60,7 @@ double ObjectivesCalculator::calculateReliabilityObjective(
 
         if (std::isinf(obj_value)) {
             string error_inf = "Infinite reliability.";
-            __throw_logic_error(error_inf.c_str());
+            throw logic_error(error_inf.c_str());
         } else {
             return obj_value;
         }
@@ -107,7 +107,7 @@ double ObjectivesCalculator::calculateRestrictionFrequencyObjective(
 
         if (std::isinf(obj_value)) {
             string error_inf = "Infinite restriction frequency.";
-            __throw_logic_error(error_inf.c_str());
+            throw logic_error(error_inf.c_str());
         } else {
             return obj_value;
         }
@@ -208,7 +208,7 @@ double ObjectivesCalculator::calculatePeakFinancialCostsObjective(
 
     if (std::isinf(obj_value)) {
         string error_inf = "Infinite peak financial cost.";
-        __throw_logic_error(error_inf.c_str());
+        throw logic_error(error_inf.c_str());
     } else {
         return obj_value;
     }
@@ -272,7 +272,7 @@ double ObjectivesCalculator::calculateWorseCaseCostsObjective(
 
     if (std::isinf(obj_value)) {
         string error_inf = "Infinite worse case cost.";
-        __throw_logic_error(error_inf.c_str());
+        throw logic_error(error_inf.c_str());
     } else {
         return obj_value;
     }

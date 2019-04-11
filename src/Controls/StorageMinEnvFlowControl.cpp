@@ -13,7 +13,7 @@ StorageMinEnvFlowControl::StorageMinEnvFlowControl(
           storages(storages),
           releases(releases) {
     if (aux_water_sources_ids.size() != 1)
-        __throw_invalid_argument("Storage based control rules needs exactly one"
+        throw invalid_argument("Storage based control rules needs exactly one"
                                          " reservoir/quarry");
 }
 

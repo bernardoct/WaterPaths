@@ -86,19 +86,29 @@ vector<double> InfrastructureManager::rearrangeInfraRofVector(
                                     demand_infra_construction_order.end()));
     int size = max(size_rof, size_demand) + 1;
 
-    vector<double> infra_construction_triggers_new((unsigned long) size, 1e10);
-    for (int i = 0; i < (int) rof_infra_construction_order.size(); ++i) {
-        int ws = rof_infra_construction_order[i];
-        infra_construction_triggers_new[ws] = infra_construction_triggers[i];
+    auto n_options = max(rof_infra_construction_order.size(), demand_infra_construction_order.size());
+    if (infra_construction_triggers.size() != n_options) {
+        char error[200];
+        sprintf(error, "Number of ROF or demand triggers (%llu) for utility %d must match the number of "
+                            "infrastructure options triggered by ROf or demand (%llu, %llu, respectivelly).", 
+			    infra_construction_triggers.size(), id, rof_infra_construction_order.size(), 
+			    demand_infra_construction_order.size());
+        throw invalid_argument(error);
     }
 
-    for (int i = 0; i < (int) demand_infra_construction_order.size(); ++i) {
-        int ws = demand_infra_construction_order[i];
-        if (infra_construction_triggers_new[ws] != 1e10)
-            __throw_invalid_argument("A source can be triggered only by "
+    vector<double> infra_construction_triggers_new((unsigned long) size, 1e10);
+    for (unsigned long i = 0; i < rof_infra_construction_order.size(); ++i) {
+        auto ws = (unsigned long) rof_infra_construction_order.at(i);
+        infra_construction_triggers_new.at(ws) = infra_construction_triggers.at(i);
+    }
+
+    for (unsigned long i = 0; i < demand_infra_construction_order.size(); ++i) {
+        auto ws = (unsigned long) demand_infra_construction_order.at(i);
+        if (infra_construction_triggers_new.at(ws) != 1e10)
+            throw invalid_argument("A source can be triggered only by "
                                      "either rof or by demand.");
-        infra_construction_triggers_new[demand_infra_construction_order[i]] =
-                infra_construction_triggers[i];
+        infra_construction_triggers_new.at((unsigned long) demand_infra_construction_order.at(i)) =
+                infra_construction_triggers.at(i);
     }
 
     return infra_construction_triggers_new;
@@ -178,7 +188,7 @@ InfrastructureManager::waterTreatmentPlantConstructionHandler(unsigned int sourc
         water_sources->at(wtp->parent_reservoir_ID)
                 ->addTreatmentCapacity(added_capacity, id);
     } catch (...) {
-        __throw_runtime_error("Could not add treatment capacity to reservoir.");
+        throw runtime_error("Could not add treatment capacity to reservoir.");
     }
 
     /// If source is intake or reuse and is not in the list of active
@@ -377,7 +387,7 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
                     else if (!demand_infra_construction_order.empty())
                         Utils::removeIntFromVector(demand_infra_construction_order, wss);
                     else
-                        __throw_logic_error("Infrastructure option whose construction was"
+                        throw logic_error("Infrastructure option whose construction was"
                                             " complete is not in the demand or "
                                             "rof triggered construction lists.");
 
@@ -428,7 +438,7 @@ void InfrastructureManager::beginConstruction(int week, int infra_id) {
         construction_end_date[infra_id] =
                 week + (int) water_sources->at((unsigned long) infra_id)->construction_time;
     } catch (...) {
-        __throw_out_of_range("Infrastructure not present in infrastructure manager (in utility).");
+        throw out_of_range("Infrastructure not present in infrastructure manager (in utility).");
     }
 }
 

@@ -179,7 +179,7 @@ void Transfers::addSystemComponents(vector<Utility *> system_utilities,
         }
 
     if (transfer_water_source != nullptr)
-        __throw_invalid_argument("Water sources already assigned to transfer "
+        throw invalid_argument("Water sources already assigned to transfer "
                                          "policy.");
     else
         transfer_water_source = water_sources[transfer_water_source_id];

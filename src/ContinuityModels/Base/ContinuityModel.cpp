@@ -31,11 +31,7 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
 
     //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
     std::sort(continuity_water_sources.begin(), continuity_water_sources.end(), WaterSource::compare);
-#ifdef _WIN32
-    sort(continuity_utilities.begin(), continuity_utilities.end(), std::greater<>());
-#else
     std::sort(continuity_utilities.begin(), continuity_utilities.end(), Utility::compById);
-#endif
 
     /// Link water sources to utilities by passing pointers of the former to
     /// the latter.

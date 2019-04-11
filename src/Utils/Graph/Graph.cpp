@@ -170,7 +170,7 @@ const vector<vector<double>> Graph::getContinuityMatrix() const {
                                              vector<double>(continuity_matrix_transpose.size(), 0));
 
     if (n_edges + 1 < V)
-        __throw_invalid_argument("Are you sure your inputted graphs have all your edges or that you type the "
+        throw invalid_argument("Are you sure your inputted graphs have all your edges or that you type the "
                                          "right number of sources (instead of more than you should)?");
 
     unsigned long n_pipes = continuity_matrix_transpose.size();

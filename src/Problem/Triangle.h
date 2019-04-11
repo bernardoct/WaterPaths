@@ -5,6 +5,9 @@
 #ifndef TRIANGLEMODEL_TRIANGLE_H
 #define TRIANGLEMODEL_TRIANGLE_H
 
+#ifdef PARALLEL
+#include "../../Borg/borgms.h"
+#endif
 #include "Base/Problem.h"
 #include "../Simulation/Simulation.h"
 
@@ -55,6 +58,10 @@ public:
     Triangle(unsigned long n_weeks, int import_export_rof_table);
 
     ~Triangle();
+
+#ifdef PARALLEL
+    void setProblemDefinition(BORG_Problem &problem);
+#endif
 
     int functionEvaluation(double *vars, double *objs, double *consts) override;
 

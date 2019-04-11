@@ -12,7 +12,7 @@ DroughtMitigationPolicy::DroughtMitigationPolicy(const DroughtMitigationPolicy &
         type(drought_mitigation_policy.type) {
 //    realization_utilities = vector<Utility *>();
 //    if (!realization_utilities.empty())
-//        __throw_invalid_argument("Your vector of Utility pointers must be empty for you to copy it, otherwise this"
+//        throw invalid_argument("Your vector of Utility pointers must be empty for you to copy it, otherwise this"
 //                                         "policy will act either on the wrong realization or on a freed pointer");
 }
 

@@ -25,7 +25,7 @@ WwtpDischargeRule::WwtpDischargeRule(
 
     for (auto &f : year_series_fraction_discharge) {
         if ((int) f.size() != (int) Constants::WEEKS_IN_YEAR + 1)
-            __throw_invalid_argument("Wastewater discharge rules but contain "
+            throw invalid_argument("Wastewater discharge rules but contain "
                                              "exactly 53 (for years with "
                                              "extra week) values.");
     }
@@ -33,7 +33,7 @@ WwtpDischargeRule::WwtpDischargeRule(
         printf("Number of series: %lu\nNumber of source IDs: %lu\n", 
             year_series_fraction_discharge.size(),
             discharge_to_source_ids.size());
-        __throw_invalid_argument("Number of wwtp discharge time series must be "
+        throw invalid_argument("Number of wwtp discharge time series must be "
                                           "the same as number of sources ids.");
     }
 }

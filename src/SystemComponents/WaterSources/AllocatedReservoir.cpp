@@ -287,7 +287,7 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
                 available_allocated_volumes[3],
                 available_allocated_volumes[4]);
 
-	__throw_runtime_error(error);
+	throw runtime_error(error);
 //        throw_with_nested(runtime_error(error));
     }
 
@@ -323,7 +323,7 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
                 available_allocated_volumes[3],
                 available_allocated_volumes[4]);
 
-	__throw_runtime_error(error);
+	throw runtime_error(error);
 //        throw_with_nested(runtime_error(error));
     }
 
@@ -467,14 +467,14 @@ double AllocatedReservoir::getAllocatedFraction(int utility_id) {
 
 double AllocatedReservoir::getAllocatedTreatmentCapacity(int utility_id) const {
     if (utility_id == WATER_QUALITY_ALLOCATION)
-        __throw_invalid_argument("Water quality pool does not have allocated treatment "
+        throw invalid_argument("Water quality pool does not have allocated treatment "
                                      "capacity.");
     return allocated_treatment_capacities[utility_id];
 }
 
 double AllocatedReservoir::getSupplyAllocatedFraction(int utility_id) {
     if (utility_id == WATER_QUALITY_ALLOCATION)
-        __throw_invalid_argument("Water quality pool allocation fraction cannot "
+        throw invalid_argument("Water quality pool allocation fraction cannot "
                                          "be used for supply.");
     return supply_allocated_fractions[utility_id];
 }

@@ -11,7 +11,7 @@
 #include <cstring>
 #include <iostream>
 #include <fstream>
-#include <bits/unique_ptr.h>
+#include <memory>
 
 template<typename T>
 class Matrix2D {
@@ -58,7 +58,7 @@ public:
 template<typename T>
 Matrix2D<T>::Matrix2D(int di, int dj) : di_(di), dj_(dj) {
     if (di == 0 || dj == 0)
-        std::__throw_length_error("Matrix2D constructor has 0 size");
+        throw length_error("Matrix2D constructor has 0 size");
     data_ = unique_ptr<T[]>(new T[di * dj]);
     fill_n(data_.get(), di_ * dj_, 0);
 }
@@ -66,7 +66,7 @@ Matrix2D<T>::Matrix2D(int di, int dj) : di_(di), dj_(dj) {
 template<typename T>
 Matrix2D<T>::Matrix2D(const Matrix2D<T> &m) : di_(m.di_), dj_(m.dj_), not_initialized(m.not_initialized) {
     if (di_ == 0 || dj_ == 0)
-        std::__throw_length_error("Matrix2D dimensions has 0 size");
+        throw length_error("Matrix2D dimensions has 0 size");
     data_ = unique_ptr<T[]>(new T[di_ * dj_]);
     std::copy(m.data_.get(), m.data_.get() + di_ * dj_, data_.get());
 }
@@ -82,7 +82,7 @@ Matrix2D<T> &Matrix2D<T>::operator=(const Matrix2D<T> &m) {
     di_ = m.di_;
     dj_ = m.dj_;
     if (di_ == 0 || dj_ == 0)
-        std::__throw_length_error("Matrix2D dimensions has 0 size");
+        throw length_error("Matrix2D dimensions has 0 size");
     data_ = unique_ptr<T[]>(new T[di_ * dj_]);
     std::copy(m.data_.get(), m.data_.get() + di_ * dj_, data_.get());
     return *this;
@@ -92,7 +92,7 @@ template<typename T>
 Matrix2D<T> &Matrix2D<T>::operator+=(const Matrix2D<T> &m) {
 
     if (m.di_ != di_ || m.dj_ != dj_)
-        std::__throw_length_error("Matrixes of different sizes cannot be added.");
+        throw length_error("Matrixes of different sizes cannot be added.");
 
     for (int i = 0; i < di_ * dj_; ++i) {
         data_[i] += m.data_[i];
@@ -152,7 +152,7 @@ void Matrix2D<T>::setData(T *data, int length) {
 template<typename T>
 void Matrix2D<T>::setPartialData(int i, T *data, int length) {
     if (i >= di_ + length)
-        std::__throw_length_error("Matrix3D subscript out of bounds or negative");
+        throw length_error("Matrix3D subscript out of bounds or negative");
     memcpy(data_.get() + i * dj_, data, length * sizeof(T));
 }
 
@@ -250,7 +250,7 @@ template<typename T>
 Matrix3D<T>::Matrix3D(int di, int dj, int dk) : di_(di), dj_(dj), dk_(dk)
 {
     if (di == 0 || dj == 0 || dk == 0)
-        std::__throw_length_error("Matrix3D dimensions has 0 size");
+        throw length_error("Matrix3D dimensions has 0 size");
     data_ = unique_ptr<T[]>(new T[di * dj * dk]);
     fill_n(data_.get(), di_ * dj_ * dk_, 0);
 }
@@ -258,7 +258,7 @@ Matrix3D<T>::Matrix3D(int di, int dj, int dk) : di_(di), dj_(dj), dk_(dk)
 template<typename T>
 Matrix3D<T>::Matrix3D(const Matrix3D<T> &m) : di_(m.di_), dj_(m.dj_), dk_(m.dk_) {
     if (di_ == 0 || dj_ == 0 || dk_ == 0)
-        std::__throw_length_error("Matrix3D dimensions has 0 size");
+        throw length_error("Matrix3D dimensions has 0 size");
     data_ = unique_ptr<T[]>(new T[di_ * dj_ * dk_]);
     std::copy(m.data_.get(), m.data_.get() + di_ * dj_ * dk_, data_.get());
 }
@@ -275,7 +275,7 @@ Matrix3D<T> &Matrix3D<T>::operator=(const Matrix3D<T> &m) {
     dj_ = m.dj_;
     dk_ = m.dk_;
     if (di_ == 0 || dj_ == 0 || dk_ == 0)
-        std::__throw_length_error("Matrix3D dimensions has 0 size");
+        throw length_error("Matrix3D dimensions has 0 size");
     data_ = unique_ptr<T[]>(new T[di_ * dj_ * dk_]);
     std::copy(m.data_.get(), m.data_.get() + di_ * dj_ * dk_, data_.get());
     return *this;
@@ -285,7 +285,7 @@ template<typename T>
 Matrix3D<T> &Matrix3D<T>::operator+=(const Matrix3D<T> &m) {
 
     if (m.di_ != di_ || m.dj_ != dj_ || m.dk_ != dk_)
-        std::__throw_length_error("Matrixes of different sizes cannot be added.");
+        throw length_error("Matrixes of different sizes cannot be added.");
 
     for (int i = 0; i < di_ * dj_ * dk_; ++i) {
         data_[i] += m.data_[i];
@@ -339,7 +339,7 @@ void Matrix3D<T>::setData(T *data, int length) {
 template<typename T>
 void Matrix3D<T>::setPartialData(int i, int j, T *data, int length) {
     if (i >= di_ || j >= dj_ || i * j < 0)
-        std::__throw_length_error("Matrix3D subscript out of bounds or negative");
+        throw length_error("Matrix3D subscript out of bounds or negative");
     memcpy(data_.get() + i * dj_ * dk_ + j * dk_, data, length * sizeof(T));
 }
 
@@ -401,7 +401,7 @@ Matrix2D<T> Matrix3D<T>::get2D(int ijk, char dim) {
         m = Matrix2D<T>(di_, dj_);
         m.setData(data2D);
     } else
-        std::__throw_invalid_argument("the first argument must be either one of chars 'i', 'j' or 'k.'");
+        throw invalid_argument("the first argument must be either one of chars 'i', 'j' or 'k.'");
 
 //    delete[] data2D;
 

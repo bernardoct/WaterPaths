@@ -19,7 +19,7 @@ Bond::Bond(const int id, const double cost_of_capital, const int n_payments,
     if (std::isnan(cost_of_capital) || cost_of_capital < 0) {
         string error = "Invalid construction cost of capital for bond "
                        + to_string(id);
-        __throw_invalid_argument(error.c_str());
+        throw invalid_argument(error.c_str());
     }
 }
 
@@ -39,7 +39,7 @@ Bond::Bond(const int id, const double cost_of_capital, const int n_payments,
     if (std::isnan(cost_of_capital) || cost_of_capital < 0) {
         string error = "Invalid construction cost of capital for bond "
                        + to_string(id);
-        __throw_invalid_argument(error.c_str());
+        throw invalid_argument(error.c_str());
     }
 }
 

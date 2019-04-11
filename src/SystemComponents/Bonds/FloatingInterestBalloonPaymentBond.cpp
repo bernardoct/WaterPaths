@@ -51,7 +51,7 @@ double FloatingInterestBalloonPaymentBond::getDebtService(int week) {
             return cost_of_capital * interest_rate_series.at((unsigned long) n_payments_made - 1);
         } catch(out_of_range &e) {
             e.what();
-            __throw_out_of_range("Floating interest bond with interest time series shorter than number of weeks prior "
+            throw out_of_range("Floating interest bond with interest time series shorter than number of weeks prior "
                                  "to payments -- too short of an interest time series.");
         }
     } else {

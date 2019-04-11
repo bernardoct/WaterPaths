@@ -9,11 +9,12 @@
 
 vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
     if (this->master_data_collector != nullptr) {
-        this->master_data_collector->setOutputDirectory(output_directory);
-        string fo = "/TestFiles/output/Objectives";
+	if (print_files) {
+            this->master_data_collector->setOutputDirectory(output_directory);
+	}
+        string fo = BAR + DEFAULT_OUTPUT_DIR + BAR + "Objectives";
         objectives = this->master_data_collector->calculatePrintObjectives(
                 fo + "_s" + std::to_string(solution_no) + fname_sufix, print_files);
-    
         return objectives;
     } else {
 	objectives = vector<double>(25, 1e5);
@@ -24,47 +25,46 @@ vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
 void Problem::printTimeSeriesAndPathways() {
     /// Calculate objective values.
     if (this->master_data_collector != nullptr) {
-    this->master_data_collector->setOutputDirectory(output_directory);
+//        this->master_data_collector->setOutputDirectory(output_directory);
 
-    /// Print output files.
-    string fu = "/TestFiles/output/Utilities";
-    string fws = "/TestFiles/output/WaterSources";
-    string fp = "/TestFiles/output/Policies";
-    string fpw = "/TestFiles/output/Pathways";
+        /// Print output files.
+        string fu = DEFAULT_OUTPUT_DIR + "Utilities";
+        string fws = DEFAULT_OUTPUT_DIR + "WaterSources";
+        string fp = DEFAULT_OUTPUT_DIR + "Policies";
+        string fpw = DEFAULT_OUTPUT_DIR + "Pathways";
 
-    //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
-    cout << "Printing Pathways" << endl;
-    this->master_data_collector->printPathways(
-            fpw + "_s" + std::to_string(solution_no) + fname_sufix);
-    cout << "Printing time series" << endl;
-    this->master_data_collector->printUtilitiesOutputCompact(
-            0, (int) n_weeks, fu + "_s" + std::to_string(solution_no) +
-                    fname_sufix);
-    this->master_data_collector->printWaterSourcesOutputCompact(
-            0, (int) n_weeks, fws + "_s" + std::to_string(solution_no) +
-                    fname_sufix);
-    this->master_data_collector->printPoliciesOutputCompact(
-            0, (int) n_weeks, fp + "_s" + std::to_string(solution_no) +
-                    fname_sufix);
-//    data_collector->printUtilitesOutputTabular(0,
-//                                               n_weeks,
-//                                               fu + "_s"
-//                                               + std::to_string(solution_no));
-//    data_collector->printWaterSourcesOutputTabular(0,
-//                                                   n_weeks,
-//                                                   fws + "_s"
-//                                                   + std::to_string(solution_no));
-//    data_collector->printPoliciesOutputTabular(0,
-//                                               n_weeks,
-//                                               fp + "_s"
-//                                               + std::to_string(solution_no));
+        //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
+        cout << "Printing Pathways" << endl;
+        this->master_data_collector->setOutputDirectory(output_directory);
+        this->master_data_collector->printPathways(
+                fpw + "_s" + std::to_string(solution_no) + fname_sufix);
+        cout << "Printing time series" << endl;
+        this->master_data_collector->printUtilitiesOutputCompact(
+                0, (int) n_weeks, fu + "_s" + std::to_string(solution_no) +
+                        fname_sufix);
+        this->master_data_collector->printWaterSourcesOutputCompact(
+                0, (int) n_weeks, fws + "_s" + std::to_string(solution_no) +
+                        fname_sufix);
+        this->master_data_collector->printPoliciesOutputCompact(
+                0, (int) n_weeks, fp + "_s" + std::to_string(solution_no) +
+                        fname_sufix);
+    //    data_collector->printUtilitesOutputTabular(0,
+    //                                               n_weeks,
+    //                                               fu + "_s"
+    //                                               + std::to_string(solution_no));
+    //    data_collector->printWaterSourcesOutputTabular(0,
+    //                                                   n_weeks,
+    //                                                   fws + "_s"
+    //                                                   + std::to_string(solution_no));
+    //    data_collector->printPoliciesOutputTabular(0,
+    //                                               n_weeks,
+    //                                               fp + "_s"
+    //                                               + std::to_string(solution_no));
     } else {
-	printf("Trying to print pathways but data collector is empty. Either your simulation crashed or you deleted the data collector too early.\n");
+	    printf("Trying to print pathways but data collector is empty. Either your simulation crashed or you deleted the data collector too early.\n");
     }
 
 }
-
-
 
 vector<int> Problem::vecInfraRankToVecInt(vector<infraRank> v) {
     vector<int> sorted;
@@ -107,8 +107,7 @@ void Problem::setSol_number(unsigned long sol_number) {
 }
 
 void Problem::setOutput_directory(const string &output_directory) {
-    cout << "Output will be printed in " << output_directory << endl;
-    Problem::output_directory = output_directory;
+    this->output_directory = output_directory;
 }
 
 void Problem::setRDMOptimization(vector<vector<double>> &utilities_rdm,
@@ -175,5 +174,5 @@ void Problem::destroyDataCollector() {
 }
 
 Problem::Problem(unsigned long n_weeks) : n_weeks(n_weeks) {
-
+    Reservoir::unsetSeed();
 }

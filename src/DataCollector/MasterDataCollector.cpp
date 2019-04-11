@@ -286,7 +286,7 @@ void MasterDataCollector::printUtilitesOutputTabular(
 
 void MasterDataCollector::printWaterSourcesOutputCompact(
         int week_i, int week_f, string file_name) {
-#pragma omp parallel for
+//#pragma omp parallel for
     for (int r = 0; r < (int) water_source_collectors[0].size(); ++r) {
         try {
             std::ofstream out_stream;
@@ -415,7 +415,7 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name, b
     if (print) {
         cout << "Calculating and printing Objectives" << endl;
         string obj_file_path = output_directory + file_name + ".out";
-        cout << obj_file_path << endl;
+//        cout << obj_file_path << endl;
 
         std::ofstream outStream;
         outStream.open(obj_file_path);
@@ -443,7 +443,7 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name, b
             }
         }
     } else {
-        cout << "Calculating Objectives" << endl;
+        //cout << "Calculating Objectives" << endl;
         for (auto &u : utility_collectors) {
             /// Create vector with restriction policies pertaining only to the
             /// utility whose objectives are being calculated.
@@ -585,14 +585,18 @@ void MasterDataCollector::printPathways(string file_name) {
 }
 
 void MasterDataCollector::setOutputDirectory(string directory) {
-    output_directory = directory;
+    // Check if directory is not being set for the same directory it is already set. Avoids unnecessary verbose.
+    if (directory != output_directory) {
+        output_directory = directory;
 
-    struct stat sb;
-    if (stat(output_directory.c_str(), &sb) == 0)
-        cout << "Output will be printed to folder " << output_directory << endl;
-    else {
-        cout << output_directory << endl;
-        __throw_invalid_argument("Output folder does not exist.");
+        struct stat sb;
+        // Check if directory exists and print either location or that directory does not exist.
+        if (stat(output_directory.c_str(), &sb) == 0)
+            cout << "Output will be printed to folder " << output_directory << DEFAULT_OUTPUT_DIR << endl;
+        else {
+            cout << output_directory << endl;
+            throw invalid_argument("Output folder does not exist.");
+        }
     }
 }
 
@@ -604,7 +608,7 @@ DataCollector* MasterDataCollector::createPolicyDataCollector(DroughtMitigationP
     else if (dmp->type == INSURANCE_STORAGE_ROF)
         return new EmptyDataCollector();
     else
-        __throw_invalid_argument("Drought mitigation policy not recognized. "
+        throw invalid_argument("Drought mitigation policy not recognized. "
                                  "Did you forget to add it to the "
                                  "MasterDataCollector::addRealization"
                                  " function?");
@@ -629,7 +633,7 @@ DataCollector* MasterDataCollector::createWaterSourceDataCollector(WaterSource* 
              SOURCE_RELOCATION)
         return new EmptyDataCollector();
     else
-        __throw_invalid_argument("Water source not recognized. "
+        throw invalid_argument("Water source not recognized. "
                                  "Did you forget to add it to the "
                                  "MasterDataCollector::addRealization"
                                  " function?");

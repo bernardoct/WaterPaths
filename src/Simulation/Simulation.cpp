@@ -142,11 +142,7 @@ void Simulation::setupSimulation(
     /// Sort water sources and utilities by their IDs.
     //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
     std::sort(water_sources.begin(), water_sources.end(), WaterSource::compare);
-#ifdef _WIN32
-    sort(utilities.begin(), utilities.end(), std::greater<>());
-#else
     std::sort(utilities.begin(), utilities.end(), Utility::compById);
-#endif
 
     /// Check if IDs are sequential.
     for (int ws = 1; ws < (int) water_sources.size(); ++ws) {
@@ -192,7 +188,7 @@ void Simulation::setupSimulation(
                      << " (" << utilities[u]->name << ")  but is  not  "
                              "present in  utility's list of water sources."
                      << endl;
-                __throw_invalid_argument("Utility's construction order and "
+                throw invalid_argument("Utility's construction order and "
                                                     "owned sources mismatch.");
             }
 
@@ -205,7 +201,7 @@ void Simulation::setupSimulation(
                 water_sources.end()) {
                 cout << "Water source #" << ws << " not present in "
                         "comprehensive water sources vector." << endl;
-                __throw_invalid_argument("Water sources declared to belong to"
+                throw invalid_argument("Water sources declared to belong to"
                                                  " a utility is not present "
                                                  "in vector of water sources.");
             }
@@ -317,7 +313,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                 r);
 
         try {
-            double start = omp_get_wtime();
+            //double start = omp_get_wtime();
             for (int w = 0; w < (int) total_simulation_time; ++w) {
                 // DO NOT change the order of the steps. This would mess up
                 // important dependencies.
@@ -341,6 +337,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
             if (import_export_rof_tables == EXPORT_ROF_TABLES) {
                 rof_model->printROFTable(rof_tables_folder);
             }
+            // printf("Realization %lu took %f seconds.\n", r, omp_get_wtime() - start);
         } catch (...) {
 #pragma omp atomic
             ++had_catch;
@@ -359,7 +356,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
 	int mpi_initialized;
 	MPI_Initialized(&mpi_initialized);
 	if (mpi_initialized)
-            MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+             MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 	else
 	    world_rank = 0;
 #else

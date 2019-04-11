@@ -280,12 +280,12 @@ void Utility::priceCalculationErrorChecking(
         const vector<vector<double>> *typesMonthlyDemandFraction,
         const vector<vector<double>> *typesMonthlyWaterPrice) {
     if (typesMonthlyDemandFraction->size() != NUMBER_OF_MONTHS)
-        __throw_invalid_argument("There must be 12 total_demand fractions per tier.");
+        throw invalid_argument("There must be 12 total_demand fractions per tier.");
     if (typesMonthlyWaterPrice->size() != NUMBER_OF_MONTHS)
-        __throw_invalid_argument("There must be 12 water prices per tier.");
+        throw invalid_argument("There must be 12 water prices per tier.");
     if ((*typesMonthlyWaterPrice)[0].size() !=
         (*typesMonthlyDemandFraction)[0].size())
-        __throw_invalid_argument("There must be Demand fractions and water "
+        throw invalid_argument("There must be Demand fractions and water "
                                          "prices for the same number of tiers.");
 }
 
@@ -355,7 +355,7 @@ void Utility::checkErrorsAddWaterSourceOnline(WaterSource *water_source) {
         if ((ws != nullptr) && ws->id == water_source->id) {
             cout << "Water source ID: " << water_source->id << endl <<
                  "Utility ID: " << id << endl;
-            __throw_invalid_argument("Attempt to add water source with "
+            throw invalid_argument("Attempt to add water source with "
                                      "duplicate ID to utility.");
         }
     }
@@ -478,7 +478,7 @@ void Utility::updateContingencyFundAndDebtService(
         current_price = restricted_price;
 
     if (current_price < unrestricted_price)
-        __throw_logic_error("Prices under surcharge cannot be smaller than "
+        throw logic_error("Prices under surcharge cannot be smaller than "
                                     "prices w/o restrictions enacted.");
 
     /// calculate fund contributions if there were no shortage.

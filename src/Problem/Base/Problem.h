@@ -9,6 +9,7 @@
 #include "../../DataCollector/Base/DataCollector.h"
 #include "../../DataCollector/MasterDataCollector.h"
 #include "../../Utils/Utils.h"
+#include "../../SystemComponents/WaterSources/Reservoir.h"
 
 struct infraRank {
     int id;

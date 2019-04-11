@@ -11,8 +11,6 @@
 #ifdef  PARALLEL
 #include <mpi.h>
 #endif
-
-
 #include "PaperTestProblem.h"
 #include "../Controls/SeasonalMinEnvFlowControl.h"
 #include "../Controls/Custom/FallsLakeMinEnvFlowControl.h"
@@ -23,13 +21,61 @@
 #include "../SystemComponents/WaterSources/AllocatedReservoir.h"
 #include "../SystemComponents/WaterSources/Quarry.h"
 #include "../SystemComponents/WaterSources/Relocation.h"
+#include "../SystemComponents/WaterSources/ReservoirExpansion.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
 #include "../DroughtMitigationInstruments/InsuranceStorageToROF.h"
 #include "../SystemComponents/Bonds/LevelDebtServiceBond.h"
+#include "../SystemComponents/Bonds/BalloonPaymentBond.h"
 #include "../Simulation/Simulation.h"
 #include "../SystemComponents/WaterSources/WaterReuse.h"
 #include "../SystemComponents/WaterSources/ReservoirExpansion.h"
 
+#ifdef PARALLEL
+void PaperTestProblem::setProblemDefinition(BORG_Problem &problem)
+{
+    // The parameter bounds are the same for all formulations
+
+    BORG_Problem_set_bounds(problem, 0, 0.001, 1.0);    // watertown restrictions
+    BORG_Problem_set_bounds(problem, 1, 0.001, 1.0);    // dryville restrictions
+    BORG_Problem_set_bounds(problem, 2, 0.001, 1.0);    // fallsland restrictions
+    BORG_Problem_set_bounds(problem, 3, 0.001, 1.0);    // dryville transfer
+    BORG_Problem_set_bounds(problem, 4, 0.001, 1.0);    // fallsland transfer
+    BORG_Problem_set_bounds(problem, 5, 0.334, 0.9);    // watertown LMA
+    BORG_Problem_set_bounds(problem, 6, 0.05, 0.333);   // dryville LMA
+    BORG_Problem_set_bounds(problem, 7, 0.05, 0.333);   // fallsland LMA
+    BORG_Problem_set_bounds(problem, 8, 0.0, 0.1);      // watertown annual payment
+    BORG_Problem_set_bounds(problem, 9, 0.0, 0.1);      // dryville annual payment
+    BORG_Problem_set_bounds(problem, 10, 0.0, 0.1);     // fallsland annual payment 
+    BORG_Problem_set_bounds(problem, 11, 0.001, 1.0);   // watertown insurance use
+    BORG_Problem_set_bounds(problem, 12, 0.001, 1.0);   // dryville insurance use
+    BORG_Problem_set_bounds(problem, 13, 0.001, 1.0);   // fallsland insurance use
+    BORG_Problem_set_bounds(problem, 14, 0.0, 0.02);    // watertown insurance payment
+    BORG_Problem_set_bounds(problem, 15, 0.0, 0.02);    // dryville insurance payment
+    BORG_Problem_set_bounds(problem, 16, 0.0, 0.02);    // fallsland insurance payment
+    BORG_Problem_set_bounds(problem, 17, 0.001, 1.0);   // watertown inf trigger
+    BORG_Problem_set_bounds(problem, 18, 0.001, 1.0);   // dryville inf trigger
+    BORG_Problem_set_bounds(problem, 19, 0.001, 1.0);   // fallsland inf trigger
+    BORG_Problem_set_bounds(problem, 20, 0.0, 1.0);     // new river rank watertown
+    BORG_Problem_set_bounds(problem, 21, 0.0, 1.0);     // college rock expansion rank low
+    BORG_Problem_set_bounds(problem, 22, 0.0, 1.0);     // college rock expansion rank high
+    BORG_Problem_set_bounds(problem, 23, 0.0, 1.0);     // watertown reuse rank
+    BORG_Problem_set_bounds(problem, 24, 0.0, 1.0);     // sugar creek rank
+    BORG_Problem_set_bounds(problem, 25, 0.0, 1.0);     // granite quarry rank
+    BORG_Problem_set_bounds(problem, 26, 0.0, 1.0);     // new river rank fallsland
+    
+
+    // Set epsilons for objectives
+    // Original values: (works fine for Formulations 0-4)
+
+    BORG_Problem_set_epsilon(problem, 0, 0.001);
+    BORG_Problem_set_epsilon(problem, 1, 25.0);
+    BORG_Problem_set_epsilon(problem, 2, 0.02);
+    BORG_Problem_set_epsilon(problem, 3, 0.02);
+    BORG_Problem_set_epsilon(problem, 4, 0.05);
+    BORG_Problem_set_epsilon(problem, 5, 0.05);
+
+}
+#endif 
 
 /**
  * Runs three utility carolina problem for demonstration paper
@@ -49,29 +95,124 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     Simulation *s = nullptr;
 
     //FIXME THESE ARE TEST VALUES
-    double watertown_LMA = 0.7;
-    double dryville_LMA = 0.20;
-    double fallsland_LMA = 0.1;
-    double watertown_annual_payment = 0.05;
+    double watertown_restriction_trigger = vars[0];
+    double dryville_restriction_trigger = vars[1];
+    double fallsland_restriction_trigger = vars[2];
+    double dryville_transfer_trigger = vars[3];
+    double fallsland_transfer_trigger = vars[4];
+    double watertown_LMA = vars[5];
+    double dryville_LMA = vars[6];
+    double fallsland_LMA = vars[7];
+    double watertown_annual_payment = vars[8];
+    double dryville_annual_payment = vars[9];
+    double fallsland_annual_payment = vars[10];
+    double watertown_insurance_use = vars[11];
+    double dryville_insurance_use = vars[12];
+    double fallsland_insurance_use = vars[13];
+    double watertown_insurance_payment = vars[14];
+    double dryville_insurance_payment = vars[15];
+    double fallsland_insurance_payment = vars[16];
+
+    //FIXME: Turning infrastructure off for ST testing
+    //double watertown_inftrigger = vars[17];
+    double watertown_inftrigger = 1.1;
+    //double dryville_inftrigger = vars[18];
+    double dryville_inftrigger = 1.1;
+    //double fallsland_inftrigger = vars[19];
+    double fallsland_inftrigger = 1.1;
+
+    if (import_export_rof_tables == EXPORT_ROF_TABLES) {
+        dryville_inftrigger = 1.1;
+        fallsland_inftrigger = 1.1;
+        watertown_inftrigger = 1.1;
+    };
+
+    //double new_river_rank_watertown = vars[20];
+    double new_river_rank_watertown = .1;
+    //double college_rock_expansion_low_rank = vars[21];
+    double college_rock_expansion_low_rank = .2;
+    //double college_rock_expansion_high_rank = vars[22];
+    double college_rock_expansion_high_rank = .3;
+    //double watertown_reuse_rank = vars[23];
+    double watertown_reuse_rank = .4;
+    //double sugar_creek_rank =vars[24];
+    double sugar_creek_rank = .1;
+    //double granite_quarry_rank = vars[25];
+    double granite_quarry_rank = .2;
+    //double new_river_rank_fallsland = vars[26];
+    double new_river_rank_fallsland = .1;
+
+    vector<infraRank> dryville_infra_order_raw = {
+        infraRank(3, sugar_creek_rank),
+        infraRank(5, granite_quarry_rank)
+    };
+
+    vector<infraRank> fallsland_infra_order_raw = {
+        infraRank(4, new_river_rank_fallsland)
+    };
+
+    vector<infraRank> watertown_infra_order_raw = {
+        infraRank(4, new_river_rank_watertown),
+        infraRank(7, college_rock_expansion_low_rank),
+        infraRank(8, college_rock_expansion_high_rank),
+        infraRank(9, watertown_reuse_rank)
+    };
+
+    sort(dryville_infra_order_raw.begin(),
+        dryville_infra_order_raw.end(),
+        by_xreal());
+    // commenting out because vector only has length 1
+    //sort(fallsland_infra_order_raw.begin(),
+    //    fallsland_infra_order_raw.end(),
+    //    by_xreal());
+    sort(watertown_infra_order_raw.begin(),
+        watertown_infra_order_raw.end(),
+        by_xreal());
+
+    vector<int> rof_triggered_infra_order_dryville = 
+        vecInfraRankToVecInt(dryville_infra_order_raw);
+    vector<double> rofs_infra_dryville = vector<double>
+        (rof_triggered_infra_order_dryville.size(), dryville_inftrigger);
+    
+    vector<int> rof_triggered_infra_order_fallsland = 
+        vecInfraRankToVecInt(fallsland_infra_order_raw);
+    vector<double> rofs_infra_fallsland = vector<double>
+        (rof_triggered_infra_order_fallsland.size(), fallsland_inftrigger);
+
+    vector<int> rof_triggered_infra_order_watertown = 
+        vecInfraRankToVecInt(watertown_infra_order_raw);
+    vector<double> rofs_infra_watertown = vector<double>
+        (rof_triggered_infra_order_watertown.size(), watertown_inftrigger);
+
+    /// Remove small expansions being built after big expansions that would
+    /// encompass the smal expansions.
+    double added_storage_college_rock_expansion_low = 500;
+    double added_storage_college_rock_expansion_high = 1000;
+
+    checkAndFixInfraExpansionHighLowOrder(
+            &rof_triggered_infra_order_watertown,
+            7,
+            8,
+            added_storage_college_rock_expansion_low,
+            added_storage_college_rock_expansion_high);
+
     double watertown_demand_buffer = 1.0;
-    double dryville_annual_payment = 0.05;
     double dryville_demand_buffer = 1.0;
-    double fallsland_annual_payment = 0.05;
     double fallsland_demand_buffer = 1.0;
-    double watertown_restriction_trigger = 10.05;
-    double dryville_restriction_trigger = 10.05;
-    double fallsland_restriction_trigger = 10.05;
-    double dryville_transfer_trigger = 10.03;
-    double fallsland_transfer_trigger = 10.03;
-    double watertown_insurance_use = .15; //FIXME: CHECK THAT THIS IS RESTRICTION STAGE
-    double dryville_insurance_use = .15;
-    double fallsland_insurance_use = .15;
-    double waterland_insurance_payment = 0.15;
-    double dryville_insurance_payment = 0.15;
-    double fallsland_insurance_payment = 0.15;
 
+    // Normalize lake michael allocations in case they exceed 1
+    double sum_lma_allocations = dryville_LMA + fallsland_LMA + watertown_LMA;
+    if (sum_lma_allocations == 0.)
+            __throw_invalid_argument("LMA allocations cannot be all "
+                                             "zero.");
+    if (sum_lma_allocations > 1){
+        dryville_LMA /= sum_lma_allocations;
+        fallsland_LMA /= sum_lma_allocations;
+        watertown_LMA /= sum_lma_allocations;
+    }
+    
 
-
+    // ==================== SET UP RDM FACTORS ============================
 
     if (utilities_rdm.empty()) {
         /// All matrices below have dimensions n_realizations x nr_rdm_factors
@@ -115,11 +256,15 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     Catchment morgan_creek(&streamflows_morgan, streamflow_n_weeks);
 
     // Add catchments to vector
+    // College Rock (University Lake)
     vector<Catchment *> catchment_college_rock;
-    catchment_college_rock.push_back(&phils_creek);
     catchment_college_rock.push_back(&morgan_creek);
 
-    // Sugar Creek (abstracted Cane Creek)
+    // Granite Quarry (Stone Quarry)
+    vector<Catchment *> catchment_granite_quarry;
+    catchment_granite_quarry.push_back(&phils_creek);
+    
+    // Sugar Creek (Cane Creek)
     Catchment sugar_creek(&streamflows_cane, streamflow_n_weeks);
 
     // Add catchment to vector
@@ -166,6 +311,11 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     DataSeries sugar_creek_storage_area(&sugar_creek_res_storage,
                                         &sugar_creek_res_area);
 
+    vector<double> granite_quarry_storage = {0, 200};
+    vector<double> granite_quarry_area = {0, 0.3675 * 200};
+    DataSeries granite_quarry_storage_area(&granite_quarry_storage,
+                                        &granite_quarry_area);
+
     // Create minimum environmental flow rules (controls)
     // Autumn is combining Falls+Durham+WB
     //FIXME FIX THESE FLOW REQUIREMENTS
@@ -189,8 +339,9 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                                                         sugar_creek_inflows,
                                                         sugar_creek_releases);
 
-    // College Rock has no min flow
+    // College Rock and Granite Quarry have no min flow
     FixedMinEnvFlowControl college_rock_min_env_control(0, 0);
+    FixedMinEnvFlowControl granite_quarry_min_env_control(0, 0);
 
     //FIXME made these numbers up
     vector<int> new_river_controls_weeks = {0, 13, 43, 53};
@@ -203,9 +354,9 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     min_env_flow_controls.push_back(&lake_michael_min_env_control);
     min_env_flow_controls.push_back(&sugar_creek_min_env_control);
     min_env_flow_controls.push_back(&college_rock_min_env_control);
+    min_env_flow_controls.push_back(&granite_quarry_min_env_control);
 
     // Lake Michael parameters
-
     double lake_michael_supply_capacity = 10300 * table_gen_storage_multiplier; // reduced to .69 of JL cap
     double lake_michael_wq_capacity = 30825.0 * table_gen_storage_multiplier;
     double lake_michael_storage_capacity = lake_michael_wq_capacity + lake_michael_supply_capacity;
@@ -235,7 +386,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     Reservoir college_rock_reservoir("College Rock Reservoir",
                                      0,
                                      catchment_college_rock,
-                                     (449 + 200) * table_gen_storage_multiplier,
+                                     449 * table_gen_storage_multiplier,
                                      ILLIMITED_TREATMENT_CAPACITY,
                                      evaporation_owasa,
                                      222);
@@ -267,7 +418,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     //FIXME ORIGINAL CODE SETS WEEKS_IN_YEAR TO 0 HERE
     vector<double> construction_time_interval = {3.0, 5.0};
 
-    LevelDebtServiceBond sugar_bond(3, 263.0, 25, 0.05, vector<int>(1, 0));
+    LevelDebtServiceBond sugar_bond(3, 150.0, 25, 0.05, vector<int>(1, 0));
     Reservoir sugar_creek_reservoir("Sugar Creek Reservoir",
                                     3,
                                     catchment_sugar_creek,
@@ -278,6 +429,18 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                                     construction_time_interval,
                                     17 * WEEKS_IN_YEAR,
                                     sugar_bond);
+
+    BalloonPaymentBond granite_bond(5, 22.6, 25, 0.05, vector<int>(1, 0), 3);
+    Reservoir granite_quarry("Granite Quarry",
+                               5,
+                               catchment_granite_quarry,
+                               200,
+                               ILLIMITED_TREATMENT_CAPACITY,
+                               evaporation_owasa,
+                               &granite_quarry_storage_area,
+                               construction_time_interval,
+                               17 * WEEKS_IN_YEAR,
+                               granite_bond);
 
     //FIXME check bond, this one is from little river raliegh
     LevelDebtServiceBond new_river_bond(4, 263.0, 25, 0.05, vector<int>(1, 0));
@@ -293,32 +456,34 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                                   new_river_bond);
 
     LevelDebtServiceBond dummy_bond(5, 1., 1, 1., vector<int>(1, 0));
-    Reservoir dummy_endpoint("Dummy Node", 5, vector<Catchment *>(), 1., 0, evaporation_durham, 1,
+    Reservoir dummy_endpoint("Dummy Node", 6, vector<Catchment *>(), 1., 0, evaporation_durham, 1,
                              construction_time_interval, 0, dummy_bond);
 
     //FIXME: Edit the expansion volumes for CRR, just made these up
+    //FIXME: changed these temporarily to 0
     vector<double> college_rock_expansion_low_construction_time = {3, 5};
-    LevelDebtServiceBond college_rock_expansion_low_bond(6, 50, 30, .05, vector<int>(1, 0));
-    ReservoirExpansion college_rock_expansion_low((char *) "College Rock Expansion Low", 6, 0, 500,
+    LevelDebtServiceBond college_rock_expansion_low_bond(7, 50, 30, .05, vector<int>(1, 0));
+    ReservoirExpansion college_rock_expansion_low((char *) "College Rock Expansion Low", 7, 0, 0,
                                                   college_rock_expansion_low_construction_time, 5, college_rock_expansion_low_bond);
 
     vector<double> college_rock_expansion_high_construction_time = {3, 5};
-    LevelDebtServiceBond college_rock_expansion_high_bond(7, 100, 30, .05, vector<int>(1, 0));
-    ReservoirExpansion college_rock_expansion_high((char *) "College Rock Expansion High", 7, 0, 1000,
+    LevelDebtServiceBond college_rock_expansion_high_bond(8, 100, 30, .05, vector<int>(1, 0));
+    ReservoirExpansion college_rock_expansion_high((char *) "College Rock Expansion High", 8, 0, 0,
                                                    college_rock_expansion_high_construction_time, 5,
                                                    college_rock_expansion_high_bond);
 
     vector<double> watertown_reuse_construction_time = {3, 5};
-    LevelDebtServiceBond watertown_reuse_bond(8, 50, 30, .05, vector<int>(1, 0));
-    WaterReuse watertown_reuse((char *) "Watertwon Reuse", 8, 20, watertown_reuse_construction_time, 5,
+    LevelDebtServiceBond watertown_reuse_bond(9, 50, 30, .05, vector<int>(1, 0));
+    WaterReuse watertown_reuse((char *) "Watertwon Reuse", 9, 20, watertown_reuse_construction_time, 5,
                                watertown_reuse_bond);
 
     vector<WaterSource *> water_sources;
     water_sources.push_back(&college_rock_reservoir);
     water_sources.push_back(&autumn_lake);
     water_sources.push_back(&lake_michael);
-    water_sources.push_back(&new_river_reservoir);
     water_sources.push_back(&sugar_creek_reservoir);
+    water_sources.push_back(&new_river_reservoir);
+    water_sources.push_back(&granite_quarry);
     water_sources.push_back(&college_rock_expansion_low);
     water_sources.push_back(&college_rock_expansion_high);
     water_sources.push_back(&watertown_reuse);
@@ -326,10 +491,10 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
 /*
  *
- *  0 College Rock Reservoir (6) small expansion (7) large expansion
+ *  0 College Rock Reservoir (7) small expansion (8) large expansion
  *   \
- *    \
- *     \
+ *    \                          (5) Granite Quarry
+ *     \                         /
  *      \                      (3) Sugar Creek Reservoir
  *       1 Lake Michael        /
  *        \                   /
@@ -341,19 +506,19 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
  *              \       /
  *               \    (4) New River Reservoir
  *                \   /
- *                 \ /    (8) watertown reuse
+ *                 \ /    (9) watertown reuse
  *                  |
  *                  |
- *                  5 Dummy Endpoint
+ *                  6 Dummy Endpoint
  */
 
-    //FIXME ADD CRR EXPANSION
-    Graph g(6);
+    Graph g(7);
     g.addEdge(0, 1);
+    g.addEdge(5, 3);
     g.addEdge(3, 2);
     g.addEdge(2, 4);
-    g.addEdge(1, 5);
-    g.addEdge(4, 5);
+    g.addEdge(1, 6);
+    g.addEdge(4, 6);
 
     auto demand_n_weeks = (int) round(46 * WEEKS_IN_YEAR);
 
@@ -381,35 +546,34 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
             fallsland_ws_return_id);
 
     //FIXME: rof triggered order needs to be changed to DV, bond etc need to be updated
-    vector<int> rof_triggered_infra_order_watertown = {4, 6, 7, 8};
+    //<int> rof_triggered_infra_order_watertown = {4, 7, 8, 9};
     Utility watertown((char *) "Watertown", 0, demand_watertown, demand_n_weeks, watertown_annual_payment,
                       &watertownDemandClassesFractions,
                       &watertownUserClassesWaterPrices, wwtp_discharge_watertown, watertown_demand_buffer,
-                      rof_triggered_infra_order_watertown, vector<int>(), vector<double>(1, 0.01), discount_rate, 30, .05);
+                      rof_triggered_infra_order_watertown, vector<int>(), vector<double>(4, 1.01), discount_rate, 30, .05);
 
     //FIXME: rof triggered order needs to be changed to DV, bond etc need to be updated
-    vector<int> rof_triggered_infra_order_dryville = {3};
+    //vector<int> rof_triggered_infra_order_dryville = {3, 5};
     Utility dryville((char *) "Dryville", 1, demand_dryville, demand_n_weeks, dryville_annual_payment,
                      &dryvilleDemandClassesFractions, &dryvilleUserClassesWaterPrices,
                      wwtp_discharge_dryville, dryville_demand_buffer, rof_triggered_infra_order_dryville, vector<int>(),
-                     vector<double>(1, 0.01), discount_rate, 30, 0.05);
+                     vector<double>(2, 1.01), discount_rate, 30, 0.05);
 
     //FIXME: rof triggered order needs to be changed to DV, bond etc need to be updated
-    vector<int> rof_triggered_infra_order_fallsland = {4};
+    //vector<int> rof_triggered_infra_order_fallsland = {4};
     Utility fallsland((char *) "Fallsland", 2, demand_fallsland, demand_n_weeks, fallsland_annual_payment,
                       &fallslandDemandClassesFractions, &fallslandUserClassesWaterPrices,
                       wwtp_discharge_fallsland, fallsland_demand_buffer, rof_triggered_infra_order_fallsland,
-                      vector<int>(), vector<double>(1, 0.01), discount_rate, 30, 0.05);
+                      vector<int>(), vector<double>(1, 1.01), discount_rate, 30, 0.05);
 
     vector<Utility*> utilities;
     utilities.push_back(&watertown);
     utilities.push_back(&dryville);
     utilities.push_back(&fallsland);
 
-    //FIXME CHECK TO MAKE SURE PROPER RESERVOIRS CONNECTED
     vector<vector<int>> reservoir_utility_connectivity_matrix = {
-            {0, 1, 2, 4, 6, 7, 8}, //Watertown
-            {2, 3}, //Dryville
+            {0, 1, 4, 7, 8, 9}, //Watertown
+            {2, 3, 5}, //Dryville
             {2, 4} //Fallsland
     };
 
@@ -492,7 +656,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     vector<double> insurance_triggers = {watertown_insurance_use,
                                          dryville_insurance_use,
                                          fallsland_insurance_use};
-    vector<double> fixed_payouts = {waterland_insurance_payment,
+    vector<double> fixed_payouts = {watertown_insurance_payment,
                                     dryville_insurance_payment,
                                     fallsland_insurance_payment};
 
@@ -506,7 +670,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
 
     /// Creates simulation object depending on use (or lack thereof) ROF tables
-    double realization_start;
+    double start_time = omp_get_wtime();
     if (import_export_rof_tables == EXPORT_ROF_TABLES) {
         s = new Simulation(water_sources,
                            g,
@@ -520,7 +684,6 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                            n_weeks,
                            realizations_to_run,
                            rof_tables_directory);
-//        realization_start = omp_get_wtime();
         this->master_data_collector = s->runFullSimulation(n_threads);
     } else if (import_export_rof_tables == IMPORT_ROF_TABLES) {
         s = new Simulation (water_sources,
@@ -537,7 +700,6 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                             rof_tables,
                             table_storage_shift,
                             rof_tables_directory);
-//        realization_start = omp_get_wtime();
         this->master_data_collector = s->runFullSimulation(n_threads);
     } else {
         s = new Simulation(water_sources,
@@ -551,13 +713,10 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                            policies_rdm,
                            n_weeks,
                            realizations_to_run);
-//        realization_start = omp_get_wtime();
         this->master_data_collector = s->runFullSimulation(n_threads);
     }
-
-//    double realization_end = omp_get_wtime();
-//    std::cout << "Simulation took  " << realization_end - realization_start
-//              << "s" << std::endl;
+    double end_time = omp_get_wtime();
+    //printf("Function evaluation time: %f\n", end_time - start_time);
 
     /// Calculate objectives and store them in Borg decision variables array.
 #ifdef  PARALLEL
@@ -565,10 +724,10 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
         int i = 0;
         objs[i] = 1. - min(min(objectives[i], objectives[5 + i]),
-        		   min(objectives[10 + i], objectives[15 + i]));
+        		   objectives[10 + i]);
         for (i = 1; i < 5; ++i) {
             objs[i] = max(max(objectives[i], objectives[5 + i]),
-      	                  max(objectives[10 + i], objectives[15 + i]));
+      	                  objectives[10 + i]);
         }
 
         if (s != nullptr) {
@@ -587,124 +746,8 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
 };
 
-
-
-PaperTestProblem::~PaperTestProblem() = default;
-
-void PaperTestProblem::readInputData() {
-    cout << "Reading input data." << endl;
-
-#pragma omp parallel num_threads(20)
-    {
-#pragma omp single
-        streamflows_durham = Utils::parse2DCsvFile("../TestFiles/inflows" + evap_inflows_suffix + "/durham_inflows.csv", n_realizations);
-#pragma omp single
-        streamflows_flat = Utils::parse2DCsvFile("../TestFiles/inflows" + evap_inflows_suffix + "/falls_lake_inflows.csv", n_realizations);
-#pragma omp single
-        streamflows_swift = Utils::parse2DCsvFile("../TestFiles/inflows" + evap_inflows_suffix + "/lake_wb_inflows.csv", n_realizations);
-#pragma omp single
-        streamflows_llr = Utils::parse2DCsvFile("../TestFiles/inflows" + evap_inflows_suffix + "/little_river_raleigh_inflows.csv", n_realizations);
-        // }
-#pragma omp single
-        streamflows_phils = Utils::parse2DCsvFile("../TestFiles/inflows" + evap_inflows_suffix + "/stone_quarry_inflows.csv", n_realizations);
-#pragma omp single
-        streamflows_cane = Utils::parse2DCsvFile("../TestFiles/inflows" + evap_inflows_suffix + "/cane_creek_inflows.csv", n_realizations);
-#pragma omp single
-        streamflows_morgan = Utils::parse2DCsvFile("../TestFiles/inflows" + evap_inflows_suffix + "/university_lake_inflows.csv", n_realizations);
-#pragma omp single
-        streamflows_haw = Utils::parse2DCsvFile("../TestFiles/inflows" + evap_inflows_suffix + "/jordan_lake_inflows.csv", n_realizations);
-#pragma omp single
-        streamflows_lillington = Utils::parse2DCsvFile("../TestFiles/inflows" + evap_inflows_suffix + "/lillington_inflows.csv", n_realizations);
-// };
-        //cout << "Reading evaporations." << endl;
-#pragma omp single
-        evap_durham = Utils::parse2DCsvFile("../TestFiles/evaporation" + evap_inflows_suffix + "/durham_evap.csv", n_realizations);
-#pragma omp single
-        evap_falls_lake = Utils::parse2DCsvFile("../TestFiles/evaporation" + evap_inflows_suffix + "/falls_lake_evap.csv", n_realizations);
-#pragma omp single
-        evap_owasa = Utils::parse2DCsvFile("../TestFiles/evaporation" + evap_inflows_suffix + "/owasa_evap.csv", n_realizations);
-#pragma omp single
-        evap_little_river = Utils::parse2DCsvFile("../TestFiles/evaporation" + evap_inflows_suffix + "/little_river_raleigh_evap.csv", n_realizations);
-#pragma omp single
-        {
-            evap_wheeler_benson = Utils::parse2DCsvFile("../TestFiles/evaporation" + evap_inflows_suffix + "/wb_evap.csv", n_realizations);
-            evap_jordan_lake = evap_owasa;
-        }
-
-        //cout << "Reading demands." << endl;
-#pragma omp single
-        demand_watertown = Utils::parse2DCsvFile("../TestFiles/demands" + evap_inflows_suffix + "/cary_demand.csv", n_realizations);
-#pragma omp single
-        demand_dryville = Utils::parse2DCsvFile("../TestFiles/demands" + evap_inflows_suffix + "/durham_demand.csv", n_realizations);
-#pragma omp single
-        demand_fallsland = Utils::parse2DCsvFile("../TestFiles/demands" + evap_inflows_suffix + "/raleigh_demand.csv", n_realizations);
-
-        //cout << "Reading others." << endl;
-#pragma omp single
-        {
-            demand_to_wastewater_fraction_fallsland = Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
-            demand_to_wastewater_fraction_dryville = Utils::parse2DCsvFile("../TestFiles/demand_to_wastewater_fraction_durham.csv");
-
-            watertownDemandClassesFractions = Utils::parse2DCsvFile("../TestFiles/caryDemandClassesFractions.csv");
-            dryvilleDemandClassesFractions = Utils::parse2DCsvFile("../TestFiles/durhamDemandClassesFractions.csv");
-            fallslandDemandClassesFractions = Utils::parse2DCsvFile("../TestFiles/raleighDemandClassesFractions.csv");
-
-            watertownUserClassesWaterPrices = Utils::parse2DCsvFile("../TestFiles/caryUserClassesWaterPrices.csv");
-            dryvilleUserClassesWaterPrices = Utils::parse2DCsvFile("../TestFiles/durhamUserClassesWaterPrices.csv");
-            fallslandUserClassesWaterPrices = Utils::parse2DCsvFile("../TestFiles/raleighUserClassesWaterPrices.csv");
-        }
-//    cout << "Done reading input data." << endl;
-    }
-
-}
-
-
-int PaperTestProblem::simulationExceptionHander(const std::exception &e, Simulation *s,
-                                                double *objs, const double *vars) {
-    int num_dec_var = 57;
-//        printf("Exception called during calculations. Decision variables are below:\n");
-    ofstream sol;
-    int world_rank;
-#ifdef  PARALLEL
-    int mpi_initialized;
-	MPI_Initialized(&mpi_initialized);
-	if (mpi_initialized)
-            MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-	else
-	    world_rank = 0;
-#else
-    world_rank = 0;
-#endif
-    string error_file = "sol_error_rank_" + to_string(world_rank) + ".csv";
-    sol.open(error_file.c_str());
-    for (int i = 0; i < num_dec_var; ++i) {
-        sol << vars[i] << ",";
-    }
-    sol << flush;
-    sol.close();
-    printf("Error. Decision variables printed in %s\n", error_file.c_str());
-
-#ifdef PARALLEL
-    objs[0] = 0.;
-	objs[1] = 1.1;
-	objs[2] = 1000;
-	objs[3] = 5.;
-	objs[4] = 5.;
-	objs[5] = 1.1;
-	if (s != nullptr) {
-	    delete s;
-	    s = nullptr;
-	}
-#else
-    Utils::print_exception(e);
-#endif
-    return 1;
-}
-
-
-
 PaperTestProblem::PaperTestProblem(unsigned long n_weeks, int import_export_rof_table)
-        : Problem(n_weeks), import_export_rof_tables(import_export_rof_table) {
+        : Problem(n_weeks) {
     if (import_export_rof_table == EXPORT_ROF_TABLES) {
         table_gen_storage_multiplier = BASE_STORAGE_CAPACITY_MULTIPLIER;
     } else {
@@ -712,24 +755,130 @@ PaperTestProblem::PaperTestProblem(unsigned long n_weeks, int import_export_rof_
     }
 }
 
-/**
- * Read pre-computed ROF tables.
- * @param folder Folder containing the ROF tables.
- * @param n_realizations number of realizations.
- */
-void
-PaperTestProblem::setRofTables(unsigned long n_realizations, int n_utilities, string rof_tables_directory) {
+
+PaperTestProblem::~PaperTestProblem() = default;
+
+void PaperTestProblem::readInputData() {
+    cout << "Reading input data." << endl;
+    string data_dir = DEFAULT_DATA_DIR + BAR;
+
+#pragma omp parallel num_threads(omp_get_thread_num())
+    {
+#pragma omp single
+        streamflows_durham = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "durham_inflows.csv", n_realizations);
+#pragma omp single
+        streamflows_flat = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "falls_lake_inflows.csv", n_realizations);
+#pragma omp single
+        streamflows_swift = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "lake_wb_inflows.csv", n_realizations);
+#pragma omp single
+        streamflows_llr = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "little_river_raleigh_inflows.csv", n_realizations);
+#pragma omp single
+        streamflows_phils = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "stone_quarry_inflows.csv", n_realizations);
+#pragma omp single
+        streamflows_cane = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "cane_creek_inflows.csv", n_realizations);
+#pragma omp single
+        streamflows_morgan = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "university_lake_inflows.csv", n_realizations);
+#pragma omp single
+        streamflows_haw = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "jordan_lake_inflows.csv", n_realizations);
+#pragma omp single
+        streamflows_lillington = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "lillington_inflows.csv", n_realizations);
+// };
+        //cout << "Reading evaporations." << endl;
+#pragma omp single
+        evap_durham = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
+                BAR + "durham_evap.csv", n_realizations);
+#pragma omp single
+        evap_falls_lake = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
+                BAR + "falls_lake_evap.csv", n_realizations);
+#pragma omp single
+        evap_owasa = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
+                BAR + "owasa_evap.csv", n_realizations);
+#pragma omp single
+        evap_little_river = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
+                BAR + "little_river_raleigh_evap.csv", n_realizations);
+#pragma omp single
+        {
+            evap_wheeler_benson = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
+                    BAR + "wb_evap.csv", n_realizations);
+            evap_jordan_lake = evap_owasa;
+        }
+
+        //cout << "Reading demands." << endl;
+#pragma omp single
+        demand_watertown = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                BAR + "cary_demand.csv", n_realizations);
+#pragma omp single
+        demand_dryville = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                BAR + "durham_demand.csv", n_realizations);
+#pragma omp single
+        demand_fallsland = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                BAR + "raleigh_demand.csv", n_realizations);
+
+        //cout << "Reading others." << endl;
+#pragma omp single
+        {
+            demand_to_wastewater_fraction_fallsland = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "demand_to_wastewater_fraction_owasa_raleigh.csv");
+            demand_to_wastewater_fraction_dryville = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "demand_to_wastewater_fraction_durham.csv");
+
+            watertownDemandClassesFractions = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "caryDemandClassesFractions.csv");
+            dryvilleDemandClassesFractions = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "durhamDemandClassesFractions.csv");
+            fallslandDemandClassesFractions = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "raleighDemandClassesFractions.csv");
+
+            watertownUserClassesWaterPrices = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "caryUserClassesWaterPrices.csv");
+            dryvilleUserClassesWaterPrices = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "durhamUserClassesWaterPrices.csv");
+            fallslandUserClassesWaterPrices = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "raleighUserClassesWaterPrices.csv");
+        }
+//    cout << "Done reading input data." << endl;
+    }
+
+}
+
+void PaperTestProblem::setRofTables(unsigned long n_realizations, int n_utilities, string rof_tables_directory) {
 
     //double start_time = omp_get_wtime();
     cout << "Loading ROF tables" << endl;
     int n_tiers = NO_OF_INSURANCE_STORAGE_TIERS + 1;
 
     /// Get number of weeks in tables
-    string file_name = rof_tables_directory + "/tables_r" + to_string(0) + "_u" + to_string(0);
+    string file_name = rof_tables_directory + "tables_r" + to_string(0) + "_u" + to_string(0);
     ifstream in(file_name, ios_base::binary);
     if (!in.good()) {
         string error_table_file = "Tables file not found: " + file_name;
-        __throw_invalid_argument(error_table_file.c_str());
+        throw invalid_argument(error_table_file.c_str());
     }
 
     unsigned n_weeks_in_table;
@@ -746,11 +895,11 @@ PaperTestProblem::setRofTables(unsigned long n_realizations, int n_utilities, st
     /// Load ROF tables
     for (unsigned long r = 0; r < n_realizations; ++r) {
         for (int u = 0; u < n_utilities; ++u) {
-            string file_name = rof_tables_directory + "/tables_r" + to_string(r) + "_u" + to_string(u);
+            string file_name = rof_tables_directory + "tables_r" + to_string(r) + "_u" + to_string(u);
             ifstream in(file_name, ios_base::binary);
             if (!in.good()) {
                 string error_table_file = "Tables file not found: " + file_name;
-                __throw_invalid_argument(error_table_file.c_str());
+                throw invalid_argument(error_table_file.c_str());
             }
 
             /// Get table file size from table files.
@@ -769,37 +918,40 @@ PaperTestProblem::setRofTables(unsigned long n_realizations, int n_utilities, st
                 double d = data[i];
                 if (std::isnan(d) || d > 1.01 || d < 0) {
                     string error_m = "nan or out of [0,1] rof imported "
-                                     "tables. Realization " +
+                                             "tables. Realization " +
                                      to_string(r) + "\n";
                     printf("%s", error_m.c_str());
-                    __throw_logic_error(error_m.c_str());
+                    throw logic_error(error_m.c_str());
                 }
             }
 
             in.close();
         }
     }
-
     //printf("Loading tables took %f time.\n", omp_get_wtime() - start_time);
 }
 
-
-
 void PaperTestProblem::setImport_export_rof_tables(int import_export_rof_tables, int n_weeks, string rof_tables_directory) {
     if (std::abs(import_export_rof_tables) > 1)
-        __throw_invalid_argument("Import/export ROF tables can be assigned as:\n"
-                                 "-1 - import tables\n"
-                                 "0 - ignore tables\n"
-                                 "1 - export tables.\n"
-                                 "The value entered is invalid.");
+        throw invalid_argument("Import/export ROF tables can be assigned as:\n"
+                                         "-1 - import tables\n"
+                                         "0 - ignore tables\n"
+                                         "1 - export tables.\n"
+                                         "The value entered is invalid.");
     PaperTestProblem::import_export_rof_tables = import_export_rof_tables;
-//    this->rof_tables_directory = output_directory + "/TestFiles/" + rof_tables_directory;
     this->rof_tables_directory = rof_tables_directory;
 
     if (import_export_rof_tables == IMPORT_ROF_TABLES) {
         PaperTestProblem::setRofTables(n_realizations, n_utilities, this->rof_tables_directory);
     } else {
-        const string mkdir_command = "mkdir";
-        auto output = system((mkdir_command + " " + this->rof_tables_directory).c_str());
+        string create_dir_command;
+#ifdef _WIN32
+        create_dir_command = "if not exist \"" + rof_tables_directory + "\" mkdir ";
+#else
+        create_dir_command = "mkdir -p";
+#endif
+        auto output = system((create_dir_command + " " + rof_tables_directory).c_str());
     }
 }
+
+

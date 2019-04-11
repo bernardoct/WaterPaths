@@ -10,6 +10,7 @@
 #include <omp.h>
 #ifdef  PARALLEL
 #include <mpi.h>
+#include "../../Borg/borgms.h"
 #endif
 #include "Triangle.h"
 #include "../Controls/SeasonalMinEnvFlowControl.h"
@@ -30,6 +31,79 @@
 #include "../SystemComponents/Bonds/LevelDebtServiceBond.h"
 #include "../SystemComponents/Bonds/BalloonPaymentBond.h"
 
+#ifdef PARALLEL
+void Triangle::setProblemDefinition(BORG_Problem &problem)
+{
+    // The parameter bounds are the same for all formulations
+    BORG_Problem_set_bounds(problem, 0, 0.001, 1.0);
+    BORG_Problem_set_bounds(problem, 1, 0.001, 1.0);
+    BORG_Problem_set_bounds(problem, 2, 0.001, 1.0);
+    BORG_Problem_set_bounds(problem, 3, 0.001, 1.0);
+    BORG_Problem_set_bounds(problem, 4, 0.001, 1.0);
+    BORG_Problem_set_bounds(problem, 5, 0.001, 1.0);
+    BORG_Problem_set_bounds(problem, 6, 0.001, 1.0);
+    BORG_Problem_set_bounds(problem, 7, 0.1, 0.47);
+    BORG_Problem_set_bounds(problem, 8, 0.0, 0.37);
+    BORG_Problem_set_bounds(problem, 9, 0.05, 0.42);
+    BORG_Problem_set_bounds(problem, 10, 0.355, 0.725);
+    BORG_Problem_set_bounds(problem, 11, 0.0, 0.1);
+    BORG_Problem_set_bounds(problem, 12, 0.0, 0.1);
+    BORG_Problem_set_bounds(problem, 13, 0.0, 0.1);
+    BORG_Problem_set_bounds(problem, 14, 0.0, 0.1);
+    BORG_Problem_set_bounds(problem, 15, 0.001, 1.0);
+    BORG_Problem_set_bounds(problem, 16, 0.001, 1.0);
+    BORG_Problem_set_bounds(problem, 17, 0.001, 1.0);
+    BORG_Problem_set_bounds(problem, 18, 0.001, 1.0);
+    BORG_Problem_set_bounds(problem, 19, 0.0, 0.02);
+    BORG_Problem_set_bounds(problem, 20, 0.0, 0.02);
+    BORG_Problem_set_bounds(problem, 21, 0.0, 0.02);
+    BORG_Problem_set_bounds(problem, 22, 0.0, 0.02);
+    BORG_Problem_set_bounds(problem, 23, 0.001, 1.0);
+    BORG_Problem_set_bounds(problem, 24, 0.001, 1.0);
+    BORG_Problem_set_bounds(problem, 25, 0.001, 1.0);
+    BORG_Problem_set_bounds(problem, 26, 0.001, 1.0);
+    BORG_Problem_set_bounds(problem, 27, 0.0, 1.0);
+    BORG_Problem_set_bounds(problem, 28, 0.0, 1.0);
+    BORG_Problem_set_bounds(problem, 29, 0.0, 1.0);
+    BORG_Problem_set_bounds(problem, 30, 0.0, 1.0);
+    BORG_Problem_set_bounds(problem, 31, 0.0, 1.0);
+    BORG_Problem_set_bounds(problem, 32, 0.0, 1.0);
+    BORG_Problem_set_bounds(problem, 33, 0.0, 1.0);
+    BORG_Problem_set_bounds(problem, 34, 0.0, 1.0);
+    BORG_Problem_set_bounds(problem, 35, 0.0, 1.0);
+    BORG_Problem_set_bounds(problem, 36, 0.0, 1.0);
+    BORG_Problem_set_bounds(problem, 37, 0.0, 1.0);
+    BORG_Problem_set_bounds(problem, 38, 0.0, 1.0);
+    BORG_Problem_set_bounds(problem, 39, 0.0, 1.0);
+    BORG_Problem_set_bounds(problem, 40, 0.0, 1.0);
+    BORG_Problem_set_bounds(problem, 41, 0.0, 1.0);
+    BORG_Problem_set_bounds(problem, 42, 0.0, 1.0);
+    BORG_Problem_set_bounds(problem, 43, 0.0, 1.0);
+    BORG_Problem_set_bounds(problem, 44, 0.0, 1.0);
+    BORG_Problem_set_bounds(problem, 45, 0.0, 1.0);
+    BORG_Problem_set_bounds(problem, 46, 0.0, 100.0);
+    BORG_Problem_set_bounds(problem, 47, 0.0, 100.0);
+    BORG_Problem_set_bounds(problem, 48, 0.0, 100.0);
+    BORG_Problem_set_bounds(problem, 49, 0.001, 1.0);
+    BORG_Problem_set_bounds(problem, 50, 0.001, 1.0);
+    BORG_Problem_set_bounds(problem, 51, 0.001, 1.0);
+    BORG_Problem_set_bounds(problem, 52, 0.0, 10000.0);
+    BORG_Problem_set_bounds(problem, 53, 0.0, 20.0);
+    BORG_Problem_set_bounds(problem, 54, 0.0, 20.0);
+    BORG_Problem_set_bounds(problem, 55, 0.0, 20.0);
+    BORG_Problem_set_bounds(problem, 56, 0.0, 20.0);
+
+    // Set epsilons for objectives
+    BORG_Problem_set_epsilon(problem, 0, 0.002);
+    BORG_Problem_set_epsilon(problem, 1, 0.02);
+    BORG_Problem_set_epsilon(problem, 2, 10.);
+    BORG_Problem_set_epsilon(problem, 3, 0.02);
+    BORG_Problem_set_epsilon(problem, 4, 0.01);
+    BORG_Problem_set_epsilon(problem, 5, 0.025);
+}
+#endif
+
+
 /**
  * Runs carolina problem.
  * @param vars
@@ -48,7 +122,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
     Simulation *s = nullptr;
 //    try {
-	//__throw_invalid_argument("Test error");
+	//throw invalid_argument("Test error");
         double Durham_restriction_trigger = vars[0];
         double OWASA_restriction_trigger = vars[1];
         double raleigh_restriction_trigger = vars[2];
@@ -159,16 +233,10 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         vector<int> rof_triggered_infra_order_durham =
                 vecInfraRankToVecInt(durham_infra_order_raw);
-        vector<double> rofs_infra_durham = vector<double>
-                (rof_triggered_infra_order_durham.size(), durham_inftrigger);
         vector<int> rof_triggered_infra_order_owasa =
                 vecInfraRankToVecInt(owasa_infra_order_raw);
-        vector<double> rofs_infra_owasa = vector<double>
-                (rof_triggered_infra_order_owasa.size(), owasa_inftrigger);
         vector<int> rof_triggered_infra_order_raleigh =
                 vecInfraRankToVecInt(raleigh_infra_order_raw);
-        vector<double> rofs_infra_raleigh = vector<double>
-                (rof_triggered_infra_order_raleigh.size(), raleigh_inftrigger);
 
         /// Remove small expansions being built after big expansions that would
         /// encompass the smal expansions.
@@ -188,12 +256,20 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                         reclaimed_capacity_low,
                         reclaimed_capacity_high);
 
+	// Create vectors with each utility's long-term ROF values assigned to all 
+	// infrastructure options.
+        vector<double> rofs_infra_durham = vector<double>
+                (rof_triggered_infra_order_durham.size(), durham_inftrigger);
+        vector<double> rofs_infra_owasa = vector<double>
+                (rof_triggered_infra_order_owasa.size(), owasa_inftrigger);
+        vector<double> rofs_infra_raleigh = vector<double>
+                (rof_triggered_infra_order_raleigh.size(), raleigh_inftrigger);
 
         /// Normalize Jordan Lake Allocations in case they exceed 1.
         double sum_jla_allocations = OWASA_JLA + Durham_JLA + Cary_JLA +
                                      Raleigh_JLA;
         if (sum_jla_allocations == 0.)
-            __throw_invalid_argument("JLA allocations cannot be all "
+            throw invalid_argument("JLA allocations cannot be all "
                                              "zero.");
         if (sum_jla_allocations > 0.69) { // At the time this study was done, 31% of JL had been allocated to other utilities.
             OWASA_JLA /= sum_jla_allocations / 0.69;
@@ -207,7 +283,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                             western_wake_treatment_plant_owasa_frac +
                             western_wake_treatment_plant_raleigh_frac;
         if (sum_wjlwtp == 0.)
-            __throw_invalid_argument("Treatment fractions for WJLWTP cannot be all "
+            throw invalid_argument("Treatment fractions for WJLWTP cannot be all "
                                              "zero.");
         western_wake_treatment_frac_durham /= sum_wjlwtp;
         western_wake_treatment_plant_owasa_frac /= sum_wjlwtp;
@@ -484,8 +560,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         // other than Cary WTP for Jordan Lake, assume no WTP constraints - each
         // city can meet its daily demands with available treatment infrastructure
 
-        double WEEKS_IN_YEAR = 0;
-
         // Potential Sources
         // The capacities listed here for expansions are what additional capacity is gained relative to existing capacity,
         // NOT the total capacity after the expansion is complete. For infrastructure with a high and low option, this means
@@ -559,8 +633,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         LevelDebtServiceBond high_rec_bond(19, 104.4, 25, 0.05, vector<int>(1, 0));
         WaterReuse high_reclaimed("High Reclaimed Water System", 19, reclaimed_capacity_high, construction_time_interval,
                                   7 * WEEKS_IN_YEAR, high_rec_bond);
-
-        WEEKS_IN_YEAR = Constants::WEEKS_IN_YEAR;
 
         vector<double> wjlwtp_treatment_capacity_fractions =
                 {western_wake_treatment_plant_owasa_frac,
@@ -748,7 +820,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         vector<vector<int>> wjlwtp_remove_from_to_build_list;// = {{21, 20}};
 
-
         vector<int> demand_triggered_infra_order_cary = {22, 23};
         vector<double> demand_infra_cary = {caryupgrades_2 * 7, caryupgrades_3 * 7};
         Utility cary((char *) "Cary", 2, demand_cary, demand_n_weeks, cary_annual_payment, &caryDemandClassesFractions,
@@ -886,7 +957,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         drought_mitigation_policies.push_back(&in);
 
         /// Creates simulation object depending on use (or lack thereof) ROF tables
-        double realization_start;
+        double start_time = omp_get_wtime();
         if (import_export_rof_tables == EXPORT_ROF_TABLES) {
             s = new Simulation(water_sources,
         	     g,
@@ -900,7 +971,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         	     n_weeks,
         	     realizations_to_run,
         	     rof_tables_directory);
-            realization_start = omp_get_wtime();
+            //realization_start = omp_get_wtime();
     	    this->master_data_collector = s->runFullSimulation(n_threads);
         } else if (import_export_rof_tables == IMPORT_ROF_TABLES) {
             s = new Simulation (water_sources,
@@ -917,7 +988,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         	     rof_tables,
         	     table_storage_shift,
         	     rof_tables_directory);
-            realization_start = omp_get_wtime();
+            //realization_start = omp_get_wtime();
             this->master_data_collector = s->runFullSimulation(n_threads);
         } else {
             s = new Simulation(water_sources,
@@ -931,13 +1002,15 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         	     policies_rdm,
         	     n_weeks,
         	     realizations_to_run);
-            realization_start = omp_get_wtime();
+            //realization_start = omp_get_wtime();
             this->master_data_collector = s->runFullSimulation(n_threads);
         }
+        double end_time = omp_get_wtime();
+	printf("Function evaluation time: %f s\n", end_time - start_time);
 
-        double realization_end = omp_get_wtime();
-        std::cout << "Simulation took  " << realization_end - realization_start
-              << "s" << std::endl;
+        //double realization_end = omp_get_wtime();
+        //std::cout << "Simulation took  " << realization_end - realization_start
+        //      << "s" << std::endl;
 
     /// Calculate objectives and store them in Borg decision variables array.
 #ifdef  PARALLEL
@@ -976,12 +1049,13 @@ int Triangle::simulationExceptionHander(const std::exception &e, Simulation *s,
 //        printf("Exception called during calculations. Decision variables are below:\n");
         ofstream sol;
 	int world_rank;
+    
 #ifdef  PARALLEL
-	int mpi_initialized;
-	MPI_Initialized(&mpi_initialized);
-	if (mpi_initialized)
-            MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-	else
+	// int mpi_initialized;
+	// MPI_Initialized(&mpi_initialized);
+	// if (mpi_initialized)
+ //            MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+	// else
 	    world_rank = 0;
 #else
         world_rank = 0;
@@ -1009,8 +1083,10 @@ int Triangle::simulationExceptionHander(const std::exception &e, Simulation *s,
 #else
         Utils::print_exception(e);
 #endif
+
 	return 1;
 }
+
 
 Triangle::~Triangle() = default;
 
@@ -1036,11 +1112,11 @@ Triangle::setRofTables(unsigned long n_realizations, int n_utilities, string rof
     int n_tiers = NO_OF_INSURANCE_STORAGE_TIERS + 1;
 
     /// Get number of weeks in tables
-    string file_name = rof_tables_directory + "/tables_r" + to_string(0) + "_u" + to_string(0);
+    string file_name = rof_tables_directory + "tables_r" + to_string(0) + "_u" + to_string(0);
     ifstream in(file_name, ios_base::binary);
     if (!in.good()) {
         string error_table_file = "Tables file not found: " + file_name;
-        __throw_invalid_argument(error_table_file.c_str());
+        throw invalid_argument(error_table_file.c_str());
     }
 
     unsigned n_weeks_in_table;
@@ -1057,11 +1133,11 @@ Triangle::setRofTables(unsigned long n_realizations, int n_utilities, string rof
     /// Load ROF tables
     for (unsigned long r = 0; r < n_realizations; ++r) {
         for (int u = 0; u < n_utilities; ++u) {
-            string file_name = rof_tables_directory + "/tables_r" + to_string(r) + "_u" + to_string(u);
+            string file_name = rof_tables_directory + "tables_r" + to_string(r) + "_u" + to_string(u);
             ifstream in(file_name, ios_base::binary);
             if (!in.good()) {
                 string error_table_file = "Tables file not found: " + file_name;
-                __throw_invalid_argument(error_table_file.c_str());
+                throw invalid_argument(error_table_file.c_str());
             }
 
             /// Get table file size from table files.
@@ -1083,7 +1159,7 @@ Triangle::setRofTables(unsigned long n_realizations, int n_utilities, string rof
                                              "tables. Realization " +
                                      to_string(r) + "\n";
                     printf("%s", error_m.c_str());
-                    __throw_logic_error(error_m.c_str());
+                    throw logic_error(error_m.c_str());
                 }
             }
 
@@ -1096,97 +1172,152 @@ Triangle::setRofTables(unsigned long n_realizations, int n_utilities, string rof
 
 void Triangle::readInputData() {
     cout << "Reading input data." << endl;
+    string data_dir = DEFAULT_DATA_DIR + BAR;
 
-#pragma omp parallel num_threads(20)
-{
+#pragma omp parallel num_threads(omp_get_thread_num())
+    {
 #pragma omp single
-    streamflows_durham = Utils::parse2DCsvFile(output_directory +
-                                               "/TestFiles/inflows" + evap_inflows_suffix + "/durham_inflows.csv", n_realizations);
+        streamflows_durham = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "durham_inflows.csv", n_realizations);
 #pragma omp single
-    streamflows_flat = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/falls_lake_inflows.csv", n_realizations);
+        streamflows_flat = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "falls_lake_inflows.csv", n_realizations);
 #pragma omp single
-    streamflows_swift = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/lake_wb_inflows.csv", n_realizations);
+        streamflows_swift = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "lake_wb_inflows.csv", n_realizations);
 #pragma omp single
-    streamflows_llr = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/little_river_raleigh_inflows.csv", n_realizations);
-    // }
+        streamflows_llr = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "little_river_raleigh_inflows.csv", n_realizations);
+        // }
 #pragma omp single
-    streamflows_crabtree = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/crabtree_inflows.csv", n_realizations);
+        streamflows_crabtree = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "crabtree_inflows.csv", n_realizations);
 #pragma omp single
-    streamflows_phils = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/stone_quarry_inflows.csv", n_realizations);
+        streamflows_phils = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "stone_quarry_inflows.csv", n_realizations);
 #pragma omp single
-    streamflows_cane = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/cane_creek_inflows.csv", n_realizations);
+        streamflows_cane = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "cane_creek_inflows.csv", n_realizations);
 #pragma omp single
-    streamflows_morgan = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/university_lake_inflows.csv", n_realizations);
+        streamflows_morgan = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "university_lake_inflows.csv", n_realizations);
 #pragma omp single
-    streamflows_haw = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/jordan_lake_inflows.csv", n_realizations);
+        streamflows_haw = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "jordan_lake_inflows.csv", n_realizations);
 #pragma omp single
-    streamflows_clayton = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/clayton_inflows.csv", n_realizations);
+        streamflows_clayton = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "clayton_inflows.csv", n_realizations);
 #pragma omp single
-    streamflows_lillington = Utils::parse2DCsvFile(output_directory + "/TestFiles/inflows" + evap_inflows_suffix + "/lillington_inflows.csv", n_realizations);
+        streamflows_lillington = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "lillington_inflows.csv", n_realizations);
 // };
-    //cout << "Reading evaporations." << endl;
+        //cout << "Reading evaporations." << endl;
 #pragma omp single
-    evap_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/durham_evap.csv", n_realizations);
+        evap_durham = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
+                BAR + "durham_evap.csv", n_realizations);
 #pragma omp single
-    evap_falls_lake = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/falls_lake_evap.csv", n_realizations);
+        evap_falls_lake = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
+                BAR + "falls_lake_evap.csv", n_realizations);
 #pragma omp single
-    evap_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/owasa_evap.csv", n_realizations);
+        evap_owasa = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
+                BAR + "owasa_evap.csv", n_realizations);
 #pragma omp single
-    evap_little_river = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/little_river_raleigh_evap.csv", n_realizations);
+        evap_little_river = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
+                BAR + "little_river_raleigh_evap.csv", n_realizations);
 #pragma omp single
-{
-    evap_wheeler_benson = Utils::parse2DCsvFile(output_directory + "/TestFiles/evaporation" + evap_inflows_suffix + "/wb_evap.csv", n_realizations);
-    evap_jordan_lake = evap_owasa;
-}
+        {
+            evap_wheeler_benson = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
+                    BAR + "wb_evap.csv", n_realizations);
+            evap_jordan_lake = evap_owasa;
+        }
 
-    //cout << "Reading demands." << endl;
+        //cout << "Reading demands." << endl;
 #pragma omp single
-    demand_cary = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands" + evap_inflows_suffix + "/cary_demand.csv", n_realizations);
+        demand_cary = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                BAR + "cary_demand.csv", n_realizations);
 #pragma omp single
-    demand_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands" + evap_inflows_suffix + "/durham_demand.csv", n_realizations);
+        demand_durham = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                BAR + "durham_demand.csv", n_realizations);
 #pragma omp single
-    demand_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands" + evap_inflows_suffix + "/raleigh_demand.csv", n_realizations);
+        demand_raleigh = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                BAR + "raleigh_demand.csv", n_realizations);
 #pragma omp single
-    demand_owasa = Utils::parse2DCsvFile(output_directory + "/TestFiles/demands" + evap_inflows_suffix + "/owasa_demand.csv", n_realizations);
+        demand_owasa = Utils::parse2DCsvFile(
+                output_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                BAR + "owasa_demand.csv", n_realizations);
 
-    //cout << "Reading others." << endl;
+        //cout << "Reading others." << endl;
 #pragma omp single
-{
-    demand_to_wastewater_fraction_owasa_raleigh = Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
-    demand_to_wastewater_fraction_durham = Utils::parse2DCsvFile(output_directory + "/TestFiles/demand_to_wastewater_fraction_durham.csv");
+        {
+            demand_to_wastewater_fraction_owasa_raleigh = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "demand_to_wastewater_fraction_owasa_raleigh.csv");
+            demand_to_wastewater_fraction_durham = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "demand_to_wastewater_fraction_durham.csv");
 
-    caryDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/caryDemandClassesFractions.csv");
-    durhamDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/durhamDemandClassesFractions.csv");
-    raleighDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/raleighDemandClassesFractions.csv");
-    owasaDemandClassesFractions = Utils::parse2DCsvFile(output_directory + "/TestFiles/owasaDemandClassesFractions.csv");
+            caryDemandClassesFractions = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "caryDemandClassesFractions.csv");
+            durhamDemandClassesFractions = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "durhamDemandClassesFractions.csv");
+            raleighDemandClassesFractions = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "raleighDemandClassesFractions.csv");
+            owasaDemandClassesFractions = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "owasaDemandClassesFractions.csv");
 
-    caryUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/caryUserClassesWaterPrices.csv");
-    durhamUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/durhamUserClassesWaterPrices.csv");
-    raleighUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/raleighUserClassesWaterPrices.csv");
-    owasaUserClassesWaterPrices = Utils::parse2DCsvFile(output_directory + "/TestFiles/owasaUserClassesWaterPrices.csv");
+            caryUserClassesWaterPrices = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "caryUserClassesWaterPrices.csv");
+            durhamUserClassesWaterPrices = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "durhamUserClassesWaterPrices.csv");
+            raleighUserClassesWaterPrices = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "raleighUserClassesWaterPrices.csv");
+            owasaUserClassesWaterPrices = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "owasaUserClassesWaterPrices.csv");
 
-    owasaPriceSurcharges = Utils::parse2DCsvFile(output_directory + "/TestFiles/owasaPriceRestMultipliers.csv");
-}
+            owasaPriceSurcharges = Utils::parse2DCsvFile(
+                    output_directory + DEFAULT_DATA_DIR + "owasaPriceRestMultipliers.csv");
+        }
 //    cout << "Done reading input data." << endl;
-}
+    }
 
 }
 
 void Triangle::setImport_export_rof_tables(int import_export_rof_tables, int n_weeks, string rof_tables_directory) {
     if (std::abs(import_export_rof_tables) > 1)
-        __throw_invalid_argument("Import/export ROF tables can be assigned as:\n"
+        throw invalid_argument("Import/export ROF tables can be assigned as:\n"
                                          "-1 - import tables\n"
                                          "0 - ignore tables\n"
                                          "1 - export tables.\n"
                                          "The value entered is invalid.");
     Triangle::import_export_rof_tables = import_export_rof_tables;
-//    this->rof_tables_directory = output_directory + "/TestFiles/" + rof_tables_directory;
     this->rof_tables_directory = rof_tables_directory;
 
     if (import_export_rof_tables == IMPORT_ROF_TABLES) {
         Triangle::setRofTables(n_realizations, n_utilities, this->rof_tables_directory);
     } else {
-        const string mkdir_command = "mkdir -p";
-        auto output = system((mkdir_command + " " + this->rof_tables_directory).c_str());
+        string create_dir_command;
+#ifdef _WIN32
+        create_dir_command = "if not exist \"" + rof_tables_directory + "\" mkdir ";
+#else
+        create_dir_command = "mkdir -p";
+#endif
+        auto output = system((create_dir_command + " " + rof_tables_directory).c_str());
     }
 }

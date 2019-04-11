@@ -13,6 +13,17 @@
 
 
 namespace Constants {
+#ifdef _WIN32
+    const std::string BAR = "\\";
+    const std::string DEFAULT_SYS_IO_DIR = "c:\\%HOMEPATH%\\";
+#else
+    const std::string BAR = "/";
+    const std::string DEFAULT_SYS_IO_DIR = "./";
+#endif
+    const std::string DEFAULT_DATA_DIR = "TestFiles" + BAR;
+    const std::string DEFAULT_OUTPUT_DIR = "output" + BAR;
+    const std::string DEFAULT_ROF_TABLES_DIR = "rof_tables" + BAR;
+
     const double PEAKING_FACTOR = 0.85; ///Peaking factor used to move from daily capacity to average weekly capacity.
     const double WEEKS_IN_YEAR = 52.179;
     const int NUMBER_OF_MONTHS = 12;

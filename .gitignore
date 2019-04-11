@@ -16,6 +16,8 @@ rof_tables*
 callgrind*
 serial-borg-moea
 triangleSimulation
+error/
+output/
 
 #
 # Editor files
@@ -24,6 +26,7 @@ triangleSimulation
 *#
 *.#
 .#*
+*.bak
 
 
 #

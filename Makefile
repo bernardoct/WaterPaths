@@ -14,7 +14,9 @@ LIBS=-static-libasan -lm
 all: $(SOURCES) $(TARGET)
 
 borg: CC=mpicxx
+#borg: CC=g++ # for serial borg debugging
 borg: LIBS += -lborgms
+#borg: LIBS += -lborg # for serial borg debugging
 borg: CFLAGS += -DPARALLEL -fopenmp -march=native -O2
 borg: all
 
@@ -27,7 +29,7 @@ intel: CFLAGS+=-O2 ${TACC_VEC_FLAGS} -qopenmp
 intel: all
 
 gcc-debug: CC=g++
-gcc-debug: CFLAGS+=-O0 -march=native -g -fopenmp
+gcc-debug: CFLAGS+=-Og -march=native -g -fopenmp
 gcc-debug: all
 
 intel-debug: CC=icc

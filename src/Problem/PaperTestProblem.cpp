@@ -94,7 +94,6 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     //FIXME why do we make a null pointer here?
     Simulation *s = nullptr;
 
-    //FIXME THESE ARE TEST VALUES
     double watertown_restriction_trigger = vars[0];
     double dryville_restriction_trigger = vars[1];
     double fallsland_restriction_trigger = vars[2];
@@ -113,13 +112,12 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     double dryville_insurance_payment = vars[15];
     double fallsland_insurance_payment = vars[16];
 
-    //FIXME: Turning infrastructure off for ST testing
-    //double watertown_inftrigger = vars[17];
-    double watertown_inftrigger = 1.1;
-    //double dryville_inftrigger = vars[18];
-    double dryville_inftrigger = 1.1;
-    //double fallsland_inftrigger = vars[19];
-    double fallsland_inftrigger = 1.1;
+    double watertown_inftrigger = vars[17];
+    //double watertown_inftrigger = 1.1;
+    double dryville_inftrigger = vars[18];
+    //double dryville_inftrigger = 1.1;
+    double fallsland_inftrigger = vars[19];
+    //double fallsland_inftrigger = 1.1;
 
     if (import_export_rof_tables == EXPORT_ROF_TABLES) {
         dryville_inftrigger = 1.1;
@@ -127,20 +125,20 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
         watertown_inftrigger = 1.1;
     };
 
-    //double new_river_rank_watertown = vars[20];
-    double new_river_rank_watertown = .1;
-    //double college_rock_expansion_low_rank = vars[21];
-    double college_rock_expansion_low_rank = .2;
-    //double college_rock_expansion_high_rank = vars[22];
-    double college_rock_expansion_high_rank = .3;
-    //double watertown_reuse_rank = vars[23];
-    double watertown_reuse_rank = .4;
-    //double sugar_creek_rank =vars[24];
-    double sugar_creek_rank = .1;
-    //double granite_quarry_rank = vars[25];
-    double granite_quarry_rank = .2;
-    //double new_river_rank_fallsland = vars[26];
-    double new_river_rank_fallsland = .1;
+    double new_river_rank_watertown = vars[20];
+    //double new_river_rank_watertown = .1;
+    double college_rock_expansion_low_rank = vars[21];
+    //double college_rock_expansion_low_rank = .2;
+    double college_rock_expansion_high_rank = vars[22];
+    //double college_rock_expansion_high_rank = .03;
+    double watertown_reuse_rank = vars[23];
+    //double watertown_reuse_rank = .4;
+    double sugar_creek_rank =vars[24];
+    //double sugar_creek_rank = .1;
+    double granite_quarry_rank = vars[25];
+    //double granite_quarry_rank = .2;
+    double new_river_rank_fallsland = vars[26];
+    //double new_river_rank_fallsland = .1;
 
     vector<infraRank> dryville_infra_order_raw = {
         infraRank(3, sugar_creek_rank),
@@ -184,13 +182,14 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     vector<double> rofs_infra_watertown = vector<double>
         (rof_triggered_infra_order_watertown.size(), watertown_inftrigger);
 
+
     /// Remove small expansions being built after big expansions that would
     /// encompass the smal expansions.
     double added_storage_college_rock_expansion_low = 500;
     double added_storage_college_rock_expansion_high = 1000;
 
     checkAndFixInfraExpansionHighLowOrder(
-            &rof_triggered_infra_order_watertown,
+            &rof_triggered_infra_order_watertown, &rofs_infra_watertown,
             7,
             8,
             added_storage_college_rock_expansion_low,
@@ -210,7 +209,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
         fallsland_LMA /= sum_lma_allocations;
         watertown_LMA /= sum_lma_allocations;
     }
-    
+
 
     // ==================== SET UP RDM FACTORS ============================
 
@@ -356,6 +355,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     min_env_flow_controls.push_back(&college_rock_min_env_control);
     min_env_flow_controls.push_back(&granite_quarry_min_env_control);
 
+
     // Lake Michael parameters
     double lake_michael_supply_capacity = 10300 * table_gen_storage_multiplier; // reduced to .69 of JL cap
     double lake_michael_wq_capacity = 30825.0 * table_gen_storage_multiplier;
@@ -415,6 +415,10 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
     // Create potential sources
 
+    vector<double> city_infrastructure_rof_triggers = {watertown_inftrigger,
+                                                        dryville_inftrigger,
+                                                        fallsland_inftrigger};
+
     //FIXME ORIGINAL CODE SETS WEEKS_IN_YEAR TO 0 HERE
     vector<double> construction_time_interval = {3.0, 5.0};
 
@@ -463,18 +467,18 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     //FIXME: changed these temporarily to 0
     vector<double> college_rock_expansion_low_construction_time = {3, 5};
     LevelDebtServiceBond college_rock_expansion_low_bond(7, 50, 30, .05, vector<int>(1, 0));
-    ReservoirExpansion college_rock_expansion_low((char *) "College Rock Expansion Low", 7, 0, 0,
+    ReservoirExpansion college_rock_expansion_low((char *) "College Rock Expansion Low", 7, 0, 500,
                                                   college_rock_expansion_low_construction_time, 5, college_rock_expansion_low_bond);
 
     vector<double> college_rock_expansion_high_construction_time = {3, 5};
     LevelDebtServiceBond college_rock_expansion_high_bond(8, 100, 30, .05, vector<int>(1, 0));
-    ReservoirExpansion college_rock_expansion_high((char *) "College Rock Expansion High", 8, 0, 0,
+    ReservoirExpansion college_rock_expansion_high((char *) "College Rock Expansion High", 8, 0, 1000,
                                                    college_rock_expansion_high_construction_time, 5,
                                                    college_rock_expansion_high_bond);
 
     vector<double> watertown_reuse_construction_time = {3, 5};
     LevelDebtServiceBond watertown_reuse_bond(9, 50, 30, .05, vector<int>(1, 0));
-    WaterReuse watertown_reuse((char *) "Watertwon Reuse", 9, 20, watertown_reuse_construction_time, 5,
+    WaterReuse watertown_reuse((char *) "Watertown Reuse", 9, 20, watertown_reuse_construction_time, 5,
                                watertown_reuse_bond);
 
     vector<WaterSource *> water_sources;
@@ -545,26 +549,23 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
             fallsland_discharge_fraction_series,
             fallsland_ws_return_id);
 
-    //FIXME: rof triggered order needs to be changed to DV, bond etc need to be updated
-    //<int> rof_triggered_infra_order_watertown = {4, 7, 8, 9};
+    //FIXME: bond etc need to be updated, should chat about demand buffer
     Utility watertown((char *) "Watertown", 0, demand_watertown, demand_n_weeks, watertown_annual_payment,
                       &watertownDemandClassesFractions,
                       &watertownUserClassesWaterPrices, wwtp_discharge_watertown, watertown_demand_buffer,
-                      rof_triggered_infra_order_watertown, vector<int>(), vector<double>(4, 1.01), discount_rate, 30, .05);
+                      rof_triggered_infra_order_watertown, vector<int>(), rofs_infra_watertown, discount_rate, 30, .05);
 
-    //FIXME: rof triggered order needs to be changed to DV, bond etc need to be updated
-    //vector<int> rof_triggered_infra_order_dryville = {3, 5};
+    //FIXME: bond etc need to be updated, should chat about demand buffer
     Utility dryville((char *) "Dryville", 1, demand_dryville, demand_n_weeks, dryville_annual_payment,
                      &dryvilleDemandClassesFractions, &dryvilleUserClassesWaterPrices,
                      wwtp_discharge_dryville, dryville_demand_buffer, rof_triggered_infra_order_dryville, vector<int>(),
-                     vector<double>(2, 1.01), discount_rate, 30, 0.05);
+                     rofs_infra_dryville, discount_rate, 30, 0.05);
 
-    //FIXME: rof triggered order needs to be changed to DV, bond etc need to be updated
-    //vector<int> rof_triggered_infra_order_fallsland = {4};
+
     Utility fallsland((char *) "Fallsland", 2, demand_fallsland, demand_n_weeks, fallsland_annual_payment,
                       &fallslandDemandClassesFractions, &fallslandUserClassesWaterPrices,
                       wwtp_discharge_fallsland, fallsland_demand_buffer, rof_triggered_infra_order_fallsland,
-                      vector<int>(), vector<double>(1, 1.01), discount_rate, 30, 0.05);
+                      vector<int>(), rofs_infra_fallsland, discount_rate, 30, 0.05);
 
     vector<Utility*> utilities;
     utilities.push_back(&watertown);
@@ -579,6 +580,8 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
     //FIXME: table_storage_shift ??
     auto table_storage_shift = vector<vector<double>>(3, vector<double>(water_sources.size() + 1, 0.));
+    table_storage_shift[2][4] = 9000;
+    //table_storage_shift[1][3] = 10;
 
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
     vector<double> initial_restriction_triggers = {watertown_restriction_trigger,

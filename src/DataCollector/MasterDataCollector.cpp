@@ -286,7 +286,7 @@ void MasterDataCollector::printUtilitesOutputTabular(
 
 void MasterDataCollector::printWaterSourcesOutputCompact(
         int week_i, int week_f, string file_name) {
-//#pragma omp parallel for
+#pragma omp parallel for
     for (int r = 0; r < (int) water_source_collectors[0].size(); ++r) {
         try {
             std::ofstream out_stream;
@@ -443,7 +443,7 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name, b
             }
         }
     } else {
-        //cout << "Calculating Objectives" << endl;
+        cout << "Calculating Objectives" << endl;
         for (auto &u : utility_collectors) {
             /// Create vector with restriction policies pertaining only to the
             /// utility whose objectives are being calculated.

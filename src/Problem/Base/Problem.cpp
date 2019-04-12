@@ -9,16 +9,16 @@
 
 vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
     if (this->master_data_collector != nullptr) {
-	if (print_files) {
+        if (print_files) {
             this->master_data_collector->setOutputDirectory(output_directory);
-	}
+        }
         string fo = BAR + DEFAULT_OUTPUT_DIR + BAR + "Objectives";
         objectives = this->master_data_collector->calculatePrintObjectives(
                 fo + "_s" + std::to_string(solution_no) + fname_sufix, print_files);
         return objectives;
     } else {
-	objectives = vector<double>(25, 1e5);
-	return objectives;
+        objectives = vector<double>(25, 1e5);
+        return objectives;
     }
 }
 
@@ -41,27 +41,27 @@ void Problem::printTimeSeriesAndPathways() {
         cout << "Printing time series" << endl;
         this->master_data_collector->printUtilitiesOutputCompact(
                 0, (int) n_weeks, fu + "_s" + std::to_string(solution_no) +
-                        fname_sufix);
+                                  fname_sufix);
         this->master_data_collector->printWaterSourcesOutputCompact(
                 0, (int) n_weeks, fws + "_s" + std::to_string(solution_no) +
-                        fname_sufix);
+                                  fname_sufix);
         this->master_data_collector->printPoliciesOutputCompact(
                 0, (int) n_weeks, fp + "_s" + std::to_string(solution_no) +
-                        fname_sufix);
-    //    data_collector->printUtilitesOutputTabular(0,
-    //                                               n_weeks,
-    //                                               fu + "_s"
-    //                                               + std::to_string(solution_no));
-    //    data_collector->printWaterSourcesOutputTabular(0,
-    //                                                   n_weeks,
-    //                                                   fws + "_s"
-    //                                                   + std::to_string(solution_no));
-    //    data_collector->printPoliciesOutputTabular(0,
-    //                                               n_weeks,
-    //                                               fp + "_s"
-    //                                               + std::to_string(solution_no));
+                                  fname_sufix);
+        //    data_collector->printUtilitesOutputTabular(0,
+        //                                               n_weeks,
+        //                                               fu + "_s"
+        //                                               + std::to_string(solution_no));
+        //    data_collector->printWaterSourcesOutputTabular(0,
+        //                                                   n_weeks,
+        //                                                   fws + "_s"
+        //                                                   + std::to_string(solution_no));
+        //    data_collector->printPoliciesOutputTabular(0,
+        //                                               n_weeks,
+        //                                               fp + "_s"
+        //                                               + std::to_string(solution_no));
     } else {
-	    printf("Trying to print pathways but data collector is empty. Either your simulation crashed or you deleted the data collector too early.\n");
+        printf("Trying to print pathways but data collector is empty. Either your simulation crashed or you deleted the data collector too early.\n");
     }
 
 }
@@ -76,15 +76,15 @@ vector<int> Problem::vecInfraRankToVecInt(vector<infraRank> v) {
 }
 
 double Problem::checkAndFixInfraExpansionHighLowOrder(
-        vector<int> *order, int id_low,
+        vector<int> *order, vector<double> *triggers, int id_low,
         int id_high, double capacity_low, double capacity_high) {
 
-    long pos_low = distance(order->begin(),
+    auto pos_low = distance(order->begin(),
                             find(order->begin(),
                                  order->end(),
                                  id_low));
 
-    long pos_high = distance(order->begin(),
+    auto pos_high = distance(order->begin(),
                              find(order->begin(),
                                   order->end(),
                                   id_high));
@@ -92,6 +92,7 @@ double Problem::checkAndFixInfraExpansionHighLowOrder(
     if (pos_high < pos_low) {
         capacity_high += capacity_low;
         order->erase(order->begin() + pos_low);
+        triggers->erase(triggers->begin() + pos_low);
     }
 
     return capacity_high;
@@ -154,11 +155,11 @@ void Problem::setN_realizations(unsigned long n_realizations) {
     iota(begin(realizations_to_run), end(realizations_to_run), 0);
 }
 
-void Problem::setRealizationsToRun(vector<unsigned long>& realizations_to_run) {
+void Problem::setRealizationsToRun(vector<unsigned long> &realizations_to_run) {
     this->realizations_to_run = realizations_to_run;
 }
 
-MasterDataCollector* Problem::getMaster_data_collector() {
+MasterDataCollector *Problem::getMaster_data_collector() {
     return master_data_collector;
 }
 
@@ -167,7 +168,7 @@ Problem::~Problem() {}
 void Problem::destroyDataCollector() {
     if (master_data_collector != nullptr) {
         delete master_data_collector;
-	master_data_collector = nullptr;
+        master_data_collector = nullptr;
     } else {
         cerr << "Tried to delete nullptr master data collector.\n";
     }

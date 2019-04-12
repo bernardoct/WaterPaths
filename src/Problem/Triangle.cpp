@@ -238,11 +238,21 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         vector<int> rof_triggered_infra_order_raleigh =
                 vecInfraRankToVecInt(raleigh_infra_order_raw);
 
+    // Create vectors with each utility's long-term ROF values assigned to all
+    // infrastructure options.
+    vector<double> rofs_infra_durham = vector<double>
+            (rof_triggered_infra_order_durham.size(), durham_inftrigger);
+    vector<double> rofs_infra_owasa = vector<double>
+            (rof_triggered_infra_order_owasa.size(), owasa_inftrigger);
+    vector<double> rofs_infra_raleigh = vector<double>
+            (rof_triggered_infra_order_raleigh.size(), raleigh_inftrigger);
+
         /// Remove small expansions being built after big expansions that would
         /// encompass the smal expansions.
         added_storage_michie_expansion_high =
                 checkAndFixInfraExpansionHighLowOrder(
                         &rof_triggered_infra_order_durham,
+                        &rofs_infra_durham,
                         15,
                         16,
                         added_storage_michie_expansion_low,
@@ -251,19 +261,11 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         reclaimed_capacity_high =
                 checkAndFixInfraExpansionHighLowOrder(
                         &rof_triggered_infra_order_durham,
+                        &rofs_infra_durham,
                         18,
                         19,
                         reclaimed_capacity_low,
                         reclaimed_capacity_high);
-
-	// Create vectors with each utility's long-term ROF values assigned to all 
-	// infrastructure options.
-        vector<double> rofs_infra_durham = vector<double>
-                (rof_triggered_infra_order_durham.size(), durham_inftrigger);
-        vector<double> rofs_infra_owasa = vector<double>
-                (rof_triggered_infra_order_owasa.size(), owasa_inftrigger);
-        vector<double> rofs_infra_raleigh = vector<double>
-                (rof_triggered_infra_order_raleigh.size(), raleigh_inftrigger);
 
         /// Normalize Jordan Lake Allocations in case they exceed 1.
         double sum_jla_allocations = OWASA_JLA + Durham_JLA + Cary_JLA +

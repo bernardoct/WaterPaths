@@ -29,7 +29,7 @@ Triangle *problem_ptr;
 int failures = 0;
 ofstream sol_out; // for debugging borg
 
-void print_decision_vars(double* vars) {
+void print_decision_vars(double *vars) {
     int nsols = NUM_DEC_VAR;
     for (int i = 0; i < nsols; ++i) {
         sol_out << vars[i] << ",";
@@ -41,17 +41,17 @@ void print_decision_vars(double* vars) {
 
 void eval(double *vars, double *objs, double *consts) {
     try {
-        print_decision_vars(vars);
+//        print_decision_vars(vars);
         failures += problem_ptr->functionEvaluation(vars, objs, consts);
-    	problem_ptr->destroyDataCollector();
-    } catch(...) {
-	sol_out << endl;
+        problem_ptr->destroyDataCollector();
+    } catch (...) {
+        sol_out << endl;
         sol_out << "Failure! Decision Variable values: " << endl;
         cout << endl;
         cout << "Failure! Decision variable values: " << endl;
         print_decision_vars(vars);
         sol_out << endl;
-	sol_out << endl;
+        sol_out << endl;
     }
 }
 
@@ -156,7 +156,7 @@ int main(int argc, char *argv[]) {
             case 't':
                 n_weeks = (unsigned long) atoi(optarg);
                 break;
-            case 'd': 
+            case 'd':
                 system_io = optarg;
                 break;
             case 'f':
@@ -231,7 +231,7 @@ int main(int argc, char *argv[]) {
 //    PaperTestProblem problem(n_weeks, import_export_rof_table);
     Triangle problem(n_weeks, import_export_rof_table);
     if (seed > -1) {
-	WaterSource::setSeed(seed);
+        WaterSource::setSeed(seed);
     }
 
     /// Set basic realization parameters.
@@ -278,11 +278,11 @@ int main(int argc, char *argv[]) {
             water_sources_rdm = std::vector<vector<double>>(n_realizations, water_sources_rdm_row);
 
             problem.setRDMReevaluation((unsigned long) rdm_no, utilities_rdm,
-                                                water_sources_rdm, policies_rdm);
+                                       water_sources_rdm, policies_rdm);
 
             if (strlen(inflows_evap_directory_suffix.c_str()) > 2)
                 problem.setFname_sufix("_RDM" + std::to_string(rdm_no) +
-                                                "_infevap" + inflows_evap_directory_suffix);
+                                       "_infevap" + inflows_evap_directory_suffix);
             else
                 problem.setFname_sufix("_RDM" + std::to_string(rdm_no));
         } else {
@@ -291,10 +291,10 @@ int main(int argc, char *argv[]) {
             policies_rdm = Utils::parse2DCsvFile(system_io + policies_rdm_file);
             if (n_realizations > utilities_rdm.size()) {
                 throw length_error("If no rdm number is passed, the number of realizations needs to be smaller "
-                                     "or equal to the number of rows in the rdm files.");
+                                   "or equal to the number of rows in the rdm files.");
             }
             problem.setRDMReevaluation((unsigned long) rdm_no, utilities_rdm,
-                                                water_sources_rdm, policies_rdm);
+                                       water_sources_rdm, policies_rdm);
         }
     }
     problem_ptr = &problem;
@@ -313,7 +313,7 @@ int main(int argc, char *argv[]) {
         if ((first_solution == -1 && last_solution != -1) ||
             (first_solution != -1 && last_solution == -1))
             throw invalid_argument("If you set a first or last solution, you "
-                                     "must set the other as well.");
+                                   "must set the other as well.");
 
         vector<vector<double>> solutions;
         if (strlen(solution_file.c_str()) > 2) {
@@ -330,17 +330,17 @@ int main(int argc, char *argv[]) {
                  << standard_solution << endl;
             problem.setSol_number(standard_solution);
             problem_ptr->functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
-            
+
             // Export pathways and objectives, otherwise, if required, run bootstrap sub-sampling.
             if (n_sets > 0 && n_bs_samples > 0) {
                 printf("\ngetting here\n\n");
-                 problem_ptr->getMaster_data_collector()->performBootstrapAnalysis(
-                            (int) standard_solution, n_sets, n_bs_samples, n_threads, realizations_to_run);
+                problem_ptr->getMaster_data_collector()->performBootstrapAnalysis(
+                        (int) standard_solution, n_sets, n_bs_samples, n_threads, realizations_to_run);
             } else if (import_export_rof_table != EXPORT_ROF_TABLES) {
                 if (plotting)
                     problem.printTimeSeriesAndPathways();
                 auto objectives = problem_ptr->calculateAndPrintObjectives(!print_objs_row);
-    //            trianglePtr->getMaster_data_collector()->printNETCDFUtilities("netcdf_output");
+                //            trianglePtr->getMaster_data_collector()->printNETCDFUtilities("netcdf_output");
             }
 
             problem_ptr->destroyDataCollector();
@@ -348,7 +348,7 @@ int main(int argc, char *argv[]) {
             double time_0 = omp_get_wtime();
             ofstream objs_file;
             string file_name = system_io + "output" + BAR + "Objectives_RDM" + to_string(rdm_no) +
-                    "_sols" + to_string(first_solution) + "_to_" + to_string(last_solution) + ".csv";
+                               "_sols" + to_string(first_solution) + "_to_" + to_string(last_solution) + ".csv";
             objs_file.open(file_name);
             printf("Objectives file will be printed at %s.\n", file_name.c_str());
             for (int s = first_solution; s < last_solution; ++s) {
@@ -374,7 +374,7 @@ int main(int argc, char *argv[]) {
         return 0;
     } else {
 #ifdef  PARALLEL
-        
+
         printf("Running Borg with:\n"
             "n_islands: %lu\n"
             "nfe: %lu\n"

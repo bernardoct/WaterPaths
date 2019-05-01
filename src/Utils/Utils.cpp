@@ -56,18 +56,19 @@ vector<vector<double>> Utils::parse2DCsvFile(string file_name, unsigned long max
                  != rows_to_read.end())) {
                 istringstream ss(s);
 
+                int c = 0;
                 while (ss) {
                     string line;
                     if (!getline(ss, line, ','))
                         break;
                     try {
                         record.push_back(stof(line));
-                    }
-                    catch (const std::invalid_argument e) {
+                    } catch (const std::invalid_argument e) {
                         cout << "NaN found in file " << file_name << " line "
-                             << l << endl;
+                             << l << " column " << c << endl;
                         e.what();
                     }
+                    c++;
                 }
             }
             data.push_back(record);

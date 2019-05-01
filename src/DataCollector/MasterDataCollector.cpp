@@ -443,7 +443,7 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name, b
             }
         }
     } else {
-        //cout << "Calculating Objectives" << endl;
+        cout << "Calculating Objectives" << endl;
         for (auto &u : utility_collectors) {
             /// Create vector with restriction policies pertaining only to the
             /// utility whose objectives are being calculated.
@@ -585,14 +585,18 @@ void MasterDataCollector::printPathways(string file_name) {
 }
 
 void MasterDataCollector::setOutputDirectory(string directory) {
-    output_directory = directory;
+    // Check if directory is not being set for the same directory it is already set. Avoids unnecessary verbose.
+    if (directory != output_directory) {
+        output_directory = directory;
 
-    struct stat sb;
-    if (stat(output_directory.c_str(), &sb) == 0)
-        cout << "Output will be printed to folder " << output_directory << DEFAULT_OUTPUT_DIR << BAR << endl;
-    else {
-        cout << output_directory << endl;
-        throw invalid_argument("Output folder does not exist.");
+        struct stat sb;
+        // Check if directory exists and print either location or that directory does not exist.
+        if (stat(output_directory.c_str(), &sb) == 0)
+            cout << "Output will be printed to folder " << output_directory << DEFAULT_OUTPUT_DIR << endl;
+        else {
+            cout << output_directory << endl;
+            throw invalid_argument("Output folder does not exist.");
+        }
     }
 }
 

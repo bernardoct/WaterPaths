@@ -52,7 +52,7 @@ private:
 public:
     PaperTestProblem(unsigned long n_weeks, int import_export_rof_table);
 
-    ~PaperTestProblem();
+    ~PaperTestProblem() override;
 
 #ifdef PARALLEL
     void setProblemDefinition(BORG_Problem &problem);

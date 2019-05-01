@@ -39,8 +39,9 @@ Simulation::Simulation(
     setupSimulation(
             water_sources, water_sources_graph,
             water_sources_to_utilities, utilities, drought_mitigation_policies,
-            min_env_flow_controls, utilities_rdm, water_sources_rdm,
-            policies_rdm, import_export_rof_tables, total_simulation_time,
+            min_env_flow_controls,
+            utilities_rdm, water_sources_rdm,
+            policies_rdm,
             realizations_to_run);
 }
 
@@ -78,8 +79,9 @@ Simulation::Simulation(
     setupSimulation(
             water_sources, water_sources_graph,
             water_sources_to_utilities, utilities, drought_mitigation_policies,
-            min_env_flow_controls, utilities_rdm, water_sources_rdm,
-            policies_rdm, import_export_rof_tables, total_simulation_time,
+            min_env_flow_controls,
+            utilities_rdm, water_sources_rdm,
+            policies_rdm,
             realizations_to_run);
 }
 
@@ -121,30 +123,21 @@ Simulation::Simulation(
             utilities_rdm,
             water_sources_rdm,
             policies_rdm,
-            import_export_rof_tables,
-            total_simulation_time,
             realizations_to_run);
 }
 
-void Simulation::setupSimulation(
-        vector<WaterSource *> &water_sources,
-        Graph &water_sources_graph,
-        const vector<vector<int>> &water_sources_to_utilities,
-        vector<Utility *> &utilities,
-        const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
-        vector<MinEnvFlowControl *> &min_env_flow_controls,
-        vector<vector<double>>& utilities_rdm,
-        vector<vector<double>>& water_sources_rdm,
-        vector<vector<double>>& policies_rdm,
-        int import_export_rof_tables,
-        const unsigned long total_simulation_time,
-        vector<unsigned long> &realizations_to_run) {
-    /// Sort water sources and utilities by their IDs.
+void Simulation::setupSimulation(vector<WaterSource *> &water_sources, Graph &water_sources_graph,
+                                 const vector<vector<int>> &water_sources_to_utilities, vector<Utility *> &utilities,
+                                 const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
+                                 vector<MinEnvFlowControl *> &min_env_flow_controls,
+                                 vector<vector<double>> &utilities_rdm, vector<vector<double>> &water_sources_rdm,
+                                 vector<vector<double>> &policies_rdm, vector<unsigned long> &realizations_to_run) {
+    // Sort water sources and utilities by their IDs.
     //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
     std::sort(water_sources.begin(), water_sources.end(), WaterSource::compare);
     std::sort(utilities.begin(), utilities.end(), Utility::compById);
 
-    /// Check if IDs are sequential.
+    // Check if IDs are sequential.
     for (int ws = 1; ws < (int) water_sources.size(); ++ws) {
         if (water_sources[ws]->id != water_sources[ws - 1]->id + 1) {
             cout << "The IDs of water sources " << water_sources[ws]->id << " "
@@ -163,20 +156,20 @@ void Simulation::setupSimulation(
         }
     }
 
-    /// Check if sources listed in construction order array are of a utility are
-    /// listed as belonging to that utility
+    // Check if sources listed in construction order array of a utility are
+    // listed as belonging to that utility
     for (int u = 0; u < (int) utilities.size(); ++u) {
-        /// Create a vector with rof and demand triggered infrastructure for
-        /// utility u.
+        // Create a vector with rof and demand triggered infrastructure for
+        // utility u.
         vector<int> demand_rof_infra_order =
                 utilities[u]->getRof_infrastructure_construction_order();
         demand_rof_infra_order.insert(
                 demand_rof_infra_order.begin(),
                 utilities[u]->getDemand_infra_construction_order().begin(),
                 utilities[u]->getDemand_infra_construction_order().end());
-        /// Iterate over demand and rof combined infrastructure vector
-        /// looking for sources declared as to be constructed that were not
-        /// declared as belonging to utility u.
+        // Iterate over demand and rof combined infrastructure vector
+        // looking for sources declared as to be constructed that were not
+        // declared as belonging to utility u.
         for (int ws :
                 demand_rof_infra_order)
             if (std::find(water_sources_to_utilities[u].begin(),
@@ -207,7 +200,7 @@ void Simulation::setupSimulation(
             }
     }
 
-    /// Creates the data collector for the simulation.
+    // Creates the data collector for the simulation.
     master_data_collector = new MasterDataCollector(n_realizations);
 }
 

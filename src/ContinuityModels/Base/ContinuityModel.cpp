@@ -33,8 +33,8 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
     std::sort(continuity_water_sources.begin(), continuity_water_sources.end(), WaterSource::compare);
     std::sort(continuity_utilities.begin(), continuity_utilities.end(), Utility::compById);
 
-    /// Link water sources to utilities by passing pointers of the former to
-    /// the latter.
+    // Link water sources to utilities by passing pointers of the former to
+    // the latter.
     for (unsigned long u = 0; u < utilities.size(); ++u) {
         for (unsigned long ws = 0; ws < water_sources_to_utilities[u].size(); ++ws) {
             WaterSource *water_source =
@@ -43,7 +43,7 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
         }
     }
 
-    /// Create table showing which utilities draw water from each water source.
+    // Create table showing which utilities draw water from each water source.
     utilities_to_water_sources.assign(water_sources.size(), vector<int>(0));
     water_sources_online_to_utilities.assign(water_sources.size(), vector<int>(0));
     for (unsigned long u = 0; u < utilities.size(); ++u) {
@@ -54,47 +54,63 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
         }
     }
 
-    /// The variables below are to make the storage-ROF table calculation
-    /// faster by limiting the storage curve shifting to online water sources.
+    // The variables below are to make the storage-ROF table calculation
+    // faster by limiting the storage curve shifting to online water sources.
     for (auto water_source : water_sources) {
         bool online = false;
 
-        for (unsigned long u = 0; u < utilities.size(); ++u)
+        for (unsigned long u = 0; u < utilities.size(); ++u) {
             if (water_source->isOnline())
                 online = true;
+        }
 
-        if (online)
+        if (online) {
             water_sources_capacities.push_back(
                     water_source->getSupplyCapacity());
-        else
+        } else {
             water_sources_capacities.push_back((double) NONE);
+        }
     }
 
-    for (Utility *u : continuity_utilities)
+    // Populate vector with utilities capacities and check if all utilities
+    // have storage capacity.
+    for (Utility *u : continuity_utilities) {
         utilities_capacities.push_back(u->getTotal_storage_capacity());
+        if (utilities_capacities.back() == 0) {
+            char error[1000];
+            sprintf(error, "Utility %d has no storage capacity (0 MGD), which "
+                           "would lead to an ROF value of 0/0. WaterPaths "
+                           "currently requires utilities to have non-zero "
+                           "storage capacity\n", u->id);
+            throw invalid_argument(error);
+        }
+    }
 
-    /// Populate vector indicating the downstream source from each source.
-    for (vector<int> ds : water_sources_graph.getDownSources())
-        if (ds.empty())
+    // Populate vector indicating the downstream source from each source.
+    for (vector<int> ds : water_sources_graph.getDownSources()) {
+        if (ds.empty()) {
             downstream_sources.push_back(NON_INITIALIZED);
-        else
+        } else {
             downstream_sources.push_back(ds[0]);
+        }
+    }
 
-    /// Add reference to water sources and utilities so that controls can
-    /// access their info.
-    for (MinEnvFlowControl *mef : this->min_env_flow_controls)
+    // Add reference to water sources and utilities so that controls can
+    // access their info.
+    for (MinEnvFlowControl *mef : this->min_env_flow_controls) {
         mef->addComponents(water_sources, utilities);
+    }
 
-    /// Set realization id on utilities and water sources, so that they use the
-    /// right streamflow, evaporation and demand data.
+    // Set realization id on utilities and water sources, so that they use the
+    // right streamflow, evaporation and demand data.
     setRealization(realization_id, utilities_rdm, water_sources_rdm);
 
     demands = std::vector<vector<double>>(
             continuity_water_sources.size(),
             vector<double>(continuity_utilities.size(), 0.));
     
-    /// populate array delta_realization_weeks so that the rounding and casting don't
-    /// have to be done every time continuityStep is called, avoiding a bottleneck.
+    // populate array delta_realization_weeks so that the rounding and casting don't
+    // have to be done every time continuityStep is called, avoiding a bottleneck.
     for (int r = 0; r < NUMBER_REALIZATIONS_ROF; ++r) {
         delta_realization_weeks[r] = (int) std::round((r + 1) * WEEKS_IN_YEAR);
     }

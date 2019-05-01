@@ -89,8 +89,8 @@ vector<double> InfrastructureManager::rearrangeInfraRofVector(
     auto n_options = max(rof_infra_construction_order.size(), demand_infra_construction_order.size());
     if (infra_construction_triggers.size() != n_options) {
         char error[200];
-        sprintf(error, "Number of ROF or demand triggers (%llu) for utility %d must match the number of "
-                            "infrastructure options triggered by ROf or demand (%llu, %llu, respectivelly).", 
+        sprintf(error, "Number of ROF or demand triggers (%lu) for utility %d must match the number of "
+                            "infrastructure options triggered by ROf or demand (%lu, %lu, respectively).",
 			    infra_construction_triggers.size(), id, rof_infra_construction_order.size(), 
 			    demand_infra_construction_order.size());
         throw invalid_argument(error);

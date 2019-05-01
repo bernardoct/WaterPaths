@@ -45,7 +45,7 @@ void PaperTestProblem::setProblemDefinition(BORG_Problem &problem)
     BORG_Problem_set_bounds(problem, 7, 0.05, 0.333);   // fallsland LMA
     BORG_Problem_set_bounds(problem, 8, 0.0, 0.1);      // watertown annual payment
     BORG_Problem_set_bounds(problem, 9, 0.0, 0.1);      // dryville annual payment
-    BORG_Problem_set_bounds(problem, 10, 0.0, 0.1);     // fallsland annual payment 
+    BORG_Problem_set_bounds(problem, 10, 0.0, 0.1);     // fallsland annual payment
     BORG_Problem_set_bounds(problem, 11, 0.001, 1.0);   // watertown insurance use
     BORG_Problem_set_bounds(problem, 12, 0.001, 1.0);   // dryville insurance use
     BORG_Problem_set_bounds(problem, 13, 0.001, 1.0);   // fallsland insurance use
@@ -62,7 +62,7 @@ void PaperTestProblem::setProblemDefinition(BORG_Problem &problem)
     BORG_Problem_set_bounds(problem, 24, 0.0, 1.0);     // sugar creek rank
     BORG_Problem_set_bounds(problem, 25, 0.0, 1.0);     // granite quarry rank
     BORG_Problem_set_bounds(problem, 26, 0.0, 1.0);     // new river rank fallsland
-    
+
 
     // Set epsilons for objectives
     // Original values: (works fine for Formulations 0-4)
@@ -75,7 +75,7 @@ void PaperTestProblem::setProblemDefinition(BORG_Problem &problem)
     BORG_Problem_set_epsilon(problem, 5, 0.05);
 
 }
-#endif 
+#endif
 
 /**
  * Runs three utility carolina problem for demonstration paper
@@ -167,17 +167,17 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
         watertown_infra_order_raw.end(),
         by_xreal());
 
-    vector<int> rof_triggered_infra_order_dryville = 
+    vector<int> rof_triggered_infra_order_dryville =
         vecInfraRankToVecInt(dryville_infra_order_raw);
     vector<double> rofs_infra_dryville = vector<double>
         (rof_triggered_infra_order_dryville.size(), dryville_inftrigger);
-    
-    vector<int> rof_triggered_infra_order_fallsland = 
+
+    vector<int> rof_triggered_infra_order_fallsland =
         vecInfraRankToVecInt(fallsland_infra_order_raw);
     vector<double> rofs_infra_fallsland = vector<double>
         (rof_triggered_infra_order_fallsland.size(), fallsland_inftrigger);
 
-    vector<int> rof_triggered_infra_order_watertown = 
+    vector<int> rof_triggered_infra_order_watertown =
         vecInfraRankToVecInt(watertown_infra_order_raw);
     vector<double> rofs_infra_watertown = vector<double>
         (rof_triggered_infra_order_watertown.size(), watertown_inftrigger);
@@ -262,7 +262,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     // Granite Quarry (Stone Quarry)
     vector<Catchment *> catchment_granite_quarry;
     catchment_granite_quarry.push_back(&phils_creek);
-    
+
     // Sugar Creek (Cane Creek)
     Catchment sugar_creek(&streamflows_cane, streamflow_n_weeks);
 

@@ -13,41 +13,8 @@
 #include "../src/SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
 #include "../src/ContinuityModels/ContinuityModelRealization.h"
 
-TEST_CASE("Mass balance reservoir", "[Reservoir][Mass Balance]") {
-    int streamflow_n_weeks = 52 * (1 + 50);
-    vector<vector<double>> streamflows_haw =
-            vector<vector<double>>(1, vector<double>((unsigned long) streamflow_n_weeks, 30.));
-    vector<vector<double>> evap_jordan_lake =
-            vector<vector<double>>(1, vector<double>((unsigned long) streamflow_n_weeks, 2.));
-    Catchment lower_haw_river(&streamflows_haw, streamflow_n_weeks);
-    vector<Catchment *> catchment_haw;
-    catchment_haw.push_back(&lower_haw_river);
 
-    EvaporationSeries evaporation_jordan_lake(
-            &evap_jordan_lake,
-            streamflow_n_weeks);
 
-    Reservoir r("test", 0, catchment_haw, 100., 20., evaporation_jordan_lake, 10.);
-
-    vector<double> rdm_factors = {1., 1., 1.};
-    r.setRealization(0, rdm_factors);
-
-    SECTION("Overflow") {
-        vector<double> demands = {5.};
-        r.applyContinuity(0, 7., 0, demands);
-
-        REQUIRE(r.getAvailableVolume() == 100.);
-        REQUIRE(r.getTotal_outflow() == 12.);
-    }
-
-    SECTION("Attempted negative flow") {
-        vector<double> demands = {505.};
-        r.applyContinuity(0, 7., 0, demands);
-
-        REQUIRE(r.getAvailableVolume() == 0.);
-        REQUIRE(r.getTotal_outflow() == 0.);
-    }
-}
 
 TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance][Exceptions]") {
     int streamflow_n_weeks = 52 * (1 + 50);
@@ -242,8 +209,8 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
 
     // Reservoir
     Reservoir reservoir("Little River Reservoir (Raleigh)", 7, vector<Catchment *>(), 3700.0,
-                                     ILLIMITED_TREATMENT_CAPACITY, evaporation_series, 1.,
-                                     {4.5, 4.50001}, 17 * WEEKS_IN_YEAR, bond);
+                        ILLIMITED_TREATMENT_CAPACITY, evaporation_series, 1.,
+                        {4.5, 4.50001}, 17 * WEEKS_IN_YEAR, bond);
 
     // Utility data
     vector<vector<double>> demands =
@@ -350,8 +317,8 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
 
     SECTION("Utility infrastructure construction", "[Utility][Infrastructure]") {
 
-        vector<double> utility_rdm(4, 1.);
-        utility.setRealization(0, utility_rdm);
+            vector<double> utility_rdm(4, 1.);
+            utility.setRealization(0, utility_rdm);
 
         SECTION("Infrastruture handler high LT-ROF but week < permitting period") {
             utility.infrastructureConstructionHandler(1., 0);
@@ -375,8 +342,8 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
         vector<double> rof_triggers_non_zero = vector<double>(10, 0.1);
         vector<int> construction_order_seq = {0};
         Utility utility1("U1", 0, demands, streamflow_n_weeks, 0.03, &demand_class_fractions, &user_classes_prices,
-                        wwtp_discharge_durham, 0., construction_order_seq, construction_order_empty, rof_triggers,
-                        0.07, 25, 0.05);
+                         wwtp_discharge_durham, 0., construction_order_seq, construction_order_empty, rof_triggers,
+                         0.07, 25, 0.05);
         Utility utility2("U2", 1, demands, streamflow_n_weeks, 0.03, &demand_class_fractions, &user_classes_prices,
                          wwtp_discharge_durham, 0., construction_order_seq, construction_order_empty, rof_triggers,
                          0.07, 25, 0.05);
@@ -390,7 +357,7 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
 
         AllocatedReservoir allocated_reservoir("My allocated reservoir", 1,
                                                vector<Catchment *>(), 1000.0,
-                                               100., evaporation_series, 1.,
+                                               99999, evaporation_series, 1.,
                                                &utilities_with_allocations,
                                                &allocated_fractions,
                                                &allocated_treatment_fractions);
@@ -448,10 +415,10 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
             // Finish construction and set source online
             model.setLongTermROFs(lt_rofs, 362);
             REQUIRE(!model.getContinuity_utilities()[0]->
-                    getInfrastructure_construction_manager()
+                            getInfrastructure_construction_manager()
                     .getUnder_construction()[0]);
             REQUIRE(!model.getContinuity_utilities()[1]->
-                    getInfrastructure_construction_manager()
+                            getInfrastructure_construction_manager()
                     .getUnder_construction()[0]);
             REQUIRE(model.getContinuity_water_sources()[1]->
                     getAllocatedTreatmentCapacity(0) == 40);
@@ -468,7 +435,7 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
 
         SECTION("Utility split demands", "[splitDemands]") {
             Reservoir reservoir2("R2", 0, vector<Catchment *>(), 3700. * 3,
-                                ILLIMITED_TREATMENT_CAPACITY,
+                                 ILLIMITED_TREATMENT_CAPACITY,
                                  evaporation_series, 1.);
 
             vector<double> rdm_reservoir(20, 1.);
@@ -547,4 +514,249 @@ TEST_CASE("Bonds") {
             REQUIRE(bond.getDebtService(1304) == 0.);
         }
     }
+}
+
+
+TEST_CASE("Test Joint Triggering of Allocated Reservoir", "[Allocated Reservoir][Infrastructure]"){
+    // Reservoir data
+    int streamflow_n_weeks = 52 * (70 + 50);
+    vector<vector<double>> streamflows =
+            vector<vector<double>>(1, vector<double>((unsigned long) streamflow_n_weeks, 300.));
+    vector<vector<double>> evaporation =
+            vector<vector<double>>(1, vector<double>((unsigned long) streamflow_n_weeks, 250.));
+
+    Catchment river_catchment(&streamflows, streamflow_n_weeks);
+    vector<Catchment *> river_catchments(1, &river_catchment);
+    EvaporationSeries evaporation_series(&evaporation, streamflow_n_weeks);
+
+    LevelDebtServiceBond bond(0, 100.0, 25, 0.05, vector<int>(1, 0));
+
+       // Utility data
+    vector<vector<double>> demands =
+            vector<vector<double>>(1, vector<double>((unsigned long) streamflow_n_weeks, 100.));
+    vector<int> ws_return_id = {3};
+
+    vector<vector<double>> demand_to_wastewater_fraction = Utils::parse2DCsvFile(
+            "../TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv");
+
+    WwtpDischargeRule wwtp_discharge(
+            demand_to_wastewater_fraction,
+            ws_return_id);
+
+    vector<vector<double>> demand_class_fractions = {{0.173046633,0.170108967,0.195049165,0.039185639,0.065861249,0,0,0.345705321,0,0.011043025,0.89},
+                                                     {0.174218798,0.176103061,0.23872941,0.044298325,0.072064026,0,0,0.287271971,0,0.00731441,0.91},
+                                                     {0.165397772,0.153365266,0.192593725,0.033804252,0.067691513,0,0,0.377294656,0,0.009852817,0.84},
+                                                     {0.174090772,0.168076618,0.19902952,0.039942618,0.064681076,0,0,0.346182747,0,0.007996648,0.88},
+                                                     {0.146306233,0.142541416,0.182540819,0.03397242,0.064700708,0,0,0.404017943,0,0.025920462,0.82},
+                                                     {0.142660453,0.141824612,0.177751136,0.038466639,0.059367893,0,0,0.395287674,0,0.044641593,0.75},
+                                                     {0.125978495,0.12909426,0.164147643,0.043465465,0.05819444,0,0,0.408360658,0,0.070759039,0.83},
+                                                     {0.132975086,0.137751684,0.168810089,0.048402154,0.063577059,0,0,0.372134783,0,0.076349145,0.84},
+                                                     {0.124916911,0.124843094,0.158802204,0.03935136,0.059549521,0,0,0.412025491,0,0.080511419,0.87},
+                                                     {0.140403715,0.141682851,0.174901252,0.043405443,0.062146593,0,0,0.370492303,0,0.066967843,0.89},
+                                                     {0.140226464,0.137090428,0.178922408,0.038725701,0.066038848,0,0,0.38148803,0,0.057508121,0.87},
+                                                     {0.156423153,0.152041568,0.186688374,0.038647627,0.066779948,0,0,0.355242017,0,0.044177313,0.89}};
+    vector<vector<double>> user_classes_prices = {{2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7},
+                                                  {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7},
+                                                  {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7},
+                                                  {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7},
+                                                  {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7},
+                                                  {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7},
+                                                  {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7},
+                                                  {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7},
+                                                  {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7},
+                                                  {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7},
+                                                  {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7},
+                                                  {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7}};
+
+    // Reservoir
+    Reservoir reservoir_zero("existing reservoir 0", 0, vector<Catchment *>(), 100.0,
+                        ILLIMITED_TREATMENT_CAPACITY, evaporation_series, 1.,
+                        {4.5, 4.50001}, 17 * WEEKS_IN_YEAR, bond);
+
+    // Reservoir
+    Reservoir reservoir_one("existing reservoir 1", 1, vector<Catchment *>(), 100.0,
+                            ILLIMITED_TREATMENT_CAPACITY, evaporation_series, 1.,
+                            {4.5, 4.50001}, 17 * WEEKS_IN_YEAR, bond);
+
+    Reservoir dummy_endpoint("Dummy Node", 3, vector<Catchment *>(), 1., 0, evaporation_series, 1,
+                             {4.5, 4.50001}, 0, bond);
+
+
+    // Setup Infrastructure construction manager holding reservoir
+    vector<double> rof_triggers = vector<double>(10, 0.);
+    auto infra_built_remove = vector<vector<int>>();
+    vector<int> construction_order = {1};
+    vector<int> construction_order_empty;
+
+    vector<WaterSource *> water_sources;
+    water_sources.push_back(&reservoir_zero);
+    water_sources.push_back(&reservoir_one);
+
+
+    //vector<double> rof_triggers_non_zero = vector<double>(10, 0.1);
+    vector<int> construction_order_seq = {2};
+
+
+    Utility utility1((char *) "U1", 0, demands, streamflow_n_weeks, 0.03, &demand_class_fractions, &user_classes_prices,
+                     wwtp_discharge, 0., construction_order_seq, construction_order_empty, rof_triggers,
+                     0.07, 25, 0.05);
+
+    Utility utility2((char *) "U2", 1, demands, streamflow_n_weeks, 0.03, &demand_class_fractions, &user_classes_prices,
+                     wwtp_discharge, 0., construction_order_seq, construction_order_empty, rof_triggers,
+                     0.07, 25, 0.05);
+    LevelDebtServiceBond bond1(0, 200.0, 25, 0.05, vector<int>(1, 0));
+    LevelDebtServiceBond bond2(1, 300.0, 25, 0.05, vector<int>(1, 0));
+    vector<double> construction_time_interval = {3.0, 5.0};
+
+    // Allocated Reservoir
+    vector<int> utilities_with_allocations = {0, 1};
+    vector<double> allocated_fractions = {0.2, 0.4};
+    vector<double> allocated_treatment_fractions = {0.3, 0.5};
+
+    vector<double> allocated_res_storage = {0, 3700};
+    vector<double> allocated_res_area = {0, 0.3675 * 3700};
+    DataSeries allocated_reservoir_storage_area(&allocated_res_storage,
+                                                & allocated_res_area);
+
+    AllocatedReservoir allocated_reservoir("My allocated reservoir", 2,
+                                           vector<Catchment *>(), 1000.0,
+                                           ILLIMITED_TREATMENT_CAPACITY,
+                                           evaporation_series,
+                                           &allocated_reservoir_storage_area,
+                                           construction_time_interval,
+                                           17*WEEKS_IN_YEAR,
+                                           bond,
+                                           &utilities_with_allocations,
+                                           &allocated_fractions,
+                                           &allocated_treatment_fractions);
+
+    water_sources.push_back(&allocated_reservoir);
+
+    SECTION("Testing initial reservoir allocation volumes") {
+        // Available volumes should all be initialized to zero
+        REQUIRE(allocated_reservoir.getAvailable_allocated_volumes()[0] == 0);
+        REQUIRE(allocated_reservoir.getAvailable_allocated_volumes()[1] == 0);
+        REQUIRE(allocated_reservoir.getAvailableVolume() == 0);
+    }
+
+   /*
+    vector<vector<int>> water_sources_to_utilities = {{0, 2}, {1, 2}};
+    vector<DroughtMitigationPolicy *> dmps;
+    vector<MinEnvFlowControl *> mev;
+    auto rdm = vector<vector<double>>(2, vector<double>(50, 1.));
+
+    ContinuityModelRealization model(water_sources, Graph(1),
+                                     water_sources_to_utilities,
+                                     utilities, dmps, mev, rdm[0],
+                                     rdm[0], rdm[0], 0);
+
+    vector<double> lt_rofs = {1., 0.};
+
+
+    InfrastructureManager infrastructure_construction_manager(0, rof_triggers, infra_built_remove, 0.05, 25, 0.05,
+                                                              construction_order, vector<int>());
+
+    vector<int> priority_draw_water_source;
+    vector<int> non_priority_draw_water_source;
+    vector<vector<double>> debt_payment_streams;
+    double total_storage_capacity;
+    double total_treatment_capacity;
+    double total_available_volume;
+    double total_stored_volume;
+    infrastructure_construction_manager.connectWaterSourcesVectorsToUtilitys(water_sources, priority_draw_water_source,
+                                                                             non_priority_draw_water_source);
+    water_sources[2] = &allocated_reservoir;
+    infrastructure_construction_manager.addWaterSource(&allocated_reservoir);
+
+    SECTION("Begin building infrastructure", "[Infrastructure]") {
+        infrastructure_construction_manager.beginConstruction(55, 7);
+        REQUIRE(infrastructure_construction_manager.getUnder_construction()[7]);
+    }
+
+    SECTION("Set watersource online", "[Infrastructure]") {
+        infrastructure_construction_manager.setWaterSourceOnline((unsigned int) 7, 0, total_storage_capacity,
+                                                                 total_treatment_capacity, total_available_volume,
+                                                                 total_stored_volume);
+
+        REQUIRE(water_sources[7]->isOnline());
+    }
+
+    SECTION("Infrastruture handler high LT-ROF but week < permitting period", "[Infrastructure]") {
+        infrastructure_construction_manager.infrastructureConstructionHandler(1., 53, 0, total_storage_capacity,
+                                                                              total_treatment_capacity,
+                                                                              total_available_volume,
+                                                                              total_stored_volume);
+        REQUIRE(!infrastructure_construction_manager.getUnder_construction()[7]);
+    }
+
+    SECTION("Infrastruture handler high LT-ROF but week > permitting period", "[Infrastructure]") {
+        infrastructure_construction_manager.infrastructureConstructionHandler(1., 1000, 0, total_storage_capacity,
+                                                                              total_treatment_capacity,
+                                                                              total_available_volume,
+                                                                              total_stored_volume);
+        REQUIRE(infrastructure_construction_manager.getUnder_construction()[7]);
+    }
+
+
+
+    SECTION("Testing initial reservoir allocation volumes") {
+        // Available volumes should all be initialized to zero
+        REQUIRE(allocated_reservoir.getAvailable_allocated_volumes()[0] == 0);
+        REQUIRE(allocated_reservoir.getAvailable_allocated_volumes()[1] == 0);
+        REQUIRE(allocated_reservoir.getAvailableVolume() == 0);
+    }
+
+    SECTION("Test triggering and forced construction for joint infrestructure.") {
+        // Begin construction
+        model.setLongTermROFs(lt_rofs, 100);
+
+        // Check triggering
+        REQUIRE(model.getContinuity_utilities()[0]->
+                getInfrastructure_construction_manager().getUnder_construction()[0]);
+        REQUIRE(model.getContinuity_utilities()[1]->
+                getInfrastructure_construction_manager().getUnder_construction()[0]);
+        REQUIRE(!model.getContinuity_water_sources()[0]->isOnline());
+
+        // Check financial
+        //FIXME: BOND FOR UTILITY 1 BEING ISSUED TWICE.
+        REQUIRE(model.getContinuity_utilities()[0]->
+                getInfrastructure_net_present_cost() == Approx(134.99));
+        REQUIRE(model.getContinuity_utilities()[1]->
+                getInfrastructure_net_present_cost() ==
+                Approx(202.49).epsilon(0.005));
+    }
+
+    SECTION("Testing reservoir allocation volumes after infrastructure triggered") {
+        // Available volumes should all be initialized to zero
+        REQUIRE(allocated_reservoir.getAvailable_allocated_volumes()[0] == 0);
+        REQUIRE(allocated_reservoir.getAvailable_allocated_volumes()[1] == 0);
+        REQUIRE(allocated_reservoir.getAvailableVolume() == 0);
+    }
+
+    SECTION("Test setting joint infrastructure online after construction "
+            "period.") {
+        // Begin construction
+        model.setLongTermROFs(lt_rofs, 100);
+        // Finish construction and set source online
+        model.setLongTermROFs(lt_rofs, 362);
+        REQUIRE(!model.getContinuity_utilities()[0]->
+                        getInfrastructure_construction_manager()
+                .getUnder_construction()[0]);
+        REQUIRE(!model.getContinuity_utilities()[1]->
+                        getInfrastructure_construction_manager()
+                .getUnder_construction()[0]);
+        REQUIRE(model.getContinuity_water_sources()[1]->
+                getAllocatedTreatmentCapacity(0) == 40);
+        REQUIRE(model.getContinuity_water_sources()[1]->
+                getAllocatedTreatmentCapacity(1) == 70);
+    }
+
+    SECTION("Testing reservoir allocation volumes after infrastructure online") {
+        // Available volumes should all be initialized to zero
+        REQUIRE(allocated_reservoir.getAvailable_allocated_volumes()[0] == 0);
+        REQUIRE(allocated_reservoir.getAvailable_allocated_volumes()[1] == 0);
+        REQUIRE(allocated_reservoir.getAvailableVolume() == 0);
+    }
+     */
+
 }

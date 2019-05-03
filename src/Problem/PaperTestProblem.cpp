@@ -229,7 +229,6 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
     int streamflow_n_weeks = 52 * (70 + 50);
 
-    //FIXME: Come back and sure these get loaded and are properly matched to res
     EvaporationSeries evaporation_durham(&evap_durham, streamflow_n_weeks); //Evaporation
     EvaporationSeries evaporation_falls_lake(&evap_falls_lake, streamflow_n_weeks); //Evaporation
     EvaporationSeries evaporation_jordan_lake(&evap_jordan_lake, streamflow_n_weeks); // Lake Michael
@@ -537,16 +536,16 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
             watertown_discharge_fraction_series,
             watertown_ws_return_id);
 
-    vector<int> dryville_ws_return_id;
+    vector<int> dryville_ws_return_id = {6};
     vector<vector<double>> dryville_discharge_fraction_series;
     WwtpDischargeRule wwtp_discharge_dryville(
-            dryville_discharge_fraction_series,
+            demand_to_wastewater_fraction_dryville,
             dryville_ws_return_id);
 
-    vector<int> fallsland_ws_return_id;
+    vector<int> fallsland_ws_return_id = {6};
     vector<vector<double>> fallsland_discharge_fraction_series;
     WwtpDischargeRule wwtp_discharge_fallsland(
-            fallsland_discharge_fraction_series,
+            demand_to_wastewater_fraction_fallsland,
             fallsland_ws_return_id);
 
     //FIXME: bond etc need to be updated, should chat about demand buffer
@@ -578,7 +577,6 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
             {2, 4} //Fallsland
     };
 
-    //FIXME: table_storage_shift ??
     auto table_storage_shift = vector<vector<double>>(3, vector<double>(water_sources.size() + 1, 0.));
    table_storage_shift[2][4] = 13500;
    table_storage_shift[1][3] = 100;
@@ -849,7 +847,7 @@ void PaperTestProblem::readInputData() {
             demand_to_wastewater_fraction_fallsland = Utils::parse2DCsvFile(
                     output_directory + DEFAULT_DATA_DIR + "demand_to_wastewater_fraction_owasa_raleigh.csv");
             demand_to_wastewater_fraction_dryville = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "demand_to_wastewater_fraction_durham.csv");
+                    output_directory + DEFAULT_DATA_DIR + "demand_to_wastewater_fraction_owasa_raleigh.csv");
 
             watertownDemandClassesFractions = Utils::parse2DCsvFile(
                     output_directory + DEFAULT_DATA_DIR + "caryDemandClassesFractions.csv");

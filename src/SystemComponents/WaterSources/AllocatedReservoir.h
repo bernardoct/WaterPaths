@@ -84,6 +84,8 @@ public:
 
     bool
     mass_balance_without_wq_pool(double net_inflow, vector<double> &demand_outflow);
+
+    void setOnline() override;
 };
 
 

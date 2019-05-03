@@ -580,8 +580,8 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
     //FIXME: table_storage_shift ??
     auto table_storage_shift = vector<vector<double>>(3, vector<double>(water_sources.size() + 1, 0.));
-    table_storage_shift[2][4] = 9000;
-    //table_storage_shift[1][3] = 10;
+   table_storage_shift[2][4] = 13500;
+   table_storage_shift[1][3] = 100;
 
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
     vector<double> initial_restriction_triggers = {watertown_restriction_trigger,

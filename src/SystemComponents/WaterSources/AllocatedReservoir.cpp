@@ -440,6 +440,17 @@ bool AllocatedReservoir::mass_balance_without_wq_pool(double net_inflow,
     return overallocation;
 }
 
+void AllocatedReservoir::setOnline() {
+    Reservoir::setOnline();
+
+    /// start empty and gradually fill as inflows start coming in.
+    available_volume = 0;
+    ///set all allocated volumes to zero
+    for (int u : *utilities_with_allocations) {
+        available_allocated_volumes[u] = 0;
+    }
+}
+
 double AllocatedReservoir::getAvailableAllocatedVolume(int utility_id) {
     return available_allocated_volumes[utility_id];
 }

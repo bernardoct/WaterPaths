@@ -519,7 +519,7 @@ TEST_CASE("Bonds") {
 
 TEST_CASE("Test Joint Triggering of Allocated Reservoir", "[Allocated Reservoir][Infrastructure]"){
     // Reservoir data
-    int streamflow_n_weeks = 52 * (70 + 50);
+    int streamflow_n_weeks = 52 * (70 + 100);
     vector<vector<double>> streamflows =
             vector<vector<double>>(1, vector<double>((unsigned long) streamflow_n_weeks, 300.));
     vector<vector<double>> evaporation =
@@ -529,7 +529,6 @@ TEST_CASE("Test Joint Triggering of Allocated Reservoir", "[Allocated Reservoir]
     vector<Catchment *> river_catchments(1, &river_catchment);
     EvaporationSeries evaporation_series(&evaporation, streamflow_n_weeks);
 
-    LevelDebtServiceBond bond(0, 100.0, 25, 0.05, vector<int>(1, 0));
 
        // Utility data
     vector<vector<double>> demands =
@@ -568,22 +567,25 @@ TEST_CASE("Test Joint Triggering of Allocated Reservoir", "[Allocated Reservoir]
                                                   {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7},
                                                   {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7}};
 
-    // Reservoir
-    Reservoir reservoir_zero("existing reservoir 0", 0, vector<Catchment *>(), 100.0,
-                        ILLIMITED_TREATMENT_CAPACITY, evaporation_series, 1.,
-                        {4.5, 4.50001}, 17 * WEEKS_IN_YEAR, bond);
+    // Reservoirs
+    vector<double> res_storage = {0, 1000};
+    vector<double> res_area = {0, 0.3675 * 1000};
+    DataSeries reservoir_storage_area(&res_storage, &res_area);
+
+
+    Reservoir reservoir_zero("existing reservoir 0", 0, vector<Catchment *>(), 1000.0,
+                        ILLIMITED_TREATMENT_CAPACITY, evaporation_series, &reservoir_storage_area);
 
     // Reservoir
-    Reservoir reservoir_one("existing reservoir 1", 1, vector<Catchment *>(), 100.0,
-                            ILLIMITED_TREATMENT_CAPACITY, evaporation_series, 1.,
-                            {4.5, 4.50001}, 17 * WEEKS_IN_YEAR, bond);
+    Reservoir reservoir_one("existing reservoir 1", 1, river_catchments, 1000.0,
+                            ILLIMITED_TREATMENT_CAPACITY, evaporation_series, &reservoir_storage_area);
 
-    Reservoir dummy_endpoint("Dummy Node", 3, vector<Catchment *>(), 1., 0, evaporation_series, 1,
-                             {4.5, 4.50001}, 0, bond);
+    Reservoir dummy_endpoint("existing reservoir 1", 3, river_catchments, 1000.0,
+                             ILLIMITED_TREATMENT_CAPACITY, evaporation_series, &reservoir_storage_area);
 
 
     // Setup Infrastructure construction manager holding reservoir
-    vector<double> rof_triggers = vector<double>(10, 0.);
+    vector<double> rof_triggers = vector<double>(1, 0.);
     auto infra_built_remove = vector<vector<int>>();
     vector<int> construction_order = {1};
     vector<int> construction_order_empty;
@@ -597,6 +599,7 @@ TEST_CASE("Test Joint Triggering of Allocated Reservoir", "[Allocated Reservoir]
     vector<int> construction_order_seq = {2};
 
 
+
     Utility utility1((char *) "U1", 0, demands, streamflow_n_weeks, 0.03, &demand_class_fractions, &user_classes_prices,
                      wwtp_discharge, 0., construction_order_seq, construction_order_empty, rof_triggers,
                      0.07, 25, 0.05);
@@ -604,22 +607,32 @@ TEST_CASE("Test Joint Triggering of Allocated Reservoir", "[Allocated Reservoir]
     Utility utility2((char *) "U2", 1, demands, streamflow_n_weeks, 0.03, &demand_class_fractions, &user_classes_prices,
                      wwtp_discharge, 0., construction_order_seq, construction_order_empty, rof_triggers,
                      0.07, 25, 0.05);
-    LevelDebtServiceBond bond1(0, 200.0, 25, 0.05, vector<int>(1, 0));
-    LevelDebtServiceBond bond2(1, 300.0, 25, 0.05, vector<int>(1, 0));
-    vector<double> construction_time_interval = {3.0, 5.0};
+
+    vector<Utility*> utilities;
+    utilities.push_back(&utility1);
+    utilities.push_back(&utility2);
+
+    vector<vector<int>> reservoir_utility_connectivity_matrix ={
+            {0, 2}, // utility1
+            {1, 2}  // utility2
+    };
+
 
     // Allocated Reservoir
     vector<int> utilities_with_allocations = {0, 1};
-    vector<double> allocated_fractions = {0.2, 0.4};
-    vector<double> allocated_treatment_fractions = {0.3, 0.5};
+    vector<double> allocated_fractions = {0.5, 0.5};
+    vector<double> allocated_treatment_fractions = {0.5, 0.5};
 
-    vector<double> allocated_res_storage = {0, 3700};
-    vector<double> allocated_res_area = {0, 0.3675 * 3700};
+    vector<double> allocated_res_storage = {0, 1000};
+    vector<double> allocated_res_area = {0, 0.3675 * 1000};
     DataSeries allocated_reservoir_storage_area(&allocated_res_storage,
                                                 & allocated_res_area);
 
+    LevelDebtServiceBond bond(0, 100.0, 25, 0.05, vector<int>(1, 0));
+    vector<double> construction_time_interval = {3.0, 5.0};
+
     AllocatedReservoir allocated_reservoir("My allocated reservoir", 2,
-                                           vector<Catchment *>(), 1000.0,
+                                           river_catchments, 1000.0,
                                            ILLIMITED_TREATMENT_CAPACITY,
                                            evaporation_series,
                                            &allocated_reservoir_storage_area,
@@ -631,132 +644,43 @@ TEST_CASE("Test Joint Triggering of Allocated Reservoir", "[Allocated Reservoir]
                                            &allocated_treatment_fractions);
 
     water_sources.push_back(&allocated_reservoir);
-
-    SECTION("Testing initial reservoir allocation volumes") {
-        // Available volumes should all be initialized to zero
-        REQUIRE(allocated_reservoir.getAvailable_allocated_volumes()[0] == 0);
-        REQUIRE(allocated_reservoir.getAvailable_allocated_volumes()[1] == 0);
-        REQUIRE(allocated_reservoir.getAvailableVolume() == 0);
-    }
-
-   /*
-    vector<vector<int>> water_sources_to_utilities = {{0, 2}, {1, 2}};
     vector<DroughtMitigationPolicy *> dmps;
     vector<MinEnvFlowControl *> mev;
     auto rdm = vector<vector<double>>(2, vector<double>(50, 1.));
 
-    ContinuityModelRealization model(water_sources, Graph(1),
-                                     water_sources_to_utilities,
-                                     utilities, dmps, mev, rdm[0],
-                                     rdm[0], rdm[0], 0);
+    allocated_reservoir.setOnline();
 
-    vector<double> lt_rofs = {1., 0.};
-
-
-    InfrastructureManager infrastructure_construction_manager(0, rof_triggers, infra_built_remove, 0.05, 25, 0.05,
-                                                              construction_order, vector<int>());
-
-    vector<int> priority_draw_water_source;
-    vector<int> non_priority_draw_water_source;
-    vector<vector<double>> debt_payment_streams;
-    double total_storage_capacity;
-    double total_treatment_capacity;
-    double total_available_volume;
-    double total_stored_volume;
-    infrastructure_construction_manager.connectWaterSourcesVectorsToUtilitys(water_sources, priority_draw_water_source,
-                                                                             non_priority_draw_water_source);
-    water_sources[2] = &allocated_reservoir;
-    infrastructure_construction_manager.addWaterSource(&allocated_reservoir);
-
-    SECTION("Begin building infrastructure", "[Infrastructure]") {
-        infrastructure_construction_manager.beginConstruction(55, 7);
-        REQUIRE(infrastructure_construction_manager.getUnder_construction()[7]);
-    }
-
-    SECTION("Set watersource online", "[Infrastructure]") {
-        infrastructure_construction_manager.setWaterSourceOnline((unsigned int) 7, 0, total_storage_capacity,
-                                                                 total_treatment_capacity, total_available_volume,
-                                                                 total_stored_volume);
-
-        REQUIRE(water_sources[7]->isOnline());
-    }
-
-    SECTION("Infrastruture handler high LT-ROF but week < permitting period", "[Infrastructure]") {
-        infrastructure_construction_manager.infrastructureConstructionHandler(1., 53, 0, total_storage_capacity,
-                                                                              total_treatment_capacity,
-                                                                              total_available_volume,
-                                                                              total_stored_volume);
-        REQUIRE(!infrastructure_construction_manager.getUnder_construction()[7]);
-    }
-
-    SECTION("Infrastruture handler high LT-ROF but week > permitting period", "[Infrastructure]") {
-        infrastructure_construction_manager.infrastructureConstructionHandler(1., 1000, 0, total_storage_capacity,
-                                                                              total_treatment_capacity,
-                                                                              total_available_volume,
-                                                                              total_stored_volume);
-        REQUIRE(infrastructure_construction_manager.getUnder_construction()[7]);
-    }
-
-
-
-    SECTION("Testing initial reservoir allocation volumes") {
-        // Available volumes should all be initialized to zero
+      SECTION("Testing initial reservoir allocation volumes") {
+         //Available volumes should all be initialized to zero
+        REQUIRE(allocated_reservoir.getAvailableVolume() == 0);
         REQUIRE(allocated_reservoir.getAvailable_allocated_volumes()[0] == 0);
         REQUIRE(allocated_reservoir.getAvailable_allocated_volumes()[1] == 0);
-        REQUIRE(allocated_reservoir.getAvailableVolume() == 0);
-    }
-
-    SECTION("Test triggering and forced construction for joint infrestructure.") {
-        // Begin construction
-        model.setLongTermROFs(lt_rofs, 100);
-
-        // Check triggering
-        REQUIRE(model.getContinuity_utilities()[0]->
-                getInfrastructure_construction_manager().getUnder_construction()[0]);
-        REQUIRE(model.getContinuity_utilities()[1]->
-                getInfrastructure_construction_manager().getUnder_construction()[0]);
-        REQUIRE(!model.getContinuity_water_sources()[0]->isOnline());
-
-        // Check financial
-        //FIXME: BOND FOR UTILITY 1 BEING ISSUED TWICE.
-        REQUIRE(model.getContinuity_utilities()[0]->
-                getInfrastructure_net_present_cost() == Approx(134.99));
-        REQUIRE(model.getContinuity_utilities()[1]->
-                getInfrastructure_net_present_cost() ==
-                Approx(202.49).epsilon(0.005));
-    }
-
-    SECTION("Testing reservoir allocation volumes after infrastructure triggered") {
-        // Available volumes should all be initialized to zero
-        REQUIRE(allocated_reservoir.getAvailable_allocated_volumes()[0] == 0);
-        REQUIRE(allocated_reservoir.getAvailable_allocated_volumes()[1] == 0);
-        REQUIRE(allocated_reservoir.getAvailableVolume() == 0);
-    }
-
-    SECTION("Test setting joint infrastructure online after construction "
-            "period.") {
-        // Begin construction
-        model.setLongTermROFs(lt_rofs, 100);
-        // Finish construction and set source online
-        model.setLongTermROFs(lt_rofs, 362);
-        REQUIRE(!model.getContinuity_utilities()[0]->
-                        getInfrastructure_construction_manager()
-                .getUnder_construction()[0]);
-        REQUIRE(!model.getContinuity_utilities()[1]->
-                        getInfrastructure_construction_manager()
-                .getUnder_construction()[0]);
-        REQUIRE(model.getContinuity_water_sources()[1]->
-                getAllocatedTreatmentCapacity(0) == 40);
-        REQUIRE(model.getContinuity_water_sources()[1]->
-                getAllocatedTreatmentCapacity(1) == 70);
-    }
-
-    SECTION("Testing reservoir allocation volumes after infrastructure online") {
-        // Available volumes should all be initialized to zero
-        REQUIRE(allocated_reservoir.getAvailable_allocated_volumes()[0] == 0);
-        REQUIRE(allocated_reservoir.getAvailable_allocated_volumes()[1] == 0);
-        REQUIRE(allocated_reservoir.getAvailableVolume() == 0);
-    }
-     */
+      }
 
 }
+
+TEST_CASE("Create a utility", "[Utility]"){
+    unsigned long n_realizations = 5;
+    auto demand_n_weeks = (int) round(46 * WEEKS_IN_YEAR);
+    vector<vector<double>> demand_watertown = Utils::parse2DCsvFile("../TestFiles/demands/cary_demand.csv", n_realizations);
+
+    vector<int> watertown_ws_return_id;
+    vector<vector<double>> watertown_discharge_fraction_series;
+    WwtpDischargeRule wwtp_discharge_watertown(
+            watertown_discharge_fraction_series,
+            watertown_ws_return_id);
+
+    vector<int> construction_order_seq = {2};
+    vector<double> rof_triggers = vector<double>(1, 0.);
+
+    vector<vector<double>> watertownDemandClassesFractions = Utils::parse2DCsvFile(
+            "../TestFiles/caryDemandClassesFractions.csv");
+
+    vector<vector<double>> watertownUserClassesWaterPrices = Utils::parse2DCsvFile(
+            "../TestFiles/caryUserClassesWaterPrices.csv");
+
+    Utility watertown((char *) "Watertown", 0, demand_watertown, demand_n_weeks, .1,
+                      &watertownDemandClassesFractions,
+                      &watertownUserClassesWaterPrices, wwtp_discharge_watertown, 0,
+                      construction_order_seq, vector<int>(), rof_triggers, .05, 30, .05);
+};

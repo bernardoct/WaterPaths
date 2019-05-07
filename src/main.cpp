@@ -17,8 +17,8 @@
 
 
 #define NUM_OBJECTIVES 6;
-//#define NUM_DEC_VAR 56;
-#define NUM_DEC_VAR 27; // infrastructure turned off
+#define NUM_DEC_VAR 56;
+//#define NUM_DEC_VAR 27; // infrastructure turned off
 
 using namespace std;
 using namespace Constants;

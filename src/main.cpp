@@ -405,12 +405,23 @@ int main(int argc, char *argv[]) {
             WaterSource::setSeed(seed);
 	    BORG_Random_seed(seed);
         }
-        char outputFilename[256];
+        char outputFileName[256];
+	char output_directory[256];
         char runtime[256];
         FILE* outputFile = nullptr;
-        sprintf(outputFilename, "%s%s%s%sNC_output_MM_S%d_N%lu.set", system_io.c_str(), BAR.c_str(), DEFAULT_OUTPUT_DIR.c_str(), BAR.c_str(),
+
+	sprintf(outputFileName, "%s%s%s%s", system_io.c_str(), BAR.c_str(), DEFAULT_OUTPUT_DIR.c_str(), BAR.c_str());
+        string create_dir_command;
+#ifdef _WIN32
+        create_dir_command = "if not exist \"" + outputFileName + "\" mkdir ";
+#else
+        create_dir_command = "mkdir -p";
+#endif
+        auto output = system((create_dir_command + " " + outputFileName).c_str());
+
+        sprintf(outputFileName, "%s%s%s%sNC_output_MM_S%d_N%lu.set", system_io.c_str(), BAR.c_str(), DEFAULT_OUTPUT_DIR.c_str(), BAR.c_str(),
                 seed, nfe);
-        printf("Reference set will be in %s.\n", outputFilename);
+        printf("Reference set will be in %s.\n", outputFileName);
         // output path (make sure this exists)
         sprintf(runtime, "%s%s%s%sNC_runtime_MM_S%d_N%lu.runtime", system_io.c_str(), BAR.c_str(), DEFAULT_OUTPUT_DIR.c_str(), BAR.c_str(),
                 seed, nfe); // runtime
@@ -433,7 +444,7 @@ int main(int argc, char *argv[]) {
         // If this is the master node, print out the final archive
 
         if (result != nullptr) {
-            outputFile = fopen(outputFilename, "w");
+            outputFile = fopen(outputFileName, "w");
             cout << "master node print, should see only once" << endl;
             if (!outputFile) {
                 BORG_Debug("Unable to open final output file\n");

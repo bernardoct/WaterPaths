@@ -117,7 +117,6 @@ void Triangle::setProblemDefinition(BORG_Problem &problem)
  */
 int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 //    cout << "Building Triangle Problem." << endl;
-    //srand(0);//(unsigned int) time(nullptr));
     // ===================== SET UP DECISION VARIABLES  =====================
 
     Simulation *s = nullptr;
@@ -1010,10 +1009,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         double end_time = omp_get_wtime();
 	printf("Function evaluation time: %f s\n", end_time - start_time);
 
-        //double realization_end = omp_get_wtime();
-        //std::cout << "Simulation took  " << realization_end - realization_start
-        //      << "s" << std::endl;
-
     /// Calculate objectives and store them in Borg decision variables array.
 #ifdef  PARALLEL
         objectives = calculateAndPrintObjectives(false);
@@ -1047,7 +1042,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
 int Triangle::simulationExceptionHander(const std::exception &e, Simulation *s,
                                          double *objs, const double *vars) {
-        int num_dec_var = 57;
+        int num_dec_var = 56;
 //        printf("Exception called during calculations. Decision variables are below:\n");
         ofstream sol;
 	int world_rank;

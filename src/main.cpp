@@ -17,15 +17,15 @@
 
 
 #define NUM_OBJECTIVES 6;
-#define NUM_DEC_VAR 56;
+#define NUM_DEC_VAR 57;
 //#define NUM_DEC_VAR 27; // infrastructure turned off
 
 using namespace std;
 using namespace Constants;
 using namespace Solutions;
 
-PaperTestProblem *problem_ptr;
-//Triangle *problem_ptr;
+//PaperTestProblem *problem_ptr;
+Triangle *problem_ptr;
 int failures = 0;
 ofstream sol_out; // for debugging borg
 
@@ -43,6 +43,7 @@ void eval(double *vars, double *objs, double *consts) {
 //    try {
 //        print_decision_vars(vars);
         failures += problem_ptr->functionEvaluation(vars, objs, consts);
+        //for (int i = 0; i < 57; ++i) printf("%f, ", vars[i]); for (int i = 0; i < 5; ++i) printf("%f, ", objs[i]); printf("\n");
         problem_ptr->destroyDataCollector();
 //    } catch (...) {
 //        sol_out << endl;
@@ -228,8 +229,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    PaperTestProblem problem(n_weeks, import_export_rof_table);
-//    Triangle problem(n_weeks, import_export_rof_table);
+//    PaperTestProblem problem(n_weeks, import_export_rof_table);
+    Triangle problem(n_weeks, import_export_rof_table);
     if (seed > -1) {
         WaterSource::setSeed(seed);
     }
@@ -402,6 +403,7 @@ int main(int argc, char *argv[]) {
         if (seed > -1) {
             srand(seed);
             WaterSource::setSeed(seed);
+	    BORG_Random_seed(seed);
         }
         char outputFilename[256];
         char runtime[256];
@@ -426,7 +428,6 @@ int main(int argc, char *argv[]) {
         //MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         //BORG_Random_seed(37*seed*(rank+1));
         
-        BORG_Random_seed(seed);
         BORG_Archive result = BORG_Algorithm_ms_run(problem); // this actually runs the optimization
         //BORG_Archive result = BORG_Algorithm_run(problem, nfe);
         // If this is the master node, print out the final archive

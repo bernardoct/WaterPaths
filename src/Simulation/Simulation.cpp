@@ -289,7 +289,6 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
     string error_m = "Error in realizations ";
 //    std::reverse(realizations_to_run.begin(), realizations_to_run.end());
 #pragma omp parallel for ordered num_threads(n_threads) shared(had_catch)
-//    for (int r = (int) n_realizations - 1; r >= 0; --r) {
     for (unsigned long r = 0; r < n_realizations; ++r) {
         unsigned long realization = realizations_to_run.at(r);
 

@@ -281,8 +281,19 @@ void Simulation::createContinuityModels(unsigned long realization,
 }
 
 MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
-    if (rof_tables_folder.length() == 0)
+    if (rof_tables_folder.length() == 0) {
         rof_tables_folder = "rof_tables";
+    }
+
+    /// Check if number of imported tables corresponds to model.
+    if (import_export_rof_tables == IMPORT_ROF_TABLES) {
+        if (precomputed_rof_tables->at(0).size() != utilities.size()) {
+            throw invalid_argument("Different number of utilities in model and imported ROF tables.");
+        }
+        if (precomputed_rof_tables->size() != n_realizations) {
+            throw invalid_argument("Different number of realizations in model and imported ROF tables.");
+        }
+    }
 
     /// Run realizations.
     int had_catch = 0;
@@ -360,11 +371,6 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
 //        throw_with_nested(runtime_error(error_m.c_str()));
     }
     return master_data_collector;
-}
-
-void Simulation::setPrecomputed_rof_tables(const vector<vector<Matrix2D<double>>> &precomputed_rof_tables,
-                                           vector<vector<double>> &table_storage_shift) {
-    this->rof_tables_folder = rof_tables_folder;
 }
 
 void Simulation::setRof_tables_folder(const string &rof_tables_folder) {

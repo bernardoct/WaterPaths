@@ -38,6 +38,7 @@ namespace Constants {
     const int ILLIMITED_TREATMENT_CAPACITY = 99999;
     const double STORAGE_CAPACITY_RATIO_FAIL = 0.2;
     const int NOT_ALLOCATED = 1;
+    const int MAX_NUMBER_OF_UTILITIES = 50;
 
     const bool APPLY_DEMAND_BUFFER = true;
 

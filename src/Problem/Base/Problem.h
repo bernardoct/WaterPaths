@@ -33,9 +33,11 @@ protected:
     unsigned long  n_weeks;
     unsigned long  solution_no;
     unsigned long n_threads;
+    int n_utilities = NON_INITIALIZED;
     string output_directory;
     string fname_sufix;
     string evap_inflows_suffix;
+    string rof_tables_directory;
 
     vector<unsigned long > realizations_to_run;
     MasterDataCollector* master_data_collector = nullptr;
@@ -43,9 +45,12 @@ protected:
     bool print_output_files = true;
 
     unsigned long  rdm_no;
+    int import_export_rof_tables;
+    double table_gen_storage_multiplier;
     vector<vector<double>> utilities_rdm;
     vector<vector<double>> water_sources_rdm;
     vector<vector<double>> policies_rdm;
+    vector<vector<Matrix2D<double>>> rof_tables;
 
     double checkAndFixInfraExpansionHighLowOrder(vector<int> *order, vector<double> *trigger, int id_low, int id_high, double capacity_low,
                                                  double capacity_high);
@@ -94,6 +99,11 @@ public:
     void printTimeSeriesAndPathways();
 
     void performBootstrapAnalysis(int n_sets, int n_samples);
+
+    void setRofTables(unsigned long n_realizations, string rof_tables_directory);
+
+    void setImport_export_rof_tables(int import_export_rof_tables, int n_weeks, string rof_tables_directory);
+
 };
 
 

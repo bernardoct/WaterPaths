@@ -177,3 +177,108 @@ void Problem::destroyDataCollector() {
 Problem::Problem(unsigned long n_weeks) : n_weeks(n_weeks) {
     Reservoir::unsetSeed();
 }
+
+/**
+ * Read pre-computed ROF tables.
+ * @param folder Folder containing the ROF tables.
+ * @param n_realizations number of realizations.
+ */
+void
+Problem::setRofTables(unsigned long n_realizations, string rof_tables_directory) {
+
+    //double start_time = omp_get_wtime();
+    cout << "Loading ROF tables" << endl;
+    int n_tiers = NO_OF_INSURANCE_STORAGE_TIERS + 1;
+
+    /// Get number of weeks in tables
+    string file_name = rof_tables_directory + "tables_r0_u0";
+    ifstream in(file_name, ios_base::binary);
+    if (!in.good()) {
+        string error_table_file = "Tables file not found: " + file_name;
+        throw invalid_argument(error_table_file.c_str());
+    }
+
+    //FIXME: FIGURE OUT NUMBER OF UTILITIES BY CHECKING IF TABLES_R0_U0, TABLES_R0_U1, AND SO ON EXIST.
+    char table_file_name[24];
+    for (n_utilities = 0; n_utilities < MAX_NUMBER_OF_UTILITIES; ++n_utilities) {
+        sprintf(table_file_name, "%stables_r0_u%d", rof_tables_directory.c_str(), n_utilities);
+        ifstream f(table_file_name);
+        if (!f.good()) {
+            break;
+        }
+    }
+
+    unsigned n_weeks_in_table;
+    in.read(reinterpret_cast<char *>(&n_weeks_in_table), sizeof(unsigned));
+
+    /// Create empty tables
+    rof_tables = vector<vector<Matrix2D<double>>>(
+            n_realizations,
+            vector<Matrix2D<double>>((unsigned long) n_utilities,
+                                     Matrix2D<double>(n_weeks_in_table / n_tiers, n_tiers)));
+
+    this->rof_tables_directory = rof_tables_directory;
+
+    /// Load ROF tables
+    for (unsigned long r = 0; r < n_realizations; ++r) {
+        for (int u = 0; u < n_utilities; ++u) {
+            string file_name = rof_tables_directory + "tables_r" + to_string(r) + "_u" + to_string(u);
+            ifstream in(file_name, ios_base::binary);
+            if (!in.good()) {
+                string error_table_file = "Tables file not found: " + file_name;
+                throw invalid_argument(error_table_file.c_str());
+            }
+
+            /// Get table file size from table files.
+            unsigned stringsize;
+            in.read(reinterpret_cast<char *>(&stringsize), sizeof(unsigned));
+
+            /// Get table information from table files.
+            double data[stringsize];
+            in.read(reinterpret_cast<char *>(&data),
+                    stringsize * sizeof(double));
+
+            /// Create tables based on table files.
+            rof_tables[r][u].setData(data, (int) stringsize);
+
+            for (unsigned long i = 0; i < stringsize; ++i) {
+                double d = data[i];
+                if (std::isnan(d) || d > 1.01 || d < 0) {
+                    string error_m = "nan or out of [0,1] rof imported "
+                                     "tables. Realization " +
+                                     to_string(r) + "\n";
+                    printf("%s", error_m.c_str());
+                    throw logic_error(error_m.c_str());
+                }
+            }
+
+            in.close();
+        }
+    }
+
+    //printf("Loading tables took %f time.\n", omp_get_wtime() - start_time);
+}
+
+
+void Problem::setImport_export_rof_tables(int import_export_rof_tables, int n_weeks, string rof_tables_directory) {
+    if (std::abs(import_export_rof_tables) > 1)
+        throw invalid_argument("Import/export ROF tables can be assigned as:\n"
+                               "-1 - import tables\n"
+                               "0 - ignore tables\n"
+                               "1 - export tables.\n"
+                               "The value entered is invalid.");
+    this->import_export_rof_tables = import_export_rof_tables;
+    this->rof_tables_directory = rof_tables_directory;
+
+    if (import_export_rof_tables == IMPORT_ROF_TABLES) {
+        Problem::setRofTables(n_realizations, rof_tables_directory);
+    } else {
+        string create_dir_command;
+#ifdef _WIN32
+        create_dir_command = "if not exist \"" + rof_tables_directory + "\" mkdir ";
+#else
+        create_dir_command = "mkdir -p";
+#endif
+        auto output = system((create_dir_command + " " + rof_tables_directory).c_str());
+    }
+}

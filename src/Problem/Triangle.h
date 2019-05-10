@@ -15,11 +15,7 @@ using namespace std;
 
 class Triangle : public Problem {
 private:
-    vector<vector<Matrix2D<double>>> rof_tables;
-    int import_export_rof_tables;
     const int n_utilities = 4;
-    double table_gen_storage_multiplier;
-    string rof_tables_directory;
 
     vector<vector<double>> streamflows_durham;
     vector<vector<double>> streamflows_flat;
@@ -67,10 +63,6 @@ public:
 
     int simulationExceptionHander(const std::exception &e, Simulation *s,
                                   double *objs, const double *vars);
-
-    void setRofTables(unsigned long n_realizations, int n_utilities, string rof_tables_directory);
-
-    void setImport_export_rof_tables(int import_export_rof_tables, int n_weeks, string rof_tables_directory);
 
     void readInputData();
 

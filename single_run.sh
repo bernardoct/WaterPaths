@@ -9,7 +9,7 @@
 cd $PBS_O_WORKDIR
 module load openmpi-1.10.7-gnu-x86_64
 export OMP_NUM_THREADS=16
-N_REALIZATIONS=500
+N_REALIZATIONS=1000
 SOLUTION=270
 DATA_DIR="/scratch/bct52/"
 ./triangleSimulation -T ${OMP_NUM_THREADS}\
@@ -21,8 +21,7 @@ DATA_DIR="/scratch/bct52/"
        	-U TestFiles/rdm_utilities_reeval.csv\
        	-P TestFiles/rdm_dmp_reeval.csv\
        	-W TestFiles/rdm_water_sources_reeval.csv\
-       	-s solutions_not_crashed.csv_repeated\
+       	-s sample_solutions.csv\
        	-e 0\
-        -f 0\
-	-l 20\
+        -m 0\
 	-p false

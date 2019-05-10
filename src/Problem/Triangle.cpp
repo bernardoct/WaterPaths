@@ -1007,15 +1007,19 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
             this->master_data_collector = s->runFullSimulation(n_threads);
         }
         double end_time = omp_get_wtime();
-	printf("Function evaluation time: %f s\n", end_time - start_time);
+//	printf("Function evaluation time: %f s\n", end_time - start_time);
+
+        //double realization_end = omp_get_wtime();
+        //std::cout << "Simulation took  " << realization_end - realization_start
+        //      << "s" << std::endl;
 
     /// Calculate objectives and store them in Borg decision variables array.
 #ifdef  PARALLEL
         objectives = calculateAndPrintObjectives(false);
 
         int i = 0;
-        objs[i] = 1. - min(min(objectives[i], objectives[5 + i]),
-        		   min(objectives[10 + i], objectives[15 + i]));
+        objs[i] = min(min(objectives[i], objectives[5 + i]),
+        		   min(objectives[10 + i], objectives[15 + i])) - 1.;
         for (i = 1; i < 5; ++i) {
             objs[i] = max(max(objectives[i], objectives[5 + i]),
       	                  max(objectives[10 + i], objectives[15 + i]));
@@ -1096,76 +1100,6 @@ Triangle::Triangle(unsigned long n_weeks, int import_export_rof_table)
     }
 }
 
-/**
- * Read pre-computed ROF tables.
- * @param folder Folder containing the ROF tables.
- * @param n_realizations number of realizations.
- */
-void
-Triangle::setRofTables(unsigned long n_realizations, int n_utilities, string rof_tables_directory) {
-
-    //double start_time = omp_get_wtime();
-    cout << "Loading ROF tables" << endl;
-    int n_tiers = NO_OF_INSURANCE_STORAGE_TIERS + 1;
-
-    /// Get number of weeks in tables
-    string file_name = rof_tables_directory + "tables_r" + to_string(0) + "_u" + to_string(0);
-    ifstream in(file_name, ios_base::binary);
-    if (!in.good()) {
-        string error_table_file = "Tables file not found: " + file_name;
-        throw invalid_argument(error_table_file.c_str());
-    }
-
-    unsigned n_weeks_in_table;
-    in.read(reinterpret_cast<char *>(&n_weeks_in_table), sizeof(unsigned));
-
-    /// Create empty tables
-    rof_tables = vector<vector<Matrix2D<double>>>(
-            n_realizations,
-            vector<Matrix2D<double>>((unsigned long) n_utilities,
-                                     Matrix2D<double>(n_weeks_in_table / n_tiers, n_tiers)));
-
-    this->rof_tables_directory = rof_tables_directory;
-
-    /// Load ROF tables
-    for (unsigned long r = 0; r < n_realizations; ++r) {
-        for (int u = 0; u < n_utilities; ++u) {
-            string file_name = rof_tables_directory + "tables_r" + to_string(r) + "_u" + to_string(u);
-            ifstream in(file_name, ios_base::binary);
-            if (!in.good()) {
-                string error_table_file = "Tables file not found: " + file_name;
-                throw invalid_argument(error_table_file.c_str());
-            }
-
-            /// Get table file size from table files.
-            unsigned stringsize;
-            in.read(reinterpret_cast<char *>(&stringsize), sizeof(unsigned));
-
-            /// Get table information from table files.
-            double data[stringsize];
-            in.read(reinterpret_cast<char *>(&data),
-                    stringsize * sizeof(double));
-
-            /// Create tables based on table files.
-            rof_tables[r][u].setData(data, (int) stringsize);
-
-            for (unsigned long i = 0; i < stringsize; ++i) {
-                double d = data[i];
-                if (std::isnan(d) || d > 1.01 || d < 0) {
-                    string error_m = "nan or out of [0,1] rof imported "
-                                             "tables. Realization " +
-                                     to_string(r) + "\n";
-                    printf("%s", error_m.c_str());
-                    throw logic_error(error_m.c_str());
-                }
-            }
-
-            in.close();
-        }
-    }
-
-    //printf("Loading tables took %f time.\n", omp_get_wtime() - start_time);
-}
 
 void Triangle::readInputData() {
     cout << "Reading input data." << endl;
@@ -1294,27 +1228,4 @@ void Triangle::readInputData() {
 //    cout << "Done reading input data." << endl;
     }
 
-}
-
-void Triangle::setImport_export_rof_tables(int import_export_rof_tables, int n_weeks, string rof_tables_directory) {
-    if (std::abs(import_export_rof_tables) > 1)
-        throw invalid_argument("Import/export ROF tables can be assigned as:\n"
-                                         "-1 - import tables\n"
-                                         "0 - ignore tables\n"
-                                         "1 - export tables.\n"
-                                         "The value entered is invalid.");
-    Triangle::import_export_rof_tables = import_export_rof_tables;
-    this->rof_tables_directory = rof_tables_directory;
-
-    if (import_export_rof_tables == IMPORT_ROF_TABLES) {
-        Triangle::setRofTables(n_realizations, n_utilities, this->rof_tables_directory);
-    } else {
-        string create_dir_command;
-#ifdef _WIN32
-        create_dir_command = "if not exist \"" + rof_tables_directory + "\" mkdir ";
-#else
-        create_dir_command = "mkdir -p";
-#endif
-        auto output = system((create_dir_command + " " + rof_tables_directory).c_str());
-    }
 }

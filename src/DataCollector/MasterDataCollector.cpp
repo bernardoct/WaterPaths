@@ -68,7 +68,7 @@ int MasterDataCollector::printNETCDFUtilities(string base_file_name) {
     unsigned long n_vars = 6;
 
     try {
-	string file_name = output_directory + base_file_name + ".nc";
+	string file_name = io_directory + base_file_name + ".nc";
 	printf("Printing NetCDF output in %s.\n", file_name.c_str());
 	int ncid, dimid, csid, strofid, retval;
 	vector<int> group_ids(n_realizations);
@@ -584,19 +584,12 @@ void MasterDataCollector::printPathways(string file_name) {
     outStream.close();
 }
 
-void MasterDataCollector::setOutputDirectory(string directory) {
-    // Check if directory is not being set for the same directory it is already set. Avoids unnecessary verbose.
-    if (directory != output_directory) {
-        output_directory = directory;
-
-        struct stat sb;
-        // Check if directory exists and print either location or that directory does not exist.
-        if (stat(output_directory.c_str(), &sb) == 0)
-            cout << "Output will be printed to folder " << output_directory << DEFAULT_OUTPUT_DIR << endl;
-        else {
-            cout << output_directory << endl;
-            throw invalid_argument("Output folder does not exist.");
-        }
+void MasterDataCollector::setOutputDirectory(string io_directory) {
+    // Check if io_directory is not being set for the same io_directory it is already set. Avoids unnecessary verbose.
+    if (io_directory != output_directory) {
+        output_directory = io_directory + DEFAULT_OUTPUT_DIR;
+        Utils::createDir(output_directory);
+        cout << "Output will be printed to folder " << output_directory << endl;
     }
 }
 

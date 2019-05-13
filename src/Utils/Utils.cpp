@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <climits>
 #include <unistd.h>
+#include <sys/stat.h>
 
 /**
  * Reads csv file into table, exported as a vector of vector of doubles.
@@ -279,4 +280,18 @@ void Utils::print_exception(const std::exception& e, int level) {
     } catch(const std::exception& e) {
         print_exception(e, level+1);
     } catch(...) {}
+}
+
+void Utils::createDir(string directory) {
+    string create_dir_command;
+#ifdef _WIN32
+    create_dir_command = "if not exist \"" + directory + "\" mkdir ";
+#else
+    create_dir_command = "mkdir -p";
+#endif
+    struct stat sb;
+        // Check if io_directory exists and print either location or that io_directory does not exist.
+    if (stat(directory.c_str(), &sb) != 0) {
+        auto output = system((create_dir_command + " " + directory).c_str());
+    }
 }

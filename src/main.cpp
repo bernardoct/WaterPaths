@@ -3,6 +3,7 @@
 #include "Utils/Solutions.h"
 #include "Problem/PaperTestProblem.h"
 #include "Problem/Triangle.h"
+#include "Utils/Utils.h"
 
 #ifdef  PARALLEL
 #include "../Borg/borgms.h"
@@ -238,10 +239,10 @@ int main(int argc, char *argv[]) {
     /// Set basic realization parameters.
     problem.setN_weeks(n_weeks);
 //    printf("%s\n", system_io.c_str());
-    problem.setOutput_directory(system_io);
+    problem.setIODirectory(system_io);
     problem.setN_threads((unsigned long) n_threads);
     problem.setN_realizations(n_realizations);
-    problem.setImport_export_rof_tables(import_export_rof_table, (int) n_weeks, rof_tables_directory);
+    problem.setImport_export_rof_tables(import_export_rof_table, (int) n_weeks, system_io + rof_tables_directory);
     problem.readInputData();
 
     /// Load bootstrap samples if necessary.
@@ -266,9 +267,9 @@ int main(int argc, char *argv[]) {
     if (strlen(inflows_evap_directory_suffix.c_str()) > 2) {
         problem.setEvap_inflows_suffix(inflows_evap_directory_suffix);
     }
-    cout << "reading RDM file" << endl;
     /// Read RDM file, if any
     if (strlen(utilities_rdm_file.c_str()) > 2) {
+        cout << "reading RDM file" << endl;
         if (rdm_no != NON_INITIALIZED) {
             auto utilities_rdm_row = Utils::parse2DCsvFile(system_io + utilities_rdm_file)[rdm_no];
             auto policies_rdm_row = Utils::parse2DCsvFile(system_io + policies_rdm_file)[rdm_no];
@@ -405,23 +406,16 @@ int main(int argc, char *argv[]) {
             WaterSource::setSeed(seed);
 	    BORG_Random_seed(seed);
         }
-        char outputFileName[256];
-	char output_directory[256];
+        char output_directory[256], output_file_name[256];
+	char io_directory[256];
         char runtime[256];
         FILE* outputFile = nullptr;
 
-	sprintf(outputFileName, "%s%s%s%s", system_io.c_str(), BAR.c_str(), DEFAULT_OUTPUT_DIR.c_str(), BAR.c_str());
-        string create_dir_command;
-#ifdef _WIN32
-        create_dir_command = "if not exist \"" + outputFileName + "\" mkdir ";
-#else
-        create_dir_command = "mkdir -p";
-#endif
-        auto output = system((create_dir_command + " " + outputFileName).c_str());
+	sprintf(output_directory, "%s%s%s%s", system_io.c_str(), BAR.c_str(), DEFAULT_OUTPUT_DIR.c_str(), BAR.c_str());
+	//Utils::createDir(string(output_directory));
 
-        sprintf(outputFileName, "%s%s%s%sNC_output_MM_S%d_N%lu.set", system_io.c_str(), BAR.c_str(), DEFAULT_OUTPUT_DIR.c_str(), BAR.c_str(),
-                seed, nfe);
-        printf("Reference set will be in %s.\n", outputFileName);
+        sprintf(output_file_name, "%sNC_output_MM_S%d_N%lu.set", output_directory, seed, nfe);
+        printf("Reference set will be in %s.\n", output_file_name);
         // output path (make sure this exists)
         sprintf(runtime, "%s%s%s%sNC_runtime_MM_S%d_N%lu.runtime", system_io.c_str(), BAR.c_str(), DEFAULT_OUTPUT_DIR.c_str(), BAR.c_str(),
                 seed, nfe); // runtime
@@ -444,7 +438,7 @@ int main(int argc, char *argv[]) {
         // If this is the master node, print out the final archive
 
         if (result != nullptr) {
-            outputFile = fopen(outputFileName, "w");
+            outputFile = fopen(output_file_name, "w");
             cout << "master node print, should see only once" << endl;
             if (!outputFile) {
                 BORG_Debug("Unable to open final output file\n");

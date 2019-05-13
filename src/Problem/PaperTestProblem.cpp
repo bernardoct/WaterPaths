@@ -141,46 +141,46 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     //double new_river_rank_fallsland = .1;
 
     vector<infraRank> dryville_infra_order_raw = {
-        infraRank(3, sugar_creek_rank),
-        infraRank(5, granite_quarry_rank)
+            infraRank(3, sugar_creek_rank),
+            infraRank(5, granite_quarry_rank)
     };
 
     vector<infraRank> fallsland_infra_order_raw = {
-        infraRank(4, new_river_rank_fallsland)
+            infraRank(4, new_river_rank_fallsland)
     };
 
     vector<infraRank> watertown_infra_order_raw = {
-        infraRank(4, new_river_rank_watertown),
-        infraRank(7, college_rock_expansion_low_rank),
-        infraRank(8, college_rock_expansion_high_rank),
-        infraRank(9, watertown_reuse_rank)
+            infraRank(4, new_river_rank_watertown),
+            infraRank(7, college_rock_expansion_low_rank),
+            infraRank(8, college_rock_expansion_high_rank),
+            infraRank(9, watertown_reuse_rank)
     };
 
     sort(dryville_infra_order_raw.begin(),
-        dryville_infra_order_raw.end(),
-        by_xreal());
+         dryville_infra_order_raw.end(),
+         by_xreal());
     // commenting out because vector only has length 1
     //sort(fallsland_infra_order_raw.begin(),
     //    fallsland_infra_order_raw.end(),
     //    by_xreal());
     sort(watertown_infra_order_raw.begin(),
-        watertown_infra_order_raw.end(),
-        by_xreal());
+         watertown_infra_order_raw.end(),
+         by_xreal());
 
     vector<int> rof_triggered_infra_order_dryville =
-        vecInfraRankToVecInt(dryville_infra_order_raw);
+            vecInfraRankToVecInt(dryville_infra_order_raw);
     vector<double> rofs_infra_dryville = vector<double>
-        (rof_triggered_infra_order_dryville.size(), dryville_inftrigger);
+            (rof_triggered_infra_order_dryville.size(), dryville_inftrigger);
 
     vector<int> rof_triggered_infra_order_fallsland =
-        vecInfraRankToVecInt(fallsland_infra_order_raw);
+            vecInfraRankToVecInt(fallsland_infra_order_raw);
     vector<double> rofs_infra_fallsland = vector<double>
-        (rof_triggered_infra_order_fallsland.size(), fallsland_inftrigger);
+            (rof_triggered_infra_order_fallsland.size(), fallsland_inftrigger);
 
     vector<int> rof_triggered_infra_order_watertown =
-        vecInfraRankToVecInt(watertown_infra_order_raw);
+            vecInfraRankToVecInt(watertown_infra_order_raw);
     vector<double> rofs_infra_watertown = vector<double>
-        (rof_triggered_infra_order_watertown.size(), watertown_inftrigger);
+            (rof_triggered_infra_order_watertown.size(), watertown_inftrigger);
 
 
     /// Remove small expansions being built after big expansions that would
@@ -202,8 +202,8 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     // Normalize lake michael allocations in case they exceed 1
     double sum_lma_allocations = dryville_LMA + fallsland_LMA + watertown_LMA;
     if (sum_lma_allocations == 0.)
-            __throw_invalid_argument("LMA allocations cannot be all "
-                                             "zero.");
+        __throw_invalid_argument("LMA allocations cannot be all "
+                                 "zero.");
     if (sum_lma_allocations > 1){
         dryville_LMA /= sum_lma_allocations;
         fallsland_LMA /= sum_lma_allocations;
@@ -312,7 +312,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     vector<double> granite_quarry_storage = {0, 200};
     vector<double> granite_quarry_area = {0, 0.3675 * 200};
     DataSeries granite_quarry_storage_area(&granite_quarry_storage,
-                                        &granite_quarry_area);
+                                           &granite_quarry_area);
 
     // Create minimum environmental flow rules (controls)
     // Autumn is combining Falls+Durham+WB
@@ -324,8 +324,8 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
     // Lake Michael is based off the Jordan Lake and uses its class
     JordanLakeMinEnvFlowControl lake_michael_min_env_control( 1,
-            cape_fear_river_at_lillington, 64.63, 129.26, 25.85, 193.89,
-            290.84, 387.79, 30825.0 * table_gen_storage_multiplier, 10300.0 * table_gen_storage_multiplier);
+                                                              cape_fear_river_at_lillington, 64.63, 129.26, 25.85, 193.89,
+                                                              290.84, 387.79, 30825.0 * table_gen_storage_multiplier, 10300.0 * table_gen_storage_multiplier);
 
     //FIXME SUGAR CREEK BASED ON CCR, SO LEAVING AS IS, IS THIS A GOOD IDEA?
     vector<double> sugar_creek_inflows = {0.1422 * 7, 0.5 * 7, 1 * 7, 1.5 * 7,
@@ -415,8 +415,8 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     // Create potential sources
 
     vector<double> city_infrastructure_rof_triggers = {watertown_inftrigger,
-                                                        dryville_inftrigger,
-                                                        fallsland_inftrigger};
+                                                       dryville_inftrigger,
+                                                       fallsland_inftrigger};
 
     //FIXME ORIGINAL CODE SETS WEEKS_IN_YEAR TO 0 HERE
     vector<double> construction_time_interval = {3.0, 5.0};
@@ -435,28 +435,34 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
     BalloonPaymentBond granite_bond(5, 22.6, 25, 0.05, vector<int>(1, 0), 3);
     Reservoir granite_quarry("Granite Quarry",
-                               5,
-                               catchment_granite_quarry,
-                               200,
-                               ILLIMITED_TREATMENT_CAPACITY,
-                               evaporation_owasa,
-                               &granite_quarry_storage_area,
-                               construction_time_interval,
-                               17 * WEEKS_IN_YEAR,
-                               granite_bond);
+                             5,
+                             catchment_granite_quarry,
+                             200,
+                             ILLIMITED_TREATMENT_CAPACITY,
+                             evaporation_owasa,
+                             &granite_quarry_storage_area,
+                             construction_time_interval,
+                             17 * WEEKS_IN_YEAR,
+                             granite_bond);
 
     //FIXME check bond, this one is from little river raliegh
+    vector<int> nrr_allocations_ids = {1, 2, WATER_QUALITY_ALLOCATION};
+    vector<double> nrr_allocation_fractions = {0.5, 0.2, 0.3};
+    vector<double> nrr_treatment_allocation_fractions = {0.5, 0.5};
     LevelDebtServiceBond new_river_bond(4, 263.0, 25, 0.05, vector<int>(1, 0));
-    Reservoir new_river_reservoir("New River Reservoir",
-                                  4,
-                                  catchment_new_river,
-                                  3700.0,
-                                  ILLIMITED_TREATMENT_CAPACITY,
-                                  evaporation_falls_lake,
-                                  &new_river_storage_area,
-                                  construction_time_interval,
-                                  17 * WEEKS_IN_YEAR,
-                                  new_river_bond);
+    AllocatedReservoir new_river_reservoir("New River Reservoir",
+                                           4,
+                                           catchment_new_river,
+                                           3700.0,
+                                           ILLIMITED_TREATMENT_CAPACITY,
+                                           evaporation_falls_lake,
+                                           &new_river_storage_area,
+                                           construction_time_interval,
+                                           17 * WEEKS_IN_YEAR,
+                                           new_river_bond,
+                                           &nrr_allocations_ids,
+                                           &nrr_allocation_fractions,
+                                           &nrr_treatment_allocation_fractions);
 
     LevelDebtServiceBond dummy_bond(5, 1., 1, 1., vector<int>(1, 0));
     Reservoir dummy_endpoint("Dummy Node", 6, vector<Catchment *>(), 1., 0, evaporation_durham, 1,
@@ -578,8 +584,8 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     };
 
     auto table_storage_shift = vector<vector<double>>(3, vector<double>(water_sources.size() + 1, 0.));
-   table_storage_shift[2][4] = 13500;
-   table_storage_shift[1][3] = 100;
+    table_storage_shift[2][4] = 1500;
+    table_storage_shift[1][3] = 100;
 
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
     vector<double> initial_restriction_triggers = {watertown_restriction_trigger,
@@ -759,6 +765,7 @@ PaperTestProblem::PaperTestProblem(unsigned long n_weeks, int import_export_rof_
 
 PaperTestProblem::~PaperTestProblem() = default;
 
+
 void PaperTestProblem::readInputData() {
     cout << "Reading input data." << endl;
     string data_dir = DEFAULT_DATA_DIR + BAR;
@@ -767,62 +774,62 @@ void PaperTestProblem::readInputData() {
     {
 #pragma omp single
         streamflows_durham = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "durham_inflows.csv", n_realizations);
 #pragma omp single
         streamflows_flat = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "falls_lake_inflows.csv", n_realizations);
 #pragma omp single
         streamflows_swift = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "lake_wb_inflows.csv", n_realizations);
 #pragma omp single
         streamflows_llr = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "little_river_raleigh_inflows.csv", n_realizations);
 #pragma omp single
         streamflows_phils = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "stone_quarry_inflows.csv", n_realizations);
 #pragma omp single
         streamflows_cane = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "cane_creek_inflows.csv", n_realizations);
 #pragma omp single
         streamflows_morgan = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "university_lake_inflows.csv", n_realizations);
 #pragma omp single
         streamflows_haw = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "jordan_lake_inflows.csv", n_realizations);
 #pragma omp single
         streamflows_lillington = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "lillington_inflows.csv", n_realizations);
 // };
         //cout << "Reading evaporations." << endl;
 #pragma omp single
         evap_durham = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
                 BAR + "durham_evap.csv", n_realizations);
 #pragma omp single
         evap_falls_lake = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
                 BAR + "falls_lake_evap.csv", n_realizations);
 #pragma omp single
         evap_owasa = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
                 BAR + "owasa_evap.csv", n_realizations);
 #pragma omp single
         evap_little_river = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
                 BAR + "little_river_raleigh_evap.csv", n_realizations);
 #pragma omp single
         {
             evap_wheeler_benson = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
+                    io_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
                     BAR + "wb_evap.csv", n_realizations);
             evap_jordan_lake = evap_owasa;
         }
@@ -830,129 +837,42 @@ void PaperTestProblem::readInputData() {
         //cout << "Reading demands." << endl;
 #pragma omp single
         demand_watertown = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
                 BAR + "cary_demand.csv", n_realizations);
 #pragma omp single
         demand_dryville = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
                 BAR + "durham_demand.csv", n_realizations);
 #pragma omp single
         demand_fallsland = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
                 BAR + "raleigh_demand.csv", n_realizations);
 
         //cout << "Reading others." << endl;
 #pragma omp single
         {
             demand_to_wastewater_fraction_fallsland = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "demand_to_wastewater_fraction_owasa_raleigh.csv");
+                    io_directory + DEFAULT_DATA_DIR + "demand_to_wastewater_fraction_owasa_raleigh.csv");
             demand_to_wastewater_fraction_dryville = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "demand_to_wastewater_fraction_owasa_raleigh.csv");
+                    io_directory + DEFAULT_DATA_DIR + "demand_to_wastewater_fraction_owasa_raleigh.csv");
 
             watertownDemandClassesFractions = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "caryDemandClassesFractions.csv");
+                    io_directory + DEFAULT_DATA_DIR + "caryDemandClassesFractions.csv");
             dryvilleDemandClassesFractions = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "durhamDemandClassesFractions.csv");
+                    io_directory + DEFAULT_DATA_DIR + "durhamDemandClassesFractions.csv");
             fallslandDemandClassesFractions = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "raleighDemandClassesFractions.csv");
+                    io_directory + DEFAULT_DATA_DIR + "raleighDemandClassesFractions.csv");
 
             watertownUserClassesWaterPrices = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "caryUserClassesWaterPrices.csv");
+                    io_directory + DEFAULT_DATA_DIR + "caryUserClassesWaterPrices.csv");
             dryvilleUserClassesWaterPrices = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "durhamUserClassesWaterPrices.csv");
+                    io_directory + DEFAULT_DATA_DIR + "durhamUserClassesWaterPrices.csv");
             fallslandUserClassesWaterPrices = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "raleighUserClassesWaterPrices.csv");
+                    io_directory + DEFAULT_DATA_DIR + "raleighUserClassesWaterPrices.csv");
         }
 //    cout << "Done reading input data." << endl;
     }
 
-}
-
-void PaperTestProblem::setRofTables(unsigned long n_realizations, int n_utilities, string rof_tables_directory) {
-
-    //double start_time = omp_get_wtime();
-    cout << "Loading ROF tables" << endl;
-    int n_tiers = NO_OF_INSURANCE_STORAGE_TIERS + 1;
-
-    /// Get number of weeks in tables
-    string file_name = rof_tables_directory + "tables_r" + to_string(0) + "_u" + to_string(0);
-    ifstream in(file_name, ios_base::binary);
-    if (!in.good()) {
-        string error_table_file = "Tables file not found: " + file_name;
-        throw invalid_argument(error_table_file.c_str());
-    }
-
-    unsigned n_weeks_in_table;
-    in.read(reinterpret_cast<char *>(&n_weeks_in_table), sizeof(unsigned));
-
-    /// Create empty tables
-    rof_tables = vector<vector<Matrix2D<double>>>(
-            n_realizations,
-            vector<Matrix2D<double>>((unsigned long) n_utilities,
-                                     Matrix2D<double>(n_weeks_in_table / n_tiers, n_tiers)));
-
-    this->rof_tables_directory = rof_tables_directory;
-
-    /// Load ROF tables
-    for (unsigned long r = 0; r < n_realizations; ++r) {
-        for (int u = 0; u < n_utilities; ++u) {
-            string file_name = rof_tables_directory + "tables_r" + to_string(r) + "_u" + to_string(u);
-            ifstream in(file_name, ios_base::binary);
-            if (!in.good()) {
-                string error_table_file = "Tables file not found: " + file_name;
-                throw invalid_argument(error_table_file.c_str());
-            }
-
-            /// Get table file size from table files.
-            unsigned stringsize;
-            in.read(reinterpret_cast<char *>(&stringsize), sizeof(unsigned));
-
-            /// Get table information from table files.
-            double data[stringsize];
-            in.read(reinterpret_cast<char *>(&data),
-                    stringsize * sizeof(double));
-
-            /// Create tables based on table files.
-            rof_tables[r][u].setData(data, (int) stringsize);
-
-            for (unsigned long i = 0; i < stringsize; ++i) {
-                double d = data[i];
-                if (std::isnan(d) || d > 1.01 || d < 0) {
-                    string error_m = "nan or out of [0,1] rof imported "
-                                             "tables. Realization " +
-                                     to_string(r) + "\n";
-                    printf("%s", error_m.c_str());
-                    throw logic_error(error_m.c_str());
-                }
-            }
-
-            in.close();
-        }
-    }
-    //printf("Loading tables took %f time.\n", omp_get_wtime() - start_time);
-}
-
-void PaperTestProblem::setImport_export_rof_tables(int import_export_rof_tables, int n_weeks, string rof_tables_directory) {
-    if (std::abs(import_export_rof_tables) > 1)
-        throw invalid_argument("Import/export ROF tables can be assigned as:\n"
-                                         "-1 - import tables\n"
-                                         "0 - ignore tables\n"
-                                         "1 - export tables.\n"
-                                         "The value entered is invalid.");
-    PaperTestProblem::import_export_rof_tables = import_export_rof_tables;
-    this->rof_tables_directory = rof_tables_directory;
-
-    if (import_export_rof_tables == IMPORT_ROF_TABLES) {
-        PaperTestProblem::setRofTables(n_realizations, n_utilities, this->rof_tables_directory);
-    } else {
-        string create_dir_command;
-#ifdef _WIN32
-        create_dir_command = "if not exist \"" + rof_tables_directory + "\" mkdir ";
-#else
-        create_dir_command = "mkdir -p";
-#endif
-        auto output = system((create_dir_command + " " + rof_tables_directory).c_str());
-    }
 }
 
 

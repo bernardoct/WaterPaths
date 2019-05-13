@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -N single_run_wcu
 #PBS -l nodes=1:ppn=16
-#PBS -l walltime=0:30:00
+#PBS -l walltime=2:00:00
 #PBS -o ./output/single_run.out
 #PBS -e ./error/single_run.err
 # #PBS -m bea
@@ -16,12 +16,8 @@ DATA_DIR="/scratch/bct52/"
        	-t 2344\
        	-r ${N_REALIZATIONS}\
        	-d ${DATA_DIR}\
-       	-C -1\
-       	-O ${DATA_DIR}rof_tables_cac/\
-       	-U TestFiles/rdm_utilities_reeval.csv\
-       	-P TestFiles/rdm_dmp_reeval.csv\
-       	-W TestFiles/rdm_water_sources_reeval.csv\
-       	-s sample_solutions.csv\
+       	-C 1\
+       	-O ${DATA_DIR}rof_tables_test_problem/\
+       	-s test_DVs_table_shifts.csv\
        	-e 0\
-        -m 0\
-	-p false
+        -m 0

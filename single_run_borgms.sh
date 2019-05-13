@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -N borgms_run
 #PBS -l nodes=1:ppn=16
-#PBS -l walltime=5:00:00
+#PBS -l walltime=1:00:00
 #PBS -o ./output/borgms_run.out
 #PBS -e ./error/borgms_run.err
 # #PBS -m bea
@@ -19,4 +19,4 @@ uniq "$PBS_NODEFILE"|awk -v TASKS_PER_NODE="$TASKS_PER_NODE" '{for(i=0;i<TASKS_P
 
 cat nodefile
 
-time mpiexec --hostfile nodefile -np 3 -x OMP_NUM_THREADS ./triangleSimulation -T 5 -t 2344 -r ${N_REALIZATIONS} -d ${DATA_DIR} -C -1 -O ${DATA_DIR}rof_tables_cac/ -U TestFiles/rdm_utilities_reeval.csv -P TestFiles/rdm_dmp_reeval.csv -W TestFiles/rdm_water_sources_reeval.csv -b true -n 202 -o 100 -e 1
+time mpiexec --hostfile nodefile -np 3 -x OMP_NUM_THREADS ./triangleSimulation -T 5 -t 2344 -r ${N_REALIZATIONS} -d ${DATA_DIR} -C -1 -O rof_tables_cac/ -U TestFiles/rdm_utilities_reeval.csv -P TestFiles/rdm_dmp_reeval.csv -W TestFiles/rdm_water_sources_reeval.csv -b true -n 202 -o 100 -e 1

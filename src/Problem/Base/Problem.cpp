@@ -6,13 +6,14 @@
 #include <numeric>
 #include <random>
 #include "Problem.h"
+#include "../../Utils/Utils.h"
 
 vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
     if (this->master_data_collector != nullptr) {
         if (print_files) {
-            this->master_data_collector->setOutputDirectory(output_directory);
+            this->master_data_collector->setOutputDirectory(io_directory);
         }
-        string fo = BAR + DEFAULT_OUTPUT_DIR + BAR + "Objectives";
+        string fo = "Objectives";
         objectives = this->master_data_collector->calculatePrintObjectives(
                 fo + "_s" + std::to_string(solution_no) + fname_sufix, print_files);
         return objectives;
@@ -25,17 +26,17 @@ vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
 void Problem::printTimeSeriesAndPathways() {
     /// Calculate objective values.
     if (this->master_data_collector != nullptr) {
-//        this->master_data_collector->setOutputDirectory(output_directory);
+//        this->master_data_collector->setOutputDirectory(io_directory);
 
         /// Print output files.
-        string fu = DEFAULT_OUTPUT_DIR + "Utilities";
-        string fws = DEFAULT_OUTPUT_DIR + "WaterSources";
-        string fp = DEFAULT_OUTPUT_DIR + "Policies";
-        string fpw = DEFAULT_OUTPUT_DIR + "Pathways";
+        string fu = "Utilities";
+        string fws = "WaterSources";
+        string fp = "Policies";
+        string fpw = "Pathways";
 
         //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
         cout << "Printing Pathways" << endl;
-        this->master_data_collector->setOutputDirectory(output_directory);
+        this->master_data_collector->setOutputDirectory(io_directory);
         this->master_data_collector->printPathways(
                 fpw + "_s" + std::to_string(solution_no) + fname_sufix);
         cout << "Printing time series" << endl;
@@ -107,8 +108,8 @@ void Problem::setSol_number(unsigned long sol_number) {
     Problem::solution_no = sol_number;
 }
 
-void Problem::setOutput_directory(const string &output_directory) {
-    this->output_directory = output_directory;
+void Problem::setIODirectory(const string &io_directory) {
+    this->io_directory = io_directory;
 }
 
 void Problem::setRDMOptimization(vector<vector<double>> &utilities_rdm,
@@ -191,7 +192,7 @@ Problem::setRofTables(unsigned long n_realizations, string rof_tables_directory)
     int n_tiers = NO_OF_INSURANCE_STORAGE_TIERS + 1;
 
     /// Get number of weeks in tables
-    string file_name = rof_tables_directory + "tables_r0_u0";
+    string file_name = rof_tables_directory + "/tables_r0_u0";
     ifstream in(file_name, ios_base::binary);
     if (!in.good()) {
         string error_table_file = "Tables file not found: " + file_name;
@@ -199,11 +200,16 @@ Problem::setRofTables(unsigned long n_realizations, string rof_tables_directory)
     }
 
     //FIXME: FIGURE OUT NUMBER OF UTILITIES BY CHECKING IF TABLES_R0_U0, TABLES_R0_U1, AND SO ON EXIST.
-    char table_file_name[24];
+    char table_file_name[150];
     for (n_utilities = 0; n_utilities < MAX_NUMBER_OF_UTILITIES; ++n_utilities) {
-        sprintf(table_file_name, "%stables_r0_u%d", rof_tables_directory.c_str(), n_utilities);
+        sprintf(table_file_name, "%s%stables_r0_u%d", rof_tables_directory.c_str(), BAR.c_str(), n_utilities);
         ifstream f(table_file_name);
         if (!f.good()) {
+            if (n_utilities == 0) {
+                char error[200];
+                sprintf(error, "Table %s not found.", table_file_name);
+                throw invalid_argument(error);
+            }
             break;
         }
     }
@@ -222,8 +228,8 @@ Problem::setRofTables(unsigned long n_realizations, string rof_tables_directory)
     /// Load ROF tables
     for (unsigned long r = 0; r < n_realizations; ++r) {
         for (int u = 0; u < n_utilities; ++u) {
-            string file_name = rof_tables_directory + "tables_r" + to_string(r) + "_u" + to_string(u);
-            ifstream in(file_name, ios_base::binary);
+            file_name = rof_tables_directory + BAR + "tables_r" + to_string(r) + "_u" + to_string(u);
+            ifstream in_file(file_name, ios_base::binary);
             if (!in.good()) {
                 string error_table_file = "Tables file not found: " + file_name;
                 throw invalid_argument(error_table_file.c_str());
@@ -231,11 +237,11 @@ Problem::setRofTables(unsigned long n_realizations, string rof_tables_directory)
 
             /// Get table file size from table files.
             unsigned stringsize;
-            in.read(reinterpret_cast<char *>(&stringsize), sizeof(unsigned));
+            in_file.read(reinterpret_cast<char *>(&stringsize), sizeof(unsigned));
 
             /// Get table information from table files.
             double data[stringsize];
-            in.read(reinterpret_cast<char *>(&data),
+            in_file.read(reinterpret_cast<char *>(&data),
                     stringsize * sizeof(double));
 
             /// Create tables based on table files.
@@ -252,7 +258,7 @@ Problem::setRofTables(unsigned long n_realizations, string rof_tables_directory)
                 }
             }
 
-            in.close();
+            in_file.close();
         }
     }
 
@@ -271,14 +277,8 @@ void Problem::setImport_export_rof_tables(int import_export_rof_tables, int n_we
     this->rof_tables_directory = rof_tables_directory;
 
     if (import_export_rof_tables == IMPORT_ROF_TABLES) {
-        Problem::setRofTables(n_realizations, rof_tables_directory);
+        setRofTables(n_realizations, rof_tables_directory);
     } else {
-        string create_dir_command;
-#ifdef _WIN32
-        create_dir_command = "if not exist \"" + rof_tables_directory + "\" mkdir ";
-#else
-        create_dir_command = "mkdir -p";
-#endif
-        auto output = system((create_dir_command + " " + rof_tables_directory).c_str());
+        Utils::createDir(rof_tables_directory);
     }
 }

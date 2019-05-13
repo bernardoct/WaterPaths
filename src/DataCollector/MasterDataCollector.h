@@ -48,7 +48,7 @@ public:
     void
     printWaterSourcesOutputTabular(int week_i, int week_f, string file_name);
 
-    void setOutputDirectory(string directory);
+    void setOutputDirectory(string io_directory);
 
     void printPathways(string file_name);
 

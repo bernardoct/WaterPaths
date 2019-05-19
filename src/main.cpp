@@ -18,15 +18,15 @@
 
 
 #define NUM_OBJECTIVES 6;
-#define NUM_DEC_VAR 57;
-//#define NUM_DEC_VAR 27; // infrastructure turned off
+//#define NUM_DEC_VAR 57;
+#define NUM_DEC_VAR 27; // infrastructure turned off
 
 using namespace std;
 using namespace Constants;
 using namespace Solutions;
 
-//PaperTestProblem *problem_ptr;
-Triangle *problem_ptr;
+PaperTestProblem *problem_ptr;
+//Triangle *problem_ptr;
 int failures = 0;
 ofstream sol_out; // for debugging borg
 
@@ -230,22 +230,21 @@ int main(int argc, char *argv[]) {
         }
     }
 
-//    PaperTestProblem problem(n_weeks, import_export_rof_table);
-    Triangle problem(n_weeks, import_export_rof_table);
+    PaperTestProblem problem(n_weeks, import_export_rof_table);
+//    Triangle problem(n_weeks, import_export_rof_table);
     if (seed > -1) {
         WaterSource::setSeed(seed);
+        MasterDataCollector::setSeed(seed);
     }
 
-    /// Set basic realization parameters.
+    // Set basic realization parameters.
     problem.setN_weeks(n_weeks);
 //    printf("%s\n", system_io.c_str());
     problem.setIODirectory(system_io);
     problem.setN_threads((unsigned long) n_threads);
-    problem.setN_realizations(n_realizations);
-    problem.setImport_export_rof_tables(import_export_rof_table, (int) n_weeks, system_io + rof_tables_directory);
     problem.readInputData();
 
-    /// Load bootstrap samples if necessary.
+    // Load bootstrap samples if necessary.
     if (strlen(bootstrap_file.c_str()) > 2) {
         auto bootstrap_samples_double = Utils::parse2DCsvFile(system_io + bootstrap_file);
         for (auto &v : bootstrap_samples_double) {
@@ -301,12 +300,15 @@ int main(int argc, char *argv[]) {
     }
     problem_ptr = &problem;
 
-    /// Set realizations to be run -- otherwise, n_realizations realizations will be run.
+    // Set realizations to be run -- otherwise, n_realizations realizations will be run.
     if (!realizations_to_run.empty() && (n_sets <= 0 || n_bs_samples <= 0)) {
         auto realizations_to_run_ul = vector<unsigned long>(realizations_to_run[0].begin(),
                                                             realizations_to_run[0].end());
         problem_ptr->setRealizationsToRun(realizations_to_run_ul);
+    } else {
+        problem.setN_realizations(n_realizations);
     }
+    problem.setImport_export_rof_tables(import_export_rof_table, (int) n_weeks, system_io + rof_tables_directory);
 
     /// If Borg is not called, run in simulation mode
     if (!run_optimization) {
@@ -335,8 +337,7 @@ int main(int argc, char *argv[]) {
 
             // Export pathways and objectives, otherwise, if required, run bootstrap sub-sampling.
             if (n_sets > 0 && n_bs_samples > 0) {
-                printf("\ngetting here\n\n");
-                problem_ptr->getMaster_data_collector()->performBootstrapAnalysis(
+                problem_ptr->runBootstrapRealizationThinning(
                         (int) standard_solution, n_sets, n_bs_samples, n_threads, realizations_to_run);
             } else if (import_export_rof_table != EXPORT_ROF_TABLES) {
                 if (plotting)

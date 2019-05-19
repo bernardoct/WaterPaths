@@ -98,11 +98,12 @@ public:
 
     void printTimeSeriesAndPathways();
 
-    void performBootstrapAnalysis(int n_sets, int n_samples);
-
     void setRofTables(unsigned long n_realizations, string rof_tables_directory);
 
     void setImport_export_rof_tables(int import_export_rof_tables, int n_weeks, string rof_tables_directory);
+
+    void runBootstrapRealizationThinning(int standard_solution, int n_sets, int n_bs_samples,
+                                         int threads, vector<vector<int>> &realizations_to_run);
 
 };
 

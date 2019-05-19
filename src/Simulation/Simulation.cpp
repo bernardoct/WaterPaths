@@ -201,7 +201,7 @@ void Simulation::setupSimulation(vector<WaterSource *> &water_sources, Graph &wa
     }
 
     // Creates the data collector for the simulation.
-    master_data_collector = new MasterDataCollector(n_realizations);
+    master_data_collector = new MasterDataCollector(realizations_to_run);
 }
 
 Simulation::~Simulation() = default;
@@ -285,17 +285,23 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
         rof_tables_folder = "rof_tables";
     }
 
-    /// Check if number of imported tables corresponds to model.
+    // Check if number of imported tables corresponds to model.
     if (import_export_rof_tables == IMPORT_ROF_TABLES) {
         if (precomputed_rof_tables->at(0).size() != utilities.size()) {
             throw invalid_argument("Different number of utilities in model and imported ROF tables.");
         }
-        if (precomputed_rof_tables->size() != n_realizations) {
-            throw invalid_argument("Different number of realizations in model and imported ROF tables.");
+
+        auto max_realization = *max_element(realizations_to_run.begin(), realizations_to_run.end()) + 1;
+        auto n_precomputed_tables = precomputed_rof_tables->size();
+        if (n_precomputed_tables != max_realization) {
+            char error[256];
+            sprintf(error, "There are at least %lu potential realizations but %lu imported ROF tables.",
+                    max_realization, n_precomputed_tables);
+            throw invalid_argument(error);
         }
     }
 
-    /// Run realizations.
+    // Run realizations.
     int had_catch = 0;
     string error_m = "Error in realizations ";
 //    std::reverse(realizations_to_run.begin(), realizations_to_run.end());
@@ -313,7 +319,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                 realization_model->getContinuity_water_sources(),
                 realization_model->getDrought_mitigation_policies(),
                 realization_model->getContinuity_utilities(),
-                r);
+                realization);
 
         try {
             //double start = omp_get_wtime();
@@ -333,7 +339,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                 realization_model->continuityStep(w);
                 // Collect system data for output printing and objective calculations.
                 if (import_export_rof_tables != EXPORT_ROF_TABLES) {
-                    master_data_collector->collectData(r);
+                    master_data_collector->collectData(realization);
                 }
             }
             // Export ROF tables for future simulations of the same problem with the same states-of-the-world.
@@ -344,8 +350,8 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
         } catch (...) {
 #pragma omp atomic
             ++had_catch;
-            error_m += to_string(r) + " ";
-            master_data_collector->removeRealization(r);
+            error_m += to_string(realization) + " ";
+            master_data_collector->removeRealization(realization);
         }
 
         delete realization_model;

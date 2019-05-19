@@ -10,6 +10,7 @@
 #include "Base/DataCollector.h"
 #include "UtilitiesDataCollector.h"
 #include "../DroughtMitigationInstruments/Base/DroughtMitigationPolicy.h"
+#include "RestrictionsDataCollector.h"
 
 class MasterDataCollector {
 private:
@@ -19,12 +20,16 @@ private:
     vector<vector<DataCollector *>> water_source_collectors;
     vector<vector<DataCollector *>> drought_mitigation_policy_collectors;
     vector<vector<UtilitiesDataCollector *>> utility_collectors;
+    vector<unsigned long> crashed_realizations;
+    vector<unsigned long> realizations_ran;
+
+    static int seed;
 
 //    void removeNullptrs(vector<vector<void *>> vector_of_collectors);
 
 public:
 
-    MasterDataCollector(unsigned long n_realizations);
+    MasterDataCollector(vector<unsigned long> &realizations_to_run);
 
 
     int printNETCDFUtilities(string file_name);
@@ -72,6 +77,22 @@ public:
 
     void printUtilityObjectivesToRowOutStream(vector<UtilitiesDataCollector *> &u, std::ofstream &outStream,
             vector<double> &objectives);
+
+    void readOrCreateBSSamples(int sol_id, int n_sets, int n_samples, const vector<vector<int>> &bootstrap_samples,
+                               vector<vector<int>> &bootstrap_sample_sets) const;
+
+    void printObjsBSSamples(int sol_id, int n_sets, int n_samples, vector<vector<double>> &objectives);
+
+    void printObjectivesOfAllRealizationsForBSAnalysis(int sol_id, int n_sets, int n_samples);
+
+    void createRestrictionVectorForRFCalcBS(vector<UtilitiesDataCollector *> &u,
+                                            vector<RestrictionsDataCollector> &utility_restrictions) const;
+
+    static void setSeed(int seed);
+
+    static void unsetSeed();
+
+    void printBSSamples(int sol_id, int n_sets, int n_samples, const vector<vector<int>> &bootstrap_sample_sets) const;
 };
 
 

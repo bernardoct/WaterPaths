@@ -217,7 +217,7 @@ Problem::setRofTables(unsigned long n_realizations, string rof_tables_directory)
     unsigned n_weeks_in_table;
     in.read(reinterpret_cast<char *>(&n_weeks_in_table), sizeof(unsigned));
 
-    /// Create empty tables
+    // Create empty tables
     rof_tables = vector<vector<Matrix2D<double>>>(
             n_realizations,
             vector<Matrix2D<double>>((unsigned long) n_utilities,
@@ -225,8 +225,8 @@ Problem::setRofTables(unsigned long n_realizations, string rof_tables_directory)
 
     this->rof_tables_directory = rof_tables_directory;
 
-    /// Load ROF tables
-    for (unsigned long r = 0; r < n_realizations; ++r) {
+    // Load ROF tables
+    for (auto r : realizations_to_run) {
         for (int u = 0; u < n_utilities; ++u) {
             file_name = rof_tables_directory + BAR + "tables_r" + to_string(r) + "_u" + to_string(u);
             ifstream in_file(file_name, ios_base::binary);
@@ -281,4 +281,10 @@ void Problem::setImport_export_rof_tables(int import_export_rof_tables, int n_we
     } else {
         Utils::createDir(rof_tables_directory);
     }
+}
+
+void Problem::runBootstrapRealizationThinning(int standard_solution, int n_sets, int n_bs_samples,
+                                              int threads, vector<vector<int>> &realizations_to_run) {
+    master_data_collector->setOutputDirectory(io_directory);
+    master_data_collector->performBootstrapAnalysis(standard_solution, n_sets, n_bs_samples, threads, realizations_to_run);
 }

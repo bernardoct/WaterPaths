@@ -38,8 +38,11 @@ static const int NC_ERR = 2;
 
 using namespace Constants;
 
+int MasterDataCollector::seed = NON_INITIALIZED;
 
-MasterDataCollector::MasterDataCollector(unsigned long n_realizations) : n_realizations(n_realizations) {}
+MasterDataCollector::MasterDataCollector(vector<unsigned long> &realizations_to_run)
+        : n_realizations(*max_element(realizations_to_run.begin(), realizations_to_run.end()) + 1),
+        realizations_ran(realizations_to_run) {}
 
 MasterDataCollector::~MasterDataCollector() {
     for (vector<DataCollector *> dcs : water_source_collectors)
@@ -62,7 +65,7 @@ MasterDataCollector::~MasterDataCollector() {
 */
 int MasterDataCollector::printNETCDFUtilities(string base_file_name) {
 #ifdef NETCDF
-    unsigned long n_weeks = utility_collectors[0][0]->getCombined_storage().size();
+    unsigned long n_weeks = utility_collectors[0][realizations_ran[0]]->getCombined_storage().size();
     unsigned long n_realizations = utility_collectors[0].size();
     unsigned long n_utilities = utility_collectors.size();
     unsigned long n_vars = 6;
@@ -162,8 +165,8 @@ void MasterDataCollector::printPoliciesOutputCompact(
         int week_i, int week_f, string file_name) {
     if (!drought_mitigation_policy_collectors.empty()) {
 #pragma omp parallel for
-        for (int r = 0; r < (int) drought_mitigation_policy_collectors[0].size();
-             ++r) {
+        for (int rr = 0; rr < (int) realizations_ran.size(); ++rr) {
+            auto r = realizations_ran[rr];
             std::ofstream out_stream;
             out_stream.open(output_directory + file_name + "_r"
                             + std::to_string(r) + ".csv");
@@ -192,8 +195,8 @@ void MasterDataCollector::printPoliciesOutputTabular(
         int week_i, int week_f, string file_name) {
     if (!drought_mitigation_policy_collectors.empty()) {
 #pragma omp parallel for
-        for (int r = 0; r < (int) drought_mitigation_policy_collectors[0].size();
-             ++r) {
+        for (int rr = 0; rr < (int) realizations_ran.size(); ++rr) {
+            auto r = realizations_ran[rr];
             std::ofstream out_stream;
             out_stream.open(output_directory + file_name + "_r"
                             + std::to_string(r) + ".tab");
@@ -223,7 +226,8 @@ void MasterDataCollector::printPoliciesOutputTabular(
 void MasterDataCollector::printUtilitiesOutputCompact(
         int week_i, int week_f, string file_name) {
 #pragma omp parallel for
-    for (int r = 0; r < (int) utility_collectors[0].size(); ++r) {
+    for (int rr = 0; rr < (int) realizations_ran.size(); ++rr) {
+        auto r = realizations_ran[rr];
         std::ofstream out_stream;
         out_stream.open(output_directory + file_name + "_r"
                         + std::to_string(r) + ".csv");
@@ -250,7 +254,8 @@ void MasterDataCollector::printUtilitiesOutputCompact(
 void MasterDataCollector::printUtilitesOutputTabular(
         int week_i, int week_f, string file_name) {
 #pragma omp parallel for
-    for (int r = 0; r < (int) utility_collectors[0].size(); ++r) {
+    for (int rr = 0; rr < (int) realizations_ran.size(); ++rr) {
+        auto r = realizations_ran[rr];
         std::ofstream out_stream;
         out_stream.open(output_directory + file_name + "_r"
                         + std::to_string(r) + ".tab");
@@ -258,7 +263,7 @@ void MasterDataCollector::printUtilitesOutputTabular(
         stringstream names;
         names << "    ";
         for (vector<UtilitiesDataCollector *> &p : utility_collectors)
-            names << setw(p[0]->table_width) << p[r]->name;
+            names << setw(p[realizations_ran[0]]->table_width) << p[r]->name;
 
         out_stream << names.str();
         out_stream << endl;
@@ -287,7 +292,8 @@ void MasterDataCollector::printUtilitesOutputTabular(
 void MasterDataCollector::printWaterSourcesOutputCompact(
         int week_i, int week_f, string file_name) {
 #pragma omp parallel for
-    for (int r = 0; r < (int) water_source_collectors[0].size(); ++r) {
+    for (int rr = 0; rr < (int) realizations_ran.size(); ++rr) {
+        auto r = realizations_ran[rr];
         try {
             std::ofstream out_stream;
             out_stream.open(output_directory + file_name + "_r"
@@ -309,7 +315,7 @@ void MasterDataCollector::printWaterSourcesOutputCompact(
 
             out_stream.close();
         } catch (...) {
-            printf("Warning: water sources data for realization %d not saved dur to error.\n", r);
+            printf("Warning: water sources data for realization %lu not saved due to error.\n", r);
         }
     }
 }
@@ -317,7 +323,8 @@ void MasterDataCollector::printWaterSourcesOutputCompact(
 void MasterDataCollector::printWaterSourcesOutputTabular(
         int week_i, int week_f, string file_name) {
 #pragma omp parallel for
-    for (int r = 0; r < (int) water_source_collectors[0].size(); ++r) {
+    for (int rr = 0; rr < (int) realizations_ran.size(); ++rr) {
+        auto r = realizations_ran[rr];
         std::ofstream out_stream;
         out_stream.open(output_directory + file_name + "_r"
                         + std::to_string(r) + ".tab");
@@ -325,7 +332,7 @@ void MasterDataCollector::printWaterSourcesOutputTabular(
         stringstream names;
         names << "    ";
         for (vector<DataCollector *> p : water_source_collectors)
-            names << setw(p[0]->table_width) << p[r]->name;
+            names << setw(p[realizations_ran[0]]->table_width) << p[r]->name;
 
         out_stream << names.str();
         out_stream << endl;
@@ -353,33 +360,33 @@ void MasterDataCollector::printWaterSourcesOutputTabular(
 
 void MasterDataCollector::printUtilityObjectivesToRowOutStream(vector<UtilitiesDataCollector *> &u,
         std::ofstream &outStream, vector<double> &objectives) {
-    /// Create vector with restriction policies pertaining only to the
-    /// utility whose objectives are being calculated.
+    // Create vector with restriction policies pertaining only to the
+    // utility whose objectives are being calculated.
     vector<RestrictionsDataCollector> restrictions;
     for (vector<DataCollector *> p : drought_mitigation_policy_collectors) {
-        if (p[0]->type == RESTRICTIONS && p[0]->id == u[0]->id) {
-            for (int i = 0; i < (int) p.size(); ++i) {
+        if (p[realizations_ran[0]]->type == RESTRICTIONS && p[realizations_ran[0]]->id == u[realizations_ran[0]]->id) {
+            for (auto r : realizations_ran) {
                 restrictions.push_back(
-                        dynamic_cast<RestrictionsDataCollector &>(*p[i]));
+                        dynamic_cast<RestrictionsDataCollector &>(*p[r]));
             }
         }
     }
 
-    /// Reliability
-    double reliability = ObjectivesCalculator::calculateReliabilityObjective(u);
+    // Reliability
+    double reliability = ObjectivesCalculator::calculateReliabilityObjective(u, realizations_ran);
     /// Restriction Frequency
     double restriction_freq = ObjectivesCalculator::
-    calculateRestrictionFrequencyObjective(restrictions);
+    calculateRestrictionFrequencyObjective(restrictions, realizations_ran);
     /// Infrastructure NPC
     double inf_npc = ObjectivesCalculator::
-    calculateNetPresentCostInfrastructureObjective(u);
+    calculateNetPresentCostInfrastructureObjective(u, realizations_ran);
     /// Peak Financial Cost
     double financial_cost = ObjectivesCalculator::
-    calculatePeakFinancialCostsObjective(u);
+    calculatePeakFinancialCostsObjective(u, realizations_ran);
     /// Worse Case Costs
-    double worse_cost = ObjectivesCalculator::calculateWorseCaseCostsObjective(u);
+    double worse_cost = ObjectivesCalculator::calculateWorseCaseCostsObjective(u, realizations_ran);
 
-    outStream << setw(COLUMN_WIDTH) << u[0]->name
+    outStream << setw(COLUMN_WIDTH) << u[realizations_ran[0]]->name
               /// Reliability
               << setw(COLUMN_WIDTH * 2)
               << setprecision(COLUMN_PRECISION)
@@ -449,7 +456,7 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name, b
             /// utility whose objectives are being calculated.
             vector<RestrictionsDataCollector> utility_restrictions;
             for (auto &p : drought_mitigation_policy_collectors)
-                if (p[0]->type == RESTRICTIONS && p[0]->id == u[0]->id)
+                if (p[realizations_ran[0]]->type == RESTRICTIONS && p[realizations_ran[0]]->id == u[realizations_ran[0]]->id)
                     for (int i = 0; i < (int) p.size(); ++i) {
                         utility_restrictions.push_back(
                                 dynamic_cast<RestrictionsDataCollector &>(*p[i]));
@@ -473,57 +480,40 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name, b
 void MasterDataCollector::performBootstrapAnalysis(
 		int sol_id, int n_sets, int n_samples, int n_threads, vector<vector<int>> bootstrap_samples) {
     printf("Running bootstrap samples.\n");
-    std::random_device rd;     // only used once to initialise (seed) engine
-    std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
+    vector<vector<int>> bootstrap_sample_sets((unsigned long) n_sets, vector<int>((unsigned long) n_samples));
 
-    int min = 0;
-    int max = (int) n_realizations - 1;
-    std::uniform_int_distribution<int> uni(min, max); // guaranteed unbiased
-    std::ofstream outStream_realizations;
-    std::ofstream outStream_objs;
-    string line;
-    outStream_objs.open(output_directory + "bootstrap_objs_" + to_string(n_sets) + "_" + 
-		    to_string(n_samples) + "_S" + to_string(sol_id) + ".csv");
+    // Create or use specified bootstrap samples
+    readOrCreateBSSamples(sol_id, n_sets, n_samples, bootstrap_samples, bootstrap_sample_sets);
 
-    /// Either read samples from file or create new ones.
-    vector<vector<int>> bootstrap_sample_sets(n_sets, vector<int>((unsigned long) n_samples));
-    if (bootstrap_samples.size() > 0) {
-	    bootstrap_sample_sets = bootstrap_samples;
-    } else {
-        outStream_realizations.open(output_directory + "bootstrap_realizations_" +
-                                    to_string(n_sets) + "_" + to_string(n_samples) + "_S" +
-                                    to_string(sol_id) + ".csv");
-        for (int set = 0; set < n_sets; ++set) {
-            /// Generate one set of bootstrapped realizations, if none was specified.
-            line = "";
-            for (int &s : bootstrap_sample_sets[set]) {
-                s = uni(rng);
-                line += to_string(s) + ",";
-            }
-            line.pop_back();
-            outStream_realizations << line << endl;
+    vector<vector<double>> objectives((unsigned long) n_sets);
+    for (unsigned long &r : crashed_realizations) {
+        for (vector<int> &bs : bootstrap_sample_sets) {
+            bs.erase(remove(bs.begin(), bs.end(), r), bs.end());
         }
     }
 
-    vector<vector<double>> objectives(n_sets);
-#pragma omp parallel for num_threads(n_threads) shared(objectives)
+//#pragma omp parallel for num_threads(n_threads) shared(objectives)
     for (int set = 0; set < n_sets; ++set) {
-        /// Calculate objectives for the set of bootstrapped realizations.
+        // Calculate objectives for the set of bootstrapped realizations.
+        vector<unsigned long> bootstrap_sample_set = vector<unsigned long>(
+                bootstrap_sample_sets[set].begin(),
+                bootstrap_sample_sets[set].end());
+
+        for (unsigned long &r : crashed_realizations) {
+            for (unsigned long &bs : bootstrap_sample_set) {
+                if (bs >= r) {
+                    --bs;
+                }
+            }
+        }
+
         for (auto &u : utility_collectors) {
-            /// Create vector with restriction policies pertaining only to the
-            /// utility whose objectives are being calculated.
+            // Create vector with restriction policies pertaining only to the
+            // utility whose objectives are being calculated.
             vector<RestrictionsDataCollector> utility_restrictions;
-            for (auto &p : drought_mitigation_policy_collectors)
-                if (p[0]->type == RESTRICTIONS && p[0]->id == u[0]->id)
-                    for (int i = 0; i < (int) p.size(); ++i) {
-                        utility_restrictions.push_back(
-                                dynamic_cast<RestrictionsDataCollector &>(*p[i]));
-                    }
+            createRestrictionVectorForRFCalcBS(u, utility_restrictions);
 
-	    vector<unsigned long> bootstrap_sample_set = vector<unsigned long>(
-			    bootstrap_sample_sets[set].begin(), 
-			    bootstrap_sample_sets[set].end());
-
+            // Populate vector of objectives for each corresponding set of bootstrap samples.
             objectives[set].push_back
                     (ObjectivesCalculator::calculateReliabilityObjective(u, bootstrap_sample_set));
             objectives[set].push_back
@@ -537,7 +527,78 @@ void MasterDataCollector::performBootstrapAnalysis(
         }
     }
 
-        /// Print objectives.
+    // Print objectives of bootstrap samples
+    printObjsBSSamples(sol_id, n_sets, n_samples, objectives);
+
+    // Print objectives of all realizations
+    printObjectivesOfAllRealizationsForBSAnalysis(sol_id, n_sets, n_samples);
+
+    // Print bootstrap samples file.
+    printBSSamples(sol_id, n_sets, n_samples, bootstrap_sample_sets);
+
+}
+
+void MasterDataCollector::printBSSamples(int sol_id, int n_sets, int n_samples,
+                                         const vector<vector<int>> &bootstrap_sample_sets) const {
+    ofstream outStream_realizations; // Either read samples from file or create new ones.
+    outStream_realizations.open(output_directory + "bootstrap_realizations_" +
+                                to_string(n_sets) + "_" + to_string(n_samples) + "_S" +
+                                to_string(sol_id) + ".csv");
+
+    string line;
+    for (int set = 0; set < n_sets; ++set) {
+        // Generate one set of bootstrapped realizations, if none was specified.
+        line = "";
+        for (int s : bootstrap_sample_sets[set]) {
+            line += to_string(s) + ",";
+        }
+        line.pop_back();
+        outStream_realizations << line << endl;
+    }
+
+    outStream_realizations.close();
+}
+
+void MasterDataCollector::createRestrictionVectorForRFCalcBS(vector<UtilitiesDataCollector *> &u,
+                                                             vector<RestrictionsDataCollector> &utility_restrictions) const {
+    for (auto &p : drought_mitigation_policy_collectors) {
+        if (p[realizations_ran[0]]->type == RESTRICTIONS && p[realizations_ran[0]]->id == u[realizations_ran[0]]->id) {
+            for (auto i : p) {
+                utility_restrictions.push_back(
+                        dynamic_cast<RestrictionsDataCollector &>(*i));
+            }
+        }
+    }
+}
+
+void MasterDataCollector::printObjectivesOfAllRealizationsForBSAnalysis(int sol_id, int n_sets, int n_samples) {
+    string file_name = output_directory + "objectives_all_reals_" + to_string(n_sets) +
+                       "_" + to_string(n_samples) + "_S" + to_string(sol_id) + ".csv";
+    vector<double> objectives_all_reals = calculatePrintObjectives("", false);
+
+    string line;
+    line = "";
+    for (double &o : objectives_all_reals) {
+	    line += to_string(o) + ",";
+    }
+    line.pop_back();
+
+    ofstream outStream_objs_all_reals;
+    outStream_objs_all_reals.open(file_name);
+    outStream_objs_all_reals << line << endl;
+
+    outStream_objs_all_reals.close();
+}
+
+void MasterDataCollector::printObjsBSSamples(int sol_id, int n_sets, int n_samples,
+                                              vector<vector<double>> &objectives) {// Print objectives.
+    ofstream outStream_objs;
+    string objectives_file_name = output_directory + "bootstrap_objs_" + to_string(n_sets) + "_" +
+                        to_string(n_samples) + "_S" + to_string(sol_id) + ".csv";
+    outStream_objs.open(objectives_file_name);
+    printf("Bootstrap objectives files will be printed at %s\n", objectives_file_name.c_str());
+
+    string line;
     for (int set = 0; set < n_sets; ++set) {
         line = "";
         for (double &o : objectives[set]) {
@@ -546,25 +607,29 @@ void MasterDataCollector::performBootstrapAnalysis(
         line.pop_back();
         outStream_objs << line << endl;
     }
-
-    string file_name = output_directory + "objectives_all_reals_" + to_string(n_sets) + 
-	    "_" + to_string(n_samples) + "_S" + to_string(sol_id) + ".csv";
-    vector<double> objectives_all_reals = calculatePrintObjectives("", false);
-    
-    line = "";
-    for (double &o : objectives_all_reals) {
-	    line += to_string(o) + ",";
-    }
-    line.pop_back();
-    
-    std::ofstream outStream_objs_all_reals;
-    outStream_objs_all_reals.open(file_name);
-    outStream_objs_all_reals << line << endl;
-
-    outStream_objs_all_reals.close();
-    outStream_realizations.close();
     outStream_objs.close();
+}
 
+void MasterDataCollector::readOrCreateBSSamples(int sol_id, int n_sets, int n_samples,
+                                                const vector<vector<int>> &bootstrap_samples,
+                                                vector<vector<int>> &bootstrap_sample_sets) const {
+    random_device rd;     // only used once to initialise (seed) engine
+    mt19937 rng((seed == NON_INITIALIZED ? rd() : seed));    // random-number engine used (Mersenne-Twister in this case)
+
+    int min = 0;
+    int max = (int) n_realizations - 1;
+    uniform_int_distribution<int> uni(min, max); // guaranteed unbiased
+    string line;
+    if (!bootstrap_samples.empty()) {
+	    bootstrap_sample_sets = bootstrap_samples;
+    } else {
+        for (int set = 0; set < n_sets; ++set) {
+            // Generate one set of bootstrapped realizations, if none was specified.
+            for (int &s : bootstrap_sample_sets[set]) {
+                s = uni(rng);
+            }
+        }
+    }
 }
 
 void MasterDataCollector::printPathways(string file_name) {
@@ -574,7 +639,8 @@ void MasterDataCollector::printPathways(string file_name) {
     outStream << "Realization\tutility\tweek\tinfra." << endl;
 
     for (auto &uc : utility_collectors)
-        for (int r = 0; r < (int) uc.size(); ++r) {
+        for (int rr = 0; rr < (int) realizations_ran.size(); ++rr) {
+            auto r = realizations_ran[rr];
             for (vector<int> infra : uc[r]->getPathways()) {
                 outStream << r << "\t" << infra[0] << "\t" << infra[1] << "\t"
                           << infra[2] << endl;
@@ -637,7 +703,7 @@ void MasterDataCollector::addRealization(
         vector<DroughtMitigationPolicy *> drought_mitigation_policies_realization,
         vector<Utility *> utilities_realization,
         unsigned long r) {
-    /// If collectors vectors have not yet been initialized, initialize them.
+    // If collectors vectors have not yet been initialized, initialize them.
 #pragma omp critical
     {
         if (water_source_collectors.empty()) {
@@ -650,17 +716,17 @@ void MasterDataCollector::addRealization(
         }
     };
 
-    /// Create utilities data collectors
+    // Create utilities data collectors
     for (int u = 0; u < (int) utilities_realization.size(); ++u) {
         utility_collectors[u][r] = new UtilitiesDataCollector(utilities_realization[u], r);
     }
 
-    /// Create drought mitigation policies data collector
+    // Create drought mitigation policies data collector
     for (int dmp = 0; dmp < (int) drought_mitigation_policies_realization.size(); ++dmp)
         drought_mitigation_policy_collectors[dmp][r] =
                 createPolicyDataCollector(drought_mitigation_policies_realization[dmp], r);
 
-    /// Create water sources data collectors
+    // Create water sources data collectors
     for (int ws = 0; ws < (int) water_sources_realization.size(); ++ws) {
         water_source_collectors[ws][r] = createWaterSourceDataCollector(water_sources_realization[ws], r);
     }
@@ -679,6 +745,8 @@ void MasterDataCollector::removeRealization(unsigned long r) {
 	delete water_source_collectors[ws][r];
         water_source_collectors[ws][r] = nullptr;
     }
+
+    crashed_realizations.push_back(r);
 }
 
 //void MasterDataCollector::removeNullptrs(vector<vector<void *>> vector_of_collectors) {
@@ -711,4 +779,12 @@ void MasterDataCollector::collectData(unsigned long r) {
         dmp[r]->collect_data();
     for (vector<DataCollector *> ws : water_source_collectors)
         ws[r]->collect_data();
+}
+
+void MasterDataCollector::setSeed(int seed) {
+    MasterDataCollector::seed = seed;
+}
+
+void MasterDataCollector::unsetSeed() {
+    MasterDataCollector::seed = NON_INITIALIZED;
 }

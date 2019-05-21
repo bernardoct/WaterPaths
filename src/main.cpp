@@ -242,7 +242,6 @@ int main(int argc, char *argv[]) {
 //    printf("%s\n", system_io.c_str());
     problem.setIODirectory(system_io);
     problem.setN_threads((unsigned long) n_threads);
-    problem.readInputData();
 
     // Load bootstrap samples if necessary.
     if (strlen(bootstrap_file.c_str()) > 2) {
@@ -262,11 +261,11 @@ int main(int argc, char *argv[]) {
                 "You must specify an input output directory.");
     }
 
-    /// Set up input/output suffix, if necessary.
+    // Set up input/output suffix, if necessary.
     if (strlen(inflows_evap_directory_suffix.c_str()) > 2) {
         problem.setEvap_inflows_suffix(inflows_evap_directory_suffix);
     }
-    /// Read RDM file, if any
+    // Read RDM file, if any
     if (strlen(utilities_rdm_file.c_str()) > 2) {
         cout << "reading RDM file" << endl;
         if (rdm_no != NON_INITIALIZED) {
@@ -304,16 +303,19 @@ int main(int argc, char *argv[]) {
     if (!realizations_to_run.empty() && (n_sets <= 0 || n_bs_samples <= 0)) {
         auto realizations_to_run_ul = vector<unsigned long>(realizations_to_run[0].begin(),
                                                             realizations_to_run[0].end());
-        problem_ptr->setRealizationsToRun(realizations_to_run_ul);
+        problem.setRealizationsToRun(realizations_to_run_ul);
+        problem.setN_realizations(*max_element(realizations_to_run_ul.begin(), realizations_to_run_ul.end()) + 1);
     } else {
         problem.setN_realizations(n_realizations);
     }
-    problem.setImport_export_rof_tables(import_export_rof_table, (int) n_weeks, system_io + rof_tables_directory);
+    problem.setImport_export_rof_tables(import_export_rof_table, (int) n_weeks,
+            system_io + rof_tables_directory);
+    problem.readInputData();
 
-    /// If Borg is not called, run in simulation mode
+    // If Borg is not called, run in simulation mode
     if (!run_optimization) {
         vector<int> sol_range;
-        /// Check for basic input errors.
+        // Check for basic input errors.
         if ((first_solution == -1 && last_solution != -1) ||
             (first_solution != -1 && last_solution == -1))
             throw invalid_argument("If you set a first or last solution, you "
@@ -328,7 +330,7 @@ int main(int argc, char *argv[]) {
             throw invalid_argument("You must specify a solutions file.\n");
         }
 
-        /// Run model
+        // Run model
         if (first_solution == -1) {
             cout << endl << endl << endl << "Running solution "
                  << standard_solution << endl;

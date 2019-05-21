@@ -542,13 +542,13 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
             watertown_discharge_fraction_series,
             watertown_ws_return_id);
 
-    vector<int> dryville_ws_return_id = {6};
+    vector<int> dryville_ws_return_id = {4};
     vector<vector<double>> dryville_discharge_fraction_series;
     WwtpDischargeRule wwtp_discharge_dryville(
             demand_to_wastewater_fraction_dryville,
             dryville_ws_return_id);
 
-    vector<int> fallsland_ws_return_id = {6};
+    vector<int> fallsland_ws_return_id = {4};
     vector<vector<double>> fallsland_discharge_fraction_series;
     WwtpDischargeRule wwtp_discharge_fallsland(
             demand_to_wastewater_fraction_fallsland,
@@ -566,7 +566,6 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                      wwtp_discharge_dryville, dryville_demand_buffer, rof_triggered_infra_order_dryville, vector<int>(),
                      rofs_infra_dryville, discount_rate, 30, 0.05);
 
-
     Utility fallsland((char *) "Fallsland", 2, demand_fallsland, demand_n_weeks, fallsland_annual_payment,
                       &fallslandDemandClassesFractions, &fallslandUserClassesWaterPrices,
                       wwtp_discharge_fallsland, fallsland_demand_buffer, rof_triggered_infra_order_fallsland,
@@ -579,13 +578,13 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
     vector<vector<int>> reservoir_utility_connectivity_matrix = {
             {0, 1, 4, 7, 8, 9}, //Watertown
-            {2, 3, 5}, //Dryville
+            {2, 5, 3}, //Dryville
             {2, 4} //Fallsland
     };
 
     auto table_storage_shift = vector<vector<double>>(3, vector<double>(water_sources.size() + 1, 0.));
     table_storage_shift[2][4] = 1500;
-    table_storage_shift[1][3] = 100;
+    table_storage_shift[1][5] = 100;
 
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
     vector<double> initial_restriction_triggers = {watertown_restriction_trigger,
@@ -625,7 +624,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     drought_mitigation_policies = {&restrictions_w, &restrictions_d, &restrictions_f};
 
 
-    /// Transfer policy
+    // Transfer policy
 
     /*
      *      0

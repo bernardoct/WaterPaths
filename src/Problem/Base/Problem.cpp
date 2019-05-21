@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <numeric>
 #include <random>
+#include <set>
 #include "Problem.h"
 #include "../../Utils/Utils.h"
 
@@ -152,8 +153,10 @@ void Problem::setPrint_output_files(bool print_output_files) {
 void Problem::setN_realizations(unsigned long n_realizations) {
     Problem::n_realizations = n_realizations;
 
-    realizations_to_run = vector<unsigned long>(n_realizations);
-    iota(begin(realizations_to_run), end(realizations_to_run), 0);
+    if (realizations_to_run.empty()) {
+        realizations_to_run = vector<unsigned long>(n_realizations);
+        iota(begin(realizations_to_run), end(realizations_to_run), 0);
+    }
 }
 
 void Problem::setRealizationsToRun(vector<unsigned long> &realizations_to_run) {
@@ -225,8 +228,12 @@ Problem::setRofTables(unsigned long n_realizations, string rof_tables_directory)
 
     this->rof_tables_directory = rof_tables_directory;
 
+    set<unsigned long> s( realizations_to_run.begin(), realizations_to_run.end() );
+    vector<unsigned long> realizations_to_run_load_tables;
+    realizations_to_run_load_tables.assign( s.begin(), s.end() );
+
     // Load ROF tables
-    for (auto r : realizations_to_run) {
+    for (auto r : realizations_to_run_load_tables) {
         for (int u = 0; u < n_utilities; ++u) {
             file_name = rof_tables_directory + BAR + "tables_r" + to_string(r) + "_u" + to_string(u);
             ifstream in_file(file_name, ios_base::binary);

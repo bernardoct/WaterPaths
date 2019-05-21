@@ -421,9 +421,9 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     //FIXME ORIGINAL CODE SETS WEEKS_IN_YEAR TO 0 HERE
     vector<double> construction_time_interval = {3.0, 5.0};
 
-    LevelDebtServiceBond sugar_bond(3, 150.0, 25, 0.05, vector<int>(1, 0));
+    LevelDebtServiceBond sugar_bond(5, 150.0, 25, 0.05, vector<int>(1, 0));
     Reservoir sugar_creek_reservoir("Sugar Creek Reservoir",
-                                    3,
+                                    5,
                                     catchment_sugar_creek,
                                     2909,
                                     ILLIMITED_TREATMENT_CAPACITY,
@@ -433,9 +433,9 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                                     17 * WEEKS_IN_YEAR,
                                     sugar_bond);
 
-    BalloonPaymentBond granite_bond(5, 22.6, 25, 0.05, vector<int>(1, 0), 3);
+    BalloonPaymentBond granite_bond(6, 22.6, 25, 0.05, vector<int>(1, 0), 3);
     Reservoir granite_quarry("Granite Quarry",
-                             5,
+                             6,
                              catchment_granite_quarry,
                              200,
                              ILLIMITED_TREATMENT_CAPACITY,
@@ -464,8 +464,8 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                                            &nrr_allocation_fractions,
                                            &nrr_treatment_allocation_fractions);
 
-    LevelDebtServiceBond dummy_bond(5, 1., 1, 1., vector<int>(1, 0));
-    Reservoir dummy_endpoint("Dummy Node", 6, vector<Catchment *>(), 1., 0, evaporation_durham, 1,
+    LevelDebtServiceBond dummy_bond(3, 1., 1, 1., vector<int>(1, 0));
+    Reservoir dummy_endpoint("Dummy Node", 3, vector<Catchment *>(), 1., 0, evaporation_durham, 1,
                              construction_time_interval, 0, dummy_bond);
 
     //FIXME: Edit the expansion volumes for CRR, just made these up
@@ -502,9 +502,9 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
  *
  *  0 College Rock Reservoir (7) small expansion (8) large expansion
  *   \
- *    \                          (5) Granite Quarry
+ *    \                          (6) Granite Quarry
  *     \                         /
- *      \                      (3) Sugar Creek Reservoir
+ *      \                      (5) Sugar Creek Reservoir
  *       1 Lake Michael        /
  *        \                   /
  *         \                 2 Autumn Lake
@@ -518,16 +518,16 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
  *                 \ /    (9) watertown reuse
  *                  |
  *                  |
- *                  6 Dummy Endpoint
+ *                  3 Dummy Endpoint
  */
 
     Graph g(7);
     g.addEdge(0, 1);
-    g.addEdge(5, 3);
-    g.addEdge(3, 2);
+    g.addEdge(1, 3);
+    g.addEdge(6, 5);
+    g.addEdge(5, 2);
     g.addEdge(2, 4);
-    g.addEdge(1, 6);
-    g.addEdge(4, 6);
+    g.addEdge(4, 3);
 
     auto demand_n_weeks = (int) round(46 * WEEKS_IN_YEAR);
 
@@ -542,13 +542,13 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
             watertown_discharge_fraction_series,
             watertown_ws_return_id);
 
-    vector<int> dryville_ws_return_id = {6};
+    vector<int> dryville_ws_return_id = {4};
     vector<vector<double>> dryville_discharge_fraction_series;
     WwtpDischargeRule wwtp_discharge_dryville(
             demand_to_wastewater_fraction_dryville,
             dryville_ws_return_id);
 
-    vector<int> fallsland_ws_return_id = {6};
+    vector<int> fallsland_ws_return_id = {4};
     vector<vector<double>> fallsland_discharge_fraction_series;
     WwtpDischargeRule wwtp_discharge_fallsland(
             demand_to_wastewater_fraction_fallsland,
@@ -566,7 +566,6 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                      wwtp_discharge_dryville, dryville_demand_buffer, rof_triggered_infra_order_dryville, vector<int>(),
                      rofs_infra_dryville, discount_rate, 30, 0.05);
 
-
     Utility fallsland((char *) "Fallsland", 2, demand_fallsland, demand_n_weeks, fallsland_annual_payment,
                       &fallslandDemandClassesFractions, &fallslandUserClassesWaterPrices,
                       wwtp_discharge_fallsland, fallsland_demand_buffer, rof_triggered_infra_order_fallsland,
@@ -579,13 +578,13 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
     vector<vector<int>> reservoir_utility_connectivity_matrix = {
             {0, 1, 4, 7, 8, 9}, //Watertown
-            {2, 3, 5}, //Dryville
+            {2, 5, 3}, //Dryville
             {2, 4} //Fallsland
     };
 
     auto table_storage_shift = vector<vector<double>>(3, vector<double>(water_sources.size() + 1, 0.));
     table_storage_shift[2][4] = 1500;
-    table_storage_shift[1][3] = 100;
+    table_storage_shift[1][5] = 100;
 
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
     vector<double> initial_restriction_triggers = {watertown_restriction_trigger,
@@ -625,7 +624,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     drought_mitigation_policies = {&restrictions_w, &restrictions_d, &restrictions_f};
 
 
-    /// Transfer policy
+    // Transfer policy
 
     /*
      *      0

@@ -1007,7 +1007,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
             this->master_data_collector = s->runFullSimulation(n_threads);
         }
         double end_time = omp_get_wtime();
-//	printf("Function evaluation time: %f s\n", end_time - start_time);
+	printf("Function evaluation time: %f s\n", end_time - start_time);
 
         //double realization_end = omp_get_wtime();
         //std::cout << "Simulation took  " << realization_end - realization_start

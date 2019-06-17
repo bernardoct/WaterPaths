@@ -17,7 +17,7 @@
 #include <omp.h>
 
 
-#define NUM_OBJECTIVES 6;
+#define NUM_OBJECTIVES 5;
 //#define NUM_DEC_VAR 57;
 #define NUM_DEC_VAR 27; // infrastructure turned off
 
@@ -391,8 +391,8 @@ int main(int argc, char *argv[]) {
         // for debugging borg, creating file to print each ranks DVs which isdone in Eval function   
         
         BORG_Algorithm_ms_startup(&argc, &argv);
-//        BORG_Algorithm_ms_islands((int) n_islands);
-//        BORG_Algorithm_ms_initialization(INITIALIZATION_LATIN_GLOBAL);
+        // BORG_Algorithm_ms_islands((int) n_islands);
+        // BORG_Algorithm_ms_initialization(INITIALIZATION_LATIN_GLOBAL);
         BORG_Algorithm_ms_max_evaluations((int) nfe);
         BORG_Algorithm_output_frequency((int) output_frequency);
 
@@ -414,13 +414,15 @@ int main(int argc, char *argv[]) {
         char runtime[256];
         FILE* outputFile = nullptr;
 
-	sprintf(output_directory, "%s%s%s%s", system_io.c_str(), BAR.c_str(), DEFAULT_OUTPUT_DIR.c_str(), BAR.c_str());
+	sprintf(output_directory, "%s%s", system_io.c_str(), DEFAULT_OUTPUT_DIR.c_str());
 	//Utils::createDir(string(output_directory));
 
-        sprintf(output_file_name, "%sNC_output_MM_S%d_N%lu.set", output_directory, seed, nfe);
+        // sprintf(output_file_name, "%sNC_output_MM_S%d_N%lu.set", output_directory, seed, nfe);
+        sprintf(output_file_name, "%sNC_output_MS_S%d_N%lu.set", output_directory, seed, nfe);
         printf("Reference set will be in %s.\n", output_file_name);
         // output path (make sure this exists)
-        sprintf(runtime, "%s%s%s%sNC_runtime_MM_S%d_N%lu.runtime", system_io.c_str(), BAR.c_str(), DEFAULT_OUTPUT_DIR.c_str(), BAR.c_str(),
+        // sprintf(runtime, "%sNC_runtime_MM_S%d_N%lu_M%%d.runtime", output_directory,
+        sprintf(runtime, "%sNC_runtime_MS_S%d_N%lu.runtime", output_directory,
                 seed, nfe); // runtime
         printf("Runtime files will be in %s.\n", runtime);
         // path (make sure this exists)

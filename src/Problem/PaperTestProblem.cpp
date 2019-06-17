@@ -65,15 +65,12 @@ void PaperTestProblem::setProblemDefinition(BORG_Problem &problem)
 
 
     // Set epsilons for objectives
-    // Original values: (works fine for Formulations 0-4)
 
     BORG_Problem_set_epsilon(problem, 0, 0.001);
-    BORG_Problem_set_epsilon(problem, 1, 25.0);
-    BORG_Problem_set_epsilon(problem, 2, 0.02);
+    BORG_Problem_set_epsilon(problem, 1, 0.02);
+    BORG_Problem_set_epsilon(problem, 2, 25.0);
     BORG_Problem_set_epsilon(problem, 3, 0.02);
     BORG_Problem_set_epsilon(problem, 4, 0.05);
-    BORG_Problem_set_epsilon(problem, 5, 0.05);
-
 }
 #endif
 
@@ -93,6 +90,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
     //FIXME why do we make a null pointer here?
     Simulation *s = nullptr;
+    double calibrate_volume_multiplier = 1.5;
 
     double watertown_restriction_trigger = vars[0];
     double dryville_restriction_trigger = vars[1];
@@ -294,17 +292,21 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
     // CURRENTLY THIS IS THE STORAGE OF FALLS + DURHAM (MICHIE AND LR) + WB
     // ASSUMING DURHAM AND WB SCALE PROPORTIONALLY TO FALLS
-    vector<double> autumn_lake_storage = {0, (23266 + 4257 + 1869) * table_gen_storage_multiplier,
-                                          (34700 + 6349 + 2790) * table_gen_storage_multiplier};
+    // WB and Durham storage added to water supply capacity
+    double autumn_lake_supply_capacity = (14700.0 + 6349 + 2790 + 6000) * table_gen_storage_multiplier * calibrate_volume_multiplier; //6000 added to balance test problem.
+    double autumn_lake_wq_capacity = 20000.0 * table_gen_storage_multiplier * calibrate_volume_multiplier;
+    double autumn_lake_storage_capacity = autumn_lake_wq_capacity + autumn_lake_supply_capacity;
+    vector<double> autumn_lake_storage = {0, autumn_lake_supply_capacity,
+                                          autumn_lake_storage_capacity};
     vector<double> autumn_lake_area = {0.32 * 5734, 0.32 * 29000, 0.28 * 40434};
     DataSeries autumn_lake_storage_area(&autumn_lake_storage, &autumn_lake_area);
 
-    vector<double> new_river_res_storage = {0, 3700};
-    vector<double> new_river_res_area = {0, 0.3675 * 3700};
+    vector<double> new_river_res_storage = {0, 1700};
+    vector<double> new_river_res_area = {0, 0.3675 * new_river_res_storage[1]};
     DataSeries new_river_storage_area(&new_river_res_storage,
                                       &new_river_res_area);
 
-    vector<double> sugar_creek_res_storage = {0, 2909};
+    vector<double> sugar_creek_res_storage = {0, 1500};//2909};
     vector<double> sugar_creek_res_area = {0, 0.3675 * 2909};
     DataSeries sugar_creek_storage_area(&sugar_creek_res_storage,
                                         &sugar_creek_res_area);
@@ -325,7 +327,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     // Lake Michael is based off the Jordan Lake and uses its class
     JordanLakeMinEnvFlowControl lake_michael_min_env_control( 1,
                                                               cape_fear_river_at_lillington, 64.63, 129.26, 25.85, 193.89,
-                                                              290.84, 387.79, 30825.0 * table_gen_storage_multiplier, 10300.0 * table_gen_storage_multiplier);
+                                                              290.84, 387.79, 30825.0 * table_gen_storage_multiplier * calibrate_volume_multiplier, 10300.0 * table_gen_storage_multiplier * calibrate_volume_multiplier);
 
     //FIXME SUGAR CREEK BASED ON CCR, SO LEAVING AS IS, IS THIS A GOOD IDEA?
     vector<double> sugar_creek_inflows = {0.1422 * 7, 0.5 * 7, 1 * 7, 1.5 * 7,
@@ -356,8 +358,8 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
 
     // Lake Michael parameters
-    double lake_michael_supply_capacity = 10300 * table_gen_storage_multiplier; // reduced to .69 of JL cap
-    double lake_michael_wq_capacity = 30825.0 * table_gen_storage_multiplier;
+    double lake_michael_supply_capacity = 8100 * table_gen_storage_multiplier * calibrate_volume_multiplier; // reduced to .69 of JL cap
+    double lake_michael_wq_capacity = 30825.0 * table_gen_storage_multiplier * calibrate_volume_multiplier;
     double lake_michael_storage_capacity = lake_michael_wq_capacity + lake_michael_supply_capacity;
     vector<int> lake_michael_allocations_ids = {0, 1, 2, WATER_QUALITY_ALLOCATION};
     vector<double> lake_michael_allocation_fractions = {
@@ -368,10 +370,6 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     vector<double> lake_michael_treatment_allocation_fractions = {1., 0.0, 0.0};
 
     // Autumn Lake parameters
-    // WB and Durham storage added to water supply capacity
-    double autumn_lake_supply_capacity = (14700.0 + 6349 + 2790) * table_gen_storage_multiplier;
-    double autumn_lake_wq_capacity = 20000.0 * table_gen_storage_multiplier;
-    double autumn_lake_storage_capacity = autumn_lake_wq_capacity + autumn_lake_supply_capacity;
     //FIXME: can reallocate to make more interesting
     vector<int> autumn_lake_allocations_ids = {1, 2, WATER_QUALITY_ALLOCATION};
     vector<double> autumn_lake_allocation_fractions = {
@@ -385,7 +383,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     Reservoir college_rock_reservoir("College Rock Reservoir",
                                      0,
                                      catchment_college_rock,
-                                     449 * table_gen_storage_multiplier,
+                                     449 * table_gen_storage_multiplier * calibrate_volume_multiplier,
                                      ILLIMITED_TREATMENT_CAPACITY,
                                      evaporation_owasa,
                                      222);
@@ -425,7 +423,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     Reservoir sugar_creek_reservoir("Sugar Creek Reservoir",
                                     5,
                                     catchment_sugar_creek,
-                                    2909,
+                                    1500, //2909,  VALUE CHANGED FOR CALIBRATION OF TEST PROBLEM.
                                     ILLIMITED_TREATMENT_CAPACITY,
                                     evaporation_owasa,
                                     &sugar_creek_storage_area,
@@ -453,7 +451,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     AllocatedReservoir new_river_reservoir("New River Reservoir",
                                            4,
                                            catchment_new_river,
-                                           3700.0,
+                                           new_river_res_storage[1],
                                            ILLIMITED_TREATMENT_CAPACITY,
                                            evaporation_falls_lake,
                                            &new_river_storage_area,
@@ -722,7 +720,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
         this->master_data_collector = s->runFullSimulation(n_threads);
     }
     double end_time = omp_get_wtime();
-    //printf("Function evaluation time: %f\n", end_time - start_time);
+    printf("Function evaluation time: %f\n", end_time - start_time);
 
     /// Calculate objectives and store them in Borg decision variables array.
 #ifdef  PARALLEL

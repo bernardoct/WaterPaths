@@ -1,23 +1,27 @@
 #!/bin/bash
-#PBS -N single_run_wcu
-#PBS -l nodes=1:ppn=16
-#PBS -l walltime=2:00:00
-#PBS -o ./output/single_run.out
-#PBS -e ./error/single_run.err
-# #PBS -m bea
-# #PBS -M bct52@cornell.edu
-cd $PBS_O_WORKDIR
-module load openmpi-1.10.7-gnu-x86_64
-export OMP_NUM_THREADS=16
+#SBATCH -n 1 -N 1
+#SBATCH --job-name=calibrate
+#SBATCH --output=output/calibrate.out
+#SBATCH --error=error/calibrate.err
+#SBATCH -p skx-dev
+#SBATCH --time=00:16:00
+#SBATCH --mail-user=bct52@cornell.edu
+# #SBATCH --mail-type=all
+cd $SLURM_SUBMIT_DIR
+export OMP_NUM_THREADS=96
 N_REALIZATIONS=1000
-SOLUTION=270
-DATA_DIR="/scratch/bct52/"
+SOLUTION=0
+DATA_DIR="/work/03253/tg825524/stampede2/"
 ./triangleSimulation -T ${OMP_NUM_THREADS}\
        	-t 2344\
        	-r ${N_REALIZATIONS}\
        	-d ${DATA_DIR}\
-       	-C 1\
-       	-O ${DATA_DIR}rof_tables_test_problem/\
-       	-s test_DVs_table_shifts.csv\
+       	-C 0\
+	-O rof_tables_test_problem\
+       	-s calibrate_sol.csv\
        	-e 0\
-        -m 0
+        -m ${SOLUTION}\
+	-U TestFiles/rdm_utilities_test_problem_opt.csv\
+	-W TestFiles/rdm_water_sources_test_problem_opt.csv\
+        -P TestFiles/rdm_dmp_test_problem_opt.csv\
+        -p false	

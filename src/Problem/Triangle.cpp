@@ -10,7 +10,6 @@
 #include <omp.h>
 #ifdef  PARALLEL
 #include <mpi.h>
-#include "../../Borg/borgms.h"
 #endif
 #include "Triangle.h"
 #include "../Controls/SeasonalMinEnvFlowControl.h"

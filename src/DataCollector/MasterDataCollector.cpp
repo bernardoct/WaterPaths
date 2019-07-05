@@ -362,21 +362,16 @@ void MasterDataCollector::printUtilityObjectivesToRowOutStream(vector<UtilitiesD
         std::ofstream &outStream, vector<double> &objectives) {
     // Create vector with restriction policies pertaining only to the
     // utility whose objectives are being calculated.
-    vector<RestrictionsDataCollector> restrictions;
-    for (vector<DataCollector *> p : drought_mitigation_policy_collectors) {
-        if (p[realizations_ran[0]]->type == RESTRICTIONS && p[realizations_ran[0]]->id == u[realizations_ran[0]]->id) {
-            for (auto r : realizations_ran) {
-                restrictions.push_back(
-                        dynamic_cast<RestrictionsDataCollector &>(*p[r]));
-            }
-        }
-    }
+    vector<RestrictionsDataCollector *> utility_restrictions(
+            *max_element(realizations_ran.begin(), realizations_ran.end()) + 1
+    );
+    isolateRestrictionDataCollectors(u, utility_restrictions);
 
     // Reliability
     double reliability = ObjectivesCalculator::calculateReliabilityObjective(u, realizations_ran);
     /// Restriction Frequency
     double restriction_freq = ObjectivesCalculator::
-    calculateRestrictionFrequencyObjective(restrictions, realizations_ran);
+    calculateRestrictionFrequencyObjective(utility_restrictions, realizations_ran);
     /// Infrastructure NPC
     double inf_npc = ObjectivesCalculator::
     calculateNetPresentCostInfrastructureObjective(u, realizations_ran);
@@ -452,29 +447,36 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name, b
     } else {
 //        cout << "Calculating Objectives" << endl;
         for (auto &u : utility_collectors) {
-            /// Create vector with restriction policies pertaining only to the
-            /// utility whose objectives are being calculated.
-            vector<RestrictionsDataCollector> utility_restrictions;
-            for (auto &p : drought_mitigation_policy_collectors)
-                if (p[realizations_ran[0]]->type == RESTRICTIONS && p[realizations_ran[0]]->id == u[realizations_ran[0]]->id)
-                    for (int i = 0; i < (int) p.size(); ++i) {
-                        utility_restrictions.push_back(
-                                dynamic_cast<RestrictionsDataCollector &>(*p[i]));
-                    }
+            // Create vector with restriction policies pertaining only to the
+            // utility whose objectives are being calculated.
+            vector<RestrictionsDataCollector *> utility_restrictions(
+                    *max_element(realizations_ran.begin(), realizations_ran.end()) + 1
+                    );
+            isolateRestrictionDataCollectors(u, utility_restrictions);
 
             objectives.push_back
-                    (ObjectivesCalculator::calculateReliabilityObjective(u));
+                    (ObjectivesCalculator::calculateReliabilityObjective(u, realizations_ran));
             objectives.push_back
-                    (ObjectivesCalculator::calculateRestrictionFrequencyObjective(utility_restrictions));
+                    (ObjectivesCalculator::calculateRestrictionFrequencyObjective(utility_restrictions, realizations_ran));
             objectives.push_back
-                    (ObjectivesCalculator::calculateNetPresentCostInfrastructureObjective(u));
+                    (ObjectivesCalculator::calculateNetPresentCostInfrastructureObjective(u, realizations_ran));
             objectives.push_back
-                    (ObjectivesCalculator::calculatePeakFinancialCostsObjective(u));
+                    (ObjectivesCalculator::calculatePeakFinancialCostsObjective(u, realizations_ran));
             objectives.push_back
-                    (ObjectivesCalculator::calculateWorseCaseCostsObjective(u));
+                    (ObjectivesCalculator::calculateWorseCaseCostsObjective(u, realizations_ran));
         }
     }
     return objectives;
+}
+
+void MasterDataCollector::isolateRestrictionDataCollectors(vector<UtilitiesDataCollector *> &u,
+                                                           vector<RestrictionsDataCollector *> &utility_restrictions) const {
+    for (auto &p : drought_mitigation_policy_collectors)
+                if (p.at(realizations_ran.at(0))->type == RESTRICTIONS && p[realizations_ran[0]]->id == u.at(realizations_ran[0])->id)
+                    for (auto i : realizations_ran) {
+                        utility_restrictions.at(i) =
+                                dynamic_cast<RestrictionsDataCollector *>(p.at(i));
+                    }
 }
 
 void MasterDataCollector::performBootstrapAnalysis(
@@ -510,8 +512,10 @@ void MasterDataCollector::performBootstrapAnalysis(
         for (auto &u : utility_collectors) {
             // Create vector with restriction policies pertaining only to the
             // utility whose objectives are being calculated.
-            vector<RestrictionsDataCollector> utility_restrictions;
-            createRestrictionVectorForRFCalcBS(u, utility_restrictions);
+            vector<RestrictionsDataCollector *> utility_restrictions(
+                    *max_element(realizations_ran.begin(), realizations_ran.end()) + 1
+            );
+            isolateRestrictionDataCollectors(u, utility_restrictions);
 
             // Populate vector of objectives for each corresponding set of bootstrap samples.
             objectives[set].push_back
@@ -557,18 +561,6 @@ void MasterDataCollector::printBSSamples(int sol_id, int n_sets, int n_samples,
     }
 
     outStream_realizations.close();
-}
-
-void MasterDataCollector::createRestrictionVectorForRFCalcBS(vector<UtilitiesDataCollector *> &u,
-                                                             vector<RestrictionsDataCollector> &utility_restrictions) const {
-    for (auto &p : drought_mitigation_policy_collectors) {
-        if (p[realizations_ran[0]]->type == RESTRICTIONS && p[realizations_ran[0]]->id == u[realizations_ran[0]]->id) {
-            for (auto i : p) {
-                utility_restrictions.push_back(
-                        dynamic_cast<RestrictionsDataCollector &>(*i));
-            }
-        }
-    }
 }
 
 void MasterDataCollector::printObjectivesOfAllRealizationsForBSAnalysis(int sol_id, int n_sets, int n_samples) {

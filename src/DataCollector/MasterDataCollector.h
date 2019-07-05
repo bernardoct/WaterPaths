@@ -85,14 +85,14 @@ public:
 
     void printObjectivesOfAllRealizationsForBSAnalysis(int sol_id, int n_sets, int n_samples);
 
-    void createRestrictionVectorForRFCalcBS(vector<UtilitiesDataCollector *> &u,
-                                            vector<RestrictionsDataCollector> &utility_restrictions) const;
-
     static void setSeed(int seed);
 
     static void unsetSeed();
 
     void printBSSamples(int sol_id, int n_sets, int n_samples, const vector<vector<int>> &bootstrap_sample_sets) const;
+
+    void isolateRestrictionDataCollectors(vector<UtilitiesDataCollector *> &u,
+                                          vector<RestrictionsDataCollector *> &utility_restrictions) const;
 };
 
 

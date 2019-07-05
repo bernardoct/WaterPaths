@@ -14,7 +14,6 @@ class ContinuityModelROF : public ContinuityModel {
 private:
 //    Matrix3D<double> storage_to_rof_table;
 //    Matrix3D<double> storage_to_rof_rof_realization;
-    vector<Matrix2D<double>> ut_storage_to_rof_table;
     vector<Matrix2D<double>> ut_storage_to_rof_rof_realization;
     vector<int> online_downstream_sources;
     bool *storage_wout_downstream;
@@ -25,6 +24,7 @@ protected:
     int beginning_tier = 0;
     vector<WaterSource *> realization_water_sources;
     vector<Utility *> realization_utilities;
+    vector<Matrix2D<double>> ut_storage_to_rof_table;
 
     vector<vector<double>> table_storage_shift;
     vector<double> utility_base_storage_capacity;;
@@ -45,7 +45,10 @@ public:
 
     vector<double> calculateShortTermROFFullCalcs(int week);
 
-    vector<double> calculateShortTermROFTable(int week);
+    vector<double> calculateShortTermROFTable(int week, vector<Utility *> utilities,
+                                              vector<double> utilities_base_storage_capacity,
+                                              const vector<Matrix2D<double>> &ut_storage_to_rof_table,
+                                              vector<double> current_storage_table_shift);
 
     vector<double> calculateLongTermROF(int week);
 

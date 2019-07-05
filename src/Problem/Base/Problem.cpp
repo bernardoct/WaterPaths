@@ -190,12 +190,17 @@ Problem::Problem(unsigned long n_weeks) : n_weeks(n_weeks) {
 void
 Problem::setRofTables(unsigned long n_realizations, string rof_tables_directory) {
 
+    set<unsigned long> s( realizations_to_run.begin(), realizations_to_run.end() );
+    vector<unsigned long> realizations_to_run_load_tables;
+    realizations_to_run_load_tables.assign( s.begin(), s.end() );
+
     //double start_time = omp_get_wtime();
     cout << "Loading ROF tables" << endl;
     int n_tiers = NO_OF_INSURANCE_STORAGE_TIERS + 1;
+    auto table_data_id = realizations_to_run_load_tables[0];
 
     /// Get number of weeks in tables
-    string file_name = rof_tables_directory + "/tables_r0_u0";
+    string file_name = rof_tables_directory + "/tables_r" + to_string(table_data_id) + "_u0";
     ifstream in(file_name, ios_base::binary);
     if (!in.good()) {
         string error_table_file = "Tables file not found: " + file_name;
@@ -205,7 +210,8 @@ Problem::setRofTables(unsigned long n_realizations, string rof_tables_directory)
     //FIXME: FIGURE OUT NUMBER OF UTILITIES BY CHECKING IF TABLES_R0_U0, TABLES_R0_U1, AND SO ON EXIST.
     char table_file_name[150];
     for (n_utilities = 0; n_utilities < MAX_NUMBER_OF_UTILITIES; ++n_utilities) {
-        sprintf(table_file_name, "%s%stables_r0_u%d", rof_tables_directory.c_str(), BAR.c_str(), n_utilities);
+        sprintf(table_file_name, "%s%stables_r%lu_u%d",
+                rof_tables_directory.c_str(), BAR.c_str(), table_data_id, n_utilities);
         ifstream f(table_file_name);
         if (!f.good()) {
             if (n_utilities == 0) {
@@ -228,10 +234,6 @@ Problem::setRofTables(unsigned long n_realizations, string rof_tables_directory)
 
     this->rof_tables_directory = rof_tables_directory;
 
-    set<unsigned long> s( realizations_to_run.begin(), realizations_to_run.end() );
-    vector<unsigned long> realizations_to_run_load_tables;
-    realizations_to_run_load_tables.assign( s.begin(), s.end() );
-
     // Load ROF tables
     for (auto r : realizations_to_run_load_tables) {
         for (int u = 0; u < n_utilities; ++u) {
@@ -242,16 +244,16 @@ Problem::setRofTables(unsigned long n_realizations, string rof_tables_directory)
                 throw invalid_argument(error_table_file.c_str());
             }
 
-            /// Get table file size from table files.
+            // Get table file size from table files.
             unsigned stringsize;
             in_file.read(reinterpret_cast<char *>(&stringsize), sizeof(unsigned));
 
-            /// Get table information from table files.
+            // Get table information from table files.
             double data[stringsize];
             in_file.read(reinterpret_cast<char *>(&data),
                     stringsize * sizeof(double));
 
-            /// Create tables based on table files.
+            // Create tables based on table files.
             rof_tables[r][u].setData(data, (int) stringsize);
 
             for (unsigned long i = 0; i < stringsize; ++i) {

@@ -17,10 +17,6 @@
 #include <omp.h>
 
 
-#define NUM_OBJECTIVES 5;
-//#define NUM_DEC_VAR 57;
-#define NUM_DEC_VAR 27; // infrastructure turned off
-
 using namespace std;
 using namespace Constants;
 using namespace Solutions;
@@ -41,12 +37,22 @@ void print_decision_vars(double *vars) {
 }
 
 void eval(double *vars, double *objs, double *consts) {
-//    try {
+    try {
 //        print_decision_vars(vars);
+///        for (int i = 0; i < NUM_DEC_VAR; ++i) printf("%f,", vars[i]); //for (int i = 0; i < 5; ++i) printf("%f, ", objs[i]); printf("\n");
+///	printf("\n");
+///	printf("\n");
+///	printf("\n");
+        for (int i = 0; i < NUM_DEC_VAR; ++i) {
+            if (isnan(vars[i])) {
+                char error[50];
+                sprintf(error, "Nan in decision variable %d", i);
+                throw invalid_argument(error);
+            }
+        }
         failures += problem_ptr->functionEvaluation(vars, objs, consts);
-        //for (int i = 0; i < 57; ++i) printf("%f, ", vars[i]); for (int i = 0; i < 5; ++i) printf("%f, ", objs[i]); printf("\n");
         problem_ptr->destroyDataCollector();
-//    } catch (...) {
+    } catch (...) {
 //        sol_out << endl;
 //        sol_out << "Failure! Decision Variable values: " << endl;
 //        cout << endl;
@@ -54,7 +60,8 @@ void eval(double *vars, double *objs, double *consts) {
 //        print_decision_vars(vars);
 //        sol_out << endl;
 //        sol_out << endl;
-//    }
+        for (int i = 0; i < NUM_OBJECTIVES; ++i) objs[i] = 1e5;
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -352,7 +359,7 @@ int main(int argc, char *argv[]) {
         } else {
             double time_0 = omp_get_wtime();
             ofstream objs_file;
-            string file_name = system_io + "output" + BAR + "Objectives_RDM" + to_string(rdm_no) +
+            string file_name = system_io + "output" + BAR + "Objectives" + (rdm_no == -1 ? "" : "_RDM" + to_string(rdm_no)) +
                                "_sols" + to_string(first_solution) + "_to_" + to_string(last_solution) + ".csv";
             objs_file.open(file_name);
             printf("Objectives file will be printed at %s.\n", file_name.c_str());
@@ -362,6 +369,7 @@ int main(int argc, char *argv[]) {
                 problem.setSol_number((unsigned long) s);
                 problem_ptr->functionEvaluation(solutions[s].data(), c_obj, c_constr);
                 vector<double> objectives = problem_ptr->calculateAndPrintObjectives(false);
+//		printf("%f %f %f\n", objectives[0], objectives[5], objectives[10]);
                 if (plotting)
                     problem.printTimeSeriesAndPathways();
                 problem_ptr->destroyDataCollector();

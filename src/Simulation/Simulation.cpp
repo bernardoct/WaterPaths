@@ -282,7 +282,7 @@ void Simulation::createContinuityModels(unsigned long realization,
                 rof_model->getUt_storage_to_rof_table(), import_export_rof_tables);
 }
 
-MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
+MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, double *vars) {
     if (rof_tables_folder.length() == 0) {
         rof_tables_folder = "rof_tables";
     }
@@ -307,10 +307,13 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
     vector<unsigned long> realizations_to_run_unique;
     realizations_to_run_unique.assign( s.begin(), s.end() );
 
-    // Run realizations.
+    // Prepare error output.
     int had_catch = 0;
     string error_m = "Error in realizations ";
-//    std::reverse(realizations_to_run.begin(), realizations_to_run.end());
+    string error_file_name = "error_reals";
+    string error_file_content = "#";
+
+    // Run realizations.
 #pragma omp parallel for ordered num_threads(n_threads) shared(had_catch)
     for (unsigned long r = 0; r < realizations_to_run_unique.size(); ++r) {
         unsigned long realization = realizations_to_run_unique[r];
@@ -340,7 +343,9 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                 realization_model->setShortTermROFs(
                             rof_model->calculateShortTermROF(w, import_export_rof_tables));
                 // Apply drought mitigation policies
-                realization_model->applyDroughtMitigationPolicies(w);
+                if (import_export_rof_tables != EXPORT_ROF_TABLES) {
+                    realization_model->applyDroughtMitigationPolicies(w);
+		}
                 // Continuity calculations for current week
                 realization_model->continuityStep(w);
                 // Collect system data for output printing and objective calculations.
@@ -357,6 +362,8 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
 #pragma omp atomic
             ++had_catch;
             error_m += to_string(realization) + " ";
+            error_file_name += "_" + to_string(realization);
+            error_file_content += to_string(realization) + ",";
             master_data_collector->removeRealization(realization);
         }
 
@@ -377,8 +384,24 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
 #else
         world_rank = 0;
 #endif
-	error_m += ". Decision variables in sol_error_rank_" + to_string(world_rank) + ".";
+
+    // Create error file
+	error_file_name += ".csv";
+	error_m += ". Error data in " + error_file_name;
+	ofstream error_file;
+	error_file.open(error_file_name);
+
+	// Write error rile
+	error_file << error_file_content << endl;
+    for (int i = 0; i < NUM_DEC_VAR - 1; ++i) {
+        error_file << vars[i] << ",";
+    }
+    error_file << vars[NUM_DEC_VAR - 1];
+
+    // Finalize error reporting
+    error_file.close();
 	printf("%s", error_m.c_str());
+
 	master_data_collector->cleanCollectorsOfDeletedRealizations();
 //        throw_with_nested(runtime_error(error_m.c_str()));
     }

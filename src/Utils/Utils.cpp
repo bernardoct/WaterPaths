@@ -75,8 +75,10 @@ vector<vector<double>> Utils::parse2DCsvFile(string file_name, unsigned long max
             data.push_back(record);
         }
     } else {
-        cerr << "Could not read file " << file_name << "\n";
-        throw invalid_argument("File not found.");
+	string error = "File " + file_name + " not found.";
+	char error_char[error.size() + 1];
+	strcpy(error_char, error.c_str());
+        throw invalid_argument(error_char);
     }
 
     if (rows_to_read.empty())

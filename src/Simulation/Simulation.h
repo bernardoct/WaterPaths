@@ -89,7 +89,7 @@ public:
 
     virtual ~Simulation();
 
-    MasterDataCollector* runFullSimulation(unsigned long n_threads);
+    MasterDataCollector *runFullSimulation(unsigned long n_threads, double *vars);
 
     void setupSimulation(vector<WaterSource *> &water_sources, Graph &water_sources_graph,
                              const vector<vector<int>> &water_sources_to_utilities, vector<Utility *> &utilities,

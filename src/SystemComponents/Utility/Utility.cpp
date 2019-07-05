@@ -35,8 +35,8 @@ Utility::Utility(
         vector<vector<double>>& demands_all_realizations,
         int number_of_week_demands,
         const double percent_contingency_fund_contribution,
-        const vector<vector<double>> *typesMonthlyDemandFraction,
-        const vector<vector<double>> *typesMonthlyWaterPrice,
+        const vector<vector<double>> &typesMonthlyDemandFraction,
+        const vector<vector<double>> &typesMonthlyWaterPrice,
         WwtpDischargeRule wwtp_discharge_rule,
         double demand_buffer) :
         total_storage_capacity(NONE),
@@ -79,8 +79,8 @@ Utility::Utility(
  */
 Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations,
                  int number_of_week_demands, const double percent_contingency_fund_contribution,
-                 const vector<vector<double>> *typesMonthlyDemandFraction,
-                 const vector<vector<double>> *typesMonthlyWaterPrice,
+                 const vector<vector<double>> &typesMonthlyDemandFraction,
+                 const vector<vector<double>> &typesMonthlyWaterPrice,
                  WwtpDischargeRule wwtp_discharge_rule,
                  double demand_buffer, const vector<int> &rof_infra_construction_order,
                  const vector<int> &demand_infra_construction_order,
@@ -147,8 +147,8 @@ Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_r
  */
 Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations,
                  int number_of_week_demands, const double percent_contingency_fund_contribution,
-                 const vector<vector<double>> *typesMonthlyDemandFraction,
-                 const vector<vector<double>> *typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,
+                 const vector<vector<double>> &typesMonthlyDemandFraction,
+                 const vector<vector<double>> &typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,
                  double demand_buffer, const vector<int> &rof_infra_construction_order,
                  const vector<int> &demand_infra_construction_order,
                  const vector<double> &infra_construction_triggers, double infra_discount_rate, double bond_term,
@@ -256,20 +256,20 @@ bool Utility::compById(Utility *a, Utility *b) {
  * @param typesMonthlyWaterPrice
  */
 void Utility::calculateWeeklyAverageWaterPrices(
-        const vector<vector<double>> *typesMonthlyDemandFraction,
-        const vector<vector<double>> *typesMonthlyWaterPrice) {
+        const vector<vector<double>> &typesMonthlyDemandFraction,
+        const vector<vector<double>> &typesMonthlyWaterPrice) {
     priceCalculationErrorChecking(typesMonthlyDemandFraction,
                                   typesMonthlyWaterPrice);
 
     weekly_average_volumetric_price = vector<double>((int) WEEKS_IN_YEAR + 1, 0.);
     double monthly_average_price[NUMBER_OF_MONTHS] = {};
-    int n_tiers = static_cast<int>(typesMonthlyWaterPrice->at(0).size());
+    int n_tiers = static_cast<int>(typesMonthlyWaterPrice.at(0).size());
 
     // Calculate monthly average prices across consumer types.
     for (int m = 0; m < NUMBER_OF_MONTHS; ++m)
         for (int t = 0; t < n_tiers; ++t)
-            monthly_average_price[m] += (*typesMonthlyDemandFraction)[m][t] *
-                                        (*typesMonthlyWaterPrice)[m][t];
+            monthly_average_price[m] += typesMonthlyDemandFraction[m][t] *
+                                        typesMonthlyWaterPrice[m][t];
 
     // Create weekly price table from monthly prices.
     for (int w = 0; w < (int) (WEEKS_IN_YEAR + 1); ++w)
@@ -283,14 +283,14 @@ void Utility::calculateWeeklyAverageWaterPrices(
  * @param typesMonthlyWaterPrice
  */
 void Utility::priceCalculationErrorChecking(
-        const vector<vector<double>> *typesMonthlyDemandFraction,
-        const vector<vector<double>> *typesMonthlyWaterPrice) {
-    if (typesMonthlyDemandFraction->size() != NUMBER_OF_MONTHS)
+        const vector<vector<double>> &typesMonthlyDemandFraction,
+        const vector<vector<double>> &typesMonthlyWaterPrice) {
+    if (typesMonthlyDemandFraction.size() != NUMBER_OF_MONTHS)
         throw invalid_argument("There must be 12 total_demand fractions per tier.");
-    if (typesMonthlyWaterPrice->size() != NUMBER_OF_MONTHS)
+    if (typesMonthlyWaterPrice.size() != NUMBER_OF_MONTHS)
         throw invalid_argument("There must be 12 water prices per tier.");
-    if ((*typesMonthlyWaterPrice)[0].size() !=
-        (*typesMonthlyDemandFraction)[0].size())
+    if ((&typesMonthlyWaterPrice)[0].size() !=
+        (&typesMonthlyDemandFraction)[0].size())
         throw invalid_argument("There must be Demand fractions and water "
                                          "prices for the same number of tiers.");
 }
@@ -521,13 +521,17 @@ void Utility::updateContingencyFundAndDebtService(
             projected_fund_contribution - revenue_losses - transfer_costs +
             recouped_loss_price_surcharge;
 
-    restricted_price = NON_INITIALIZED;
-    offset_rate_per_volume = NONE;
-    this->demand_offset = NONE;
+    resetDroughtMitigationVariables();
 
     // Calculate current debt payment to be made on that week (if first
     // week of year), if any.
     current_debt_payment = updateCurrent_debt_payment(week);
+}
+
+void Utility::resetDroughtMitigationVariables() {
+    restricted_price = NON_INITIALIZED;
+    offset_rate_per_volume = NONE;
+    this->demand_offset = NONE;
 }
 
 void Utility::setWaterSourceOnline(unsigned int source_id, int week) {
@@ -833,4 +837,8 @@ double Utility::getNet_stream_inflow() const {
 
 const InfrastructureManager &Utility::getInfrastructure_construction_manager() const {
     return infrastructure_construction_manager;
+}
+
+double Utility::getDemand_offset() const {
+    return demand_offset;
 }

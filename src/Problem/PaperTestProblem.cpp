@@ -25,10 +25,10 @@
 #include "../DroughtMitigationInstruments/Transfers.h"
 #include "../DroughtMitigationInstruments/InsuranceStorageToROF.h"
 #include "../SystemComponents/Bonds/LevelDebtServiceBond.h"
-#include "../SystemComponents/Bonds/BalloonPaymentBond.h"
 #include "../Simulation/Simulation.h"
 #include "../SystemComponents/WaterSources/WaterReuse.h"
 #include "../SystemComponents/WaterSources/ReservoirExpansion.h"
+#include "../SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
 
 #ifdef PARALLEL
 void PaperTestProblem::setProblemDefinition(BORG_Problem &problem)
@@ -58,19 +58,21 @@ void PaperTestProblem::setProblemDefinition(BORG_Problem &problem)
     BORG_Problem_set_bounds(problem, 20, 0.0, 1.0);     // new river rank watertown
     BORG_Problem_set_bounds(problem, 21, 0.0, 1.0);     // college rock expansion rank low
     BORG_Problem_set_bounds(problem, 22, 0.0, 1.0);     // college rock expansion rank high
-    BORG_Problem_set_bounds(problem, 23, 0.0, 1.0);     // watertown reuse rank
+    BORG_Problem_set_bounds(problem, 23, 0.0, 1.0);     // watertown reuse I rank
     BORG_Problem_set_bounds(problem, 24, 0.0, 1.0);     // sugar creek rank
     BORG_Problem_set_bounds(problem, 25, 0.0, 1.0);     // granite quarry rank
     BORG_Problem_set_bounds(problem, 26, 0.0, 1.0);     // new river rank fallsland
-
+    BORG_Problem_set_bounds(problem, 27, 0.0, 1.0);     // watertown reuse II rank
+    BORG_Problem_set_bounds(problem, 28, 0.0, 1.0);     // watertown reuse II rank
+    BORG_Problem_set_bounds(problem, 29, 0.0, 1.0);     // watertown reuse II rank
 
     // Set epsilons for objectives
 
     BORG_Problem_set_epsilon(problem, 0, 0.001);
     BORG_Problem_set_epsilon(problem, 1, 0.02);
-    BORG_Problem_set_epsilon(problem, 2, 25.0);
-    BORG_Problem_set_epsilon(problem, 3, 0.02);
-    BORG_Problem_set_epsilon(problem, 4, 0.05);
+    BORG_Problem_set_epsilon(problem, 2, 10.0);
+    BORG_Problem_set_epsilon(problem, 3, 0.025);
+    BORG_Problem_set_epsilon(problem, 4, 0.01);
 }
 #endif
 
@@ -87,10 +89,9 @@ void PaperTestProblem::setProblemDefinition(BORG_Problem &problem)
 int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *consts) {
 
     // ===================== SET UP DECISION VARIABLES  =====================
-
     //FIXME why do we make a null pointer here?
     Simulation *s = nullptr;
-    double calibrate_volume_multiplier = 1.5;
+    double calibrate_volume_multiplier = 1.;
 
     double watertown_restriction_trigger = vars[0];
     double dryville_restriction_trigger = vars[1];
@@ -125,42 +126,50 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
     double new_river_rank_watertown = vars[20];
     //double new_river_rank_watertown = .1;
-    double college_rock_expansion_low_rank = vars[21];
-    //double college_rock_expansion_low_rank = .2;
-    double college_rock_expansion_high_rank = vars[22];
-    //double college_rock_expansion_high_rank = .03;
-    double watertown_reuse_rank = vars[23];
-    //double watertown_reuse_rank = .4;
+    double new_river_rank_fallsland = vars[26];
+    //double new_river_rank_fallsland = .1;
     double sugar_creek_rank =vars[24];
     //double sugar_creek_rank = .1;
     double granite_quarry_rank = vars[25];
     //double granite_quarry_rank = .2;
-    double new_river_rank_fallsland = vars[26];
-    //double new_river_rank_fallsland = .1;
+    double college_rock_expansion_low_rank = vars[21];
+    //double college_rock_expansion_low_rank = .2;
+    double college_rock_expansion_high_rank = vars[22];
+    //double college_rock_expansion_high_rank = .03;
+    double watertown_reuse_i_rank = vars[23];
+    //double watertown_reuse_rank = .4;
+    double watertown_reuse_ii_rank = vars[27];
+//    double watertown_reuse_ii_rank = 0.1;
+    double dryville_reuse_rank = vars[28];
+//    double dryville_reuse_rank = 0.01;
+    double fallsland_reuse_rank = vars[29];
+//    double fallsland_reuse_rank  = 0.01;
 
     vector<infraRank> dryville_infra_order_raw = {
-            infraRank(3, sugar_creek_rank),
-            infraRank(5, granite_quarry_rank)
+            infraRank(5, sugar_creek_rank),
+//            infraRank(6, granite_quarry_rank),
+            infraRank(11, dryville_reuse_rank)
     };
 
     vector<infraRank> fallsland_infra_order_raw = {
-            infraRank(4, new_river_rank_fallsland)
+            infraRank(4, new_river_rank_fallsland),
+            infraRank(12, fallsland_reuse_rank)
     };
 
     vector<infraRank> watertown_infra_order_raw = {
             infraRank(4, new_river_rank_watertown),
             infraRank(7, college_rock_expansion_low_rank),
             infraRank(8, college_rock_expansion_high_rank),
-            infraRank(9, watertown_reuse_rank)
+            infraRank(9, watertown_reuse_i_rank),
+            infraRank(10, watertown_reuse_ii_rank)
     };
 
     sort(dryville_infra_order_raw.begin(),
          dryville_infra_order_raw.end(),
          by_xreal());
-    // commenting out because vector only has length 1
-    //sort(fallsland_infra_order_raw.begin(),
-    //    fallsland_infra_order_raw.end(),
-    //    by_xreal());
+    sort(fallsland_infra_order_raw.begin(),
+        fallsland_infra_order_raw.end(),
+        by_xreal());
     sort(watertown_infra_order_raw.begin(),
          watertown_infra_order_raw.end(),
          by_xreal());
@@ -180,11 +189,10 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     vector<double> rofs_infra_watertown = vector<double>
             (rof_triggered_infra_order_watertown.size(), watertown_inftrigger);
 
-
     /// Remove small expansions being built after big expansions that would
     /// encompass the smal expansions.
-    double added_storage_college_rock_expansion_low = 500;
-    double added_storage_college_rock_expansion_high = 1000;
+    double added_storage_college_rock_expansion_low = 100 * calibrate_volume_multiplier;
+    double added_storage_college_rock_expansion_high = 2500 * calibrate_volume_multiplier;
 
     checkAndFixInfraExpansionHighLowOrder(
             &rof_triggered_infra_order_watertown, &rofs_infra_watertown,
@@ -202,7 +210,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     if (sum_lma_allocations == 0.)
         __throw_invalid_argument("LMA allocations cannot be all "
                                  "zero.");
-    if (sum_lma_allocations > 1){
+    if (sum_lma_allocations > 1) {
         dryville_LMA /= sum_lma_allocations;
         fallsland_LMA /= sum_lma_allocations;
         watertown_LMA /= sum_lma_allocations;
@@ -225,7 +233,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     // ===================== SET UP PROBLEM COMPONENTS =====================
 //Beginning with Reservoir continuity
 
-    int streamflow_n_weeks = 52 * (70 + 50);
+    int streamflow_n_weeks = (int) streamflows_durham[0].size();
 
     EvaporationSeries evaporation_durham(&evap_durham, streamflow_n_weeks); //Evaporation
     EvaporationSeries evaporation_falls_lake(&evap_falls_lake, streamflow_n_weeks); //Evaporation
@@ -235,37 +243,42 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     // Create catchments and corresponding vectors
 
     // Autumn Lake (abstracted Neuse River Basin)
-    Catchment durham_inflows(&streamflows_durham, streamflow_n_weeks); // use Durham inflows for half the inflows
     Catchment lower_flat_river(&streamflows_flat, streamflow_n_weeks);
-    Catchment swift_creek(&streamflows_swift, streamflow_n_weeks);
-
+    Catchment little_river_raleigh_autumn(&streamflows_llr, streamflow_n_weeks);
 
     // Add catchments to vector
     vector<Catchment *> catchment_autumn;
-    catchment_autumn.push_back(&durham_inflows);
     catchment_autumn.push_back(&lower_flat_river);
-    //catchment_autumn.push_back(&little_river_raleigh);
-    catchment_autumn.push_back(&swift_creek);
+    catchment_autumn.push_back(&little_river_raleigh_autumn);
 
     // College Rock Reservoir Catchment (abstracted from upper cape fear)
     Catchment phils_creek(&streamflows_phils, streamflow_n_weeks);
     Catchment morgan_creek(&streamflows_morgan, streamflow_n_weeks);
+    Catchment crabtree_creek_cr(&streamflows_crabtree, streamflow_n_weeks);
+    Catchment cane_creek_cr(&streamflows_cane, streamflow_n_weeks);
 
     // Add catchments to vector
     // College Rock (University Lake)
     vector<Catchment *> catchment_college_rock;
     catchment_college_rock.push_back(&morgan_creek);
+    catchment_college_rock.push_back(&crabtree_creek_cr);
+//    catchment_college_rock.push_back(&cane_creek_cr);
+    catchment_college_rock.push_back(&phils_creek);
 
     // Granite Quarry (Stone Quarry)
+    Catchment durham_inflows(&streamflows_durham, streamflow_n_weeks); // use Durham inflows for half the inflows
     vector<Catchment *> catchment_granite_quarry;
     catchment_granite_quarry.push_back(&phils_creek);
+    catchment_granite_quarry.push_back(&durham_inflows);
 
     // Sugar Creek (Cane Creek)
+    Catchment swift_creek(&streamflows_swift, streamflow_n_weeks);
     Catchment sugar_creek(&streamflows_cane, streamflow_n_weeks);
 
     // Add catchment to vector
     vector<Catchment *> catchment_sugar_creek;
     catchment_sugar_creek.push_back(&sugar_creek);
+    catchment_sugar_creek.push_back(&swift_creek);
 
     // Lake Michael Catchment (abstracted lower cape fear)
     Catchment lower_haw_river(&streamflows_haw, streamflow_n_weeks);
@@ -275,10 +288,12 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     catchment_lower_haw_river.push_back(&lower_flat_river);
 
     // New River Reservoir catchment
-    Catchment little_river_raleigh(&streamflows_llr, streamflow_n_weeks);
+    Catchment little_river_raleigh_nrr(&streamflows_llr, streamflow_n_weeks);
+    Catchment clayton_gage(&streamflows_clayton, streamflow_n_weeks);
 
     vector<Catchment *> catchment_new_river;
-    catchment_new_river.push_back(&little_river_raleigh);
+    catchment_new_river.push_back(&little_river_raleigh_nrr);
+    catchment_new_river.push_back(&clayton_gage);
 
     // Downstream Gage
     Catchment cape_fear_river_at_lillington(&streamflows_lillington, streamflow_n_weeks);
@@ -293,26 +308,26 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     // CURRENTLY THIS IS THE STORAGE OF FALLS + DURHAM (MICHIE AND LR) + WB
     // ASSUMING DURHAM AND WB SCALE PROPORTIONALLY TO FALLS
     // WB and Durham storage added to water supply capacity
-    double autumn_lake_supply_capacity = (14700.0 + 6349 + 2790 + 6000) * table_gen_storage_multiplier * calibrate_volume_multiplier; //6000 added to balance test problem.
-    double autumn_lake_wq_capacity = 20000.0 * table_gen_storage_multiplier * calibrate_volume_multiplier;
+    double autumn_lake_supply_capacity = (14000.0 + 6349 + 2790 + 13500) * table_gen_storage_multiplier * calibrate_volume_multiplier; //6000 added to balance test problem.
+    double autumn_lake_wq_capacity = 14000.0 * table_gen_storage_multiplier * calibrate_volume_multiplier;
     double autumn_lake_storage_capacity = autumn_lake_wq_capacity + autumn_lake_supply_capacity;
     vector<double> autumn_lake_storage = {0, autumn_lake_supply_capacity,
                                           autumn_lake_storage_capacity};
     vector<double> autumn_lake_area = {0.32 * 5734, 0.32 * 29000, 0.28 * 40434};
     DataSeries autumn_lake_storage_area(&autumn_lake_storage, &autumn_lake_area);
 
-    vector<double> new_river_res_storage = {0, 1700};
+    vector<double> new_river_res_storage = {0, 7300 * calibrate_volume_multiplier};
     vector<double> new_river_res_area = {0, 0.3675 * new_river_res_storage[1]};
     DataSeries new_river_storage_area(&new_river_res_storage,
                                       &new_river_res_area);
 
-    vector<double> sugar_creek_res_storage = {0, 1500};//2909};
-    vector<double> sugar_creek_res_area = {0, 0.3675 * 2909};
+    vector<double> sugar_creek_res_storage = {0, 4500};//2909};
+    vector<double> sugar_creek_res_area = {0, 0.3675 * sugar_creek_res_storage[1]};
     DataSeries sugar_creek_storage_area(&sugar_creek_res_storage,
                                         &sugar_creek_res_area);
 
-    vector<double> granite_quarry_storage = {0, 200};
-    vector<double> granite_quarry_area = {0, 0.3675 * 200};
+    vector<double> granite_quarry_storage = {0, 1500};
+    vector<double> granite_quarry_area = {0, 0.3675 * granite_quarry_storage[1]};
     DataSeries granite_quarry_storage_area(&granite_quarry_storage,
                                            &granite_quarry_area);
 
@@ -325,9 +340,11 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     SeasonalMinEnvFlowControl autumn_min_env_control(2, autumn_controls_weeks, autumn_releases);
 
     // Lake Michael is based off the Jordan Lake and uses its class
+    double lake_michael_supply_capacity = 9100.0 * table_gen_storage_multiplier * calibrate_volume_multiplier; // reduced to .69 of JL cap
+    double lake_michael_wq_capacity = 10825.0 * table_gen_storage_multiplier * calibrate_volume_multiplier;
     JordanLakeMinEnvFlowControl lake_michael_min_env_control( 1,
-                                                              cape_fear_river_at_lillington, 64.63, 129.26, 25.85, 193.89,
-                                                              290.84, 387.79, 30825.0 * table_gen_storage_multiplier * calibrate_volume_multiplier, 10300.0 * table_gen_storage_multiplier * calibrate_volume_multiplier);
+                                                              cape_fear_river_at_lillington, 64.63, 129.26, 25.85, 93.89,
+                                                              190.84, 287.79, lake_michael_supply_capacity, lake_michael_wq_capacity);
 
     //FIXME SUGAR CREEK BASED ON CCR, SO LEAVING AS IS, IS THIS A GOOD IDEA?
     vector<double> sugar_creek_inflows = {0.1422 * 7, 0.5 * 7, 1 * 7, 1.5 * 7,
@@ -358,8 +375,6 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
 
     // Lake Michael parameters
-    double lake_michael_supply_capacity = 8100 * table_gen_storage_multiplier * calibrate_volume_multiplier; // reduced to .69 of JL cap
-    double lake_michael_wq_capacity = 30825.0 * table_gen_storage_multiplier * calibrate_volume_multiplier;
     double lake_michael_storage_capacity = lake_michael_wq_capacity + lake_michael_supply_capacity;
     vector<int> lake_michael_allocations_ids = {0, 1, 2, WATER_QUALITY_ALLOCATION};
     vector<double> lake_michael_allocation_fractions = {
@@ -373,18 +388,24 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     //FIXME: can reallocate to make more interesting
     vector<int> autumn_lake_allocations_ids = {1, 2, WATER_QUALITY_ALLOCATION};
     vector<double> autumn_lake_allocation_fractions = {
-            0.29 * autumn_lake_supply_capacity / autumn_lake_storage_capacity,
-            0.71 * autumn_lake_supply_capacity / autumn_lake_storage_capacity,
+            0.22 * autumn_lake_supply_capacity / autumn_lake_storage_capacity,
+            0.78 * autumn_lake_supply_capacity / autumn_lake_storage_capacity,
             autumn_lake_wq_capacity / autumn_lake_storage_capacity};
     vector<double> autumn_lake_treatment_allocation_fractions = {0.38, 0.62};
 
+//    vector<vector<int>> reservoir_utility_connectivity_matrix = {
+//            {0, 1, 4, 7, 8, 9, 10, 11, 12}, //Watertown
+//            {2, 5, 6}, //Dryville
+//            {2, 4} //Fallsland
+//    };
+
 // Create existing reservoirs
-    /// combined university lake and stone quarry
+    // combined university lake and stone quarry
     Reservoir college_rock_reservoir("College Rock Reservoir",
                                      0,
                                      catchment_college_rock,
-                                     449 * table_gen_storage_multiplier * calibrate_volume_multiplier,
-                                     ILLIMITED_TREATMENT_CAPACITY,
+                                     1049 * table_gen_storage_multiplier * calibrate_volume_multiplier,
+                                     560,
                                      evaporation_owasa,
                                      222);
 
@@ -392,7 +413,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                                     1,
                                     catchment_lower_haw_river,
                                     lake_michael_storage_capacity,
-                                    448,
+                                    548,
                                     evaporation_jordan_lake,
                                     13940,
                                     &lake_michael_allocations_ids,
@@ -419,35 +440,16 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     //FIXME ORIGINAL CODE SETS WEEKS_IN_YEAR TO 0 HERE
     vector<double> construction_time_interval = {3.0, 5.0};
 
-    LevelDebtServiceBond sugar_bond(5, 150.0, 25, 0.05, vector<int>(1, 0));
-    Reservoir sugar_creek_reservoir("Sugar Creek Reservoir",
-                                    5,
-                                    catchment_sugar_creek,
-                                    1500, //2909,  VALUE CHANGED FOR CALIBRATION OF TEST PROBLEM.
-                                    ILLIMITED_TREATMENT_CAPACITY,
-                                    evaporation_owasa,
-                                    &sugar_creek_storage_area,
-                                    construction_time_interval,
-                                    17 * WEEKS_IN_YEAR,
-                                    sugar_bond);
-
-    BalloonPaymentBond granite_bond(6, 22.6, 25, 0.05, vector<int>(1, 0), 3);
-    Reservoir granite_quarry("Granite Quarry",
-                             6,
-                             catchment_granite_quarry,
-                             200,
-                             ILLIMITED_TREATMENT_CAPACITY,
-                             evaporation_owasa,
-                             &granite_quarry_storage_area,
-                             construction_time_interval,
-                             17 * WEEKS_IN_YEAR,
-                             granite_bond);
+    LevelDebtServiceBond dummy_bond(3, 1., 1, 1., vector<int>(1, 0));
+    Reservoir dummy_endpoint("Dummy Node", 3, vector<Catchment *>(), 1., 0, evaporation_durham, 1,
+                             construction_time_interval, 0, dummy_bond);
 
     //FIXME check bond, this one is from little river raliegh
     vector<int> nrr_allocations_ids = {1, 2, WATER_QUALITY_ALLOCATION};
-    vector<double> nrr_allocation_fractions = {0.5, 0.2, 0.3};
+    vector<double> nrr_allocation_fractions = {0.3, 0.4, 0.3};
     vector<double> nrr_treatment_allocation_fractions = {0.5, 0.5};
     LevelDebtServiceBond new_river_bond(4, 263.0, 25, 0.05, vector<int>(1, 0));
+
     AllocatedReservoir new_river_reservoir("New River Reservoir",
                                            4,
                                            catchment_new_river,
@@ -462,27 +464,60 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                                            &nrr_allocation_fractions,
                                            &nrr_treatment_allocation_fractions);
 
-    LevelDebtServiceBond dummy_bond(3, 1., 1, 1., vector<int>(1, 0));
-    Reservoir dummy_endpoint("Dummy Node", 3, vector<Catchment *>(), 1., 0, evaporation_durham, 1,
-                             construction_time_interval, 0, dummy_bond);
+    LevelDebtServiceBond sugar_bond(5, 150.0, 25, 0.05, vector<int>(1, 0));
+    Reservoir sugar_creek_reservoir("Sugar Creek Reservoir",
+                                    5,
+                                    catchment_sugar_creek,
+                                    sugar_creek_res_storage[1],
+                                    ILLIMITED_TREATMENT_CAPACITY,
+                                    evaporation_owasa,
+                                    &sugar_creek_storage_area,
+                                    construction_time_interval,
+                                    17 * WEEKS_IN_YEAR,
+                                    sugar_bond);
+
+//    LevelDebtServiceBond granite_bond(5, 22.6, 25, 0.05, vector<int>(1, 0));
+    Reservoir granite_quarry("Granite Quarry",
+                             6,
+                             catchment_granite_quarry,
+                             granite_quarry_storage[1],
+                             ILLIMITED_TREATMENT_CAPACITY,
+                             evaporation_owasa,
+			     &granite_quarry_storage_area);
+//                             &granite_quarry_storage_area,
+//                             construction_time_interval,
+//                             17 * WEEKS_IN_YEAR,
+//                             granite_bond);
 
     //FIXME: Edit the expansion volumes for CRR, just made these up
     //FIXME: changed these temporarily to 0
     vector<double> college_rock_expansion_low_construction_time = {3, 5};
     LevelDebtServiceBond college_rock_expansion_low_bond(7, 50, 30, .05, vector<int>(1, 0));
-    ReservoirExpansion college_rock_expansion_low((char *) "College Rock Expansion Low", 7, 0, 500,
-                                                  college_rock_expansion_low_construction_time, 5, college_rock_expansion_low_bond);
+    ReservoirExpansion college_rock_expansion_low((char *) "College Rock Expansion Low", 7, 0, added_storage_college_rock_expansion_low,
+                                                  college_rock_expansion_low_construction_time, 5 * WEEKS_IN_YEAR, college_rock_expansion_low_bond);
 
     vector<double> college_rock_expansion_high_construction_time = {3, 5};
     LevelDebtServiceBond college_rock_expansion_high_bond(8, 100, 30, .05, vector<int>(1, 0));
-    ReservoirExpansion college_rock_expansion_high((char *) "College Rock Expansion High", 8, 0, 1000,
-                                                   college_rock_expansion_high_construction_time, 5,
+    ReservoirExpansion college_rock_expansion_high((char *) "College Rock Expansion High", 8, 0, added_storage_college_rock_expansion_high,
+                                                   college_rock_expansion_high_construction_time, 5 * WEEKS_IN_YEAR,
                                                    college_rock_expansion_high_bond);
 
     vector<double> watertown_reuse_construction_time = {3, 5};
-    LevelDebtServiceBond watertown_reuse_bond(9, 50, 30, .05, vector<int>(1, 0));
-    WaterReuse watertown_reuse((char *) "Watertown Reuse", 9, 20, watertown_reuse_construction_time, 5,
-                               watertown_reuse_bond);
+    LevelDebtServiceBond watertown_reuse_bond_i(9, 50, 30, .05, vector<int>(1, 0));
+    WaterReuse watertown_reuse_i((char *) "Watertown Reuse I", 9, 35, watertown_reuse_construction_time, 5 * WEEKS_IN_YEAR,
+                               watertown_reuse_bond_i);
+
+    LevelDebtServiceBond watertown_reuse_bond_ii(10, 30, 30, .05, vector<int>(1, 0));
+    WaterReuse watertown_reuse_ii((char *) "Watertown Reuse II", 10, 35, watertown_reuse_construction_time, 5 * WEEKS_IN_YEAR,
+                               watertown_reuse_bond_ii);
+
+    LevelDebtServiceBond dryville_reuse_bond(11, 30, 30, .05, vector<int>(1, 0));
+    WaterReuse dryville_reuse((char *) "Dryfille Reuse", 11, 35, watertown_reuse_construction_time, 5 * WEEKS_IN_YEAR,
+                               dryville_reuse_bond);
+
+    LevelDebtServiceBond fallsland_reuse_bond(12, 50, 30, .05, vector<int>(1, 0));
+    WaterReuse fallsland_reuse((char *) "Fallsland Reuse", 12, 35, watertown_reuse_construction_time, 5 * WEEKS_IN_YEAR,
+                               fallsland_reuse_bond);
 
     vector<WaterSource *> water_sources;
     water_sources.push_back(&college_rock_reservoir);
@@ -493,8 +528,12 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     water_sources.push_back(&granite_quarry);
     water_sources.push_back(&college_rock_expansion_low);
     water_sources.push_back(&college_rock_expansion_high);
-    water_sources.push_back(&watertown_reuse);
+    water_sources.push_back(&watertown_reuse_i);
+    water_sources.push_back(&watertown_reuse_ii);
+    water_sources.push_back(&dryville_reuse);
+    water_sources.push_back(&fallsland_reuse);
     water_sources.push_back(&dummy_endpoint);
+
 
 /*
  *
@@ -531,7 +570,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
     vector<double> bond_term = {25, 25, 25, 25};
     vector<double> bond_rate = {0.05, 0.05, 0.05, 0.05};
-    double discount_rate = 0.05;
+    double discount_rate = 0.07;
 
     //FIXME make return flows after utilities are created?
     vector<int> watertown_ws_return_id;
@@ -554,18 +593,18 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
     //FIXME: bond etc need to be updated, should chat about demand buffer
     Utility watertown((char *) "Watertown", 0, demand_watertown, demand_n_weeks, watertown_annual_payment,
-                      &watertownDemandClassesFractions,
-                      &watertownUserClassesWaterPrices, wwtp_discharge_watertown, watertown_demand_buffer,
-                      rof_triggered_infra_order_watertown, vector<int>(), rofs_infra_watertown, discount_rate, 30, .05);
+                      watertownDemandClassesFractions, watertownUserClassesWaterPrices, wwtp_discharge_watertown,
+                      watertown_demand_buffer, rof_triggered_infra_order_watertown, vector<int>(),
+                      rofs_infra_watertown, discount_rate, 30, .05);
 
     //FIXME: bond etc need to be updated, should chat about demand buffer
     Utility dryville((char *) "Dryville", 1, demand_dryville, demand_n_weeks, dryville_annual_payment,
-                     &dryvilleDemandClassesFractions, &dryvilleUserClassesWaterPrices,
+                     dryvilleDemandClassesFractions, dryvilleUserClassesWaterPrices,
                      wwtp_discharge_dryville, dryville_demand_buffer, rof_triggered_infra_order_dryville, vector<int>(),
                      rofs_infra_dryville, discount_rate, 30, 0.05);
 
     Utility fallsland((char *) "Fallsland", 2, demand_fallsland, demand_n_weeks, fallsland_annual_payment,
-                      &fallslandDemandClassesFractions, &fallslandUserClassesWaterPrices,
+                      fallslandDemandClassesFractions, fallslandUserClassesWaterPrices,
                       wwtp_discharge_fallsland, fallsland_demand_buffer, rof_triggered_infra_order_fallsland,
                       vector<int>(), rofs_infra_fallsland, discount_rate, 30, 0.05);
 
@@ -575,33 +614,37 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     utilities.push_back(&fallsland);
 
     vector<vector<int>> reservoir_utility_connectivity_matrix = {
-            {0, 1, 4, 7, 8, 9}, //Watertown
-            {2, 5, 3}, //Dryville
-            {2, 4} //Fallsland
+            {0, 1, 4, 7, 8, 9, 10}, //Watertown
+            {2, 5, 6, 11}, //Dryville
+            {2, 4, 12} //Fallsland
     };
 
     auto table_storage_shift = vector<vector<double>>(3, vector<double>(water_sources.size() + 1, 0.));
     table_storage_shift[2][4] = 1500;
     table_storage_shift[1][5] = 100;
+    table_storage_shift[0][9] = 1000;
+    table_storage_shift[0][10] = 600;
+    table_storage_shift[1][11] = 600;
+    table_storage_shift[2][12] = 1000;
 
     vector<DroughtMitigationPolicy *> drought_mitigation_policies;
     vector<double> initial_restriction_triggers = {watertown_restriction_trigger,
                                                    dryville_restriction_trigger,
                                                    fallsland_restriction_trigger};
 
-    vector<double> restriction_stage_multipliers_watertown = {0.9, 0.8, 0.7, 0.6};
+    vector<double> restriction_stage_multipliers_watertown = {0.9, 0.75, 0.65, 0.5};
     vector<double> restriction_stage_triggers_watertown = {initial_restriction_triggers[0],
                                                            initial_restriction_triggers[0] + 0.15f,
                                                            initial_restriction_triggers[0] + 0.35f,
                                                            initial_restriction_triggers[0] + 0.6f};
 
-    vector<double> restriction_stage_multipliers_dryville = {0.9, 0.8, 0.7, 0.6};
+    vector<double> restriction_stage_multipliers_dryville = {0.9, 0.75, 0.65, 0.5};
     vector<double> restriction_stage_triggers_dryville = {initial_restriction_triggers[1],
                                                           initial_restriction_triggers[1] + 0.15f,
                                                           initial_restriction_triggers[1] + 0.35f,
                                                           initial_restriction_triggers[1] + 0.6f};
 
-    vector<double> restriction_stage_multipliers_fallsland = {0.9, 0.8, 0.7, 0.6};
+    vector<double> restriction_stage_multipliers_fallsland = {0.9, 0.75, 0.65, 0.5};
     vector<double> restriction_stage_triggers_fallsland = {initial_restriction_triggers[2],
                                                            initial_restriction_triggers[2] + 0.15f,
                                                            initial_restriction_triggers[2] + 0.35f,
@@ -636,7 +679,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     vector<int> buyers_ids = {1, 2};
 
     //FIXME: TEST VALUES, MAY WANT TO EDIT
-    vector<double> buyer_transfer_capacities = {10.0*7, 10.0*7, 10.0*7};
+    vector<double> buyer_transfer_capacities = {20. * 7, 20. * 7, 15. * 7};
 
     vector<double> buyer_transfer_triggers = {dryville_transfer_trigger,
                                               fallsland_transfer_trigger};
@@ -656,7 +699,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     drought_mitigation_policies.push_back(&t);
 
 
-    /// Set up insurance
+    // Set up insurance
     vector<double> insurance_triggers = {watertown_insurance_use,
                                          dryville_insurance_use,
                                          fallsland_insurance_use};
@@ -667,13 +710,13 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     vector<int> insured_utilities = {0, 1, 2};
 
     InsuranceStorageToROF in(4, water_sources, g, reservoir_utility_connectivity_matrix, utilities,
-                             min_env_flow_controls, utilities_rdm, water_sources_rdm, insurance_triggers, 1.2,
-                             fixed_payouts, n_weeks);
+            drought_mitigation_policies, min_env_flow_controls, utilities_rdm, water_sources_rdm, policies_rdm,
+            insurance_triggers, 1.2, fixed_payouts, n_weeks);
 
     drought_mitigation_policies.push_back(&in);
 
 
-    /// Creates simulation object depending on use (or lack thereof) ROF tables
+    // Creates simulation object depending on use (or lack thereof) ROF tables
     double start_time = omp_get_wtime();
     if (import_export_rof_tables == EXPORT_ROF_TABLES) {
         s = new Simulation(water_sources,
@@ -688,7 +731,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                            n_weeks,
                            realizations_to_run,
                            rof_tables_directory);
-        this->master_data_collector = s->runFullSimulation(n_threads);
+        this->master_data_collector = s->runFullSimulation(n_threads, vars);
     } else if (import_export_rof_tables == IMPORT_ROF_TABLES) {
         s = new Simulation (water_sources,
                             g,
@@ -704,7 +747,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                             rof_tables,
                             table_storage_shift,
                             rof_tables_directory);
-        this->master_data_collector = s->runFullSimulation(n_threads);
+        this->master_data_collector = s->runFullSimulation(n_threads, vars);
     } else {
         s = new Simulation(water_sources,
                            g,
@@ -717,12 +760,12 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                            policies_rdm,
                            n_weeks,
                            realizations_to_run);
-        this->master_data_collector = s->runFullSimulation(n_threads);
+        this->master_data_collector = s->runFullSimulation(n_threads, vars);
     }
     double end_time = omp_get_wtime();
     printf("Function evaluation time: %f\n", end_time - start_time);
 
-    /// Calculate objectives and store them in Borg decision variables array.
+    // Calculate objectives and store them in Borg decision variables array.
 #ifdef  PARALLEL
     objectives = calculateAndPrintObjectives(false);
 
@@ -733,6 +776,15 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
             objs[i] = max(max(objectives[i], objectives[5 + i]),
       	                  objectives[10 + i]);
         }
+
+	for (int i = 0; i < NUM_OBJECTIVES; ++i) {
+ 	    if (isnan(objs[i])) {
+		for (int j = 0; j < NUM_OBJECTIVES; ++j) {
+		    objs[i] = 1e5;
+		}
+		break;
+	    }
+	}
 
         if (s != nullptr) {
             delete s;
@@ -798,6 +850,11 @@ void PaperTestProblem::readInputData() {
                 io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "university_lake_inflows.csv", n_realizations);
 #pragma omp single
+        streamflows_crabtree = Utils::parse2DCsvFile(
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "crabtree_inflows.csv", n_realizations);
+//                BAR + "university_lake_inflows.csv", n_realizations);
+#pragma omp single
         streamflows_haw = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "jordan_lake_inflows.csv", n_realizations);
@@ -805,6 +862,10 @@ void PaperTestProblem::readInputData() {
         streamflows_lillington = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "lillington_inflows.csv", n_realizations);
+#pragma omp single
+        streamflows_clayton = Utils::parse2DCsvFile(
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                BAR + "clayton_inflows.csv", n_realizations);
 // };
         //cout << "Reading evaporations." << endl;
 #pragma omp single

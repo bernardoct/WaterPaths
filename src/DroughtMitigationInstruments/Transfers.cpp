@@ -171,13 +171,15 @@ void Transfers::addSystemComponents(vector<Utility *> system_utilities,
                                             "transfer policy.");
 
     //FIXME: RIGHT NOW TRANSFERS CAN ONLY HAVE ONE SOURCE. THIS NEEDS TO BE EXPANDED.
-    for (Utility *u : system_utilities)
+    //FIXME: TRANSFERS ALSO ASSUME THAT ALL UTILITIES IN THE MODEL NOT THE SOURCE CAN RECEIVE EVEN IF NOT SET AS CONNECTED
+    for (Utility *u : system_utilities) {
+        auto it = std::find(buyers_ids.begin(), buyers_ids.end(), u->id);
         if (u->id == source_utility_id)
             source_utility = u; // source of transfers
-        else {
-            realization_utilities.push_back(u); //
-        }
+        else if (it != buyers_ids.end())
+            realization_utilities.push_back(u);
 
+    }
     if (transfer_water_source != nullptr)
         throw invalid_argument("Water sources already assigned to transfer "
                                          "policy.");

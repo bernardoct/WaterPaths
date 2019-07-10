@@ -29,6 +29,7 @@
 #include "../Simulation/Simulation.h"
 #include "../SystemComponents/Bonds/LevelDebtServiceBond.h"
 #include "../SystemComponents/Bonds/BalloonPaymentBond.h"
+#include "../SystemComponents/WaterSources/IntakeExpansion.h"
 
 #ifdef PARALLEL
 void Triangle::setProblemDefinition(BORG_Problem &problem)
@@ -246,31 +247,31 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         int university_lake_id = 5;
         int jordan_lake_id = 6;
         int haw_river_intake_id = 7;
-        int dummy_node_id = 12;
+        int dummy_node_id = 13;
 
         // Potential sources (geographically separate from above)
-        int little_river_raleigh_reservoir_id = 7;
-        int richland_creek_quarry_id = 8;
-        int teer_quarry_id = 9;
-        int neuse_river_intake_id = 10;
-        int harnett_county_intake_id = 11;
+        int little_river_raleigh_reservoir_id = 8;
+        int richland_creek_quarry_id = 9;
+        int teer_quarry_id = 10;
+        int neuse_river_intake_id = 11;
+        int harnett_county_intake_id = 12;
 
         // Potential sources (expansions of above sources)
-        int stone_quarry_expansion_low_id = 13;
-        int stone_quarry_expansion_high_id = 14;
-        int university_lake_expansion_id = 15;
-        int michie_expansion_low_id = 16;
-        int michie_expansion_high_id = 17;
-        int falls_lake_reallocation_id = 18;
-        int reclaimed_water_low_id = 19;
-        int reclaimed_water_high_id = 20;
-        int cane_creek_reservoir_expansion_id = 21;
-        int haw_river_intake_expansion_low_id = 22;
-        int haw_river_intake_expansion_high_id = 23;
-        int cary_wtp_upgrades_low_base_id = 24;
-        int cary_wtp_upgrades_high_base_id = 25;
-        int wjlwtp_low_base_id = 26;
-        int wjlwtp_high_base_id = 27;
+        int stone_quarry_expansion_low_id = 14;
+        int stone_quarry_expansion_high_id = 15;
+        int university_lake_expansion_id = 16;
+        int michie_expansion_low_id = 17;
+        int michie_expansion_high_id = 18;
+        int falls_lake_reallocation_id = 19;
+        int reclaimed_water_low_id = 20;
+        int reclaimed_water_high_id = 21;
+        int cane_creek_reservoir_expansion_id = 22;
+        int haw_river_intake_expansion_low_id = 23;
+        int haw_river_intake_expansion_high_id = 24;
+        int cary_wtp_upgrades_low_base_id = 25;
+        int cary_wtp_upgrades_high_base_id = 26;
+        int wjlwtp_low_base_id = 27;
+        int wjlwtp_high_base_id = 28;
 
         vector<infraRank> pittsboro_infra_order_raw = {
                 infraRank(haw_river_intake_expansion_low_id, haw_river_intake_expansion_rank_low),
@@ -305,12 +306,12 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         };
 
         vector<infraRank> raleigh_infra_order_raw = {
-                infraRank(7, little_river_reservoir_ranking),
-                infraRank(8, richland_creek_quarry_rank),
-                infraRank(10, neuse_river_intake_rank),
-                infraRank(17, reallocate_falls_lake_rank),
-                infraRank(20, western_wake_treatment_plant_rank_raleigh_low),
-                infraRank(21, western_wake_treatment_plant_rank_raleigh_high)
+                infraRank(little_river_raleigh_reservoir_id, little_river_reservoir_ranking),
+                infraRank(richland_creek_quarry_id, richland_creek_quarry_rank),
+                infraRank(neuse_river_intake_id, neuse_river_intake_rank),
+                infraRank(falls_lake_reallocation_id, reallocate_falls_lake_rank),
+                infraRank(wjlwtp_low_base_id, western_wake_treatment_plant_rank_raleigh_low),
+                infraRank(wjlwtp_high_base_id, western_wake_treatment_plant_rank_raleigh_high)
         };
 
         double added_storage_michie_expansion_low = 2500;
@@ -382,6 +383,19 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                         reclaimed_capacity_low,
                         reclaimed_capacity_high);
 
+        /// July 2019: two levels of Haw River Intake expansion possible
+        double added_capacity_haw_river_intake_expansion_low = 2.0 * 7;
+        double added_capacity_haw_river_intake_expansion_high = 2.0 * 7;
+
+        added_capacity_haw_river_intake_expansion_high =
+                checkAndFixInfraExpansionHighLowOrder(
+                        &rof_triggered_infra_order_pittsboro,
+                        &rofs_infra_pittsboro,
+                        haw_river_intake_expansion_low_id,
+                        haw_river_intake_expansion_high_id,
+                        added_capacity_haw_river_intake_expansion_low,
+                        added_capacity_haw_river_intake_expansion_high);
+
         /// Normalize Jordan Lake Allocations in case they exceed 1.
         double sum_jla_allocations = OWASA_JLA + Durham_JLA + Cary_JLA +
                                      Raleigh_JLA + Pittsboro_JLA + Chatham_JLA;
@@ -424,11 +438,11 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         if (utilities_rdm.empty()) {
             /// All matrices below have dimensions n_realizations x nr_rdm_factors
             utilities_rdm = std::vector<vector<double>>(
-                    n_realizations, vector<double>(4, 1.));
+                    n_realizations, vector<double>(6, 1.));
             water_sources_rdm = std::vector<vector<double>>(
-                    n_realizations, vector<double>(51, 1.));
+                    n_realizations, vector<double>(60, 1.));
             policies_rdm = std::vector<vector<double>>(
-                    n_realizations, vector<double>(4, 1.));
+                    n_realizations, vector<double>(8, 1.));
         }
 
 
@@ -793,9 +807,10 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         // city can meet its daily demands with available treatment infrastructure
 
         /// Pittsboro Haw River Intake with 2.0 MGD capacity
-        Intake haw_river_intake("Haw River Intake", haw_river_intake_id, catchment_haw, 2.0*7);
+        Intake haw_river_intake("Haw River Intake", haw_river_intake_id, catchment_haw, 2.0*7, 2.0*7);
 
         // Potential Sources
+        // FIXME: THIS EXPLANATION IS NO LONGER CONSISTENT WITH THE CODE
         // The capacities listed here for expansions are what additional capacity is gained relative to existing capacity,
         // NOT the total capacity after the expansion is complete. For infrastructure with a high and low option, this means
         // the capacity for both is relative to current conditions - if Lake Michie is expanded small it will gain 2.5BG,
@@ -829,15 +844,20 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         // downstream water balance?
 
 
+        // FIXME: ADJUST TO ACCESS THE BUILT_SEQUENCE/CONNECTED_SOURCES PARAMETERS IN THE CONSTRUCTORS
+        // SO THAT SEQUENTIAL PROJECTS ARE APPLIED PROPERLY??
         /// July 2019: three new Pittsboro/Chatham projects:
         ///             (1ab) two stages of expansion to existing Haw River Intake for Pittsboro, above JL
         ///             (2)   construction of intake for Chatham County on Cape Fear river below JL, above Lillington
         LevelDebtServiceBond low_haw_river_intake_expansion_bond(haw_river_intake_expansion_low_id, 14.2, 25, 0.05, vector<int>(1, 0), 3);
-        // FIXME: INTAKE EXPANSION INFRASTRUCTURE CLASS NEEDED
+        IntakeExpansion haw_river_intake_expansion_low("Haw River Intake Low Expansion", haw_river_intake_expansion_low_id, haw_river_intake_id,
+                                                       added_capacity_haw_river_intake_expansion_low, added_capacity_haw_river_intake_expansion_low,
+                                                       construction_time_interval, 7 * WEEKS_IN_YEAR, low_haw_river_intake_expansion_bond);
 
         LevelDebtServiceBond high_haw_river_intake_expansion_bond(haw_river_intake_expansion_high_id, 28.4, 25, 0.05, vector<int>(1, 0), 3);
-        // FIXME: INTAKE EXPANSION INFRASTRUCTURE CLASS NEEDED
-        // FIXME: DONT FORGET TO DO THE PUSH_BACK BELOW WHEN READY
+        IntakeExpansion haw_river_intake_expansion_high("Haw River Intake High Expansion", haw_river_intake_expansion_high_id, haw_river_intake_id,
+                                                        added_capacity_haw_river_intake_expansion_high, added_capacity_haw_river_intake_expansion_high,
+                                                        construction_time_interval, 7 * WEEKS_IN_YEAR, high_haw_river_intake_expansion_bond);
 
         LevelDebtServiceBond cape_fear_river_intake_bond(harnett_county_intake_id, 221.43, 25, 0.05, vector<int>(1, 0), 3);
         Intake cape_fear_river_intake("Cape Fear River Intake", harnett_county_intake_id, catchment_haw, 12.2 * 7, construction_time_interval,
@@ -849,31 +869,31 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                 (fl_wq_capacity - falls_lake_reallocation) / fl_storage_capacity};
 
         LevelDebtServiceBond fl_bond(falls_lake_reallocation_id, 68.2, 25, 0.05, vector<int>(1, 0));
-        Relocation fl_reallocation("Falls Lake Reallocation", falls_lake_reallocation_id, 1, &fl_relocation_fractions, &fl_allocations_ids,
+        Relocation fl_reallocation("Falls Lake Reallocation", falls_lake_reallocation_id, falls_lake_id, &fl_relocation_fractions, &fl_allocations_ids,
                                    construction_time_interval, 12 * WEEKS_IN_YEAR, fl_bond);
 
         LevelDebtServiceBond ccr_exp_bond(cane_creek_reservoir_expansion_id, 127.0, 25, 0.05, vector<int>(1, 0));
-        ReservoirExpansion ccr_expansion("Cane Creek Reservoir Expansion", cane_creek_reservoir_expansion_id, 4, 3000.0, construction_time_interval,
+        ReservoirExpansion ccr_expansion("Cane Creek Reservoir Expansion", cane_creek_reservoir_expansion_id, cane_creek_reservoir_id, 3000.0, construction_time_interval,
                                          17 * WEEKS_IN_YEAR, ccr_exp_bond);
 
         LevelDebtServiceBond low_sq_exp_bond(stone_quarry_expansion_low_id, 1.4, 25, 0.05, vector<int>(1, 0));
-        ReservoirExpansion low_sq_expansion("Low Stone Quarry Expansion", stone_quarry_expansion_low_id, 3, 1500.0, construction_time_interval,
+        ReservoirExpansion low_sq_expansion("Low Stone Quarry Expansion", stone_quarry_expansion_low_id, stone_quarry_id, 1500.0, construction_time_interval,
                                             23 * WEEKS_IN_YEAR, low_sq_exp_bond);
 
         LevelDebtServiceBond high_sq_exp_bond(stone_quarry_expansion_high_id, 64.6, 25, 0.05, vector<int>(1, 0));
-        ReservoirExpansion high_sq_expansion("High Stone Quarry Expansion", stone_quarry_expansion_high_id, 3, 2200.0, construction_time_interval,
+        ReservoirExpansion high_sq_expansion("High Stone Quarry Expansion", stone_quarry_expansion_high_id, stone_quarry_id, 2200.0, construction_time_interval,
                                              23 * WEEKS_IN_YEAR, high_sq_exp_bond);
 
         LevelDebtServiceBond ul_exp_bond(university_lake_expansion_id, 107.0, 25, 0.05, vector<int>(1, 0));
-        ReservoirExpansion univ_lake_expansion("University Lake Expansion", university_lake_expansion_id, 5, 2550.0, construction_time_interval,
+        ReservoirExpansion univ_lake_expansion("University Lake Expansion", university_lake_expansion_id, university_lake_id, 2550.0, construction_time_interval,
                                                17 * WEEKS_IN_YEAR, ul_exp_bond);
 
         LevelDebtServiceBond low_mi_exp_bond(michie_expansion_low_id, 158.3, 25, 0.05, vector<int>(1, 0));
-        ReservoirExpansion low_michie_expansion("Low Lake Michie Expansion", michie_expansion_low_id, 0, added_storage_michie_expansion_low,
+        ReservoirExpansion low_michie_expansion("Low Lake Michie Expansion", michie_expansion_low_id, durham_reservoirs_id, added_storage_michie_expansion_low,
                                                 construction_time_interval, 17 * WEEKS_IN_YEAR, low_mi_exp_bond);
 
         LevelDebtServiceBond high_mi_exp_bond(michie_expansion_high_id, 203.3, 25, 0.05, vector<int>(1, 0));
-        ReservoirExpansion high_michie_expansion("High Lake Michie Expansion", michie_expansion_high_id, 0, added_storage_michie_expansion_high,
+        ReservoirExpansion high_michie_expansion("High Lake Michie Expansion", michie_expansion_high_id, durham_reservoirs_id, added_storage_michie_expansion_high,
                                                  construction_time_interval, 17 * WEEKS_IN_YEAR, high_mi_exp_bond);
 
         LevelDebtServiceBond low_rec_bond(reclaimed_water_low_id, 27.5, 25, 0.05, vector<int>(1, 0));
@@ -1007,6 +1027,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         water_sources.push_back(&high_wjlwtp);
 
         water_sources.push_back(&cape_fear_river_intake);
+        water_sources.push_back(&haw_river_intake_expansion_low);
+        water_sources.push_back(&haw_river_intake_expansion_high);
 
         water_sources.push_back(&dummy_endpoint);
 
@@ -1081,6 +1103,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         utilities.push_back(&durham);
         utilities.push_back(&owasa);
         utilities.push_back(&raleigh);
+        utilities.push_back(&pittsboro);
+        utilities.push_back(&chatham);
 
         /// Water-source-utility connectivity matrix (each row corresponds to a utility and numbers are water
         /// sources IDs.
@@ -1099,8 +1123,11 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                  jordan_lake_id, little_river_raleigh_reservoir_id,
                  richland_creek_quarry_id, falls_lake_reallocation_id, neuse_river_intake_id,
                  wjlwtp_low_base_id, wjlwtp_high_base_id},  //Raleigh
-                {haw_river_intake_id, jordan_lake_id}, //Pittsboro
-                {jordan_lake_id, harnett_county_intake_id} //Chatham County
+                {haw_river_intake_id, jordan_lake_id,
+                 haw_river_intake_expansion_low_id, haw_river_intake_expansion_high_id,
+                 wjlwtp_low_base_id, wjlwtp_high_base_id}, //Pittsboro
+                {jordan_lake_id, harnett_county_intake_id,
+                 wjlwtp_low_base_id, wjlwtp_high_base_id} //Chatham County
         };
 
         auto table_storage_shift = vector<vector<double>>(4, vector<double>(25, 0.));
@@ -1176,6 +1203,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                     restriction_stage_multipliers_chatham,
                                     restriction_stage_triggers_chatham);
 
+        // FIXME: MAKE SURE SEQUENTIAL NUMBERING OF ALL DROUGHT MITIGATION POLICIES, ERROR MESSAGING HERE IS LIMITED
         drought_mitigation_policies = {&restrictions_c, &restrictions_d,
                                        &restrictions_o, &restrictions_r,
                                        &restrictions_p, &restrictions_cc};
@@ -1209,7 +1237,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         ug.addEdge(1, 3);
         ug.addEdge(1, 0);
 
-        Transfers t(4, 2, 6, 35,
+        Transfers t(6, 2, jordan_lake_id, 35,
                     buyers_ids,
                     buyers_transfers_capacities,
                     buyers_transfers_trigger,
@@ -1232,7 +1260,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                    chatham_insurance_payment};
         vector<int> insured_utilities = {0, 1, 2, 3, 4, 5};
         double insurance_premium = 1.2;
-        InsuranceStorageToROF in(5, water_sources, g, reservoir_utility_connectivity_matrix, utilities,
+        InsuranceStorageToROF in(7, water_sources, g, reservoir_utility_connectivity_matrix, utilities,
                                  min_env_flow_controls, utilities_rdm, water_sources_rdm, insurance_triggers,
                                  insurance_premium, fixed_payouts, n_weeks);
 

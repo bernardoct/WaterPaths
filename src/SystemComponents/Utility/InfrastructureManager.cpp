@@ -6,6 +6,7 @@
 #include "InfrastructureManager.h"
 #include "../WaterSources/SequentialJointTreatmentExpansion.h"
 #include "../WaterSources/ReservoirExpansion.h"
+#include "../WaterSources/IntakeExpansion.h"
 #include "../WaterSources/Relocation.h"
 #include "../../Utils/Utils.h"
 
@@ -129,6 +130,7 @@ void InfrastructureManager::addWaterSourceToOnlineLists(int source_id, double &t
 
     /// Add source to the corresponding list of online water sources.
     if ((ws->source_type == INTAKE ||
+         ws->source_type == INTAKE_EXPANSION ||
          ws->source_type == WATER_REUSE)) {
         priority_draw_water_source->push_back(source_id);
     } else {
@@ -151,6 +153,8 @@ InfrastructureManager::setWaterSourceOnline(unsigned int source_id, int week, do
         reservoirExpansionConstructionHandler(source_id);
     } else if (water_sources->at(source_id)->source_type == SOURCE_RELOCATION) {
         sourceRelocationConstructionHandler(source_id);
+    } else if (water_sources->at(source_id)->source_type == INTAKE_EXPANSION) {
+        intakeExpansionConstructionHandler(source_id);
     } else {
         water_sources->at(source_id)->setOnline();
         addWaterSourceToOnlineLists(source_id, total_storage_capacity, total_treatment_capacity,
@@ -197,6 +201,7 @@ InfrastructureManager::waterTreatmentPlantConstructionHandler(unsigned int sourc
     /// sources, add it to the non-priority list.
     bool is_priority_source =
             water_sources->at(wtp->parent_reservoir_ID)->source_type == INTAKE ||
+            water_sources->at(wtp->parent_reservoir_ID)->source_type == INTAKE_EXPANSION ||
             water_sources->at(wtp->parent_reservoir_ID)->source_type ==
             WATER_REUSE;
     bool is_not_in_priority_list =
@@ -243,7 +248,21 @@ void InfrastructureManager::sourceRelocationConstructionHandler(unsigned int sou
     water_sources->at(source_id)->setOnline();
 }
 
+void InfrastructureManager::intakeExpansionConstructionHandler(unsigned int source_id) {
+    IntakeExpansion re =
+            *dynamic_cast<IntakeExpansion *>(water_sources->at(source_id));
 
+    water_sources->at(re.parent_intake_ID)->
+            addCapacity(re.getAllocatedCapacity(id));
+
+    /// July 2019: I think there may be an issue here if this were to be used for an allocated source
+    ///             where it mattered what utility ID was associated with the increase in treatment capacity
+    ///             but this addTreatmentCapacity function is not overrode within the Intake or IntakeExpansion class
+    ///             so it should be fine
+    water_sources->at(re.parent_intake_ID)->
+            addTreatmentCapacity(re.getAllocatedTreatmentCapacity(id), NON_INITIALIZED);
+    water_sources->at(source_id)->setOnline();
+}
 
 /**
  * Force utility to build a certain infrastructure option, if present in its

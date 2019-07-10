@@ -121,7 +121,7 @@ set(SOURCE_FILES
         src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.cpp
         src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.h
         src/Problem/PaperTestProblem.cpp
-        src/Problem/PaperTestProblem.h)
+        src/Problem/PaperTestProblem.h src/SystemComponents/WaterSources/IntakeExpansion.cpp src/SystemComponents/WaterSources/IntakeExpansion.h)
 
 set(TEST_SOURCE_FILES
         src/ContinuityModels/Base/ContinuityModel.cpp
@@ -230,7 +230,7 @@ set(TEST_SOURCE_FILES
         src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.cpp
         src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.h
         Tests/catch.hpp
-        Tests/Tests.cpp)
+        Tests/Tests.cpp src/SystemComponents/WaterSources/IntakeExpansion.cpp src/SystemComponents/WaterSources/IntakeExpansion.h)
 
 add_executable(TriangleModel ${SOURCE_FILES})
 add_executable(TestTriangleModel ${TEST_SOURCE_FILES})

@@ -25,8 +25,10 @@ using namespace std;
 using namespace Constants;
 using namespace Solutions;
 
-PaperTestProblem *problem_ptr;
-//Triangle *problem_ptr;
+/// Note for David: flip this or errors
+//PaperTestProblem *problem_ptr;
+Triangle *problem_ptr;
+
 int failures = 0;
 ofstream sol_out; // for debugging borg
 
@@ -230,8 +232,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    PaperTestProblem problem(n_weeks, import_export_rof_table);
-//    Triangle problem(n_weeks, import_export_rof_table);
+
+    /// Note for David: flip this too, idiot
+//    PaperTestProblem problem(n_weeks, import_export_rof_table);
+    Triangle problem(n_weeks, import_export_rof_table);
+
     if (seed > -1) {
         WaterSource::setSeed(seed);
         MasterDataCollector::setSeed(seed);

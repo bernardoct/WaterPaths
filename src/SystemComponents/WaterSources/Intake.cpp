@@ -13,6 +13,10 @@ Intake::Intake(
         const double max_treatment_capacity)
         : WaterSource(name, id, catchments, NONE, vector<int>(), max_treatment_capacity, INTAKE) {}
 
+Intake::Intake(const char *name, const int id, const vector<Catchment *> &catchments, const double raw_water_capacity,
+               const double max_treatment_capacity)
+        : WaterSource(name, id, catchments, raw_water_capacity, vector<int>(), max_treatment_capacity, INTAKE) {}
+
 Intake::Intake(const char *name, const int id, const vector<Catchment *> &catchments,
                const double raw_water_main_capacity, const vector<double> construction_time_range,
                double permitting_period, Bond &bond) :
@@ -98,3 +102,4 @@ void Intake::setRealization(unsigned long r, vector<double> &rdm_factors) {
     available_volume = this->upstream_catchment_inflow -
                        min_environmental_outflow;
 }
+

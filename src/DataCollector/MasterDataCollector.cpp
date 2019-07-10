@@ -687,6 +687,8 @@ DataCollector* MasterDataCollector::createWaterSourceDataCollector(WaterSource* 
     else if (ws->source_type ==
              RESERVOIR_EXPANSION ||
              ws->source_type ==
+             INTAKE_EXPANSION ||
+             ws->source_type ==
              NEW_WATER_TREATMENT_PLANT ||
              ws->source_type ==
              SOURCE_RELOCATION)

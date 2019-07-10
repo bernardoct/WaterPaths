@@ -83,6 +83,7 @@ public:
 
     const vector<bool> &getUnder_construction() const;
 
+    void intakeExpansionConstructionHandler(unsigned int source_id);
 };
 
 

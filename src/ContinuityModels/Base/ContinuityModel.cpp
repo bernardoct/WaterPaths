@@ -204,8 +204,11 @@ void ContinuityModel::setRealization(unsigned long realization_id, vector<double
     if (realization_id != (unsigned) NON_INITIALIZED) {
         for (Utility *u : continuity_utilities)
             u->setRealization(realization_id, utilities_rdm);
-        for (WaterSource *ws : continuity_water_sources)
+        for (WaterSource *ws : continuity_water_sources) {
+//            cout << water_sources_rdm.size() << ", " << realization_id << endl;
+//            cout << ws->id << ", " << ws->name << ", " << water_sources_rdm.at(ws->id) << endl;
             ws->setRealization(realization_id, water_sources_rdm);
+        }
         for (MinEnvFlowControl *mef : min_env_flow_controls)
             mef->setRealization(realization_id, water_sources_rdm);
     }

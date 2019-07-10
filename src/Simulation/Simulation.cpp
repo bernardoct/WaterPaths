@@ -328,8 +328,9 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                 realization);
 
         try {
-            //double start = omp_get_wtime();
+            double start = omp_get_wtime();
             for (int w = 0; w < (int) total_simulation_time; ++w) {
+                cout << w << endl;
                 // DO NOT change the order of the steps. This would mess up
                 // important dependencies.
                 // Calculate long-term risk-of-failre if current week is first week of the year.
@@ -352,7 +353,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
             if (import_export_rof_tables == EXPORT_ROF_TABLES) {
                 rof_model->printROFTable(rof_tables_folder);
             }
-            // printf("Realization %lu took %f seconds.\n", r, omp_get_wtime() - start);
+            printf("Realization %lu took %f seconds.\n", r, omp_get_wtime() - start);
         } catch (...) {
 #pragma omp atomic
             ++had_catch;
@@ -380,7 +381,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
 	error_m += ". Decision variables in sol_error_rank_" + to_string(world_rank) + ".";
 	printf("%s", error_m.c_str());
 	master_data_collector->cleanCollectorsOfDeletedRealizations();
-//        throw_with_nested(runtime_error(error_m.c_str()));
+        throw_with_nested(runtime_error(error_m.c_str()));
     }
     return master_data_collector;
 }

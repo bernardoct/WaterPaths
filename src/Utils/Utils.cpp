@@ -20,6 +20,7 @@
 #include "../SystemComponents/Bonds/LevelDebtServiceBond.h"
 #include "../SystemComponents/Bonds/BalloonPaymentBond.h"
 #include "../SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.h"
+#include "../SystemComponents/WaterSources/IntakeExpansion.h"
 #include <fstream>
 #include <algorithm>
 #include <climits>
@@ -173,6 +174,10 @@ vector<WaterSource *> Utils::copyWaterSourceVector(
             water_sources_new.push_back(
                     new ReservoirExpansion(
                             *dynamic_cast<ReservoirExpansion *>(ws)));
+        else if (ws->source_type == INTAKE_EXPANSION)
+            water_sources_new.push_back(
+                    new IntakeExpansion(
+                            *dynamic_cast<IntakeExpansion *>(ws)));
         else if (ws->source_type == QUARRY)
             water_sources_new.push_back(
                     new Quarry(*dynamic_cast<Quarry *>(ws)));

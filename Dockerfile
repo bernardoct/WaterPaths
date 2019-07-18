@@ -1,5 +1,6 @@
-ARG BASEOS
-FROM cornellcac/nix_${BASEOS}_base:2cd324f48c57f66d476a7894c6a957a78e49b116
+#ARG BASEOS
+#FROM cornellcac/nix_${BASEOS}_base:2cd324f48c57f66d476a7894c6a957a78e49b116
+FROM cornellcac/nix_alpine_base:2cd324f48c57f66d476a7894c6a957a78e49b116
 
 USER root
 ARG ADDUSER
@@ -20,12 +21,15 @@ RUN chown -R $nixuser:$nixuser $HOME/.ssh
 USER $nixuser
 RUN $nixenv && cd /tmp && sh $ENVSDIR/persist-env.sh $ENVSDIR/dev-env.nix
 RUN $nixenv && cd $HOME && \
+  eval $(ssh-agent) && \
+  ssh-add $HOME/.ssh/id_rsa && \
   cat /tmp/bitbucket_ssh_keyscan >> $HOME/.ssh/known_hosts && \
-  git clone https://github.com/bernardoct/WaterPaths.git && \
-  cd WaterPaths && git checkout 7b380c388c08e9891e345c59125af7b077fd218b && \
+  git clone https://github.com/federatedcloud/WaterPaths.git && \
+  cd WaterPaths && \
+  git checkout e5a6d5fad402d2cc9f7a028cd66f8eff1e0fe258 && \
   nix-shell -I ssh-config-file=./nix/.ssh-standard-config -I ssh-auth-sock=$SSH_AUTH_SOCK nix/shell.nix --run "make borg" && \
   rm -f $HOME/.ssh/id_rsa
-#
+
 
 USER root
 
@@ -46,7 +50,11 @@ RUN SSHD_PATH=$(su -c "$nixenv && nix-build '<nixpkgs>' --no-build-output --no-o
   mkdir -p /var/empty/sshd/etc && \
   cd /var/empty/sshd/etc && \
   ln -s /etc/localtime localtime
-  
+
+# make mpi and orted executable symlinks on path
+RUN for i in $(ls /nixenv/nixuser/.nix-profile/bin) ; do ln -s /nixenv/nixuser/.nix-profile/bin/"$i" /usr/bin ; done
+RUN sed -i 's|^nixuser.*|nixuser:x:1000:1000::/home/nixuser:/nixenv/nixuser/.nix-profile/bin/bash|' /etc/passwd
+
 USER $nixuser
 
 
@@ -65,6 +73,7 @@ ADD ContainerFiles/ssh/id_rsa.mpi.pub ${SSHDIR}/authorized_keys
 
 USER root
 
+RUN passwd -d nixuser
 RUN chmod -R 600 ${SSHDIR}* && \
     chown -R ${nixuser}:${nixuser} ${SSHDIR}
 

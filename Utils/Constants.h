@@ -20,17 +20,12 @@ namespace Constants {
     const std::string BAR = "/";
     const std::string DEFAULT_SYS_IO_DIR = "./";
 #endif
-    const int NUM_OBJECTIVES = 5;
-//#define NUM_DEC_VAR 57;
-    const int NUM_DEC_VAR = 30; // infrastructure turned off
-
     const std::string DEFAULT_DATA_DIR = "TestFiles" + BAR;
     const std::string DEFAULT_OUTPUT_DIR = "output" + BAR;
     const std::string DEFAULT_ROF_TABLES_DIR = "rof_tables" + BAR;
 
     const double PEAKING_FACTOR = 0.85; ///Peaking factor used to move from daily capacity to average weekly capacity.
     const double WEEKS_IN_YEAR = 52.179;
-    const int WEEKS_IN_YEAR_ROUND = 52;
     const int NUMBER_OF_MONTHS = 12;
     const double WEEKS_IN_MONTH = WEEKS_IN_YEAR / (double) NUMBER_OF_MONTHS;
     const int WEEKS_ROF_SHORT_TERM = 52;
@@ -44,7 +39,6 @@ namespace Constants {
     const double STORAGE_CAPACITY_RATIO_FAIL = 0.2;
     const int NOT_ALLOCATED = 1;
     const int MAX_NUMBER_OF_UTILITIES = 50;
-    const double MAX_FRACTION_CF_TO_BUY_INSURANCE = 0.7;
 
     const bool APPLY_DEMAND_BUFFER = true;
 
@@ -66,27 +60,20 @@ namespace Constants {
     const int NON_INITIALIZED = -1;
 
     const int UTILITY = 100;
-
-    // 0 - 99 for non-storage sources, 100 - 199 for
-    // storage sources, 200 - 299 for treatment and
-    // capacity expansions.
+    
     const int INTAKE = 0;
-    const int WATER_REUSE = 1;
-    const int RESERVOIR = 100;
-    const int QUARRY = 101;
-    const int ALLOCATED_RESERVOIR = 102;
-    const int NEW_WATER_TREATMENT_PLANT = 200;
-    const int SOURCE_RELOCATION = 201;
-    const int RESERVOIR_EXPANSION = 203;
+    const int RESERVOIR = 1;
+    const int RESERVOIR_EXPANSION = 2;
+    const int QUARRY = 3;
+    const int WATER_REUSE = 4;
+    const int ALLOCATED_RESERVOIR = 5;
+    const int NEW_WATER_TREATMENT_PLANT = 6;
+    const int SOURCE_RELOCATION = 7;
 
-    // Use 0 - 99 for supply instruments and 100 - 199
-    // for financial instruments.
     const int TRANSFERS = 0;
     const int RESTRICTIONS = 1;
-    const int INSURANCE_STORAGE_ROF = 100;
-
-    const int SUPPLY_INSTRUMENT_LIM = 99;
-    const int FINANCIAL_INSTRUMENT_LIM = 199;
+    const int INSURANCE_PSEUDO_ROF = 2;
+    const int INSURANCE_STORAGE_ROF = 3;
 
     const int FIXED_FLOW_CONTROLS = 0;
     const int INFLOW_CONTROLS = 1;

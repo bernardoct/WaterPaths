@@ -35,7 +35,8 @@ protected:
     vector<double> water_sources_rdm;
     const int n_utilities;
     const int n_sources;
-    int delta_realization_weeks[NUMBER_REALIZATIONS_ROF];
+    int delta_realization_weeks[NUMBER_REALIZATIONS_ROF + 1];
+//    int delta_realization_weeks[NUMBER_REALIZATIONS_ROF];
 
 public:
     const unsigned long realization_id;

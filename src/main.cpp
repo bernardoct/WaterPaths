@@ -3,6 +3,7 @@
 #include "Utils/Solutions.h"
 #include "Problem/PaperTestProblem.h"
 #include "Problem/Triangle.h"
+#include "Utils/Utils.h"
 
 #ifdef  PARALLEL
 #include "../Borg/borgms.h"
@@ -16,16 +17,12 @@
 #include <omp.h>
 
 
-#define NUM_OBJECTIVES 6;
-#define NUM_DEC_VAR 57;
-//#define NUM_DEC_VAR 27; // infrastructure turned off
-
 using namespace std;
 using namespace Constants;
 using namespace Solutions;
 
-//PaperTestProblem *problem_ptr;
-Triangle *problem_ptr;
+PaperTestProblem *problem_ptr;
+//Triangle *problem_ptr;
 int failures = 0;
 ofstream sol_out; // for debugging borg
 
@@ -40,12 +37,22 @@ void print_decision_vars(double *vars) {
 }
 
 void eval(double *vars, double *objs, double *consts) {
-//    try {
+    try {
 //        print_decision_vars(vars);
+///        for (int i = 0; i < NUM_DEC_VAR; ++i) printf("%f,", vars[i]); //for (int i = 0; i < 5; ++i) printf("%f, ", objs[i]); printf("\n");
+///	printf("\n");
+///	printf("\n");
+///	printf("\n");
+        for (int i = 0; i < NUM_DEC_VAR; ++i) {
+            if (isnan(vars[i])) {
+                char error[50];
+                sprintf(error, "Nan in decision variable %d", i);
+                throw invalid_argument(error);
+            }
+        }
         failures += problem_ptr->functionEvaluation(vars, objs, consts);
-        //for (int i = 0; i < 57; ++i) printf("%f, ", vars[i]); for (int i = 0; i < 5; ++i) printf("%f, ", objs[i]); printf("\n");
         problem_ptr->destroyDataCollector();
-//    } catch (...) {
+    } catch (...) {
 //        sol_out << endl;
 //        sol_out << "Failure! Decision Variable values: " << endl;
 //        cout << endl;
@@ -53,7 +60,8 @@ void eval(double *vars, double *objs, double *consts) {
 //        print_decision_vars(vars);
 //        sol_out << endl;
 //        sol_out << endl;
-//    }
+        for (int i = 0; i < NUM_OBJECTIVES; ++i) objs[i] = 1e5;
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -229,22 +237,20 @@ int main(int argc, char *argv[]) {
         }
     }
 
-//    PaperTestProblem problem(n_weeks, import_export_rof_table);
-    Triangle problem(n_weeks, import_export_rof_table);
+    PaperTestProblem problem(n_weeks, import_export_rof_table);
+//    Triangle problem(n_weeks, import_export_rof_table);
     if (seed > -1) {
         WaterSource::setSeed(seed);
+        MasterDataCollector::setSeed(seed);
     }
 
-    /// Set basic realization parameters.
+    // Set basic realization parameters.
     problem.setN_weeks(n_weeks);
 //    printf("%s\n", system_io.c_str());
-    problem.setOutput_directory(system_io);
+    problem.setIODirectory(system_io);
     problem.setN_threads((unsigned long) n_threads);
-    problem.setN_realizations(n_realizations);
-    problem.setImport_export_rof_tables(import_export_rof_table, (int) n_weeks, rof_tables_directory);
-    problem.readInputData();
 
-    /// Load bootstrap samples if necessary.
+    // Load bootstrap samples if necessary.
     if (strlen(bootstrap_file.c_str()) > 2) {
         auto bootstrap_samples_double = Utils::parse2DCsvFile(system_io + bootstrap_file);
         for (auto &v : bootstrap_samples_double) {
@@ -262,13 +268,13 @@ int main(int argc, char *argv[]) {
                 "You must specify an input output directory.");
     }
 
-    /// Set up input/output suffix, if necessary.
+    // Set up input/output suffix, if necessary.
     if (strlen(inflows_evap_directory_suffix.c_str()) > 2) {
         problem.setEvap_inflows_suffix(inflows_evap_directory_suffix);
     }
-    cout << "reading RDM file" << endl;
-    /// Read RDM file, if any
+    // Read RDM file, if any
     if (strlen(utilities_rdm_file.c_str()) > 2) {
+        cout << "reading RDM file" << endl;
         if (rdm_no != NON_INITIALIZED) {
             auto utilities_rdm_row = Utils::parse2DCsvFile(system_io + utilities_rdm_file)[rdm_no];
             auto policies_rdm_row = Utils::parse2DCsvFile(system_io + policies_rdm_file)[rdm_no];
@@ -300,17 +306,23 @@ int main(int argc, char *argv[]) {
     }
     problem_ptr = &problem;
 
-    /// Set realizations to be run -- otherwise, n_realizations realizations will be run.
+    // Set realizations to be run -- otherwise, n_realizations realizations will be run.
     if (!realizations_to_run.empty() && (n_sets <= 0 || n_bs_samples <= 0)) {
         auto realizations_to_run_ul = vector<unsigned long>(realizations_to_run[0].begin(),
                                                             realizations_to_run[0].end());
-        problem_ptr->setRealizationsToRun(realizations_to_run_ul);
+        problem.setRealizationsToRun(realizations_to_run_ul);
+        problem.setN_realizations(*max_element(realizations_to_run_ul.begin(), realizations_to_run_ul.end()) + 1);
+    } else {
+        problem.setN_realizations(n_realizations);
     }
+    problem.setImport_export_rof_tables(import_export_rof_table, (int) n_weeks,
+            system_io + rof_tables_directory);
+    problem.readInputData();
 
-    /// If Borg is not called, run in simulation mode
+    // If Borg is not called, run in simulation mode
     if (!run_optimization) {
         vector<int> sol_range;
-        /// Check for basic input errors.
+        // Check for basic input errors.
         if ((first_solution == -1 && last_solution != -1) ||
             (first_solution != -1 && last_solution == -1))
             throw invalid_argument("If you set a first or last solution, you "
@@ -325,7 +337,7 @@ int main(int argc, char *argv[]) {
             throw invalid_argument("You must specify a solutions file.\n");
         }
 
-        /// Run model
+        // Run model
         if (first_solution == -1) {
             cout << endl << endl << endl << "Running solution "
                  << standard_solution << endl;
@@ -334,8 +346,7 @@ int main(int argc, char *argv[]) {
 
             // Export pathways and objectives, otherwise, if required, run bootstrap sub-sampling.
             if (n_sets > 0 && n_bs_samples > 0) {
-                printf("\ngetting here\n\n");
-                problem_ptr->getMaster_data_collector()->performBootstrapAnalysis(
+                problem_ptr->runBootstrapRealizationThinning(
                         (int) standard_solution, n_sets, n_bs_samples, n_threads, realizations_to_run);
             } else if (import_export_rof_table != EXPORT_ROF_TABLES) {
                 if (plotting)
@@ -348,7 +359,7 @@ int main(int argc, char *argv[]) {
         } else {
             double time_0 = omp_get_wtime();
             ofstream objs_file;
-            string file_name = system_io + "output" + BAR + "Objectives_RDM" + to_string(rdm_no) +
+            string file_name = system_io + "output" + BAR + "Objectives" + (rdm_no == -1 ? "" : "_RDM" + to_string(rdm_no)) +
                                "_sols" + to_string(first_solution) + "_to_" + to_string(last_solution) + ".csv";
             objs_file.open(file_name);
             printf("Objectives file will be printed at %s.\n", file_name.c_str());
@@ -358,6 +369,7 @@ int main(int argc, char *argv[]) {
                 problem.setSol_number((unsigned long) s);
                 problem_ptr->functionEvaluation(solutions[s].data(), c_obj, c_constr);
                 vector<double> objectives = problem_ptr->calculateAndPrintObjectives(false);
+//		printf("%f %f %f\n", objectives[0], objectives[5], objectives[10]);
                 if (plotting)
                     problem.printTimeSeriesAndPathways();
                 problem_ptr->destroyDataCollector();
@@ -387,8 +399,8 @@ int main(int argc, char *argv[]) {
         // for debugging borg, creating file to print each ranks DVs which isdone in Eval function   
         
         BORG_Algorithm_ms_startup(&argc, &argv);
-//        BORG_Algorithm_ms_islands((int) n_islands);
-//        BORG_Algorithm_ms_initialization(INITIALIZATION_LATIN_GLOBAL);
+        // BORG_Algorithm_ms_islands((int) n_islands);
+        // BORG_Algorithm_ms_initialization(INITIALIZATION_LATIN_GLOBAL);
         BORG_Algorithm_ms_max_evaluations((int) nfe);
         BORG_Algorithm_output_frequency((int) output_frequency);
 
@@ -405,25 +417,20 @@ int main(int argc, char *argv[]) {
             WaterSource::setSeed(seed);
 	    BORG_Random_seed(seed);
         }
-        char outputFileName[256];
-	char output_directory[256];
+        char output_directory[256], output_file_name[256];
+	char io_directory[256];
         char runtime[256];
         FILE* outputFile = nullptr;
 
-	sprintf(outputFileName, "%s%s%s%s", system_io.c_str(), BAR.c_str(), DEFAULT_OUTPUT_DIR.c_str(), BAR.c_str());
-        string create_dir_command;
-#ifdef _WIN32
-        create_dir_command = "if not exist \"" + outputFileName + "\" mkdir ";
-#else
-        create_dir_command = "mkdir -p";
-#endif
-        auto output = system((create_dir_command + " " + outputFileName).c_str());
+	sprintf(output_directory, "%s%s", system_io.c_str(), DEFAULT_OUTPUT_DIR.c_str());
+	//Utils::createDir(string(output_directory));
 
-        sprintf(outputFileName, "%s%s%s%sNC_output_MM_S%d_N%lu.set", system_io.c_str(), BAR.c_str(), DEFAULT_OUTPUT_DIR.c_str(), BAR.c_str(),
-                seed, nfe);
-        printf("Reference set will be in %s.\n", outputFileName);
+        // sprintf(output_file_name, "%sNC_output_MM_S%d_N%lu.set", output_directory, seed, nfe);
+        sprintf(output_file_name, "%sNC_output_MS_S%d_N%lu.set", output_directory, seed, nfe);
+        printf("Reference set will be in %s.\n", output_file_name);
         // output path (make sure this exists)
-        sprintf(runtime, "%s%s%s%sNC_runtime_MM_S%d_N%lu.runtime", system_io.c_str(), BAR.c_str(), DEFAULT_OUTPUT_DIR.c_str(), BAR.c_str(),
+        // sprintf(runtime, "%sNC_runtime_MM_S%d_N%lu_M%%d.runtime", output_directory,
+        sprintf(runtime, "%sNC_runtime_MS_S%d_N%lu.runtime", output_directory,
                 seed, nfe); // runtime
         printf("Runtime files will be in %s.\n", runtime);
         // path (make sure this exists)
@@ -444,7 +451,7 @@ int main(int argc, char *argv[]) {
         // If this is the master node, print out the final archive
 
         if (result != nullptr) {
-            outputFile = fopen(outputFileName, "w");
+            outputFile = fopen(output_file_name, "w");
             cout << "master node print, should see only once" << endl;
             if (!outputFile) {
                 BORG_Debug("Unable to open final output file\n");

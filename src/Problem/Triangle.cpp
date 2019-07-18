@@ -10,7 +10,6 @@
 #include <omp.h>
 #ifdef  PARALLEL
 #include <mpi.h>
-#include "../../Borg/borgms.h"
 #endif
 #include "Triangle.h"
 #include "../Controls/SeasonalMinEnvFlowControl.h"
@@ -317,7 +316,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         /// number of realizations to number of realizations in that vector.
 
     //    vector<double> sewageFractions = Utils::parse1DCsvFile(
-    //            output_directory + "/TestFiles/sewageFractions.csv");
+    //            io_directory + "/TestFiles/sewageFractions.csv");
 
         EvaporationSeries evaporation_durham(&evap_durham, streamflow_n_weeks);
         EvaporationSeries evaporation_jordan_lake(
@@ -823,19 +822,19 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         vector<int> demand_triggered_infra_order_cary = {22, 23};
         vector<double> demand_infra_cary = {caryupgrades_2 * 7, caryupgrades_3 * 7};
-        Utility cary((char *) "Cary", 2, demand_cary, demand_n_weeks, cary_annual_payment, &caryDemandClassesFractions,
-                     &caryUserClassesWaterPrices, wwtp_discharge_cary, cary_inf_buffer, vector<int>(),
+        Utility cary((char *) "Cary", 2, demand_cary, demand_n_weeks, cary_annual_payment, caryDemandClassesFractions,
+                     caryUserClassesWaterPrices, wwtp_discharge_cary, cary_inf_buffer, vector<int>(),
                      demand_triggered_infra_order_cary, demand_infra_cary, discount_rate, bond_term[0], bond_rate[0]);
         Utility durham((char *) "Durham", 1, demand_durham, demand_n_weeks, durham_annual_payment,
-                       &durhamDemandClassesFractions, &durhamUserClassesWaterPrices, wwtp_discharge_durham,
+                       durhamDemandClassesFractions, durhamUserClassesWaterPrices, wwtp_discharge_durham,
                        durham_inf_buffer, rof_triggered_infra_order_durham,
                        vector<int>(), rofs_infra_durham, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[1], bond_rate[1]);
         Utility owasa((char *) "OWASA", 0, demand_owasa, demand_n_weeks, owasa_annual_payment,
-                      &owasaDemandClassesFractions, &owasaUserClassesWaterPrices, wwtp_discharge_owasa, owasa_inf_buffer,
+                      owasaDemandClassesFractions, owasaUserClassesWaterPrices, wwtp_discharge_owasa, owasa_inf_buffer,
                       rof_triggered_infra_order_owasa,
                       vector<int>(), rofs_infra_owasa, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[2], bond_rate[2]);
         Utility raleigh((char *) "Raleigh", 3, demand_raleigh, demand_n_weeks, raleigh_annual_payment,
-                        &raleighDemandClassesFractions, &raleighUserClassesWaterPrices, wwtp_discharge_raleigh,
+                        raleighDemandClassesFractions, raleighUserClassesWaterPrices, wwtp_discharge_raleigh,
                         raleigh_inf_buffer, rof_triggered_infra_order_raleigh,
                         vector<int>(), rofs_infra_raleigh, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[3], bond_rate[3]);
 
@@ -952,8 +951,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         vector<int> insured_utilities = {0, 1, 2, 3};
         double insurance_premium = 1.2;
         InsuranceStorageToROF in(5, water_sources, g, reservoir_utility_connectivity_matrix, utilities,
-                                 min_env_flow_controls, utilities_rdm, water_sources_rdm, insurance_triggers,
-                                 insurance_premium, fixed_payouts, n_weeks);
+                drought_mitigation_policies, min_env_flow_controls, utilities_rdm, water_sources_rdm, policies_rdm,
+                insurance_triggers, insurance_premium, fixed_payouts, n_weeks);
 
         drought_mitigation_policies.push_back(&in);
 
@@ -973,7 +972,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         	     realizations_to_run,
         	     rof_tables_directory);
             //realization_start = omp_get_wtime();
-    	    this->master_data_collector = s->runFullSimulation(n_threads);
+    	    this->master_data_collector = s->runFullSimulation(n_threads, nullptr);
         } else if (import_export_rof_tables == IMPORT_ROF_TABLES) {
             s = new Simulation (water_sources,
         	     g,
@@ -990,7 +989,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         	     table_storage_shift,
         	     rof_tables_directory);
             //realization_start = omp_get_wtime();
-            this->master_data_collector = s->runFullSimulation(n_threads);
+            this->master_data_collector = s->runFullSimulation(n_threads, nullptr);
         } else {
             s = new Simulation(water_sources,
         	     g,
@@ -1004,7 +1003,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         	     n_weeks,
         	     realizations_to_run);
             //realization_start = omp_get_wtime();
-            this->master_data_collector = s->runFullSimulation(n_threads);
+            this->master_data_collector = s->runFullSimulation(n_threads, nullptr);
         }
         double end_time = omp_get_wtime();
 	printf("Function evaluation time: %f s\n", end_time - start_time);
@@ -1109,71 +1108,71 @@ void Triangle::readInputData() {
     {
 #pragma omp single
         streamflows_durham = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "durham_inflows.csv", n_realizations);
 #pragma omp single
         streamflows_flat = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "falls_lake_inflows.csv", n_realizations);
 #pragma omp single
         streamflows_swift = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "lake_wb_inflows.csv", n_realizations);
 #pragma omp single
         streamflows_llr = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "little_river_raleigh_inflows.csv", n_realizations);
         // }
 #pragma omp single
         streamflows_crabtree = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "crabtree_inflows.csv", n_realizations);
 #pragma omp single
         streamflows_phils = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "stone_quarry_inflows.csv", n_realizations);
 #pragma omp single
         streamflows_cane = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "cane_creek_inflows.csv", n_realizations);
 #pragma omp single
         streamflows_morgan = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "university_lake_inflows.csv", n_realizations);
 #pragma omp single
         streamflows_haw = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "jordan_lake_inflows.csv", n_realizations);
 #pragma omp single
         streamflows_clayton = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "clayton_inflows.csv", n_realizations);
 #pragma omp single
         streamflows_lillington = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "inflows" + evap_inflows_suffix +
                 BAR + "lillington_inflows.csv", n_realizations);
 // };
         //cout << "Reading evaporations." << endl;
 #pragma omp single
         evap_durham = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
                 BAR + "durham_evap.csv", n_realizations);
 #pragma omp single
         evap_falls_lake = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
                 BAR + "falls_lake_evap.csv", n_realizations);
 #pragma omp single
         evap_owasa = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
                 BAR + "owasa_evap.csv", n_realizations);
 #pragma omp single
         evap_little_river = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
                 BAR + "little_river_raleigh_evap.csv", n_realizations);
 #pragma omp single
         {
             evap_wheeler_benson = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
+                    io_directory + DEFAULT_DATA_DIR + "evaporation" + evap_inflows_suffix +
                     BAR + "wb_evap.csv", n_realizations);
             evap_jordan_lake = evap_owasa;
         }
@@ -1181,49 +1180,49 @@ void Triangle::readInputData() {
         //cout << "Reading demands." << endl;
 #pragma omp single
         demand_cary = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
                 BAR + "cary_demand.csv", n_realizations);
 #pragma omp single
         demand_durham = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
                 BAR + "durham_demand.csv", n_realizations);
 #pragma omp single
         demand_raleigh = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
                 BAR + "raleigh_demand.csv", n_realizations);
 #pragma omp single
         demand_owasa = Utils::parse2DCsvFile(
-                output_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
                 BAR + "owasa_demand.csv", n_realizations);
 
         //cout << "Reading others." << endl;
 #pragma omp single
         {
             demand_to_wastewater_fraction_owasa_raleigh = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "demand_to_wastewater_fraction_owasa_raleigh.csv");
+                    io_directory + DEFAULT_DATA_DIR + "demand_to_wastewater_fraction_owasa_raleigh.csv");
             demand_to_wastewater_fraction_durham = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "demand_to_wastewater_fraction_durham.csv");
+                    io_directory + DEFAULT_DATA_DIR + "demand_to_wastewater_fraction_durham.csv");
 
             caryDemandClassesFractions = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "caryDemandClassesFractions.csv");
+                    io_directory + DEFAULT_DATA_DIR + "caryDemandClassesFractions.csv");
             durhamDemandClassesFractions = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "durhamDemandClassesFractions.csv");
+                    io_directory + DEFAULT_DATA_DIR + "durhamDemandClassesFractions.csv");
             raleighDemandClassesFractions = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "raleighDemandClassesFractions.csv");
+                    io_directory + DEFAULT_DATA_DIR + "raleighDemandClassesFractions.csv");
             owasaDemandClassesFractions = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "owasaDemandClassesFractions.csv");
+                    io_directory + DEFAULT_DATA_DIR + "owasaDemandClassesFractions.csv");
 
             caryUserClassesWaterPrices = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "caryUserClassesWaterPrices.csv");
+                    io_directory + DEFAULT_DATA_DIR + "caryUserClassesWaterPrices.csv");
             durhamUserClassesWaterPrices = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "durhamUserClassesWaterPrices.csv");
+                    io_directory + DEFAULT_DATA_DIR + "durhamUserClassesWaterPrices.csv");
             raleighUserClassesWaterPrices = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "raleighUserClassesWaterPrices.csv");
+                    io_directory + DEFAULT_DATA_DIR + "raleighUserClassesWaterPrices.csv");
             owasaUserClassesWaterPrices = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "owasaUserClassesWaterPrices.csv");
+                    io_directory + DEFAULT_DATA_DIR + "owasaUserClassesWaterPrices.csv");
 
             owasaPriceSurcharges = Utils::parse2DCsvFile(
-                    output_directory + DEFAULT_DATA_DIR + "owasaPriceRestMultipliers.csv");
+                    io_directory + DEFAULT_DATA_DIR + "owasaPriceRestMultipliers.csv");
         }
 //    cout << "Done reading input data." << endl;
     }

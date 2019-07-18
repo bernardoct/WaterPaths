@@ -17,7 +17,7 @@ double ObjectivesCalculator::calculateReliabilityObjective(
         n_realizations = realizations.size();
     }
 
-    unsigned long n_weeks = utility_collector[0]->getCombined_storage().size();
+    unsigned long n_weeks = utility_collector[realizations[0]]->getCombined_storage().size();
     unsigned long n_years = (unsigned long) round(n_weeks / WEEKS_IN_YEAR);
 
     vector<vector<int>> realizations_year_reliabilities(
@@ -70,7 +70,7 @@ double ObjectivesCalculator::calculateReliabilityObjective(
 }
 
 double ObjectivesCalculator::calculateRestrictionFrequencyObjective(
-        const vector<RestrictionsDataCollector>& restriction_data, vector<unsigned long> realizations) {
+        const vector<RestrictionsDataCollector *>& restriction_data, vector<unsigned long> realizations) {
 
     unsigned long n_realizations = restriction_data.size();
     if (realizations.empty()) {
@@ -82,8 +82,7 @@ double ObjectivesCalculator::calculateRestrictionFrequencyObjective(
 
     /// Check if there were restriction policies in place.
     if (!restriction_data.empty()) {
-        unsigned long n_weeks = restriction_data[0]
-                .getRestriction_multipliers().size();
+        unsigned long n_weeks = restriction_data[realizations[0]]->getRestriction_multipliers().size();
         unsigned long n_years = (unsigned long) round(n_weeks / WEEKS_IN_YEAR);
 
         double restriction_frequency = 0;
@@ -94,7 +93,7 @@ double ObjectivesCalculator::calculateRestrictionFrequencyObjective(
                 for (int w = (int) round(y * WEEKS_IN_YEAR);
                      w < (int) min((int) n_weeks,
                              (int) round((y + 1) * WEEKS_IN_YEAR)); ++w) {
-                    if (restriction_data[r].getRestriction_multipliers()[w] !=
+                    if (restriction_data[r]->getRestriction_multipliers()[w] !=
                         1.0) {
                         restriction_frequency++;
                         break;
@@ -149,7 +148,7 @@ double ObjectivesCalculator::calculatePeakFinancialCostsObjective(
         n_realizations = realizations.size();
     }
 
-    unsigned long n_weeks = utility_data[0]->getGross_revenues().size();
+    unsigned long n_weeks = utility_data[realizations[0]]->getGross_revenues().size();
     unsigned long n_years = (unsigned long) round(n_weeks / WEEKS_IN_YEAR);
 
     double realizations_year_debt_payment = 0;
@@ -225,7 +224,7 @@ double ObjectivesCalculator::calculateWorseCaseCostsObjective(
         n_realizations = realizations.size();
     }
 
-    unsigned long n_weeks = utility_data[0]->getGross_revenues().size();
+    unsigned long n_weeks = utility_data[realizations[0]]->getGross_revenues().size();
     unsigned long n_years = (unsigned long) round(n_weeks / WEEKS_IN_YEAR);
 
     vector<double> worse_year_financial_costs;

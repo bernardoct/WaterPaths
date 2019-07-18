@@ -54,3 +54,6 @@ $(TARGET): $(OBJECTS)
 clean:
 	rm -rf $(shell find . -name "*.o") $(EXECUTABLE)
 	rm -rf $(shell find . -name "*.optrpt") $(EXECUTABLE)
+clean-aux:
+	rm -rf $(shell find . -name "*~")
+	rm -rf $(shell find . -name "*.*swp")

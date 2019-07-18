@@ -356,10 +356,22 @@ void WaterSource::setAllocations(
                 (*allocated_fractions)[i] += 1. - total_allocated_fraction;
             }
     } else if (total_allocated_fraction > 1.) {
-        printf("Water Source %d has allocation fractions whose sum are"
-                               " more than 1.", id);
-        throw invalid_argument("Allocation fractions cannot sum to "
-                                                 "more than 1.");
+//        printf("Water Source %d has allocation fractions whose sum are"
+//                               " more than 1: ", id);
+//	for (int i = 0; i < allocated_fractions->size(); ++i) {
+//		printf("Alloc %d:  %f\n", (*utilities_with_allocations)[i], (*allocated_fractions)[i]);
+//	}
+        string error = "Water Source " + to_string(id) + 
+		" has allocation fractions whose sum are more than 1:\n ";
+	for (int i = 0; i < allocated_fractions->size(); ++i) {
+		error += "Utility " + to_string((*utilities_with_allocations)[i]) 
+			+ ": " + to_string((*allocated_fractions)[i]) + "\n";
+	}
+
+	char error_carray[error.size() + 1];
+	strcpy(error_carray, error.c_str());
+
+        throw invalid_argument(error_carray);
     }
 
     // Check if treatment capacity was allocated to water quality pool

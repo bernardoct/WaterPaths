@@ -247,7 +247,7 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
                                                   {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7}};
 
     // Setup Infrastructure construction manager holding reservoir
-    vector<double> rof_triggers = vector<double>(10, 0.);
+    vector<double> rof_triggers = vector<double>(1, 0.);
     auto infra_built_remove = vector<vector<int>>();
     vector<int> construction_order = {7};
     vector<int> construction_order_empty;
@@ -357,7 +357,7 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
 
         AllocatedReservoir allocated_reservoir("My allocated reservoir", 1,
                                                vector<Catchment *>(), 1000.0,
-                                               99999, evaporation_series, 1.,
+                                               100, evaporation_series, 1.,
                                                &utilities_with_allocations,
                                                &allocated_fractions,
                                                &allocated_treatment_fractions);
@@ -369,7 +369,6 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
                                               vector<int>(2),
                                               capacity_to_be_added, bonds,
                                               {3.000, 3.001}, 0.);
-        printf("%f\n", wtp.getConstruction_time());
 
         vector<WaterSource *> water_sources =
                 Utils::copyWaterSourceVector({&allocated_reservoir, &wtp});
@@ -388,7 +387,7 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
 
         vector<double> lt_rofs = {1., 0.};
 
-        SECTION("Test triggering and forced construction for joint infrestructure.") {
+        SECTION("Test triggering and forced construction for joint infrastructure.") {
             // Begin construction
             model.setLongTermROFs(lt_rofs, 100);
 
@@ -400,7 +399,6 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
             REQUIRE(!model.getContinuity_water_sources()[0]->isOnline());
 
             // Check financial
-            //FIXME: BOND FOR UTILITY 1 BEING ISSUED TWICE.
             REQUIRE(model.getContinuity_utilities()[0]->
                     getInfrastructure_net_present_cost() == Approx(134.99));
             REQUIRE(model.getContinuity_utilities()[1]->

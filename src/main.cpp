@@ -2,7 +2,7 @@
 #include "Utils/QPSolver/QuadProg++.h"
 #include "Utils/Solutions.h"
 #include "Problem/PaperTestProblem.h"
-#include "Problem/Triangle.h"
+//#include "Problem/Triangle.h"
 #include "Utils/Utils.h"
 
 #ifdef  PARALLEL
@@ -340,7 +340,10 @@ int main(int argc, char *argv[]) {
         // Run model
         if (first_solution == -1) {
             cout << endl << endl << endl << "Running solution "
-                 << standard_solution << endl;
+                 << standard_solution 
+	         << (rdm_no != NON_INITIALIZED ? " RDM " : "")
+	         << (rdm_no != NON_INITIALIZED ? to_string(rdm_no).c_str() : "")
+	         << endl;
             problem.setSol_number(standard_solution);
             problem_ptr->functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
 
@@ -365,7 +368,10 @@ int main(int argc, char *argv[]) {
             printf("Objectives file will be printed at %s.\n", file_name.c_str());
             for (int s = first_solution; s < last_solution; ++s) {
                 cout << endl << endl << endl << "Running solution "
-                     << s << endl;
+                     << s 
+		     << (rdm_no != NON_INITIALIZED ? " RDM " : "")
+		     << (rdm_no != NON_INITIALIZED ? to_string(rdm_no).c_str() : "")
+		     << endl;
                 problem.setSol_number((unsigned long) s);
                 problem_ptr->functionEvaluation(solutions[s].data(), c_obj, c_constr);
                 vector<double> objectives = problem_ptr->calculateAndPrintObjectives(false);

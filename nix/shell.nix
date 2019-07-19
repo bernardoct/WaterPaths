@@ -34,6 +34,7 @@ stdenv.mkDerivation {
   src = null;
   shellHook = ''
     mkdir -p ./Borg
+    ln -sfn ${Borg}/include/borgms.h ./Borg/borgms.h
     ln -sfn ${Borg}/ ./Borg/
   '';
 }

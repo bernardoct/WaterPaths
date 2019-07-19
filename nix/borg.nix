@@ -44,7 +44,7 @@ stdenv.mkDerivation rec {
     mv *.exe $out/bin/
     mv *.a *.so $out/lib/
     mv *.h $out/include/
-    # cp -R * $out # for debugging
+    cp -R * $out/ # for debugging
   '';
 
 }

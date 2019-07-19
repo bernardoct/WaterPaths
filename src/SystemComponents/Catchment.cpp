@@ -20,6 +20,10 @@ Catchment::Catchment(vector<vector<double>> *streamflows_all, int series_length)
                                 + ") realizations times the number of "
                                         "weeks in a year ("
                                 + to_string(Constants::WEEKS_IN_YEAR) + ").");
+
+    if (streamflows_all->empty() || streamflows_all->at(0).empty()) {
+        throw std::length_error("Empty time series.");
+    }
 }
 
 /**
@@ -54,6 +58,7 @@ Catchment::~Catchment() {}
 double Catchment::getStreamflow(int week) {
     int adjusted_week = week + delta_week;
     return streamflows_realization[adjusted_week];
+//    return streamflows_realization.at((unsigned long) adjusted_week);
 }
 
 /**

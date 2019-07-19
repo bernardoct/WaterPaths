@@ -738,6 +738,7 @@ void MasterDataCollector::removeRealization(unsigned long r) {
         water_source_collectors[ws][r] = nullptr;
     }
 
+    realizations_ran.erase(std::remove(realizations_ran.begin(), realizations_ran.end(), r), realizations_ran.end());
     crashed_realizations.push_back(r);
 }
 

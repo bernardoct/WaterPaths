@@ -5,6 +5,7 @@
 #include <iostream>
 #include <algorithm>
 #include <fstream>
+#include <iomanip>
 #include "ContinuityModelROF.h"
 #include "../Utils/Utils.h"
 
@@ -368,49 +369,82 @@ void ContinuityModelROF::shiftStorages(
     }
 }
 
+///**
+// * Prints a binary file with the rof_table for a given realization in a
+// * given week.
+// * @param week
+// */
+//void ContinuityModelROF::printROFTable(const string &folder) {
+////    try {
+////        printf("Tables printed in folder %s for realization %lu.\n", folder.c_str(), realization_id);
+//    for (int u = 0; u < n_utilities; ++u) {
+//        string file_name = folder + "/tables_r" + to_string(realization_id) + "_u" + to_string(u);
+//        ofstream output_file(file_name, std::ofstream::binary);
+//        // Get tables data
+//        double *matrix_data = ut_storage_to_rof_table[u].
+//                getPointerToElement(0, 0);
+//        // Calculate number of doubles to be exported
+//        auto size_data = (ut_storage_to_rof_table[u].get_i() *
+//                          (NO_OF_INSURANCE_STORAGE_TIERS + 1));
+//
+//        // Check for errors
+//        for (int i = 0; i < size_data; ++i) {
+//            double d = matrix_data[i];
+//            if (std::isnan(d) || d > 1.01 || d < 0) {
+//                string error_m = "nan or out of [0,1] rof imported "
+//                                 "tables. Realization " +
+//                                 to_string(realization_id) + ", week " +
+//                                 to_string(i / NO_OF_INSURANCE_STORAGE_TIERS) + "\n";
+//                printf("%s", error_m.c_str());
+//                throw_with_nested(logic_error(error_m.c_str()));
+//            }
+//        }
+//
+//        // Export size of array
+//        output_file.write(reinterpret_cast<char *>(&size_data), sizeof(unsigned));
+//        // Export data itself
+//        output_file.write(reinterpret_cast<char *>(matrix_data),
+//                          size_data * sizeof(double));
+//        output_file.close();
+//    }
+////    } catch (...) {
+////        char error[2048];
+////        sprintf(error, "Error saving ROF tables for realization %d.\n", realization_id);
+////        throw_with_nested(runtime_error(error));
+////    }
+//}
+
 /**
  * Prints a binary file with the rof_table for a given realization in a
  * given week.
  * @param week
  */
 void ContinuityModelROF::printROFTable(const string &folder) {
-//    try {
-//        printf("Tables printed in folder %s for realization %lu.\n", folder.c_str(), realization_id);
     for (int u = 0; u < n_utilities; ++u) {
-        string file_name = folder + "/tables_r" + to_string(realization_id) + "_u" + to_string(u);
-        ofstream output_file(file_name, std::ofstream::binary);
-        // Get tables data
-        double *matrix_data = ut_storage_to_rof_table[u].
-                getPointerToElement(0, 0);
-        // Calculate number of doubles to be exported
-        auto size_data = (ut_storage_to_rof_table[u].get_i() *
-                          (NO_OF_INSURANCE_STORAGE_TIERS + 1));
 
-        // Check for errors
-        for (int i = 0; i < size_data; ++i) {
-            double d = matrix_data[i];
-            if (std::isnan(d) || d > 1.01 || d < 0) {
-                string error_m = "nan or out of [0,1] rof imported "
-                                 "tables. Realization " +
-                                 to_string(realization_id) + ", week " +
-                                 to_string(i / NO_OF_INSURANCE_STORAGE_TIERS) + "\n";
-                printf("%s", error_m.c_str());
-                throw_with_nested(logic_error(error_m.c_str()));
+        string file_name = folder + "tables_r" + to_string(realization_id) + "_u" + to_string(u) + ".csv";
+        ofstream output_file(file_name);
+
+        auto num_weeks = ut_storage_to_rof_table[u].get_i();
+        for (int w = 0; w < num_weeks; ++w) {
+            auto data = ut_storage_to_rof_table[u].getPointerToElement(w, 0);
+	    std::ostringstream week_table;
+	    week_table << std::fixed;
+	    week_table << std::setprecision(2);
+            for (int t = 0; t < NO_OF_INSURANCE_STORAGE_TIERS; ++t) {
+                week_table << to_string(data[t]) + ",";
             }
+
+//            week_table.pop_back();
+            string line = week_table.str();
+	    line.pop_back();
+            output_file << line;
+            if (w < num_weeks - 1)
+                output_file << endl;
         }
 
-        // Export size of array
-        output_file.write(reinterpret_cast<char *>(&size_data), sizeof(unsigned));
-        // Export data itself
-        output_file.write(reinterpret_cast<char *>(matrix_data),
-                          size_data * sizeof(double));
         output_file.close();
     }
-//    } catch (...) {
-//        char error[2048];
-//        sprintf(error, "Error saving ROF tables for realization %d.\n", realization_id);
-//        throw_with_nested(runtime_error(error));
-//    }
 }
 
 /**

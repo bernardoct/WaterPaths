@@ -26,7 +26,7 @@ RUN $nixenv && cd $HOME && \
   cat /tmp/bitbucket_ssh_keyscan >> $HOME/.ssh/known_hosts && \
   git clone https://github.com/federatedcloud/WaterPaths.git && \
   cd WaterPaths && \
-  git checkout d99043873df7e693f2efabf3528fa16bd07fbccc && \
+  git checkout 56ac381edfd5c9c058dd9895468a4aa7d0244c1f && \
   nix-shell -I ssh-config-file=./nix/.ssh-standard-config -I ssh-auth-sock=$SSH_AUTH_SOCK nix/shell.nix --run "make borg" && \
   rm -f $HOME/.ssh/id_rsa
 

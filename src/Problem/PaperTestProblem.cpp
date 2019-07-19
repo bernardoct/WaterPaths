@@ -90,6 +90,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
     // ===================== SET UP DECISION VARIABLES  =====================
     //FIXME why do we make a null pointer here?
+    printf("Setting up problem\n");
     Simulation *s = nullptr;
     double calibrate_volume_multiplier = 1.;
 
@@ -716,6 +717,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
 
     // Creates simulation object depending on use (or lack thereof) ROF tables
+    printf("Starting Simulation\n");
     double start_time = omp_get_wtime();
     if (import_export_rof_tables == EXPORT_ROF_TABLES) {
         s = new Simulation(water_sources,

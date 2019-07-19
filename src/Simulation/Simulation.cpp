@@ -317,6 +317,7 @@ MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, dou
 #pragma omp parallel for ordered num_threads(n_threads) shared(had_catch)
     for (unsigned long r = 0; r < realizations_to_run_unique.size(); ++r) {
         unsigned long realization = realizations_to_run_unique[r];
+	//printf("Realization %lu\n", r);
 
         // Create continuity models.
         ContinuityModelRealization *realization_model = nullptr;
@@ -345,7 +346,7 @@ MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, dou
                 // Apply drought mitigation policies
                 if (import_export_rof_tables != EXPORT_ROF_TABLES) {
                     realization_model->applyDroughtMitigationPolicies(w);
-		}
+		        }
                 // Continuity calculations for current week
                 realization_model->continuityStep(w);
                 // Collect system data for output printing and objective calculations.
@@ -402,7 +403,7 @@ MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, dou
     error_file.close();
 	printf("%s", error_m.c_str());
 
-	master_data_collector->cleanCollectorsOfDeletedRealizations();
+//	master_data_collector->cleanCollectorsOfDeletedRealizations();
 //        throw_with_nested(runtime_error(error_m.c_str()));
     }
     return master_data_collector;

@@ -6,7 +6,7 @@
 #include <numeric>
 #include <random>
 #include <set>
-#include <zconf.h>
+//#include <zconf.h>
 #include "Problem.h"
 #include "../../Utils/Utils.h"
 #include <omp.h>
@@ -298,9 +298,12 @@ Problem::setRofTables(unsigned long n_realizations, string rof_tables_directory)
 
     n_utilities = 0;
     string fname = rof_tables_directory + "tables_r0_u0.csv";
-    while (access( fname.c_str(), F_OK ) != -1) {
+    fstream f;
+    std::ifstream ifile(fname.c_str());
+    while ((bool) ifile) {
         n_utilities += 1;
         fname = rof_tables_directory + "tables_r0_u" + to_string(n_utilities) + ".csv";
+        ifile = std::ifstream(fname.c_str());
     }
 
     rof_tables = vector<vector<Matrix2D<double>>>(
@@ -309,6 +312,7 @@ Problem::setRofTables(unsigned long n_realizations, string rof_tables_directory)
                                      Matrix2D<double>(n_weeks_in_table, n_tiers)));
 
     for (unsigned long r = 0; r < n_realizations; ++r) {
+//        printf("Reading tables for realization %lu.\n", r);
         for (int u = 0; u < n_utilities; ++u) {
             string file_name = rof_tables_directory + "tables_r" + to_string(r) + "_u" + to_string(u) + ".csv";
             auto tables_utility_week = Utils::parse2DCsvFile(file_name);

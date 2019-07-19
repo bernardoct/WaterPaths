@@ -717,7 +717,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
 
     // Creates simulation object depending on use (or lack thereof) ROF tables
-    printf("Starting Simulation");
+    printf("Starting Simulation\n");
     double start_time = omp_get_wtime();
     if (import_export_rof_tables == EXPORT_ROF_TABLES) {
         s = new Simulation(water_sources,

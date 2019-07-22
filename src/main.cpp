@@ -24,17 +24,17 @@ using namespace Solutions;
 PaperTestProblem *problem_ptr;
 //Triangle *problem_ptr;
 int failures = 0;
-//ofstream sol_out; // for debugging borg
-//
-//void print_decision_vars(double *vars) {
-//    int nsols = NUM_DEC_VAR;
-//    for (int i = 0; i < nsols; ++i) {
-//        sol_out << vars[i] << ",";
-//    }
-//    sol_out << endl;
-//    cout << "eval\n" << endl;
-//    sol_out.flush();
-//}
+ofstream sol_out; // for debugging borg
+
+void print_decision_vars(double *vars) {
+    int nsols = NUM_DEC_VAR;
+    for (int i = 0; i < nsols; ++i) {
+        sol_out << vars[i] << ",";
+    }
+    sol_out << endl;
+    cout << "eval\n" << endl;
+    sol_out.flush();
+}
 
 void eval(double *vars, double *objs, double *consts) {
     try {

@@ -24,17 +24,17 @@ using namespace Solutions;
 PaperTestProblem *problem_ptr;
 //Triangle *problem_ptr;
 int failures = 0;
-ofstream sol_out; // for debugging borg
-
-void print_decision_vars(double *vars) {
-    int nsols = NUM_DEC_VAR;
-    for (int i = 0; i < nsols; ++i) {
-        sol_out << vars[i] << ",";
-    }
-    sol_out << endl;
-    cout << "eval\n" << endl;
-    sol_out.flush();
-}
+//ofstream sol_out; // for debugging borg
+//
+//void print_decision_vars(double *vars) {
+//    int nsols = NUM_DEC_VAR;
+//    for (int i = 0; i < nsols; ++i) {
+//        sol_out << vars[i] << ",";
+//    }
+//    sol_out << endl;
+//    cout << "eval\n" << endl;
+//    sol_out.flush();
+//}
 
 void eval(double *vars, double *objs, double *consts) {
     try {
@@ -370,15 +370,14 @@ int main(int argc, char *argv[]) {
             for (int s = first_solution; s < last_solution; ++s) {
                 cout << endl << endl << endl << "Running solution "
                      << s 
-		     << (rdm_no != NON_INITIALIZED ? " RDM " : "")
-		     << (rdm_no != NON_INITIALIZED ? to_string(rdm_no).c_str() : "")
-		     << endl;
+		        << (rdm_no != NON_INITIALIZED ? " RDM " : "")
+		        << (rdm_no != NON_INITIALIZED ? to_string(rdm_no).c_str() : "")
+		        << endl;
                 problem.setSol_number((unsigned long) s);
                 problem_ptr->functionEvaluation(solutions[s].data(), c_obj, c_constr);
                 vector<double> objectives = problem_ptr->calculateAndPrintObjectives(false);
-//		printf("%f %f %f\n", objectives[0], objectives[5], objectives[10]);
-                if (plotting)
-                    problem.printTimeSeriesAndPathways();
+//		        printf("%f %f %f\n", objectives[0], objectives[5], objectives[10]);
+                problem.printTimeSeriesAndPathways(plotting);
                 problem_ptr->destroyDataCollector();
                 string line;
                 for (double &o : objectives) {

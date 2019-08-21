@@ -40,9 +40,6 @@ private:
     MasterDataCollector* master_data_collector = nullptr;
     string rof_tables_folder;
 
-    void setPrecomputed_rof_tables(const vector<vector<Matrix2D<double>>> &precomputed_rof_tables,
-                                   vector<vector<double>> &table_storage_shift);
-
     void setRof_tables_folder(const string &rof_tables_folder);
 
 public:

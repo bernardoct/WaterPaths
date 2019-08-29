@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <climits>
 #include <unistd.h>
+#include <sys/stat.h>
 
 /**
  * Reads csv file into table, exported as a vector of vector of doubles.
@@ -74,8 +75,10 @@ vector<vector<double>> Utils::parse2DCsvFile(string file_name, unsigned long max
             data.push_back(record);
         }
     } else {
-        cerr << "Could not read file " << file_name << "\n";
-        throw invalid_argument("File not found.");
+	string error = "File " + file_name + " not found.";
+	char error_char[error.size() + 1];
+	strcpy(error_char, error.c_str());
+        throw invalid_argument(error_char);
     }
 
     if (rows_to_read.empty())
@@ -279,4 +282,18 @@ void Utils::print_exception(const std::exception& e, int level) {
     } catch(const std::exception& e) {
         print_exception(e, level+1);
     } catch(...) {}
+}
+
+void Utils::createDir(string directory) {
+    string create_dir_command;
+#ifdef _WIN32
+    create_dir_command = "if not exist \"" + directory + "\" mkdir ";
+#else
+    create_dir_command = "mkdir -p";
+#endif
+    struct stat sb;
+        // Check if io_directory exists and print either location or that io_directory does not exist.
+    if (stat(directory.c_str(), &sb) != 0) {
+        auto output = system((create_dir_command + " " + directory).c_str());
+    }
 }

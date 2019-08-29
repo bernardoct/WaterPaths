@@ -17,7 +17,7 @@ public:
             vector<unsigned long> realizations = vector<unsigned long>(0));
 
     static double calculateRestrictionFrequencyObjective(
-            const vector<RestrictionsDataCollector>& restriction_data,
+            const vector<RestrictionsDataCollector *>& restriction_data,
             vector<unsigned long> realizations = vector<unsigned long>(0));
 
     static double calculateNetPresentCostInfrastructureObjective(

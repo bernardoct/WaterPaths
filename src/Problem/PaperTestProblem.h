@@ -16,19 +16,17 @@ using namespace std;
 
 class PaperTestProblem : public Problem {
 private:
-    vector<vector<Matrix2D<double>>> rof_tables;
-    int import_export_rof_tables;
     const int n_utilities = 3;
-    double table_gen_storage_multiplier;
-    string rof_tables_directory;
 
     vector<vector<double>> streamflows_durham;
+    vector<vector<double>> streamflows_clayton;
     vector<vector<double>> streamflows_flat;
     vector<vector<double>> streamflows_llr;
     vector<vector<double>> streamflows_swift;
     vector<vector<double>> streamflows_phils;
     vector<vector<double>> streamflows_cane;
     vector<vector<double>> streamflows_morgan;
+    vector<vector<double>> streamflows_crabtree;
     vector<vector<double>> streamflows_haw;
     vector<vector<double>> streamflows_lillington;
     vector<vector<double>> evap_durham;
@@ -59,10 +57,6 @@ public:
 #endif
 
     int functionEvaluation(double *vars, double *objs, double *consts) override;
-
-    void setRofTables(unsigned long n_realizations, int n_utilities, string rof_tables_directory);
-
-    void setImport_export_rof_tables(int import_export_rof_tables, int n_weeks, string rof_tables_directory);
 
     void readInputData();
 };

@@ -37,8 +37,15 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
     // the latter.
     for (unsigned long u = 0; u < utilities.size(); ++u) {
         for (unsigned long ws = 0; ws < water_sources_to_utilities[u].size(); ++ws) {
+            auto ws_id = water_sources_to_utilities[u][ws];
+            if (ws_id >= continuity_water_sources.size()) {
+                char error[128];
+                sprintf(error, "Water source %d was not added to list of water "
+                               "sources passed to the continuity model.", ws_id);
+                throw invalid_argument(error);
+            }
             WaterSource *water_source =
-                    continuity_water_sources[water_sources_to_utilities[u][ws]];
+                    continuity_water_sources.at((unsigned int) ws_id);
             this->continuity_utilities[u]->addWaterSource(water_source);
         }
     }
@@ -111,8 +118,11 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
     
     // populate array delta_realization_weeks so that the rounding and casting don't
     // have to be done every time continuityStep is called, avoiding a bottleneck.
+    // Variable delta_realization_weeks[0] is to be zero representing a continuity
+    // step for a non-ROF simulation: the realization itself.
+    delta_realization_weeks[0] = 0;
     for (int r = 0; r < NUMBER_REALIZATIONS_ROF; ++r) {
-        delta_realization_weeks[r] = (int) std::round((r + 1) * WEEKS_IN_YEAR);
+        delta_realization_weeks[r + 1] = (int) std::round((r + 1) * WEEKS_IN_YEAR);
     }
 }
 
@@ -146,6 +156,14 @@ void ContinuityModel::continuityStep(
     double* wastewater_discharges = new double[n_sources];
     fill_n(wastewater_discharges, n_sources, 0.);
 
+    // if ROF calculations use previous year unless this is the first year (to
+    // simplify data input, since the first year of the simulation is probably
+    // going to be as dire are latter years.
+    int week_demand_rof_shift = 
+	    (rof_realization != NON_INITIALIZED && 
+	     week > WEEKS_IN_YEAR_ROUND ? WEEKS_IN_YEAR_ROUND : NONE);
+    int week_demand = week - week_demand_rof_shift;
+
     /**
      * Get wastewater discharges based on previous week's demand.
      *
@@ -155,8 +173,8 @@ void ContinuityModel::continuityStep(
      * source, and (2) sums the flow contributions of upstream reservoirs.
      */
     for (Utility *u : continuity_utilities) {
-        u->calculateWastewater_releases(week, wastewater_discharges);
-        u->splitDemands(week, demands, apply_demand_buffer);
+        u->calculateWastewater_releases(week_demand, wastewater_discharges);
+        u->splitDemands(week_demand, demands, apply_demand_buffer);
     }
 
     /**
@@ -178,19 +196,21 @@ void ContinuityModel::continuityStep(
      */
     auto& upstream_sources_ids = water_sources_graph.getUpstream_sources();
     for (int i : sources_topological_order) {
-        /// Sum spillage from all sources upstream source i.
+        // Sum spillage from all sources upstream source i.
         for (int ws : upstream_sources_ids[i]) {
             upstream_spillage[i] += continuity_water_sources.at(
                             static_cast<unsigned long>(ws))->getTotal_outflow();
         }
 
-        /// Apply
+        // Mass balance. The value of rof_realization for a a non-ROF continuity
+	// step is -1 (NON_INITIALIZED), so adding 1 brings it to delta_realization_weeks[0]
+	// which is 0, while delta_realization_weeks[1] is 52, and so on.
         continuity_water_sources[i]->continuityWaterSource(
-                week - delta_realization_weeks[rof_realization],
+                week - delta_realization_weeks[rof_realization + 1],
                 upstream_spillage[i], wastewater_discharges[i], demands[i]);
     }
 
-    /// updates combined storage for utilities.
+    // updates combined storage for utilities.
     for (Utility *u : continuity_utilities) {
         u->updateTotalAvailableVolume();
     }

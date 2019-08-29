@@ -27,8 +27,11 @@ Reservoir::Reservoir(
         storage_area_curve(storage_area_curve),
         fixed_area(false), evaporation_series(evaporation_series) {
 
-    if (storage_area_curve && storage_area_curve->getSeries_x().back() != capacity)
-        throw invalid_argument("Last storage of data series must be equal to reservoir capacity.");
+    if (storage_area_curve && storage_area_curve->getSeries_x().back() != capacity) {
+	char error[1024];
+    	sprintf(error, "Error Reservoir %d: Last storage of data series must be equal to reservoir capacity.", id);
+        throw invalid_argument(error);
+    }
 }
 
 /**
@@ -73,9 +76,9 @@ Reservoir::Reservoir(const char *name, const int id, const vector<Catchment *> &
         evaporation_series(evaporation_series) {
 
     if (storage_area_curve && storage_area_curve->getSeries_x().back() != capacity) {
-        string error = "Source " + to_string(id);
-        error += ": Last storage of data series must be equal to reservoir capacity.";
-        throw invalid_argument(error.c_str());
+	char error[1024];
+    	sprintf(error, "Error Reservoir %d: Last storage of data series must be equal to reservoir capacity.", id);
+        throw invalid_argument(error);
     }
 }
 
@@ -125,9 +128,11 @@ Reservoir::Reservoir(
         storage_area_curve(storage_area_curve), fixed_area(false),
         evaporation_series(evaporation_series) {
 
-    if (storage_area_curve &&
-        storage_area_curve->getSeries_x().back() != capacity)
-        throw invalid_argument("Last storage of data series must be equal to reservoir capacity.");
+    if (storage_area_curve && storage_area_curve->getSeries_x().back() != capacity) {
+	char error[1024];
+    	sprintf(error, "Error Reservoir %d: Last storage of data series must be equal to reservoir capacity.", id);
+        throw invalid_argument(error);
+    }
 }
 
 /**
@@ -178,9 +183,11 @@ Reservoir::Reservoir(const char *name, const int id, const vector<Catchment *> &
         storage_area_curve(storage_area_curve), fixed_area(false),
         evaporation_series(evaporation_series) {
 
-    if (storage_area_curve &&
-        storage_area_curve->getSeries_x().back() != capacity)
-        throw invalid_argument("Last storage of data series must be equal to reservoir capacity.");
+    if (storage_area_curve && storage_area_curve->getSeries_x().back() != capacity) {
+	char error[1024];
+    	sprintf(error, "Error Reservoir %d: Last storage of data series must be equal to reservoir capacity.", id);
+        throw invalid_argument(error);
+    }
 }
 
 /**

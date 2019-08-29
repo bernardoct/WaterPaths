@@ -14,6 +14,7 @@ with import <nixpkgs> { };
     #
     nix
     bash
+    vim
     
     #
     # MPI-related packages

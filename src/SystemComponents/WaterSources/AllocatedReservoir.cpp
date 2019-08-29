@@ -291,7 +291,7 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
 //        throw_with_nested(runtime_error(error));
     }
 
-    if (abs(cont_error) > 1.f || available_volume < 0 || sum_allocations < 0) {
+    if (abs(cont_error) > 1.f || available_volume < -1.f || sum_allocations < -1.f) {
         char error[4000];
         sprintf(error, "Continuity error in %s\n\n"
                         "week: %d\nsum_allocations: %f\n"
@@ -325,6 +325,8 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
 
 	throw runtime_error(error);
 //        throw_with_nested(runtime_error(error));
+    } else if (available_volume < 0) {
+	available_volume = 0;
     }
 
     policy_added_demand = 0;

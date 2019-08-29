@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <numeric>
 #include <omp.h>
+#include <set>
+
 #ifdef  PARALLEL
 #include <mpi.h>
 #endif
@@ -201,7 +203,7 @@ void Simulation::setupSimulation(vector<WaterSource *> &water_sources, Graph &wa
     }
 
     // Creates the data collector for the simulation.
-    master_data_collector = new MasterDataCollector(n_realizations);
+    master_data_collector = new MasterDataCollector(realizations_to_run);
 }
 
 Simulation::~Simulation() = default;
@@ -220,7 +222,7 @@ Simulation &Simulation::operator=(const Simulation &simulation) {
 void Simulation::createContinuityModels(unsigned long realization,
                                         ContinuityModelRealization *&realization_model,
                                         ContinuityModelROF *&rof_model) {
-    /// Create realization models by copying the water sources and utilities.
+    // Create realization models by copying the water sources and utilities.
     vector<WaterSource *> water_sources_realization =
             Utils::copyWaterSourceVector(water_sources);
     vector<DroughtMitigationPolicy *> drought_mitigation_policies_realization =
@@ -231,7 +233,7 @@ void Simulation::createContinuityModels(unsigned long realization,
     vector<MinEnvFlowControl *> min_env_flow_controls_realization =
             Utils::copyMinEnvFlowControlVector(min_env_flow_controls);
 
-    /// Store realization models in vector
+    // Store realization models in vector
     realization_model = new ContinuityModelRealization(
             water_sources_realization,
             water_sources_graph,
@@ -244,14 +246,14 @@ void Simulation::createContinuityModels(unsigned long realization,
             policies_rdm.at(realization),
             (int) realization);
 
-    /// Create rof models by copying the water utilities and sources.
+    // Create rof models by copying the water utilities and sources.
     vector<WaterSource *> water_sources_rof =
             Utils::copyWaterSourceVector(water_sources);
     vector<Utility *> utilities_rof = Utils::copyUtilityVector(utilities);
     vector<MinEnvFlowControl *> min_env_flow_controls_rof =
             Utils::copyMinEnvFlowControlVector(min_env_flow_controls);
 
-    /// Store realization models in vector
+    // Store realization models in vector
     rof_model = new ContinuityModelROF(
             water_sources_rof,
             water_sources_graph,
@@ -264,44 +266,58 @@ void Simulation::createContinuityModels(unsigned long realization,
             import_export_rof_tables,
             realization);
 
-    /// Initialize rof models by connecting it to realization water sources.
+    // Initialize rof models by connecting it to realization water sources.
     rof_model->connectRealizationWaterSources(water_sources_realization);
     rof_model->connectRealizationUtilities(utilities_realization);
 
-    /// Pass ROF tables to continuity model
+    // Pass ROF tables to continuity model
     if (import_export_rof_tables == IMPORT_ROF_TABLES) {
         rof_model->setROFTablesAndShifts(precomputed_rof_tables->at(realization), *table_storage_shift);
     }
 
-    /// Link storage-rof tables of policies and rof models.
+    // Link storage-rof tables of policies and rof models.
     for (DroughtMitigationPolicy *dmp :
             realization_model->getDrought_mitigation_policies())
         dmp->setStorage_to_rof_table_(
                 rof_model->getUt_storage_to_rof_table(), import_export_rof_tables);
 }
 
-MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
+MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, double *vars) {
     if (rof_tables_folder.length() == 0) {
         rof_tables_folder = "rof_tables";
     }
 
-    /// Check if number of imported tables corresponds to model.
+    // Check if number of imported tables corresponds to model.
     if (import_export_rof_tables == IMPORT_ROF_TABLES) {
         if (precomputed_rof_tables->at(0).size() != utilities.size()) {
             throw invalid_argument("Different number of utilities in model and imported ROF tables.");
         }
-        if (precomputed_rof_tables->size() != n_realizations) {
-            throw invalid_argument("Different number of realizations in model and imported ROF tables.");
+
+        auto max_realization = *max_element(realizations_to_run.begin(), realizations_to_run.end()) + 1;
+        auto n_precomputed_tables = precomputed_rof_tables->size();
+        if (n_precomputed_tables != max_realization) {
+            char error[256];
+            sprintf(error, "There are at least %lu potential realizations but %lu imported ROF tables.",
+                    max_realization, n_precomputed_tables);
+            throw invalid_argument(error);
         }
     }
 
-    /// Run realizations.
+    set<unsigned long> s( realizations_to_run.begin(), realizations_to_run.end() );
+    vector<unsigned long> realizations_to_run_unique;
+    realizations_to_run_unique.assign( s.begin(), s.end() );
+
+    // Prepare error output.
     int had_catch = 0;
     string error_m = "Error in realizations ";
-//    std::reverse(realizations_to_run.begin(), realizations_to_run.end());
+    string error_file_name = "error_reals";
+    string error_file_content = "#";
+
+    // Run realizations.
 #pragma omp parallel for ordered num_threads(n_threads) shared(had_catch)
-    for (unsigned long r = 0; r < n_realizations; ++r) {
-        unsigned long realization = realizations_to_run.at(r);
+    for (unsigned long r = 0; r < realizations_to_run_unique.size(); ++r) {
+        unsigned long realization = realizations_to_run_unique[r];
+	//printf("Realization %lu\n", r);
 
         // Create continuity models.
         ContinuityModelRealization *realization_model = nullptr;
@@ -313,7 +329,7 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                 realization_model->getContinuity_water_sources(),
                 realization_model->getDrought_mitigation_policies(),
                 realization_model->getContinuity_utilities(),
-                r);
+                realization);
 
         try {
             //double start = omp_get_wtime();
@@ -328,12 +344,14 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
                 realization_model->setShortTermROFs(
                             rof_model->calculateShortTermROF(w, import_export_rof_tables));
                 // Apply drought mitigation policies
-                realization_model->applyDroughtMitigationPolicies(w);
+                if (import_export_rof_tables != EXPORT_ROF_TABLES) {
+                    realization_model->applyDroughtMitigationPolicies(w);
+		        }
                 // Continuity calculations for current week
                 realization_model->continuityStep(w);
                 // Collect system data for output printing and objective calculations.
                 if (import_export_rof_tables != EXPORT_ROF_TABLES) {
-                    master_data_collector->collectData(r);
+                    master_data_collector->collectData(realization);
                 }
             }
             // Export ROF tables for future simulations of the same problem with the same states-of-the-world.
@@ -344,8 +362,10 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
         } catch (...) {
 #pragma omp atomic
             ++had_catch;
-            error_m += to_string(r) + " ";
-            master_data_collector->removeRealization(r);
+            error_m += to_string(realization) + " ";
+            error_file_name += "_" + to_string(realization);
+            error_file_content += to_string(realization) + ",";
+            master_data_collector->removeRealization(realization);
         }
 
         delete realization_model;
@@ -365,9 +385,25 @@ MasterDataCollector* Simulation::runFullSimulation(unsigned long n_threads) {
 #else
         world_rank = 0;
 #endif
-	error_m += ". Decision variables in sol_error_rank_" + to_string(world_rank) + ".";
+
+    // Create error file
+	error_file_name += ".csv";
+	error_m += ". Error data in " + error_file_name;
+	ofstream error_file;
+	error_file.open(error_file_name);
+
+	// Write error rile
+	error_file << error_file_content << endl;
+    for (int i = 0; i < NUM_DEC_VAR - 1; ++i) {
+        error_file << vars[i] << ",";
+    }
+    error_file << vars[NUM_DEC_VAR - 1];
+
+    // Finalize error reporting
+    error_file.close();
 	printf("%s", error_m.c_str());
-	master_data_collector->cleanCollectorsOfDeletedRealizations();
+
+//	master_data_collector->cleanCollectorsOfDeletedRealizations();
 //        throw_with_nested(runtime_error(error_m.c_str()));
     }
     return master_data_collector;

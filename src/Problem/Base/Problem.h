@@ -96,7 +96,7 @@ public:
 
     void destroyDataCollector();
 
-    void printTimeSeriesAndPathways();
+    void printTimeSeriesAndPathways(bool plot_time_series = true);
 
     void setRofTables(unsigned long n_realizations, string rof_tables_directory);
 

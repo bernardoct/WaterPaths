@@ -86,8 +86,7 @@ public:
                 double demand_buffer, const vector<int> &rof_infra_construction_order,
                 const vector<int> &demand_infra_construction_order,
                 const vector<double> &infra_construction_triggers, double infra_discount_rate,
-                const vector<vector<int>>& infra_if_built_remove, double
-            bond_term, double bond_interest_rate);
+                const vector<vector<int>>& infra_if_built_remove, double bond_term, double bond_interest_rate);
 
     Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations,
                 int number_of_week_demands, const double percent_contingency_fund_contribution,

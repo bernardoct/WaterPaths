@@ -85,8 +85,7 @@ Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_r
                  double demand_buffer, const vector<int> &rof_infra_construction_order,
                  const vector<int> &demand_infra_construction_order,
                  const vector<double> &infra_construction_triggers, double infra_discount_rate,
-                 const vector<vector<int>>& infra_if_built_remove, double
-                 bond_term, double bond_interest_rate) :
+                 const vector<vector<int>>& infra_if_built_remove, double bond_term, double bond_interest_rate) :
         total_storage_capacity(NONE),
         total_available_volume(NONE),
         wwtp_discharge_rule(wwtp_discharge_rule),

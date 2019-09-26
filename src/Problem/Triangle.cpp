@@ -1070,31 +1070,33 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         vector<int> demand_triggered_infra_order_cary = {cary_wtp_upgrades_low_base_id, cary_wtp_upgrades_high_base_id};
         vector<double> demand_infra_cary = {caryupgrades_2 * 7, caryupgrades_3 * 7};
-        Utility cary((char *) "Cary", 2, demand_cary, demand_n_weeks, cary_annual_payment, &caryDemandClassesFractions,
-                     &caryUserClassesWaterPrices, wwtp_discharge_cary, cary_inf_buffer, vector<int>(),
+        // FIXME: TOO MANY ARGUMENTS FOR UTILITY CONSTRUCTOR? there is one that is big enough, it just doesn't match? args in wrong order?
+        Utility cary((char *) "Cary", 2, demand_cary, demand_n_weeks, cary_annual_payment, caryDemandClassesFractions,
+                     caryUserClassesWaterPrices, wwtp_discharge_cary, cary_inf_buffer, vector<int>(),
                      demand_triggered_infra_order_cary, demand_infra_cary, discount_rate, bond_term[0], bond_rate[0]);
         Utility durham((char *) "Durham", 1, demand_durham, demand_n_weeks, durham_annual_payment,
-                       &durhamDemandClassesFractions, &durhamUserClassesWaterPrices, wwtp_discharge_durham,
+                       durhamDemandClassesFractions, durhamUserClassesWaterPrices, wwtp_discharge_durham,
                        durham_inf_buffer, rof_triggered_infra_order_durham,
                        vector<int>(), rofs_infra_durham, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[1], bond_rate[1]);
         Utility owasa((char *) "OWASA", 0, demand_owasa, demand_n_weeks, owasa_annual_payment,
-                      &owasaDemandClassesFractions, &owasaUserClassesWaterPrices, wwtp_discharge_owasa, owasa_inf_buffer,
+                      owasaDemandClassesFractions, owasaUserClassesWaterPrices, wwtp_discharge_owasa, owasa_inf_buffer,
                       rof_triggered_infra_order_owasa,
                       vector<int>(), rofs_infra_owasa, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[2], bond_rate[2]);
         Utility raleigh((char *) "Raleigh", 3, demand_raleigh, demand_n_weeks, raleigh_annual_payment,
-                        &raleighDemandClassesFractions, &raleighUserClassesWaterPrices, wwtp_discharge_raleigh,
+                        raleighDemandClassesFractions, raleighUserClassesWaterPrices, wwtp_discharge_raleigh,
                         raleigh_inf_buffer, rof_triggered_infra_order_raleigh,
-                        vector<int>(), rofs_infra_raleigh, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[3], bond_rate[3]);
+                        vector<int>(), rofs_infra_raleigh, discount_rate,
+                        wjlwtp_remove_from_to_build_list, bond_term[3], bond_rate[3]);
 
         // FIXME: SETUP NEW UTILITIES HERE
         /// July 2019: Add Pittsboro and Chatham County utilities with placeholder parameters and input variables
         ///             from OWASA until numbers can be determined
         Utility pittsboro((char *) "Pittsboro", 4, demand_pittsboro, demand_n_weeks, pittsboro_annual_payment,
-                      &pittsboroDemandClassesFractions, &pittsboroUserClassesWaterPrices, wwtp_discharge_pittsboro,
+                      pittsboroDemandClassesFractions, pittsboroUserClassesWaterPrices, wwtp_discharge_pittsboro,
                       pittsboro_inf_buffer, rof_triggered_infra_order_pittsboro,
                       vector<int>(), rofs_infra_pittsboro, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[4], bond_rate[4]);
         Utility chatham((char *) "Chatham County", 5, demand_chatham, demand_n_weeks, chatham_annual_payment,
-                          &chathamDemandClassesFractions, &chathamUserClassesWaterPrices, wwtp_discharge_chatham,
+                          chathamDemandClassesFractions, chathamUserClassesWaterPrices, wwtp_discharge_chatham,
                           chatham_inf_buffer, rof_triggered_infra_order_chatham,
                           vector<int>(), rofs_infra_chatham, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[5], bond_rate[5]);
 
@@ -1260,8 +1262,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                    chatham_insurance_payment};
         vector<int> insured_utilities = {0, 1, 2, 3, 4, 5};
         double insurance_premium = 1.2;
-        InsuranceStorageToROF in(7, water_sources, g, reservoir_utility_connectivity_matrix, utilities,
-                                 min_env_flow_controls, utilities_rdm, water_sources_rdm, insurance_triggers,
+        InsuranceStorageToROF in(7, water_sources, g, reservoir_utility_connectivity_matrix, utilities, drought_mitigation_policies,
+                                 min_env_flow_controls, utilities_rdm, water_sources_rdm, policies_rdm, insurance_triggers,
                                  insurance_premium, fixed_payouts, n_weeks);
 
         drought_mitigation_policies.push_back(&in);
@@ -1282,7 +1284,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         	     realizations_to_run,
         	     rof_tables_directory);
             //realization_start = omp_get_wtime();
-    	    this->master_data_collector = s->runFullSimulation(n_threads);
+    	    this->master_data_collector = s->runFullSimulation(n_threads, vars);
         } else if (import_export_rof_tables == IMPORT_ROF_TABLES) {
             s = new Simulation (water_sources,
         	     g,
@@ -1299,7 +1301,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         	     table_storage_shift,
         	     rof_tables_directory);
             //realization_start = omp_get_wtime();
-            this->master_data_collector = s->runFullSimulation(n_threads);
+            this->master_data_collector = s->runFullSimulation(n_threads, vars);
         } else {
             s = new Simulation(water_sources,
         	     g,
@@ -1313,7 +1315,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         	     n_weeks,
         	     realizations_to_run);
             //realization_start = omp_get_wtime();
-            this->master_data_collector = s->runFullSimulation(n_threads);
+            this->master_data_collector = s->runFullSimulation(n_threads, vars);
         }
         double end_time = omp_get_wtime();
 //	printf("Function evaluation time: %f s\n", end_time - start_time);

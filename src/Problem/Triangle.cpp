@@ -1089,12 +1089,12 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         // FIXME: SETUP NEW UTILITIES HERE
         /// July 2019: Add Pittsboro and Chatham County utilities with placeholder parameters and input variables
         ///             from OWASA until numbers can be determined
-        Utility pittsboro((char *) "Pittsboro", 4, demand_owasa, demand_n_weeks, pittsboro_annual_payment,
-                      &owasaDemandClassesFractions, &owasaUserClassesWaterPrices, wwtp_discharge_pittsboro,
+        Utility pittsboro((char *) "Pittsboro", 4, demand_pittsboro, demand_n_weeks, pittsboro_annual_payment,
+                      &pittsboroDemandClassesFractions, &pittsboroUserClassesWaterPrices, wwtp_discharge_pittsboro,
                       pittsboro_inf_buffer, rof_triggered_infra_order_pittsboro,
                       vector<int>(), rofs_infra_pittsboro, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[4], bond_rate[4]);
-        Utility chatham((char *) "Chatham County", 5, demand_owasa, demand_n_weeks, chatham_annual_payment,
-                          &owasaDemandClassesFractions, &owasaUserClassesWaterPrices, wwtp_discharge_chatham,
+        Utility chatham((char *) "Chatham County", 5, demand_chatham, demand_n_weeks, chatham_annual_payment,
+                          &chathamDemandClassesFractions, &chathamUserClassesWaterPrices, wwtp_discharge_chatham,
                           chatham_inf_buffer, rof_triggered_infra_order_chatham,
                           vector<int>(), rofs_infra_chatham, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[5], bond_rate[5]);
 
@@ -1491,19 +1491,27 @@ void Triangle::readInputData() {
 #pragma omp single
         demand_cary = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "cary_demand.csv", n_realizations);
+                BAR + "cary_demands_scenario_as_projected.csv", n_realizations);
 #pragma omp single
         demand_durham = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "durham_demand.csv", n_realizations);
+                BAR + "durham_demands_scenario_as_projected.csv", n_realizations);
 #pragma omp single
         demand_raleigh = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "raleigh_demand.csv", n_realizations);
+                BAR + "raleigh_demands_scenario_as_projected.csv", n_realizations);
 #pragma omp single
         demand_owasa = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "owasa_demand.csv", n_realizations);
+                BAR + "owasa_demands_scenario_as_projected.csv", n_realizations);
+#pragma omp single
+        demand_pittsboro = Utils::parse2DCsvFile(
+                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                BAR + "pittsboro_demands_scenario_as_projected.csv", n_realizations);
+#pragma omp single
+        demand_chatham = Utils::parse2DCsvFile(
+                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                BAR + "chatham_demands_scenario_as_projected.csv", n_realizations);
 
         //cout << "Reading others." << endl;
 #pragma omp single
@@ -1521,6 +1529,10 @@ void Triangle::readInputData() {
                     io_directory + DEFAULT_DATA_DIR + "raleighDemandClassesFractions.csv");
             owasaDemandClassesFractions = Utils::parse2DCsvFile(
                     io_directory + DEFAULT_DATA_DIR + "owasaDemandClassesFractions.csv");
+            pittsboroDemandClassesFractions = Utils::parse2DCsvFile(
+                    io_directory + DEFAULT_DATA_DIR + "pittsboroDemandClassesFractions.csv");
+            chathamDemandClassesFractions = Utils::parse2DCsvFile(
+                    io_directory + DEFAULT_DATA_DIR + "chathamDemandClassesFractions.csv");
 
             caryUserClassesWaterPrices = Utils::parse2DCsvFile(
                     io_directory + DEFAULT_DATA_DIR + "caryUserClassesWaterPrices.csv");
@@ -1530,6 +1542,10 @@ void Triangle::readInputData() {
                     io_directory + DEFAULT_DATA_DIR + "raleighUserClassesWaterPrices.csv");
             owasaUserClassesWaterPrices = Utils::parse2DCsvFile(
                     io_directory + DEFAULT_DATA_DIR + "owasaUserClassesWaterPrices.csv");
+            pittsboroUserClassesWaterPrices = Utils::parse2DCsvFile(
+                    io_directory + DEFAULT_DATA_DIR + "pittsboroUserClassesWaterPrices.csv");
+            chathamUserClassesWaterPrices = Utils::parse2DCsvFile(
+                    io_directory + DEFAULT_DATA_DIR + "chathamUserClassesWaterPrices.csv");
 
             owasaPriceSurcharges = Utils::parse2DCsvFile(
                     io_directory + DEFAULT_DATA_DIR + "owasaPriceRestMultipliers.csv");

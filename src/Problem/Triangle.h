@@ -32,6 +32,8 @@ private:
     vector<vector<double>> demand_durham;
     vector<vector<double>> demand_raleigh;
     vector<vector<double>> demand_owasa;
+    vector<vector<double>> demand_pittsboro;
+    vector<vector<double>> demand_chatham;
     vector<vector<double>> evap_durham;
     vector<vector<double>> evap_falls_lake;
     vector<vector<double>> evap_owasa;
@@ -44,10 +46,14 @@ private:
     vector<vector<double>> durhamDemandClassesFractions;
     vector<vector<double>> raleighDemandClassesFractions;
     vector<vector<double>> owasaDemandClassesFractions;
+    vector<vector<double>> pittsboroDemandClassesFractions;
+    vector<vector<double>> chathamDemandClassesFractions;
     vector<vector<double>> caryUserClassesWaterPrices;
     vector<vector<double>> durhamUserClassesWaterPrices;
     vector<vector<double>> raleighUserClassesWaterPrices;
     vector<vector<double>> owasaUserClassesWaterPrices;
+    vector<vector<double>> pittsboroUserClassesWaterPrices;
+    vector<vector<double>> chathamUserClassesWaterPrices;
     vector<vector<double>> owasaPriceSurcharges;
 
 public:

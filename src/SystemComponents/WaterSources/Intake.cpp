@@ -102,4 +102,3 @@ void Intake::setRealization(unsigned long r, vector<double> &rdm_factors) {
     available_volume = this->upstream_catchment_inflow -
                        min_environmental_outflow;
 }
-

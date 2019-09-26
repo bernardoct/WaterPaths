@@ -16,11 +16,25 @@ DATA_DIR="/work/03253/tg825524/stampede2/"
        	-t 2344\
        	-r ${N_REALIZATIONS}\
        	-d ${DATA_DIR}\
-       	-C 0\
+       	-C -1\
 	-O rof_tables_test_problem\
-       	-s calibrate_sol.csv\
+       	-s reference_final.reference\
        	-e 0\
         -m ${SOLUTION}\
+	-U TestFiles/rdm_utilities_test_problem_opt.csv\
+	-W TestFiles/rdm_water_sources_test_problem_opt.csv\
+        -P TestFiles/rdm_dmp_test_problem_opt.csv\
+        -p false	
+./triangleSimulation -T ${OMP_NUM_THREADS}\
+       	-t 2344\
+       	-r ${N_REALIZATIONS}\
+       	-d ${DATA_DIR}\
+       	-C -1\
+	-O rof_tables_test_problem\
+       	-s reference_final.reference\
+       	-e 0\
+	-f 0\
+	-l 209
 	-U TestFiles/rdm_utilities_test_problem_opt.csv\
 	-W TestFiles/rdm_water_sources_test_problem_opt.csv\
         -P TestFiles/rdm_dmp_test_problem_opt.csv\

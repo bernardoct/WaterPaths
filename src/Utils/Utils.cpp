@@ -50,6 +50,11 @@ vector<vector<double>> Utils::parse2DCsvFile(string file_name, unsigned long max
             l++;
             string s;
             if (!getline(inputFile, s)) break;
+	    if (s.find(" ") != string::npos) {
+		char error[500];
+		sprintf(error, "File %s seems to be space-separated.", file_name.c_str());
+	        throw std::invalid_argument(error);
+	    }
 
             vector<double> record;
             if (s[0] != '#' &&
@@ -76,8 +81,10 @@ vector<vector<double>> Utils::parse2DCsvFile(string file_name, unsigned long max
             data.push_back(record);
         }
     } else {
-        cerr << "Could not read file " << file_name << "\n";
-        throw invalid_argument("File not found.");
+	string error = "File " + file_name + " not found.";
+	char error_char[error.size() + 1];
+	strcpy(error_char, error.c_str());
+        throw invalid_argument(error_char);
     }
 
     if (rows_to_read.empty())

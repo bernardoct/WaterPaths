@@ -44,7 +44,7 @@ protected:
     vector<double> objectives;
     bool print_output_files = true;
 
-    unsigned long  rdm_no;
+    int rdm_no = NON_INITIALIZED;
     int import_export_rof_tables;
     double table_gen_storage_multiplier;
     vector<vector<double>> utilities_rdm;
@@ -52,8 +52,8 @@ protected:
     vector<vector<double>> policies_rdm;
     vector<vector<Matrix2D<double>>> rof_tables;
 
-    double checkAndFixInfraExpansionHighLowOrder(vector<int> *order, vector<double> *trigger, int id_low, int id_high, double capacity_low,
-                                                 double capacity_high);
+    double checkAndFixInfraExpansionHighLowOrder(vector<int> *order, vector<double> *trigger, int id_low, int id_high,
+            double capacity_low, double capacity_high);
 
     vector<int> vecInfraRankToVecInt(vector<infraRank> v);
 
@@ -77,7 +77,7 @@ public:
     void setRDMOptimization(vector<vector<double>> &utilities_rdm, vector<vector<double>> &water_sources_rdm,
                             vector<vector<double>> &policies_rdm);
 
-    void setRDMReevaluation(unsigned long rdm_no, vector<vector<double>> &utilities_rdm,
+    void setRDMReevaluation(int rdm_no, vector<vector<double>> &utilities_rdm,
                                 vector<vector<double>> &water_sources_rdm, vector<vector<double>> &policies_rdm);
 
     void setN_threads(unsigned long n_threads);
@@ -96,11 +96,11 @@ public:
 
     void destroyDataCollector();
 
-    void printTimeSeriesAndPathways();
+    void printTimeSeriesAndPathways(bool plot_time_series = true);
 
     void setRofTables(unsigned long n_realizations, string rof_tables_directory);
 
-    void setImport_export_rof_tables(int import_export_rof_tables, int n_weeks, string rof_tables_directory);
+    void setImport_export_rof_tables(int import_export_rof_tables, string rof_tables_directory);
 
     void runBootstrapRealizationThinning(int standard_solution, int n_sets, int n_bs_samples,
                                          int threads, vector<vector<int>> &realizations_to_run);

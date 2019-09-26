@@ -19,12 +19,14 @@ private:
     const int n_utilities = 3;
 
     vector<vector<double>> streamflows_durham;
+    vector<vector<double>> streamflows_clayton;
     vector<vector<double>> streamflows_flat;
     vector<vector<double>> streamflows_llr;
     vector<vector<double>> streamflows_swift;
     vector<vector<double>> streamflows_phils;
     vector<vector<double>> streamflows_cane;
     vector<vector<double>> streamflows_morgan;
+    vector<vector<double>> streamflows_crabtree;
     vector<vector<double>> streamflows_haw;
     vector<vector<double>> streamflows_lillington;
     vector<vector<double>> evap_durham;

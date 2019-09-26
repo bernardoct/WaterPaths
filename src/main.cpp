@@ -1,7 +1,7 @@
 #include "SystemComponents/WaterSources/Base/WaterSource.h"
 #include "Utils/QPSolver/QuadProg++.h"
 #include "Utils/Solutions.h"
-#include "Problem/PaperTestProblem.h"
+//#include "Problem/PaperTestProblem.h"
 #include "Problem/Triangle.h"
 #include "Utils/Utils.h"
 
@@ -16,10 +16,6 @@
 #include <fstream>
 #include <omp.h>
 
-
-#define NUM_OBJECTIVES 5;
-//#define NUM_DEC_VAR 57;
-#define NUM_DEC_VAR 27; // infrastructure turned off
 
 using namespace std;
 using namespace Constants;
@@ -45,8 +41,18 @@ void print_decision_vars(double *vars) {
 void eval(double *vars, double *objs, double *consts) {
 //    try {
 //        print_decision_vars(vars);
+///        for (int i = 0; i < NUM_DEC_VAR; ++i) printf("%f,", vars[i]); //for (int i = 0; i < 5; ++i) printf("%f, ", objs[i]); printf("\n");
+///	printf("\n");
+///	printf("\n");
+///	printf("\n");
+        for (int i = 0; i < NUM_DEC_VAR; ++i) {
+            if (isnan(vars[i])) {
+                char error[50];
+                sprintf(error, "Nan in decision variable %d", i);
+                throw invalid_argument(error);
+            }
+        }
         failures += problem_ptr->functionEvaluation(vars, objs, consts);
-        //for (int i = 0; i < 57; ++i) printf("%f, ", vars[i]); for (int i = 0; i < 5; ++i) printf("%f, ", objs[i]); printf("\n");
         problem_ptr->destroyDataCollector();
 //    } catch (...) {
 //        sol_out << endl;
@@ -56,6 +62,7 @@ void eval(double *vars, double *objs, double *consts) {
 //        print_decision_vars(vars);
 //        sol_out << endl;
 //        sol_out << endl;
+//        for (int i = 0; i < NUM_OBJECTIVES; ++i) objs[i] = 1e5;
 //    }
 }
 
@@ -282,7 +289,7 @@ int main(int argc, char *argv[]) {
             policies_rdm = std::vector<vector<double>>(n_realizations, policies_rdm_row);
             water_sources_rdm = std::vector<vector<double>>(n_realizations, water_sources_rdm_row);
 
-            problem.setRDMReevaluation((unsigned long) rdm_no, utilities_rdm,
+            problem.setRDMReevaluation(rdm_no, utilities_rdm,
                                        water_sources_rdm, policies_rdm);
 
             if (strlen(inflows_evap_directory_suffix.c_str()) > 2)
@@ -298,7 +305,7 @@ int main(int argc, char *argv[]) {
                 throw length_error("If no rdm number is passed, the number of realizations needs to be smaller "
                                    "or equal to the number of rows in the rdm files.");
             }
-            problem.setRDMReevaluation((unsigned long) rdm_no, utilities_rdm,
+            problem.setRDMReevaluation(rdm_no, utilities_rdm,
                                        water_sources_rdm, policies_rdm);
         }
     }
@@ -313,8 +320,8 @@ int main(int argc, char *argv[]) {
     } else {
         problem.setN_realizations(n_realizations);
     }
-    problem.setImport_export_rof_tables(import_export_rof_table, (int) n_weeks,
-            system_io + rof_tables_directory);
+    problem.setImport_export_rof_tables(import_export_rof_table,
+                                        system_io + rof_tables_directory);
     problem.readInputData();
 
     // If Borg is not called, run in simulation mode
@@ -338,7 +345,10 @@ int main(int argc, char *argv[]) {
         // Run model
         if (first_solution == -1) {
             cout << endl << endl << endl << "Running solution "
-                 << standard_solution << endl;
+                 << standard_solution
+	         << (rdm_no != NON_INITIALIZED ? " RDM " : "")
+	         << (rdm_no != NON_INITIALIZED ? to_string(rdm_no).c_str() : "")
+	         << endl;
             problem.setSol_number(standard_solution);
             problem_ptr->functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
 
@@ -357,18 +367,22 @@ int main(int argc, char *argv[]) {
         } else {
             double time_0 = omp_get_wtime();
             ofstream objs_file;
-            string file_name = system_io + "output" + BAR + "Objectives_RDM" + to_string(rdm_no) +
+            string file_name = system_io + "output" + BAR + "Objectives" +
+                    (rdm_no == NON_INITIALIZED ? "" : "_RDM" + to_string(rdm_no)) +
                                "_sols" + to_string(first_solution) + "_to_" + to_string(last_solution) + ".csv";
             objs_file.open(file_name);
             printf("Objectives file will be printed at %s.\n", file_name.c_str());
             for (int s = first_solution; s < last_solution; ++s) {
                 cout << endl << endl << endl << "Running solution "
-                     << s << endl;
+                     << s
+		        << (rdm_no != NON_INITIALIZED ? " RDM " : "")
+		        << (rdm_no != NON_INITIALIZED ? to_string(rdm_no).c_str() : "")
+		        << endl;
                 problem.setSol_number((unsigned long) s);
                 problem_ptr->functionEvaluation(solutions[s].data(), c_obj, c_constr);
                 vector<double> objectives = problem_ptr->calculateAndPrintObjectives(false);
-                if (plotting)
-                    problem.printTimeSeriesAndPathways();
+//		        printf("%f %f %f\n", objectives[0], objectives[5], objectives[10]);
+                problem.printTimeSeriesAndPathways(plotting);
                 problem_ptr->destroyDataCollector();
                 string line;
                 for (double &o : objectives) {

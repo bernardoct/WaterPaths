@@ -619,8 +619,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                                            durham_inftrigger,
                                                            cary_inftrigger,
                                                            raleigh_inftrigger,
-                                                           pittsboro_inftrigger,
-                                                           chatham_inftrigger};
+                                                           chatham_inftrigger,
+                                                           pittsboro_inftrigger};
         vector<double> bond_term = {25, 25, 25, 25, 25, 25};
         vector<double> bond_rate = {0.05, 0.05, 0.05, 0.05, 0.05, 0.05};
         double discount_rate = 0.05;
@@ -643,7 +643,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         ///             on JL must be accounted for (i.e. not just Cary has initial capacity to treat JL water)
         ///             64 MGD for Cary/Apex/Morrisville WTP, 3 MGD permitting for Chatham County WTP
         ///             FIXME: IS THIS THE CORRECT LEVEL OF WTP CAPACITY FOR CARY????
-        vector<double> jl_treatment_allocation_fractions = {0.0, 0.0, 0.955224, 0.0, 0.0, 0.044776};
+        vector<double> jl_treatment_allocation_fractions = {0.0, 0.0, 0.955224, 0.0, 0.044776, 0.0};
 
         /// Falls Lake parameters
         double fl_supply_capacity = 14700.0 * table_gen_storage_multiplier;
@@ -910,8 +910,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                  western_wake_treatment_frac_durham,
                  0., // cary
                  western_wake_treatment_plant_raleigh_frac,
-                 western_wake_treatment_plant_pittsboro_frac,
                  western_wake_treatment_plant_chatham_frac,
+                 western_wake_treatment_plant_pittsboro_frac,
                  0.}; // water quality pool
         vector<double> cary_upgrades_treatment_capacity_fractions = {0., 0., 1., 0., 0., 0., 0.};
 
@@ -920,32 +920,32 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                 33 * 7 * western_wake_treatment_frac_durham,
                 0.,
                 33 * 7 * western_wake_treatment_plant_raleigh_frac,
-                33 * 7 * western_wake_treatment_plant_pittsboro_frac,
-                33 * 7 * western_wake_treatment_plant_chatham_frac
+                33 * 7 * western_wake_treatment_plant_chatham_frac,
+                33 * 7 * western_wake_treatment_plant_pittsboro_frac
         };
         vector<double> cost_wjlwtp_upgrade_1 = {
                 243.3 * western_wake_treatment_plant_owasa_frac,
                 243.3 * western_wake_treatment_frac_durham,
                 0.,
                 243.3 * western_wake_treatment_plant_raleigh_frac,
-                243.3 * western_wake_treatment_plant_pittsboro_frac,
-                243.3 * western_wake_treatment_plant_chatham_frac
+                243.3 * western_wake_treatment_plant_chatham_frac,
+                243.3 * western_wake_treatment_plant_pittsboro_frac
         };
         vector<double> capacities_wjlwtp_upgrade_2 = {
                 (54 * 7 - 33 * 7) * western_wake_treatment_plant_owasa_frac,
                 (54 * 7 - 33 * 7) * western_wake_treatment_frac_durham,
                 0.,
                 (54 * 7 - 33 * 7) * western_wake_treatment_plant_raleigh_frac,
-                (54 * 7 - 33 * 7) * western_wake_treatment_plant_pittsboro_frac,
-                (54 * 7 - 33 * 7) * western_wake_treatment_plant_chatham_frac
+                (54 * 7 - 33 * 7) * western_wake_treatment_plant_chatham_frac,
+                (54 * 7 - 33 * 7) * western_wake_treatment_plant_pittsboro_frac
         };
         vector<double> cost_wjlwtp_upgrade_2 = {
                 (316.8 - 243.3) * western_wake_treatment_plant_owasa_frac,
                 (316.8 - 243.3) * western_wake_treatment_frac_durham,
                 0.,
                 (316.8 - 243.3) * western_wake_treatment_plant_raleigh_frac,
-                (316.8 - 243.3) * western_wake_treatment_plant_pittsboro_frac,
-                (316.8 - 243.3) * western_wake_treatment_plant_chatham_frac
+                (316.8 - 243.3) * western_wake_treatment_plant_chatham_frac,
+                (316.8 - 243.3) * western_wake_treatment_plant_pittsboro_frac
         };
 
         /// Bonds West Jordan Lake treatment plant
@@ -1070,19 +1070,27 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         vector<int> demand_triggered_infra_order_cary = {cary_wtp_upgrades_low_base_id, cary_wtp_upgrades_high_base_id};
         vector<double> demand_infra_cary = {caryupgrades_2 * 7, caryupgrades_3 * 7};
-        // FIXME: TOO MANY ARGUMENTS FOR UTILITY CONSTRUCTOR? there is one that is big enough, it just doesn't match? args in wrong order?
-        Utility cary((char *) "Cary", 2, demand_cary, demand_n_weeks, cary_annual_payment, caryDemandClassesFractions,
+
+        /// Utility IDs: 0 - OWASA, 1 - Durham, 2 - Cary, 3 - Raleigh, 4 - Chatham County, 5 - Pittsboro
+        int uid_owasa = 0;
+        int uid_durham = 1;
+        int uid_cary = 2;
+        int uid_raleigh = 3;
+        int uid_chatham = 4;
+        int uid_pittsboro = 5;
+
+        Utility cary((char *) "Cary", uid_cary, demand_cary, demand_n_weeks, cary_annual_payment, caryDemandClassesFractions,
                      caryUserClassesWaterPrices, wwtp_discharge_cary, cary_inf_buffer, vector<int>(),
                      demand_triggered_infra_order_cary, demand_infra_cary, discount_rate, bond_term[0], bond_rate[0]);
-        Utility durham((char *) "Durham", 1, demand_durham, demand_n_weeks, durham_annual_payment,
+        Utility durham((char *) "Durham", uid_durham, demand_durham, demand_n_weeks, durham_annual_payment,
                        durhamDemandClassesFractions, durhamUserClassesWaterPrices, wwtp_discharge_durham,
                        durham_inf_buffer, rof_triggered_infra_order_durham,
                        vector<int>(), rofs_infra_durham, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[1], bond_rate[1]);
-        Utility owasa((char *) "OWASA", 0, demand_owasa, demand_n_weeks, owasa_annual_payment,
+        Utility owasa((char *) "OWASA", uid_owasa, demand_owasa, demand_n_weeks, owasa_annual_payment,
                       owasaDemandClassesFractions, owasaUserClassesWaterPrices, wwtp_discharge_owasa, owasa_inf_buffer,
                       rof_triggered_infra_order_owasa,
                       vector<int>(), rofs_infra_owasa, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[2], bond_rate[2]);
-        Utility raleigh((char *) "Raleigh", 3, demand_raleigh, demand_n_weeks, raleigh_annual_payment,
+        Utility raleigh((char *) "Raleigh", uid_raleigh, demand_raleigh, demand_n_weeks, raleigh_annual_payment,
                         raleighDemandClassesFractions, raleighUserClassesWaterPrices, wwtp_discharge_raleigh,
                         raleigh_inf_buffer, rof_triggered_infra_order_raleigh,
                         vector<int>(), rofs_infra_raleigh, discount_rate,
@@ -1091,14 +1099,14 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         // FIXME: SETUP NEW UTILITIES HERE
         /// July 2019: Add Pittsboro and Chatham County utilities with placeholder parameters and input variables
         ///             from OWASA until numbers can be determined
-        Utility pittsboro((char *) "Pittsboro", 4, demand_pittsboro, demand_n_weeks, pittsboro_annual_payment,
+        Utility chatham((char *) "Chatham County", uid_chatham, demand_chatham, demand_n_weeks, chatham_annual_payment,
+                        chathamDemandClassesFractions, chathamUserClassesWaterPrices, wwtp_discharge_chatham,
+                        chatham_inf_buffer, rof_triggered_infra_order_chatham,
+                        vector<int>(), rofs_infra_chatham, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[4], bond_rate[4]);
+        Utility pittsboro((char *) "Pittsboro", uid_pittsboro, demand_pittsboro, demand_n_weeks, pittsboro_annual_payment,
                       pittsboroDemandClassesFractions, pittsboroUserClassesWaterPrices, wwtp_discharge_pittsboro,
                       pittsboro_inf_buffer, rof_triggered_infra_order_pittsboro,
-                      vector<int>(), rofs_infra_pittsboro, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[4], bond_rate[4]);
-        Utility chatham((char *) "Chatham County", 5, demand_chatham, demand_n_weeks, chatham_annual_payment,
-                          chathamDemandClassesFractions, chathamUserClassesWaterPrices, wwtp_discharge_chatham,
-                          chatham_inf_buffer, rof_triggered_infra_order_chatham,
-                          vector<int>(), rofs_infra_chatham, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[5], bond_rate[5]);
+                      vector<int>(), rofs_infra_pittsboro, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[5], bond_rate[5]);
 
         vector<Utility *> utilities;
         utilities.push_back(&cary);
@@ -1125,21 +1133,21 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                  jordan_lake_id, little_river_raleigh_reservoir_id,
                  richland_creek_quarry_id, falls_lake_reallocation_id, neuse_river_intake_id,
                  wjlwtp_low_base_id, wjlwtp_high_base_id},  //Raleigh
+                {jordan_lake_id, harnett_county_intake_id,
+                 wjlwtp_low_base_id, wjlwtp_high_base_id}, //Chatham County
                 {haw_river_intake_id, jordan_lake_id,
                  haw_river_intake_expansion_low_id, haw_river_intake_expansion_high_id,
-                 wjlwtp_low_base_id, wjlwtp_high_base_id}, //Pittsboro
-                {jordan_lake_id, harnett_county_intake_id,
-                 wjlwtp_low_base_id, wjlwtp_high_base_id} //Chatham County
+                 wjlwtp_low_base_id, wjlwtp_high_base_id} //Pittsboro
         };
 
         auto table_storage_shift = vector<vector<double>>(4, vector<double>(25, 0.));
-        table_storage_shift[3][falls_lake_reallocation_id] = 2000.;
-        table_storage_shift[3][richland_creek_quarry_id] = 5000.;
-        table_storage_shift[2][university_lake_expansion_id] = 100.;
-        table_storage_shift[1][wjlwtp_low_base_id] = 500.;
-        table_storage_shift[1][wjlwtp_high_base_id] = 500.;
-        table_storage_shift[1][michie_expansion_low_id] = 700.;
-        table_storage_shift[1][teer_quarry_id] = 700.;
+        table_storage_shift[uid_raleigh][falls_lake_reallocation_id] = 2000.;
+        table_storage_shift[uid_raleigh][richland_creek_quarry_id] = 5000.;
+        table_storage_shift[uid_owasa][university_lake_expansion_id] = 100.;
+        table_storage_shift[uid_durham][wjlwtp_low_base_id] = 500.;
+        table_storage_shift[uid_durham][wjlwtp_high_base_id] = 500.;
+        table_storage_shift[uid_durham][michie_expansion_low_id] = 700.;
+        table_storage_shift[uid_durham][teer_quarry_id] = 700.;
 
         vector<DroughtMitigationPolicy *> drought_mitigation_policies;
         /// Restriction policies
@@ -1182,72 +1190,103 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                                                initial_restriction_triggers[2] + 0.35f,
                                                                initial_restriction_triggers[2] + 0.6f};
 
-        Restrictions restrictions_c(2,
+        Restrictions restrictions_c(uid_cary,
                                     restriction_stage_multipliers_cary,
                                     restriction_stage_triggers_cary);
-        Restrictions restrictions_d(1,
+        Restrictions restrictions_d(uid_durham,
                                     restriction_stage_multipliers_durham,
                                     restriction_stage_triggers_durham);
-        Restrictions restrictions_o(0,
+        Restrictions restrictions_o(uid_owasa,
                                     restriction_stage_multipliers_owasa,
                                     restriction_stage_triggers_owasa,
                                     &owasaDemandClassesFractions,
                                     &owasaUserClassesWaterPrices,
                                     &owasaPriceSurcharges);
-        Restrictions restrictions_r(3,
+        Restrictions restrictions_r(uid_raleigh,
                                     restriction_stage_multipliers_raleigh,
                                     restriction_stage_triggers_raleigh);
 
-        Restrictions restrictions_p(4,
+        Restrictions restrictions_p(uid_pittsboro,
                                     restriction_stage_multipliers_pittsboro,
                                     restriction_stage_triggers_pittsboro);
-        Restrictions restrictions_cc(5,
+        Restrictions restrictions_cc(uid_chatham,
                                     restriction_stage_multipliers_chatham,
                                     restriction_stage_triggers_chatham);
 
         // FIXME: MAKE SURE SEQUENTIAL NUMBERING OF ALL DROUGHT MITIGATION POLICIES, ERROR MESSAGING HERE IS LIMITED
         drought_mitigation_policies = {&restrictions_c, &restrictions_d,
                                        &restrictions_o, &restrictions_r,
-                                       &restrictions_p, &restrictions_cc};
+                                       &restrictions_cc, &restrictions_p};
 
         // FIXME: IMPLEMENT CC AND PITTSBORO TRANSFER CAPABILITY
-        /// July 2019: Pittsboro and Chatham County treated water transfers to be added (but not yet)
+        /// Sept 2019: Transfer Policy 1: Original Triangle setup with added Durham -> Chatham connection with Cary as originator
         ///              - Chatham has 3 MGD interconnect with Durham, contracted until 2028
-        ///              - Pittsboro has emergency interconnect of 0.5 MGD with CC, can only receive water through it (check this)
-
-        /// Transfer policy
         /*
-         *      2
-         *     / \
-         *  0 v   v 1
-         *   /     \
-         *  3---><--1--><--0
-         *      2       3
-         */
+        *         CARY           CHATHAM
+        *       /      \        /
+        *    0 v        v 1    ^ 4
+        *     /          \    /
+        *  RALEIGH---><--DURHAM--><--OWASA
+        *             2           3
+        */
 
-        vector<int> buyers_ids = {0, 1, 3};
+        vector<int> buyers_ids_scheme_1 = {uid_owasa, uid_durham, uid_raleigh, uid_chatham};
         //FIXME: CHECK IF TRANSFER CAPACITIES MATCH IDS IN BUYERS_IDS.
-        vector<double> buyers_transfers_capacities = {10.8 * 7, 10.0 * 7, 11.5 * 7,
-                                                      7.0 * 7};
-        vector<double> buyers_transfers_trigger = {owasa_transfer_trigger,
-                                                   durham_transfer_trigger,
-                                                   raleigh_transfer_trigger};
+        //FIXME: CANT BE ANY GAP IN TRANFER IDS (ALL UTILITIES MUST BE ACCOUNTED FOR IN A PARTICULAR SCHEME...)
+        vector<double> buyers_transfers_capacities_scheme_1 = {10.8 * 7, 10.0 * 7, 11.5 * 7,
+                                                               7.0 * 7, 3.0 * 7};
+        vector<double> buyers_transfers_trigger_scheme_1 = {owasa_transfer_trigger,
+                                                            durham_transfer_trigger,
+                                                            raleigh_transfer_trigger,
+                                                            chatham_transfer_trigger};
 
-        Graph ug(4);
-        ug.addEdge(2, 1);
-        ug.addEdge(2, 3);
-        ug.addEdge(1, 3);
-        ug.addEdge(1, 0);
+        Graph ug(5);
+        ug.addEdge(uid_cary, uid_durham);
+        ug.addEdge(uid_cary, uid_raleigh);
+        ug.addEdge(uid_durham, uid_raleigh);
+        ug.addEdge(uid_durham, uid_owasa);
+        ug.addEdge(uid_durham, uid_chatham);
 
-        Transfers t(6, 2, jordan_lake_id, 35,
-                    buyers_ids,
-                    buyers_transfers_capacities,
-                    buyers_transfers_trigger,
-                    ug,
-                    vector<double>(),
-                    vector<int>());
-        drought_mitigation_policies.push_back(&t);
+        Transfers t_one(6, uid_cary, jordan_lake_id, 35,
+                        buyers_ids_scheme_1,
+                        buyers_transfers_capacities_scheme_1,
+                        buyers_transfers_trigger_scheme_1,
+                        ug,
+                        vector<double>(),
+                        vector<int>());
+        drought_mitigation_policies.push_back(&t_one);
 
+        /// Sept 2019: Transfer Policy 2: Emergency line between Chatham and Pittsboro, Chatham originator
+        ///              - Pittsboro has emergency interconnect of 0.5 MGD with CC, can only receive water through it (check this)
+        //FIXME: GRAPH REQUIRES SEQUENTIAL UTILITY IDS STARTING FROM 0, SO ALL UTILITIES MUST BE INCLUDED IN SCHEME
+        // AS A WORKAROUND, WILL SET ANY CAPACITY TO UTILITIES THAT DON'T ACTUALLY HAVE CONNECTIONS TO 0
+        /*
+        *    CHATHAM---->----PITTSBORO
+        *               5
+        */
+        vector<int> buyers_ids_scheme_2 = {0, 1, 2, 3, uid_pittsboro};
+        //FIXME: CHECK IF TRANSFER CAPACITIES MATCH IDS IN BUYERS_IDS.
+        vector<double> buyers_transfers_capacities_scheme_2 = {0,0,0,0, 0.5 * 7}; // only one pipe, implies other connections are 0 capacity
+        vector<double> buyers_transfers_trigger_scheme_2 = {1,1,1,1, pittsboro_transfer_trigger};
+
+        Graph ug_two(6);
+        ug_two.addEdge(0, 1);
+        ug_two.addEdge(1, 2);
+        ug_two.addEdge(2, 3);
+        ug_two.addEdge(3, 4);
+        ug_two.addEdge(uid_chatham, uid_pittsboro); // 4 to 5 or vice versa
+
+        Transfers t_two(7, uid_chatham, jordan_lake_id, 21,
+                        buyers_ids_scheme_2,
+                        buyers_transfers_capacities_scheme_2,
+                        buyers_transfers_trigger_scheme_2,
+                        ug_two,
+                        vector<double>(),
+                        vector<int>());
+        drought_mitigation_policies.push_back(&t_two);
+
+
+        /// Handle insurance
         vector<double> insurance_triggers = {owasa_insurance_use,
                                              durham_insurance_use,
                                              cary_insurance_use,
@@ -1262,7 +1301,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                    chatham_insurance_payment};
         vector<int> insured_utilities = {0, 1, 2, 3, 4, 5};
         double insurance_premium = 1.2;
-        InsuranceStorageToROF in(7, water_sources, g, reservoir_utility_connectivity_matrix, utilities, drought_mitigation_policies,
+        InsuranceStorageToROF in(8, water_sources, g, reservoir_utility_connectivity_matrix, utilities, drought_mitigation_policies,
                                  min_env_flow_controls, utilities_rdm, water_sources_rdm, policies_rdm, insurance_triggers,
                                  insurance_premium, fixed_payouts, n_weeks);
 

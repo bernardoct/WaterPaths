@@ -171,7 +171,6 @@ void Transfers::addSystemComponents(vector<Utility *> system_utilities,
                                             "transfer policy.");
 
     //FIXME: RIGHT NOW TRANSFERS CAN ONLY HAVE ONE SOURCE. THIS NEEDS TO BE EXPANDED.
-    //FIXME: TRANSFERS ALSO ASSUME THAT ALL UTILITIES IN THE MODEL NOT THE SOURCE CAN RECEIVE EVEN IF NOT SET AS CONNECTED
     for (Utility *u : system_utilities) {
         auto it = std::find(buyers_ids.begin(), buyers_ids.end(), u->id);
         if (u->id == source_utility_id)

@@ -49,7 +49,7 @@ string TransfersDataCollector::printTabularStringHeaderLine2() {
     stringstream outStream;
 
     for (int buyer_id : utilities_ids)
-        outStream << setw(COLUMN_WIDTH) << "Alloc. " + to_string(buyer_id);
+        outStream << setw(COLUMN_WIDTH) << to_string(transfer_policy->id) << "_" << "Alloc. " + to_string(buyer_id);
 
     return outStream.str();
 }
@@ -58,7 +58,7 @@ string TransfersDataCollector::printCompactStringHeader() {
     stringstream outStream;
 
     for (int &a : utilities_ids)
-        outStream << a << "transf" << ",";
+        outStream << to_string(transfer_policy->id) << "_" << a << "transf" << ",";
 
     return outStream.str();
 }

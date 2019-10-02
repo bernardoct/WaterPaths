@@ -212,8 +212,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         double owasa_inf_buffer = vars[54];
         double raleigh_inf_buffer = vars[55];
         double cary_inf_buffer = vars[56];
-        double pittsboro_inf_buffer = owasa_inf_buffer;
-        double chatham_inf_buffer = owasa_inf_buffer;
+        double pittsboro_inf_buffer = 2;
+        double chatham_inf_buffer = 2;
 
         /// July 2019: pittsboro and chatham county infrastructure projects
         ///             where there are references to input vars, owasa values are used as placeholders
@@ -1267,7 +1267,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         vector<int> buyers_ids_scheme_2 = {0, 1, 2, 3, uid_pittsboro};
         //FIXME: CHECK IF TRANSFER CAPACITIES MATCH IDS IN BUYERS_IDS.
         vector<double> buyers_transfers_capacities_scheme_2 = {0,0,0,0, 0.5 * 7}; // only one pipe, implies other connections are 0 capacity
-        vector<double> buyers_transfers_trigger_scheme_2 = {1,1,1,1, pittsboro_transfer_trigger};
+        vector<double> buyers_transfers_trigger_scheme_2 = {1.1,1.1,1.1,1.1, pittsboro_transfer_trigger};
 
         Graph ug_two(6);
         ug_two.addEdge(0, 1);
@@ -1276,7 +1276,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         ug_two.addEdge(3, 4);
         ug_two.addEdge(uid_chatham, uid_pittsboro); // 4 to 5 or vice versa
 
-        Transfers t_two(7, uid_chatham, jordan_lake_id, 21,
+        Transfers t_two(7, uid_chatham, jordan_lake_id, 2.1, // SET SOURCE BUFFER SO THAT 10% OF TRMT CAP ALWAYS LEFT OPEN
                         buyers_ids_scheme_2,
                         buyers_transfers_capacities_scheme_2,
                         buyers_transfers_trigger_scheme_2,

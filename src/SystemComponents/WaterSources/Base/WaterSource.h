@@ -115,7 +115,7 @@ public:
 
     void setMin_environmental_outflow(double min_environmental_outflow);
 
-    double getAvailableVolume() const;
+    virtual double getAvailableVolume() const;
 
     const vector<int> &getBuilt_in_sequence() const;
 
@@ -184,6 +184,8 @@ public:
     static void unsetSeed();
 
     const double getConstruction_time() const;
+
+    virtual double getPrioritySourcePotentialVolume(int utility_id) const;
 };
 
 

@@ -224,6 +224,8 @@ public:
     const InfrastructureManager &getInfrastructure_construction_manager() const;
 
     double getDemand_offset() const;
+
+    double getAvailableVolumeToCapacityRatio() const;
 };
 
 

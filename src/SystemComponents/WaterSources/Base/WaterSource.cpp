@@ -594,6 +594,10 @@ double WaterSource::getAvailableAllocatedVolume(int utility_id) {
     return getAvailableVolume();
 }
 
+double WaterSource::getPrioritySourcePotentialVolume(int utility_id) const {
+    return 0.0;
+}
+
 bool WaterSource::isOnline() const {
     return online;
 }

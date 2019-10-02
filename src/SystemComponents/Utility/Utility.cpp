@@ -303,10 +303,18 @@ void Utility::updateTotalAvailableVolume() {
     net_stream_inflow = 0.0;
 
     for (int ws : priority_draw_water_source) {
+        /// Oct 2019: available_volume should reflect water present in a given time step for allocating
+        /// demand. for intakes and reuse, this should be equal to treatment capacity and/or inflow for the next week
         total_available_volume +=
                 max(1.0e-6,
                     water_sources[ws]->getAvailableAllocatedVolume(id));
 	    net_stream_inflow += water_sources[ws]->getAllocatedInflow(id);
+
+	    /// Oct 2019: this call operates the same as getAvailableAllocatedVolume except for Intakes and Reuse
+	    /// for Intakes it returns the volume after week's demands processed
+	    /// for Reuse it returns zero
+	    total_stored_volume += max(1.0e-6,
+                                   water_sources[ws]->getPrioritySourcePotentialVolume(id));
     }
 
     for (int ws : non_priority_draw_water_source) {
@@ -707,6 +715,10 @@ vector<double> Utility::calculateWeeklyPeakingFactor(vector<double> *demands) {
 
 double Utility::getStorageToCapacityRatio() const {
     return total_stored_volume / total_storage_capacity;
+}
+
+double Utility::getAvailableVolumeToCapacityRatio() const {
+    return total_available_volume / total_storage_capacity;
 }
 
 double Utility::getTotal_available_volume() const {

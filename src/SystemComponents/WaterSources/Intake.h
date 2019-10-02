@@ -13,6 +13,7 @@ using namespace Constants;
 class Intake : public WaterSource {
 
 public:
+    double next_upstream_catchment_inflow = 0;
 
     Intake(
             const char *name, const int id,
@@ -37,6 +38,8 @@ public:
                              double wastewater_inflow, vector<double> &demand) override;
 
     void setRealization(unsigned long r, vector<double> &rdm_factors) override;
+
+    double getPrioritySourcePotentialVolume(int utility_id) const override;
 
 };
 

@@ -74,7 +74,7 @@ void Intake::applyContinuity(int week, double upstream_source_inflow,
         upstream_catchment_inflow += c.getStreamflow(week);
 
     /// Water availability for next ime step.
-    double next_upstream_catchment_inflow = 0;
+    next_upstream_catchment_inflow = 0;
     for (Catchment c : catchments)
         next_upstream_catchment_inflow += c.getStreamflow(week + 1);
 
@@ -101,4 +101,10 @@ void Intake::setRealization(unsigned long r, vector<double> &rdm_factors) {
     total_demand = 0;
     available_volume = this->upstream_catchment_inflow -
                        min_environmental_outflow;
+}
+
+/// Oct 2019: returns the remaining "storage" capacity after weekly demands have been accounted for
+double Intake::getPrioritySourcePotentialVolume(int utility_id) const {
+    return  max(0.0, min(total_treatment_capacity - total_demand - policy_added_demand,
+            next_upstream_catchment_inflow - min_environmental_outflow - total_demand - policy_added_demand));
 }

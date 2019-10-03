@@ -34,7 +34,7 @@ void print_decision_vars(double *vars) {
     sol_out << endl;
     cout << "eval\n" << endl;
     sol_out.flush();
-}
+//}
 
 void eval(double *vars, double *objs, double *consts) {
     try {

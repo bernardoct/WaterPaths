@@ -24,25 +24,9 @@ using namespace Solutions;
 PaperTestProblem *problem_ptr;
 //Triangle *problem_ptr;
 int failures = 0;
-ofstream sol_out; // for debugging borg
-
-void print_decision_vars(double *vars) {
-    int nsols = NUM_DEC_VAR;
-    for (int i = 0; i < nsols; ++i) {
-        sol_out << vars[i] << ",";
-    }
-    sol_out << endl;
-    cout << "eval\n" << endl;
-    sol_out.flush();
-//}
 
 void eval(double *vars, double *objs, double *consts) {
     try {
-//        print_decision_vars(vars);
-///        for (int i = 0; i < NUM_DEC_VAR; ++i) printf("%f,", vars[i]); //for (int i = 0; i < 5; ++i) printf("%f, ", objs[i]); printf("\n");
-///	printf("\n");
-///	printf("\n");
-///	printf("\n");
         for (int i = 0; i < NUM_DEC_VAR; ++i) {
             if (isnan(vars[i])) {
                 char error[50];
@@ -53,13 +37,13 @@ void eval(double *vars, double *objs, double *consts) {
         failures += problem_ptr->functionEvaluation(vars, objs, consts);
         problem_ptr->destroyDataCollector();
     } catch (...) {
-//        sol_out << endl;
-//        sol_out << "Failure! Decision Variable values: " << endl;
-//        cout << endl;
-//        cout << "Failure! Decision variable values: " << endl;
-//        print_decision_vars(vars);
-//        sol_out << endl;
-//        sol_out << endl;
+        ofstream sol_out; // for debugging borg
+        sol_out << endl;
+        sol_out << "Failure! Decision Variable values: " << endl;
+        cout << endl;
+        cout << "Failure! Decision variable values: " << endl;
+        for (int i = 0; i < NUM_DEC_VAR; ++i) sol_out << vars[i] << " ";
+        sol_out << endl;
         for (int i = 0; i < NUM_OBJECTIVES; ++i) objs[i] = 1e5;
     }
 }
@@ -84,7 +68,7 @@ int main(int argc, char *argv[]) {
     string inflows_evap_directory_suffix = "-1";
     string rof_tables_directory = DEFAULT_ROF_TABLES_DIR;
     unsigned long standard_solution = 0;
-    int n_threads;// = omp_get_num_procs();
+    int n_threads = 2;
     int standard_rdm = 0;
     int first_solution = -1;
     int last_solution = -1;
@@ -94,7 +78,6 @@ int main(int argc, char *argv[]) {
     bool plotting = true;
     bool run_optimization = false;
     bool print_objs_row = false;
-    // omp_set_num_threads(1);
     unsigned long n_islands = 2;
     unsigned long nfe = 1000;
     unsigned long output_frequency = 200;
@@ -246,7 +229,6 @@ int main(int argc, char *argv[]) {
 
     // Set basic realization parameters.
     problem.setN_weeks(n_weeks);
-//    printf("%s\n", system_io.c_str());
     problem.setIODirectory(system_io);
     problem.setN_threads((unsigned long) n_threads);
 
@@ -376,7 +358,6 @@ int main(int argc, char *argv[]) {
                 problem.setSol_number((unsigned long) s);
                 problem_ptr->functionEvaluation(solutions[s].data(), c_obj, c_constr);
                 vector<double> objectives = problem_ptr->calculateAndPrintObjectives(false);
-//		        printf("%f %f %f\n", objectives[0], objectives[5], objectives[10]);
                 problem.printTimeSeriesAndPathways(plotting);
                 problem_ptr->destroyDataCollector();
                 string line;

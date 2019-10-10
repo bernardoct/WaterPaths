@@ -29,11 +29,23 @@ let
     };
     phases = "installPhase";
     
+    buildInputs = with stdenv; [ gfortran openmpi mpiP ];
+    
     installPhase = ''
+      source $stdenv/setup
+      
       mkdir -p $out/
       tar -C $out -xzf $src
-      source $out/remora-1.8.3/install.sh
+      
+      # insert commands to modify install.sh as needed here
+      export REMORA_INSTALL_PREFIX=$out
+      cd $out/remora-1.8.3
+      $out/remora-1.8.3/install.sh
     '';
+    
+#    postInstall = ''
+#      rm -f $out/lib/*.la
+#    '';
   };
 in
 { openmpiDevEnv = buildEnv {
@@ -64,13 +76,7 @@ in
     remora
 
   ];
-#  src = null;
-#  shellHook = ''
-#    export LANG=en_US.UTF-8
-#  '';
 };}
-
-#    ${remora}.out/remora-1.8.3/install.sh
 
 
 #######################################

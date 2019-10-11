@@ -14,8 +14,6 @@ let
     phases = "installPhase";
     
     installPhase = ''
-      source $stdenv/setup
-      
       mkdir -p $out/
       tar -C $out -xzf $src
     '';
@@ -29,7 +27,7 @@ let
     };
     phases = "installPhase";
     
-    buildInputs = with stdenv; [ gfortran openmpi mpiP ];
+    buildInputs = with stdenv; [ binutils gcc gfortran openmpi ];
     
     installPhase = ''
       source $stdenv/setup
@@ -37,15 +35,14 @@ let
       mkdir -p $out/
       tar -C $out -xzf $src
       
-      # insert commands to modify install.sh as needed here
       export REMORA_INSTALL_PREFIX=$out
       cd $out/remora-1.8.3
       $out/remora-1.8.3/install.sh
     '';
     
-#    postInstall = ''
-#      rm -f $out/lib/*.la
-#    '';
+    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$out/lib";
+    PATH="$PATH:$out/bin";
+    REMORA_BIN="$out/bin";
   };
 in
 { openmpiDevEnv = buildEnv {
@@ -68,15 +65,21 @@ in
     gfortran
     openmpi
     openssh
-
+    
     #
     # Debug and profiling tools
     #
     mpiP
     remora
-
-  ];
-};}
+    
+    ];
+  };
+  shellHook = ''
+    export PATH=$PATH:${remora}/bin;
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${remora}/lib;
+    export REMORA_BIN=${remora}/bin;
+  '';
+}
 
 
 #######################################

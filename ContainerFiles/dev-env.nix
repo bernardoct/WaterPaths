@@ -71,9 +71,10 @@ in
     ];
   };
   shellHook = ''
-    export PATH=$PATH:${remora}.out/bin;
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${remora}.out/lib;
-    export REMORA_BIN=${remora}.out/bin;
+    export FOO="BAR";
+    export PATH=$PATH:${remora.out}/bin;
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${remora.out}/lib;
+    export REMORA_BIN=${remora.out}/bin;
   '';
 }
 

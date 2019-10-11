@@ -39,10 +39,6 @@ let
       cd $out/remora-1.8.3
       $out/remora-1.8.3/install.sh
     '';
-    
-    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$out/lib";
-    PATH="$PATH:$out/bin";
-    REMORA_BIN="$out/bin";
   };
 in
 { openmpiDevEnv = buildEnv {
@@ -75,9 +71,9 @@ in
     ];
   };
   shellHook = ''
-    export PATH=$PATH:${remora}/bin;
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${remora}/lib;
-    export REMORA_BIN=${remora}/bin;
+    export PATH=$PATH:${remora}.out/bin;
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${remora}.out/lib;
+    export REMORA_BIN=${remora}.out/bin;
   '';
 }
 

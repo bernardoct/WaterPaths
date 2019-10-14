@@ -708,6 +708,7 @@ void MasterDataCollector::addRealization(
             utility_collectors = vector<vector<UtilitiesDataCollector *>>
                     (utilities_realization.size(), vector<UtilitiesDataCollector *>(n_realizations));
         }
+        realizations_created++;
     };
 
     // Create utilities data collectors
@@ -782,4 +783,8 @@ void MasterDataCollector::setSeed(int seed) {
 
 void MasterDataCollector::unsetSeed() {
     MasterDataCollector::seed = NON_INITIALIZED;
+}
+
+int MasterDataCollector::getRealizations_created() const {
+    return realizations_created;
 }

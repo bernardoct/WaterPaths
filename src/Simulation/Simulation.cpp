@@ -14,6 +14,10 @@
 #include <mpi.h>
 #endif
 
+#define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+#define PBWIDTH 60
+
+
 Simulation::Simulation(
         vector<WaterSource *> &water_sources, Graph &water_sources_graph,
         const vector<vector<int>> &water_sources_to_utilities,
@@ -88,7 +92,7 @@ Simulation::Simulation(
 }
 
 Simulation::Simulation(
-        vector<WaterSource *> &water_sources, 
+        vector<WaterSource *> &water_sources,
 	Graph &water_sources_graph,
         const vector<vector<int>> &water_sources_to_utilities,
         vector<Utility *> &utilities,
@@ -282,6 +286,15 @@ void Simulation::createContinuityModels(unsigned long realization,
                 rof_model->getUt_storage_to_rof_table(), import_export_rof_tables);
 }
 
+void printProgress (double percentage)
+{
+    int val = (int) (percentage * 100);
+    int lpad = (int) (percentage * PBWIDTH);
+    int rpad = PBWIDTH - lpad;
+    printf ("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
+    fflush (stdout);
+}
+
 MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, double *vars) {
     if (rof_tables_folder.length() == 0) {
         rof_tables_folder = "rof_tables";
@@ -360,6 +373,10 @@ MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, dou
                 rof_model->printROFTable(rof_tables_folder);
             }
             // printf("Realization %lu took %f seconds.\n", r, omp_get_wtime() - start);
+
+#pragma omp critical
+	    printProgress((double) master_data_collector->getRealizations_created() / (double) realizations_to_run_unique.size());
+
         } catch (...) {
 #pragma omp atomic
             ++had_catch;
@@ -413,3 +430,4 @@ MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, dou
 void Simulation::setRof_tables_folder(const string &rof_tables_folder) {
     Simulation::rof_tables_folder = rof_tables_folder;
 }
+

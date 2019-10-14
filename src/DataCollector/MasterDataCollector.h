@@ -22,6 +22,7 @@ private:
     vector<vector<UtilitiesDataCollector *>> utility_collectors;
     vector<unsigned long> crashed_realizations;
     vector<unsigned long> realizations_ran;
+    int realizations_created = 0;
 
     static int seed;
 
@@ -93,6 +94,8 @@ public:
 
     void isolateRestrictionDataCollectors(vector<UtilitiesDataCollector *> &u,
                                           vector<RestrictionsDataCollector *> &utility_restrictions) const;
+
+    int getRealizations_created() const;
 };
 
 

@@ -44,6 +44,7 @@ namespace Constants {
     const int TREATMENT_CAPACITY_VS_VOLUME_SMALL_WTP = 200;
     const int ILLIMITED_TREATMENT_CAPACITY = 99999;
     const double STORAGE_CAPACITY_RATIO_FAIL = 0.2;
+    const double TREATMENT_CAPACITY_RATIO_FAIL = 0.8;
     const int NOT_ALLOCATED = 1;
     const int MAX_NUMBER_OF_UTILITIES = 50;
     const double MAX_FRACTION_CF_TO_BUY_INSURANCE = 0.7;

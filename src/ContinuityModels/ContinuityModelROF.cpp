@@ -74,10 +74,13 @@ ContinuityModelROF::~ContinuityModelROF() {
  * given week.
  * @param week for which rof is to be calculated.
  */
-vector<double> ContinuityModelROF::calculateLongTermROF(int week) {
+vector<vector<double>> ContinuityModelROF::calculateLongTermROF(int week) {
     // vector where risks of failure will be stored.
-    vector<double> risk_of_failure((unsigned long) n_utilities, 0.0);
-    vector<double> year_failure((unsigned long) n_utilities, 0.0);
+    /// OCT 2019: VECTORS NOW 2-DIMENSIONAL TO HOLD ONE ROW FOR LT STORAGE ROF, ANOTHER FOR TREATMENT ROF
+    int storage_row = 0;
+    int treatment_row = 1;
+    vector<vector<double>> risk_of_failure((unsigned long) n_utilities, vector<double>(2, 0.0));
+    vector<vector<double>> year_failure((unsigned long) n_utilities, vector<double>(2, 0.0));
 
     // checks if new infrastructure became available and, if so, set the
     // corresponding realization
@@ -98,22 +101,29 @@ vector<double> ContinuityModelROF::calculateLongTermROF(int week) {
             // check total available storage for each utility and, if smaller
             // than the fail ration, increase the number of failed years of
             // that utility by 1 (FAILURE).
-            for (int u = 0; u < n_utilities; ++u)
-                if (continuity_utilities[u]->getStorageToCapacityRatio() <=
-                    STORAGE_CAPACITY_RATIO_FAIL)
-                    year_failure[u] = FAILURE;
+            /// OCT 2019: ADDED STATEMENT TO COLLECT TREATMENT CAPACITY FAILURES
+            for (int u = 0; u < n_utilities; ++u) {
+                if (continuity_utilities[u]->getStorageToCapacityRatio() <= STORAGE_CAPACITY_RATIO_FAIL)
+                    year_failure[u][storage_row] = FAILURE;
+                if (continuity_utilities[u]->getUnrestrictedDemandToTreatmentCapacityRatio() >= TREATMENT_CAPACITY_RATIO_FAIL)
+                    year_failure[u][treatment_row] = FAILURE;
+            }
         }
 
         // Count failures and reset failures counter.
         for (int uu = 0; uu < n_utilities; ++uu) {
-            risk_of_failure[uu] += year_failure[uu];
-            year_failure[uu] = NON_FAILURE;
+            risk_of_failure[uu][storage_row] += year_failure[uu][storage_row];
+            year_failure[uu][storage_row] = NON_FAILURE;
+
+            risk_of_failure[uu][treatment_row] += year_failure[uu][treatment_row];
+            year_failure[uu][treatment_row] = NON_FAILURE;
         }
     }
 
     // Finish ROF calculations
     for (int i = 0; i < n_utilities; ++i) {
-        risk_of_failure[i] /= NUMBER_REALIZATIONS_ROF;
+        risk_of_failure[i][storage_row] /= NUMBER_REALIZATIONS_ROF;
+        risk_of_failure[i][treatment_row] /= NUMBER_REALIZATIONS_ROF;
     }
 
     return risk_of_failure;

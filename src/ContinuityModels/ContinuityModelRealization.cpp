@@ -43,16 +43,20 @@ void ContinuityModelRealization::setShortTermROFs(const vector<double> &risks_of
     }
 }
 
-void ContinuityModelRealization::setLongTermROFs(const vector<double> &risks_of_failure, const int week) {
+void ContinuityModelRealization::setLongTermROFs(const vector<vector<double>> &risks_of_failure, const int week) {
     vector<int> new_infra_triggered;
     int nit; // new infrastruction triggered - id.
 
     // Loop over utilities to see if any of them will build new infrastructure.
     for (unsigned long u = 0; u < continuity_utilities.size(); ++u) {
+        /// OCT 2019: TRIAGE ROFs; FROM EITHER STORAGE OR TREATMENT ROF, CHOOSE THE GREATEST
+        /// VALUE TO PASS TO DECIDE WHETHER TO EXPAND INFRASTRUCTURE (0: storage ROF row, 1: treatment)
+        double high_rof_value = max(risks_of_failure[u][0], risks_of_failure[u][1]);
+        continuity_utilities[u]->setLongTermRisk_of_failures(risks_of_failure[u][0], risks_of_failure[u][1]);
+
         // Runs utility's infrastructure construction handler and get the id
         // of new source built, if any.
-        nit = continuity_utilities[u]->
-                infrastructureConstructionHandler(risks_of_failure[u], week);
+        nit = continuity_utilities[u]->infrastructureConstructionHandler(high_rof_value, week);
         // If new source was built, check add it to the list of sources
         // built by all utilities.
         if (nit != NON_INITIALIZED)

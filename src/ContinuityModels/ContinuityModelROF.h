@@ -50,7 +50,7 @@ public:
                                               const vector<Matrix2D<double>> &ut_storage_to_rof_table,
                                               vector<double> current_storage_table_shift);
 
-    vector<double> calculateLongTermROF(int week);
+    vector<vector<double>> calculateLongTermROF(int week);
 
     void resetUtilitiesAndReservoirs(int rof_type);
 

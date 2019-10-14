@@ -615,7 +615,9 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
         }
     }
 
-    long_term_risk_of_failure = long_term_rof;
+    /// OCT 2019: THIS IS NOW SET IN THE setLongTermRisk-of-failures function
+    /// and differentiates between (a) storage ROF (b) treatment ROF and (c) actual ROF (max of stor/trmt ROF)
+    long_term_actual_risk_of_failure = long_term_rof;
 
     // Check if new infrastructure is to be triggered and, if so, trigger it.
     int new_infra_triggered = infrastructure_construction_manager.infrastructureConstructionHandler(long_term_rof, week,
@@ -717,6 +719,10 @@ double Utility::getStorageToCapacityRatio() const {
     return total_stored_volume / total_storage_capacity;
 }
 
+double Utility::getUnrestrictedDemandToTreatmentCapacityRatio() const {
+    return unrestricted_demand / total_treatment_capacity;
+}
+
 double Utility::getAvailableVolumeToCapacityRatio() const {
     return total_available_volume / total_storage_capacity;
 }
@@ -739,6 +745,11 @@ double Utility::getRisk_of_failure() const {
 
 void Utility::setRisk_of_failure(double risk_of_failure) {
     this->short_term_risk_of_failure = risk_of_failure;
+}
+
+void Utility::setLongTermRisk_of_failures(double storage_risk_of_failure, double treatment_risk_of_failure) {
+    this->long_term_storage_risk_of_failure = storage_risk_of_failure;
+    this->long_term_treatment_risk_of_failure = treatment_risk_of_failure;
 }
 
 double Utility::getTotal_treatment_capacity() const {
@@ -823,7 +834,15 @@ void Utility::setNoFinaicalCalculations() {
 }
 
 double Utility::getLong_term_risk_of_failure() const {
-    return long_term_risk_of_failure;
+    return long_term_actual_risk_of_failure;
+}
+
+double Utility::getLong_term_storage_risk_of_failure() const {
+    return long_term_storage_risk_of_failure;
+}
+
+double Utility::getLong_term_treatment_risk_of_failure() const {
+    return long_term_treatment_risk_of_failure;
 }
 
 const vector<WaterSource *> &Utility::getWater_sources() const {

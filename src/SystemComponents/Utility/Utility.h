@@ -21,7 +21,9 @@ private:
     vector<int> non_priority_draw_water_source;
     vector<double> weekly_peaking_factor;
     double short_term_risk_of_failure = 0;
-    double long_term_risk_of_failure = 0;
+    double long_term_actual_risk_of_failure = 0;
+    double long_term_treatment_risk_of_failure = 0;
+    double long_term_storage_risk_of_failure = 0;
     double total_storage_capacity = 0;
     double total_available_volume = 0;
     double total_stored_volume = 0;
@@ -226,6 +228,14 @@ public:
     double getDemand_offset() const;
 
     double getAvailableVolumeToCapacityRatio() const;
+
+    double getUnrestrictedDemandToTreatmentCapacityRatio() const;
+
+    void setLongTermRisk_of_failures(double storage_risk_of_failure, double treatment_risk_of_failure);
+
+    double getLong_term_storage_risk_of_failure() const;
+
+    double getLong_term_treatment_risk_of_failure() const;
 };
 
 

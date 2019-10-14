@@ -27,6 +27,10 @@ string UtilitiesDataCollector::printTabularString(int week) {
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << lt_rof[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+              << lt_stor_rof[week]
+              << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+              << lt_trmt_rof[week]
+              << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << unfulfilled_demand[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << restricted_demand[week]
@@ -66,6 +70,10 @@ string UtilitiesDataCollector::printCompactString(int week) {
               << ","
               << lt_rof[week]
               << ","
+              << lt_stor_rof[week]
+              << ","
+              << lt_trmt_rof[week]
+              << ","
               << restricted_demand[week]
               << ","
               << unrestricted_demand[week]
@@ -100,7 +108,9 @@ string UtilitiesDataCollector::printTabularStringHeaderLine1() {
               << setw(COLUMN_WIDTH) << " "
               << setw(COLUMN_WIDTH) << "Net"
               << setw(COLUMN_WIDTH) << " "
-              << setw(COLUMN_WIDTH) << " "
+              << setw(COLUMN_WIDTH) << "Actl"
+              << setw(COLUMN_WIDTH) << "Stor"
+              << setw(COLUMN_WIDTH) << "Trmt"
               << setw(COLUMN_WIDTH) << "Rest."
               << setw(COLUMN_WIDTH) << "Unrest."
               << setw(COLUMN_WIDTH) << "Unfulf."
@@ -125,6 +135,8 @@ string UtilitiesDataCollector::printTabularStringHeaderLine2() {
               << setw(COLUMN_WIDTH) << "Inflow"
               << setw(COLUMN_WIDTH) << "ST-ROF"
               << setw(COLUMN_WIDTH) << "LT-ROF"
+              << setw(COLUMN_WIDTH) << "LT-ROF"
+              << setw(COLUMN_WIDTH) << "LT-ROF"
               << setw(COLUMN_WIDTH) << "Demand"
               << setw(COLUMN_WIDTH) << "Demand"
               << setw(COLUMN_WIDTH) << "Demand"
@@ -148,6 +160,8 @@ string UtilitiesDataCollector::printCompactStringHeader() {
               << id << "net_inf" << ","
               << id << "st_rof" << ","
               << id << "lt_rof" << ","
+              << id << "lt_stor_rof" << ","
+              << id << "lt_trmt_rof" << ","
               << id << "rest_demand" << ","
               << id << "unrest_demand" << ","
               << id << "unfulf_demand" << ","
@@ -168,6 +182,8 @@ void UtilitiesDataCollector::collect_data() {
 
     combined_storage.push_back(utility->getTotal_available_volume());
     lt_rof.push_back(utility->getLong_term_risk_of_failure());
+    lt_trmt_rof.push_back(utility->getLong_term_treatment_risk_of_failure());
+    lt_stor_rof.push_back(utility->getLong_term_storage_risk_of_failure());
     st_rof.push_back(utility->getRisk_of_failure());
     unrestricted_demand.push_back(utility->getUnrestrictedDemand());
     restricted_demand.push_back(utility->getRestrictedDemand());
@@ -206,6 +222,10 @@ void UtilitiesDataCollector::checkForNans() const {
     if (std::isnan(combined_storage.back()))
         throw_with_nested(runtime_error(error.c_str()));
     if (std::isnan(lt_rof.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(lt_stor_rof.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(lt_trmt_rof.back()))
         throw_with_nested(runtime_error(error.c_str()));
     if (std::isnan(st_rof.back()))
         throw_with_nested(runtime_error(error.c_str()));

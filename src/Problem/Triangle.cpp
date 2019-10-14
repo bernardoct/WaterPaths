@@ -1113,8 +1113,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         utilities.push_back(&durham);
         utilities.push_back(&owasa);
         utilities.push_back(&raleigh);
-        utilities.push_back(&pittsboro);
         utilities.push_back(&chatham);
+        utilities.push_back(&pittsboro);
 
         /// Water-source-utility connectivity matrix (each row corresponds to a utility and numbers are water
         /// sources IDs.
@@ -1155,8 +1155,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                                        Durham_restriction_trigger,
                                                        cary_restriction_trigger,
                                                        raleigh_restriction_trigger,
-                                                       pittsboro_restriction_trigger,
-                                                       chatham_restriction_trigger};
+                                                       chatham_restriction_trigger,
+                                                       pittsboro_restriction_trigger};
 
         vector<double> restriction_stage_multipliers_cary = {0.9, 0.8, 0.7, 0.6};
         vector<double> restriction_stage_triggers_cary = {initial_restriction_triggers[0],
@@ -1291,14 +1291,14 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                              durham_insurance_use,
                                              cary_insurance_use,
                                              raleigh_insurance_use,
-                                             pittsboro_insurance_use,
-                                             chatham_insurance_use}; //FIXME: Change per solution
+                                             chatham_insurance_use,
+                                             pittsboro_insurance_use}; //FIXME: Change per solution
         vector<double> fixed_payouts = {owasa_insurance_payment,
                                    durham_insurance_payment,
                                    cary_insurance_payment,
                                    raleigh_insurance_payment,
-                                   pittsboro_insurance_payment,
-                                   chatham_insurance_payment};
+                                   chatham_insurance_payment,
+                                   pittsboro_insurance_payment};
         vector<int> insured_utilities = {0, 1, 2, 3, 4, 5};
         double insurance_premium = 1.2;
         InsuranceStorageToROF in(8, water_sources, g, reservoir_utility_connectivity_matrix, utilities, drought_mitigation_policies,

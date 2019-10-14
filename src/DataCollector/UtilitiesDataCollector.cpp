@@ -8,7 +8,7 @@
 
 
 UtilitiesDataCollector::UtilitiesDataCollector(const Utility *utility, unsigned long realization)
-        : DataCollector(utility->id, utility->name, realization, UTILITY, 15 * COLUMN_WIDTH),
+        : DataCollector(utility->id, utility->name, realization, UTILITY, 16 * COLUMN_WIDTH),
           utility(utility) {
 }
 
@@ -45,7 +45,9 @@ string UtilitiesDataCollector::printTabularString(int week) {
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << net_present_infrastructure_cost[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-              << debt_service_payments[week];
+              << debt_service_payments[week]
+              << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+              << final_stored_volume[week];
 
     return outStream.str();
 }
@@ -83,6 +85,8 @@ string UtilitiesDataCollector::printCompactString(int week) {
               << net_present_infrastructure_cost[week]
               << ","
               << debt_service_payments[week]
+              << ","
+              << final_stored_volume[week]
               << ",";
 
     return outStream.str();
@@ -106,7 +110,8 @@ string UtilitiesDataCollector::printTabularStringHeaderLine1() {
               << setw(COLUMN_WIDTH) << "Insurance"
               << setw(COLUMN_WIDTH) << "Insurance"
               << setw(COLUMN_WIDTH) << "Infra."
-              << setw(COLUMN_WIDTH) << "Debt";
+              << setw(COLUMN_WIDTH) << "Debt"
+              << setw(COLUMN_WIDTH) << "Final";
 
     return outStream.str();
 }
@@ -129,7 +134,8 @@ string UtilitiesDataCollector::printTabularStringHeaderLine2() {
               << setw(COLUMN_WIDTH) << "Payout"
               << setw(COLUMN_WIDTH) << "Price"
               << setw(COLUMN_WIDTH) << "NPV"
-              << setw(COLUMN_WIDTH) << "Service";
+              << setw(COLUMN_WIDTH) << "Service"
+              << setw(COLUMN_WIDTH) << "Storage";
 
     return outStream.str();
 }
@@ -151,7 +157,8 @@ string UtilitiesDataCollector::printCompactStringHeader() {
               << id << "ins_pout" << ","
               << id << "ins_price" << ","
               << id << "infra_npv" << ","
-              << id << "debt_serv" << ",";
+              << id << "debt_serv" << ","
+              << id << "stor_vol" << ",";
 
     return outStream.str();
 }
@@ -177,6 +184,7 @@ void UtilitiesDataCollector::collect_data() {
     unfulfilled_demand.push_back(utility->getUnfulfilled_demand());
     net_stream_inflow.push_back(utility->getNet_stream_inflow());
     total_treatment_capacity.push_back(utility->getTotal_treatment_capacity());
+    final_stored_volume.push_back(utility->getTotal_stored_volume());
 
 //    checkForNans();
 
@@ -224,6 +232,8 @@ void UtilitiesDataCollector::checkForNans() const {
     if (std::isnan(unfulfilled_demand.back()))
         throw_with_nested(runtime_error(error.c_str()));
     if (std::isnan(net_stream_inflow.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(final_stored_volume.back()))
         throw_with_nested(runtime_error(error.c_str()));
 
     error = "NPV absurdly high when collecting data for utility " + to_string(id) + " in week " + to_string(lt_rof.size

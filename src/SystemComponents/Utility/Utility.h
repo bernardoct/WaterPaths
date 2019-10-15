@@ -36,6 +36,7 @@ private:
     vector<WaterSource *> water_sources;
     WwtpDischargeRule wwtp_discharge_rule;
     vector<vector<double>>& demands_all_realizations;
+    vector<double>& annual_demand_projections;
     vector<double> demand_series_realization;
     double *rdm_factors_realization;
     InfrastructureManager infrastructure_construction_manager;
@@ -74,6 +75,7 @@ public:
     Utility(
             const char *name, int id,
             vector<vector<double>>& demands_all_realizations,
+            vector<double>& annual_demand_projections,
             int number_of_week_demands,
             const double percent_contingency_fund_contribution,
             const vector<vector<double>> &typesMonthlyDemandFraction,
@@ -81,7 +83,7 @@ public:
             WwtpDischargeRule wwtp_discharge_rule,
             double demand_buffer);
 
-    Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations,
+    Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations, vector<double>& annual_demand_projections,
                 int number_of_week_demands, const double percent_contingency_fund_contribution,
                 const vector<vector<double>> &typesMonthlyDemandFraction,
                 const vector<vector<double>> &typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,
@@ -90,7 +92,7 @@ public:
                 const vector<double> &infra_construction_triggers, double infra_discount_rate,
                 const vector<vector<int>>& infra_if_built_remove, double bond_term, double bond_interest_rate);
 
-    Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations,
+    Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations, vector<double>& annual_demand_projections,
                 int number_of_week_demands, const double percent_contingency_fund_contribution,
                 const vector<vector<double>> &typesMonthlyDemandFraction,
                 const vector<vector<double>> &typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,

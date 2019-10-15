@@ -17,6 +17,8 @@
  * @param name Utility name (e.g. Raleigh_water)
  * @param id Numeric ID assigned to that utility.
  * @param demands_all_realizations Text file containing utility's demand series.
+ * @param annual_demand_projections vector containing demand projections for
+ * all years of realization (same projection for all realizations in simulation)
  * @param number_of_week_demands Length of weeks in demand series.
  * @param typesMonthlyDemandFraction Table of size 12 (months in year) by
  * number of consumer tiers with the fraction of the total demand consumed by
@@ -33,6 +35,7 @@
 Utility::Utility(
         const char *name, int id,
         vector<vector<double>>& demands_all_realizations,
+        vector<double>& annual_demand_projections,
         int number_of_week_demands,
         const double percent_contingency_fund_contribution,
         const vector<vector<double>> &typesMonthlyDemandFraction,
@@ -43,6 +46,7 @@ Utility::Utility(
         total_available_volume(NONE),
         wwtp_discharge_rule(wwtp_discharge_rule),
         demands_all_realizations(demands_all_realizations),
+        annual_demand_projections(annual_demand_projections),
         infra_discount_rate(NON_INITIALIZED),
         bond_term_multiplier(NON_INITIALIZED),
         bond_interest_rate_multiplier(NON_INITIALIZED),
@@ -60,6 +64,8 @@ Utility::Utility(
  * @param name Utility name (e.g. Raleigh_water)
  * @param id Numeric id assigned to that utility.
  * @param demands_all_realizations Text file containing utility's demand series.
+ * @param annual_demand_projections vector containing demand projections for
+ * all years of realization (same projection for all realizations in simulation)
  * @param number_of_week_demands Length of weeks in demand series.
  * @param percent_contingency_fund_contribution
  * @param typesMonthlyDemandFraction Table of size 12 (months in year) by
@@ -77,7 +83,7 @@ Utility::Utility(
  * @param infra_if_built_remove if infra option in position 0 of a row is
  * built, remove infra options of IDs in remaining positions of the same row.
  */
-Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations,
+Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations, vector<double>& annual_demand_projections,
                  int number_of_week_demands, const double percent_contingency_fund_contribution,
                  const vector<vector<double>> &typesMonthlyDemandFraction,
                  const vector<vector<double>> &typesMonthlyWaterPrice,
@@ -90,6 +96,7 @@ Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_r
         total_available_volume(NONE),
         wwtp_discharge_rule(wwtp_discharge_rule),
         demands_all_realizations(demands_all_realizations),
+        annual_demand_projections(annual_demand_projections),
         infra_discount_rate(infra_discount_rate),
         bond_term_multiplier(bond_term),
         bond_interest_rate_multiplier(bond_interest_rate),
@@ -129,6 +136,8 @@ Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_r
  * @param name Utility name (e.g. Raleigh_water)
  * @param id Numeric id assigned to that utility.
  * @param demands_all_realizations Text file containing utility's demand series.
+ * @param annual_demand_projections vector containing demand projections for
+ * all years of realization (same projection for all realizations in simulation)
  * @param number_of_week_demands Length of weeks in demand series.
  * @param percent_contingency_fund_contribution
  * @param typesMonthlyDemandFraction Table of size 12 (months in year) by
@@ -144,7 +153,7 @@ Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_r
  * @param rof_infra_construction_order
  * @param infra_discount_rate
  */
-Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations,
+Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations, vector<double>& annual_demand_projections,
                  int number_of_week_demands, const double percent_contingency_fund_contribution,
                  const vector<vector<double>> &typesMonthlyDemandFraction,
                  const vector<vector<double>> &typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,
@@ -156,6 +165,7 @@ Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_r
         total_available_volume(NONE),
         wwtp_discharge_rule(wwtp_discharge_rule),
         demands_all_realizations(demands_all_realizations),
+        annual_demand_projections(annual_demand_projections),
         infra_discount_rate(infra_discount_rate),
         bond_term_multiplier(bond_term),
         bond_interest_rate_multiplier(bond_interest_rate),
@@ -202,6 +212,7 @@ Utility::Utility(Utility &utility) :
         total_available_volume(utility.total_available_volume),
         wwtp_discharge_rule(utility.wwtp_discharge_rule),
         demands_all_realizations(utility.demands_all_realizations),
+        annual_demand_projections(utility.annual_demand_projections),
         demand_series_realization(utility.demand_series_realization),
         infra_discount_rate(utility.infra_discount_rate),
         bond_term_multiplier(utility.bond_term_multiplier),

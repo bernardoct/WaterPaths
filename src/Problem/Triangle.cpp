@@ -1079,18 +1079,22 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         int uid_chatham = 4;
         int uid_pittsboro = 5;
 
-        Utility cary((char *) "Cary", uid_cary, demand_cary, demand_n_weeks, cary_annual_payment, caryDemandClassesFractions,
+        Utility cary((char *) "Cary", uid_cary, demand_cary, demand_projection_cary,
+                     demand_n_weeks, cary_annual_payment, caryDemandClassesFractions,
                      caryUserClassesWaterPrices, wwtp_discharge_cary, cary_inf_buffer, vector<int>(),
                      demand_triggered_infra_order_cary, demand_infra_cary, discount_rate, bond_term[0], bond_rate[0]);
-        Utility durham((char *) "Durham", uid_durham, demand_durham, demand_n_weeks, durham_annual_payment,
+        Utility durham((char *) "Durham", uid_durham, demand_durham, demand_projection_durham,
+                       demand_n_weeks, durham_annual_payment,
                        durhamDemandClassesFractions, durhamUserClassesWaterPrices, wwtp_discharge_durham,
                        durham_inf_buffer, rof_triggered_infra_order_durham,
                        vector<int>(), rofs_infra_durham, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[1], bond_rate[1]);
-        Utility owasa((char *) "OWASA", uid_owasa, demand_owasa, demand_n_weeks, owasa_annual_payment,
+        Utility owasa((char *) "OWASA", uid_owasa, demand_owasa, demand_projection_owasa,
+                      demand_n_weeks, owasa_annual_payment,
                       owasaDemandClassesFractions, owasaUserClassesWaterPrices, wwtp_discharge_owasa, owasa_inf_buffer,
                       rof_triggered_infra_order_owasa,
                       vector<int>(), rofs_infra_owasa, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[2], bond_rate[2]);
-        Utility raleigh((char *) "Raleigh", uid_raleigh, demand_raleigh, demand_n_weeks, raleigh_annual_payment,
+        Utility raleigh((char *) "Raleigh", uid_raleigh, demand_raleigh, demand_projection_raleigh,
+                        demand_n_weeks, raleigh_annual_payment,
                         raleighDemandClassesFractions, raleighUserClassesWaterPrices, wwtp_discharge_raleigh,
                         raleigh_inf_buffer, rof_triggered_infra_order_raleigh,
                         vector<int>(), rofs_infra_raleigh, discount_rate,
@@ -1099,11 +1103,13 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         // FIXME: SETUP NEW UTILITIES HERE
         /// July 2019: Add Pittsboro and Chatham County utilities with placeholder parameters and input variables
         ///             from OWASA until numbers can be determined
-        Utility chatham((char *) "Chatham County", uid_chatham, demand_chatham, demand_n_weeks, chatham_annual_payment,
+        Utility chatham((char *) "Chatham County", uid_chatham, demand_chatham, demand_projection_chatham,
+                        demand_n_weeks, chatham_annual_payment,
                         chathamDemandClassesFractions, chathamUserClassesWaterPrices, wwtp_discharge_chatham,
                         chatham_inf_buffer, rof_triggered_infra_order_chatham,
                         vector<int>(), rofs_infra_chatham, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[4], bond_rate[4]);
-        Utility pittsboro((char *) "Pittsboro", uid_pittsboro, demand_pittsboro, demand_n_weeks, pittsboro_annual_payment,
+        Utility pittsboro((char *) "Pittsboro", uid_pittsboro, demand_pittsboro, demand_projection_pittsboro,
+                      demand_n_weeks, pittsboro_annual_payment,
                       pittsboroDemandClassesFractions, pittsboroUserClassesWaterPrices, wwtp_discharge_pittsboro,
                       pittsboro_inf_buffer, rof_triggered_infra_order_pittsboro,
                       vector<int>(), rofs_infra_pittsboro, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[5], bond_rate[5]);
@@ -1553,6 +1559,32 @@ void Triangle::readInputData() {
         demand_chatham = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
                 BAR + "chatham_demands_scenario_as_projected.csv", n_realizations);
+
+        //cout << "Reading demand projections." << endl;
+#pragma omp single
+        demand_projection_cary = Utils::parse1DCsvFile(
+                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                BAR + "cary_annual_demand_projections.csv", 46);
+#pragma omp single
+        demand_projection_durham = Utils::parse1DCsvFile(
+                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                BAR + "durham_annual_demand_projections.csv", 46);
+#pragma omp single
+        demand_projection_raleigh = Utils::parse1DCsvFile(
+                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                BAR + "raleigh_annual_demand_projections.csv", 46);
+#pragma omp single
+        demand_projection_owasa = Utils::parse1DCsvFile(
+                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                BAR + "owasa_annual_demand_projections.csv", 46);
+#pragma omp single
+        demand_projection_pittsboro = Utils::parse1DCsvFile(
+                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                BAR + "pittsboro_annual_demand_projections.csv", 46);
+#pragma omp single
+        demand_projection_chatham = Utils::parse1DCsvFile(
+                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
+                BAR + "chatham_annual_demand_projections.csv", 46);
 
         //cout << "Reading others." << endl;
 #pragma omp single

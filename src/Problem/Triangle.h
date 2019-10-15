@@ -34,6 +34,12 @@ private:
     vector<vector<double>> demand_owasa;
     vector<vector<double>> demand_pittsboro;
     vector<vector<double>> demand_chatham;
+    vector<double> demand_projection_cary;
+    vector<double> demand_projection_durham;
+    vector<double> demand_projection_raleigh;
+    vector<double> demand_projection_owasa;
+    vector<double> demand_projection_pittsboro;
+    vector<double> demand_projection_chatham;
     vector<vector<double>> evap_durham;
     vector<vector<double>> evap_falls_lake;
     vector<vector<double>> evap_owasa;

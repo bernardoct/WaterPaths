@@ -386,6 +386,33 @@ void Utility::checkErrorsAddWaterSourceOnline(WaterSource *water_source) {
 }
 
 /**
+ * For long-term ROF calculation: provide future demand estimate for 5 years ahead
+ * to estimate demand growth during long-term planning. to be used along with demand buffer.
+ * @param week
+ */
+double Utility::calculateDemandEstimateFromProjection(int week, bool reproject_demand) {
+    /// record year's actual average demand for re-projection in this or later years
+    int year = round(week/WEEKS_IN_YEAR_ROUND);
+    current_year_recorded_demand = annual_average_weekly_demand[year];
+
+    /// set final demand projection estimate for the LTROF calculation
+    /// if at least 5 years since start of realization, re-project demand
+    /// by determining annual average growth rate of last five years
+    /// in the future, the look-ahead period for projection does not have to be the same
+    /// as the past period used to calculate a new growth rate projection (both set to 5 now)
+    double average_growth_rate = 0;
+    if (year >= LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION && reproject_demand) {
+//        for (int yr = year; yr > year - LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION; yr--) {
+//            average_growth_rate += (recorded_annual_demand_record[yr] - recorded_annual_demand_record[yr-1])/LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION;
+//        }
+        average_growth_rate = (annual_average_weekly_demand[year] - annual_average_weekly_demand[year-LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION])/LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION;
+        future_demand_estimate = current_year_recorded_demand + (average_growth_rate * LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION);
+    } else {
+        future_demand_estimate = annual_demand_projections[year+LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION];
+    }
+}
+
+/**
  * Splits demands among sources. Demand is allocated so that river intakes
  * and reuse are first used to their capacity before requesting water from
  * allocations in reservoirs.
@@ -393,10 +420,12 @@ void Utility::checkErrorsAddWaterSourceOnline(WaterSource *water_source) {
  */
 void Utility::splitDemands(
         int week, vector<vector<double>> &demands,
-        bool apply_demand_buffer) {
-    unrestricted_demand = demand_series_realization[week] +
-                          apply_demand_buffer * demand_buffer *
-                          weekly_peaking_factor[Utils::weekOfTheYear(week)];
+        bool apply_demand_buffer, bool apply_demand_projection) {
+    /// Oct 2019: Get demand projection from 5 years in future to set unrestricted demand
+    /// if projection is being used, don't use actual demand from the year
+    unrestricted_demand = !apply_demand_projection * demand_series_realization[week] +
+            (apply_demand_buffer * demand_buffer + apply_demand_projection * future_demand_estimate) *
+            weekly_peaking_factor[Utils::weekOfTheYear(week)];
     restricted_demand = unrestricted_demand * demand_multiplier - demand_offset;
     unfulfilled_demand = max(max(restricted_demand - total_available_volume,
                                  restricted_demand - total_treatment_capacity), 0.);
@@ -699,6 +728,9 @@ void Utility::setRealization(unsigned long r, vector<double>& rdm_factors) {
     // Set peaking demand factor.
     weekly_peaking_factor = calculateWeeklyPeakingFactor
             (&demands_all_realizations.at(r));
+
+    // Calculate annual averages.
+    annual_average_weekly_demand = calculateAnnualAverageWeeklyDemand(&demands_all_realizations.at(r));
 }
 
 vector<double> Utility::calculateWeeklyPeakingFactor(vector<double> *demands) {
@@ -722,6 +754,24 @@ vector<double> Utility::calculateWeeklyPeakingFactor(vector<double> *demands) {
     }
 
     return year_averages;
+}
+
+vector<double> Utility::calculateAnnualAverageWeeklyDemand(vector<double> *demands) {
+    int n_years = (int) (demands->size() / WEEKS_IN_YEAR + 1);
+    vector<double> annual_averages(n_years, 0.0);
+
+    double year_average_demand;
+    for (int y = 0; y < n_years; ++y) {
+        year_average_demand = accumulate(
+                demands->begin() + y * WEEKS_IN_YEAR_ROUND,
+                demands->begin() + (y + 1) * WEEKS_IN_YEAR_ROUND,
+                0.0) /
+                              ((int) ((y + 1) * WEEKS_IN_YEAR_ROUND) -
+                               (int) (y * WEEKS_IN_YEAR_ROUND));
+        annual_averages[y] = year_average_demand;
+    }
+
+    return annual_averages;
 }
 
 //========================= GETTERS AND SETTERS =============================//
@@ -748,6 +798,22 @@ double Utility::getTotal_stored_volume() const {
 
 double Utility::getTotal_storage_capacity() const {
     return total_storage_capacity;
+}
+
+double Utility::getCurrent_year_demand_record() const {
+    return current_year_recorded_demand;
+}
+
+void Utility::setCurrent_year_demand_record(double current_demand) {
+    this->current_year_recorded_demand = current_demand;
+}
+
+double Utility::getFuture_demand_estimate() const {
+    return future_demand_estimate;
+}
+
+void Utility::setFuture_demand_estimate(double demand_estimate) {
+    this->future_demand_estimate = demand_estimate;
 }
 
 double Utility::getRisk_of_failure() const {

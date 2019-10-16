@@ -87,6 +87,10 @@ vector<vector<double>> ContinuityModelROF::calculateLongTermROF(int week) {
     // infrastructure online.
     updateOnlineInfrastructure(week);
 
+    /// OCT 2019: DETERMINE DEMAND PROJECTION TO BE USED FOR LONG-TERM ROF CALCULATION
+    for (int u = 0; u < n_utilities; ++u)
+        continuity_utilities[u]->calculateDemandEstimateFromProjection(week, REPROJECT_DEMAND);
+
     // perform a continuity simulation for NUMBER_REALIZATIONS_ROF (50) yearly
     // realization.
     for (int yr = 0; yr < NUMBER_REALIZATIONS_ROF; ++yr) {
@@ -96,7 +100,7 @@ vector<vector<double>> ContinuityModelROF::calculateLongTermROF(int week) {
 
         for (int w = 0; w < WEEKS_ROF_LONG_TERM; ++w) {
             // one week continuity time-step.
-            continuityStep(w + week, yr, APPLY_DEMAND_BUFFER);
+            continuityStep(w + week, yr, APPLY_DEMAND_BUFFER, APPLY_DEMAND_PROJECTION);
 
             // check total available storage for each utility and, if smaller
             // than the fail ration, increase the number of failed years of

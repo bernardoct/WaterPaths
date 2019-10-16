@@ -150,7 +150,7 @@ ContinuityModel::~ContinuityModel() {
  * @param rof_realization rof realization id (between 0 and 49 inclusive).
  */
 void ContinuityModel::continuityStep(
-        int week, int rof_realization, bool apply_demand_buffer) {
+        int week, int rof_realization, bool apply_demand_buffer, bool apply_demand_projection) {
     double* upstream_spillage = new double[n_sources];
     fill_n(upstream_spillage, n_sources, 0.);
     double* wastewater_discharges = new double[n_sources];
@@ -174,7 +174,7 @@ void ContinuityModel::continuityStep(
      */
     for (Utility *u : continuity_utilities) {
         u->calculateWastewater_releases(week_demand, wastewater_discharges);
-        u->splitDemands(week_demand, demands, apply_demand_buffer);
+        u->splitDemands(week_demand, demands, apply_demand_buffer, apply_demand_projection);
     }
 
     /**

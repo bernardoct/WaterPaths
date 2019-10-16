@@ -32,6 +32,8 @@ private:
     vector<double> net_stream_inflow;
     vector<double> total_treatment_capacity;
     vector<double> final_stored_volume;
+    vector<double> recorded_annual_demand;
+    vector<double> projected_demand_estimate;
     vector<vector<int>> pathways;
     const Utility *utility;
 

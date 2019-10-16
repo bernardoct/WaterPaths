@@ -53,7 +53,7 @@ public:
 
     void continuityStep(
             int week, int rof_realization = -1, bool
-    apply_demand_buffer = false);
+    apply_demand_buffer = false, bool apply_demand_projection = false);
 
     virtual ~ContinuityModel();
 

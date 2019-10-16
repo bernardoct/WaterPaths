@@ -65,6 +65,11 @@ private:
     double infra_net_present_cost = 0;
     vector<Bond *> issued_bonds;
 
+    /// Demand projection for ROF
+    double future_demand_estimate = 0;
+    double current_year_recorded_demand = 0;
+    vector<double> annual_average_weekly_demand;
+
 public:
     const int id;
     const int number_of_week_demands;
@@ -123,7 +128,7 @@ public:
 
     void splitDemands(
             int week, vector<vector<double>> &demands, bool
-    apply_demand_buffer = false);
+    apply_demand_buffer = false, bool apply_demand_projection = false);
 
     void checkErrorsAddWaterSourceOnline(WaterSource *water_source);
 
@@ -238,6 +243,18 @@ public:
     double getLong_term_storage_risk_of_failure() const;
 
     double getLong_term_treatment_risk_of_failure() const;
+
+    double calculateDemandEstimateFromProjection(int year, bool reproject_demand);
+
+    double getCurrent_year_demand_record() const;
+
+    double getFuture_demand_estimate() const;
+
+    void setFuture_demand_estimate(double demand_estimate);
+
+    void setCurrent_year_demand_record(double current_demand);
+
+    vector<double> calculateAnnualAverageWeeklyDemand(vector<double> *demands);
 };
 
 

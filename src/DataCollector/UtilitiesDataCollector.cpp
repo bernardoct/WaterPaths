@@ -8,7 +8,7 @@
 
 
 UtilitiesDataCollector::UtilitiesDataCollector(const Utility *utility, unsigned long realization)
-        : DataCollector(utility->id, utility->name, realization, UTILITY, 16 * COLUMN_WIDTH),
+        : DataCollector(utility->id, utility->name, realization, UTILITY, 18 * COLUMN_WIDTH),
           utility(utility) {
 }
 
@@ -51,7 +51,11 @@ string UtilitiesDataCollector::printTabularString(int week) {
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << debt_service_payments[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-              << final_stored_volume[week];
+              << final_stored_volume[week]
+              << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+              << recorded_annual_demand[week]
+              << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+              << projected_demand_estimate[week];
 
     return outStream.str();
 }
@@ -95,6 +99,10 @@ string UtilitiesDataCollector::printCompactString(int week) {
               << debt_service_payments[week]
               << ","
               << final_stored_volume[week]
+              << ","
+              << recorded_annual_demand[week]
+              << ","
+              << projected_demand_estimate[week]
               << ",";
 
     return outStream.str();
@@ -121,7 +129,9 @@ string UtilitiesDataCollector::printTabularStringHeaderLine1() {
               << setw(COLUMN_WIDTH) << "Insurance"
               << setw(COLUMN_WIDTH) << "Infra."
               << setw(COLUMN_WIDTH) << "Debt"
-              << setw(COLUMN_WIDTH) << "Final";
+              << setw(COLUMN_WIDTH) << "Final"
+              << setw(COLUMN_WIDTH) << "Obs"
+              << setw(COLUMN_WIDTH) << "Proj";
 
     return outStream.str();
 }
@@ -147,7 +157,9 @@ string UtilitiesDataCollector::printTabularStringHeaderLine2() {
               << setw(COLUMN_WIDTH) << "Price"
               << setw(COLUMN_WIDTH) << "NPV"
               << setw(COLUMN_WIDTH) << "Service"
-              << setw(COLUMN_WIDTH) << "Storage";
+              << setw(COLUMN_WIDTH) << "Storage"
+              << setw(COLUMN_WIDTH) << "Demand"
+              << setw(COLUMN_WIDTH) << "Demand";
 
     return outStream.str();
 }
@@ -172,7 +184,9 @@ string UtilitiesDataCollector::printCompactStringHeader() {
               << id << "ins_price" << ","
               << id << "infra_npv" << ","
               << id << "debt_serv" << ","
-              << id << "stor_vol" << ",";
+              << id << "stor_vol" << ","
+              << id << "obs_ann_dem" << ","
+              << id << "proj_dem" << ",";
 
     return outStream.str();
 }
@@ -201,6 +215,8 @@ void UtilitiesDataCollector::collect_data() {
     net_stream_inflow.push_back(utility->getNet_stream_inflow());
     total_treatment_capacity.push_back(utility->getTotal_treatment_capacity());
     final_stored_volume.push_back(utility->getTotal_stored_volume());
+    recorded_annual_demand.push_back(utility->getCurrent_year_demand_record());
+    projected_demand_estimate.push_back(utility->getFuture_demand_estimate());
 
 //    checkForNans();
 
@@ -254,6 +270,10 @@ void UtilitiesDataCollector::checkForNans() const {
     if (std::isnan(net_stream_inflow.back()))
         throw_with_nested(runtime_error(error.c_str()));
     if (std::isnan(final_stored_volume.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(recorded_annual_demand.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(projected_demand_estimate.back()))
         throw_with_nested(runtime_error(error.c_str()));
 
     error = "NPV absurdly high when collecting data for utility " + to_string(id) + " in week " + to_string(lt_rof.size

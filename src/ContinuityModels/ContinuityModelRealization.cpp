@@ -43,6 +43,13 @@ void ContinuityModelRealization::setShortTermROFs(const vector<double> &risks_of
     }
 }
 
+void ContinuityModelRealization::setLongTermROFDemandProjectionEstimate(const vector<Utility *> &rof_utilities) {
+    for (unsigned long i = 0; i < continuity_utilities.size(); ++i) {
+        continuity_utilities.at(i)->setCurrent_year_demand_record(rof_utilities.at(i)->getCurrent_year_demand_record());
+        continuity_utilities.at(i)->setFuture_demand_estimate(rof_utilities.at(i)->getFuture_demand_estimate());
+    }
+}
+
 void ContinuityModelRealization::setLongTermROFs(const vector<vector<double>> &risks_of_failure, const int week) {
     vector<int> new_infra_triggered;
     int nit; // new infrastruction triggered - id.

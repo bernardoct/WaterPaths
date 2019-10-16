@@ -37,6 +37,7 @@ public:
     void setLongTermROFs(const vector<vector<double>> &risks_of_failure, const int week);
 
 
+    void setLongTermROFDemandProjectionEstimate(const vector<Utility *> &rof_utilities);
 };
 
 

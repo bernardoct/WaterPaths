@@ -1561,30 +1561,34 @@ void Triangle::readInputData() {
                 BAR + "chatham_demands_scenario_as_projected.csv", n_realizations);
 
         //cout << "Reading demand projections." << endl;
+        /// DEMAND PROJECTION FILES ARE 51 ELEMENTS LONG
+        /// BECAUSE DEMAND PROJECTIONS 5 YEARS AHEAD ARE USED FOR LTROF CALCULATION
+        /// SO THE PROJECTIONS ARE ANNUAL FOR 2015-2065 WHILE ALL OTHER FILES
+        /// ARE OUT TO 2060
 #pragma omp single
         demand_projection_cary = Utils::parse1DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "cary_annual_demand_projections.csv", 46);
+                BAR + "cary_annual_demand_projections.csv", 51);
 #pragma omp single
         demand_projection_durham = Utils::parse1DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "durham_annual_demand_projections.csv", 46);
+                BAR + "durham_annual_demand_projections.csv", 51);
 #pragma omp single
         demand_projection_raleigh = Utils::parse1DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "raleigh_annual_demand_projections.csv", 46);
+                BAR + "raleigh_annual_demand_projections.csv", 51);
 #pragma omp single
         demand_projection_owasa = Utils::parse1DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "owasa_annual_demand_projections.csv", 46);
+                BAR + "owasa_annual_demand_projections.csv", 51);
 #pragma omp single
         demand_projection_pittsboro = Utils::parse1DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "pittsboro_annual_demand_projections.csv", 46);
+                BAR + "pittsboro_annual_demand_projections.csv", 51);
 #pragma omp single
         demand_projection_chatham = Utils::parse1DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "chatham_annual_demand_projections.csv", 46);
+                BAR + "chatham_annual_demand_projections.csv", 51);
 
         //cout << "Reading others." << endl;
 #pragma omp single

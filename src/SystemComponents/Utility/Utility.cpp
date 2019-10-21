@@ -412,7 +412,7 @@ double Utility::calculateDemandEstimateFromProjection(int week, bool reproject_d
 
         // overwrite annual demand projections for future years to use reprojected demands until next reprojection occurs
         int i = 0;
-        for (int yr = year; yr <= year + LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION; yr++) {
+        for (int yr = year; yr <= year + FREQUENCY_OF_DEMAND_REPROJECTION_YEARS; yr++) {
             annual_demand_projections[yr] = current_year_recorded_demand + average_growth_rate * i;
             i += 1;
         }

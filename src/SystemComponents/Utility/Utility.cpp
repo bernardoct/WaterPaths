@@ -401,13 +401,24 @@ double Utility::calculateDemandEstimateFromProjection(int week, bool reproject_d
     /// in the future, the look-ahead period for projection does not have to be the same
     /// as the past period used to calculate a new growth rate projection (both set to 5 now)
     double average_growth_rate = 0;
-    if (year >= LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION && reproject_demand) {
-//        for (int yr = year; yr > year - LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION; yr--) {
-//            average_growth_rate += (recorded_annual_demand_record[yr] - recorded_annual_demand_record[yr-1])/LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION;
-//        }
-        average_growth_rate = (annual_average_weekly_demand[year] - annual_average_weekly_demand[year-LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION])/LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION;
+    if (year >= LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION && reproject_demand && (year % FREQUENCY_OF_DEMAND_REPROJECTION_YEARS == 0)) {
+        // calculate average annual growth rate over recent past
+        average_growth_rate =
+                (annual_average_weekly_demand[year] - annual_average_weekly_demand[year-LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION]) /
+                LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION;
+
+        // estimate demand in future year for LTROF calculation
         future_demand_estimate = current_year_recorded_demand + (average_growth_rate * LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION);
+
+        // overwrite annual demand projections for future years to use reprojected demands until next reprojection occurs
+        int i = 0;
+        for (int yr = year; yr <= year + LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION; yr++) {
+            annual_demand_projections[yr] = current_year_recorded_demand + average_growth_rate * i;
+            i += 1;
+        }
     } else {
+        // comment for future expected mistakes: if there is an over-indexing error here, the look-ahead year range
+        // is probably too large for the input dataset of annual projected demands, which should be extended
         future_demand_estimate = annual_demand_projections[year+LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION];
     }
 }

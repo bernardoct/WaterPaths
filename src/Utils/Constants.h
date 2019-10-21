@@ -54,6 +54,7 @@ namespace Constants {
     const bool REPROJECT_DEMAND = true;
     const int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
     const int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+    const int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
 
     const bool USE_PRE_CALCULATED_ROF_TABLES = true;
     const bool DO_NOT_USE_PRE_CALCULATED_ROF_TABLES = false;

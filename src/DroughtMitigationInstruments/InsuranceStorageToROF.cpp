@@ -86,14 +86,10 @@ InsuranceStorageToROF::~InsuranceStorageToROF() {
 
 void InsuranceStorageToROF::applyPolicy(int week) {
     // Update utilities year revenue.
-    cout << "3.1" << endl;
-
     for (unsigned long u = 0; u < continuity_utilities.size(); ++u) {
         utilities_revenue_update[u] +=
                 DroughtMitigationPolicy::realization_utilities[u]->getGrossRevenue();
     }
-
-    cout << "3.2" << endl;
 
     // If first week of the year, price insurance for coming year and update
     // gross revenue to base payouts.
@@ -103,8 +99,6 @@ void InsuranceStorageToROF::applyPolicy(int week) {
 
         priceInsurance(week);
     }
-
-    cout << "3.3" << endl;
 
     // Do not make payouts during the first year, when no insurance was purchased.
     if (week > WEEKS_IN_YEAR) {
@@ -124,8 +118,6 @@ void InsuranceStorageToROF::applyPolicy(int week) {
             else
                 DroughtMitigationPolicy::realization_utilities[u]->addInsurancePayout(NONE);
     }
-
-    cout << "3.4" << endl;
 }
 
 void InsuranceStorageToROF::addSystemComponents(vector<Utility *> utilities,
@@ -152,17 +144,12 @@ void InsuranceStorageToROF::addSystemComponents(vector<Utility *> utilities,
  * @param week
  */
 void InsuranceStorageToROF::priceInsurance(int week) {
-
     // Reset prices.
     for (int u : utilities_ids) insurance_price[u] = 0;
-
-    cout << "3.2.1" << endl;
 
     // checks if new infrastructure became available and, if so, set the corresponding realization
     // infrastructure online.
     updateOnlineInfrastructure(week);
-
-    cout << "3.2.2" << endl;
 
     for (int r = 0; r < NUMBER_REALIZATIONS_ROF; ++r) {
         // reset reservoirs' and utilities' storage and combined storage, respectively, they currently
@@ -197,8 +184,6 @@ void InsuranceStorageToROF::priceInsurance(int week) {
         }
     }
 
-    cout << "3.2.3" << endl;
-
     // Average out insurance price across realizations
     for (int u : utilities_ids) {
         insurance_price[u] /= NUMBER_REALIZATIONS_ROF;
@@ -211,8 +196,6 @@ void InsuranceStorageToROF::priceInsurance(int week) {
         DroughtMitigationPolicy::realization_utilities[u]->
                 purchaseInsurance(insurance_price[u]);
     }
-
-    cout << "3.2.4" << endl;
 }
 
 void InsuranceStorageToROF::setRealization(unsigned long realization_id, vector<double> &utilities_rdm,
@@ -261,11 +244,16 @@ vector<double> InsuranceStorageToROF::calculateShortTermROFTable(int week,
 
         //FIXME: NEED CURRENT_BASE_STORAGE_TABLE_SHIFT VALUES TO BE NON-ZERO, HOW DOES THIS CLASS COMMUNICATE
         //WITH OTHERS TO PASS THE VECTOR OF SHIFTS?
-        cout << "InsuranceROF: In week " << week << " for " << utilities[u]->name
-             << ", storage is " << utility_storage
-             << " while base storage is " << utility_base_storage_capacity[u]
-             << " and is shifted by " << current_base_storage_table_shift[u]
-             << " leading to a tier of " << tier << endl;
+//        cout << "InsuranceROF: In week " << week << " for " << utilities[u]->name
+//             << ", storage is " << utility_storage
+//             << " while base storage is " << utility_base_storage_capacity[u]
+//             << " and is shifted by " << current_base_storage_table_shift[u]
+//             << " leading to a tier of " << tier << endl;
+
+        if (tier > NO_OF_INSURANCE_STORAGE_TIERS - 2) {
+            cout << "VIOLATION OF TIER IN INSURANCESTORAGETOROF" << endl;
+            tier = NO_OF_INSURANCE_STORAGE_TIERS - 2;
+        }
 
         // Mean ROF between the two tiers of the ROF table where
         // current storage is located.

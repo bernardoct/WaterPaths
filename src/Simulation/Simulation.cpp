@@ -352,8 +352,6 @@ MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, dou
             for (int w = 0; w < (int) total_simulation_time; ++w) {
                 cout << w << endl;
 
-                cout << "1" << endl;
-
                 // DO NOT change the order of the steps. This would mess up
                 // important dependencies.
                 // Calculate long-term risk-of-failre if current week is first week of the year.
@@ -364,32 +362,22 @@ MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, dou
                     realization_model->setLongTermROFDemandProjectionEstimate(rof_model->getContinuity_utilities());
                 }
 
-                cout << "2" << endl;
-
                 // Calculate short-term risk-of-failure
                 realization_model->setShortTermROFs(
                             rof_model->calculateShortTermROF(w, import_export_rof_tables));
-
-                cout << "3" << endl;
 
                 // Apply drought mitigation policies
                 if (import_export_rof_tables != EXPORT_ROF_TABLES) {
                     realization_model->applyDroughtMitigationPolicies(w);
 		        }
 
-                cout << "4" << endl;
-
                 // Continuity calculations for current week
                 realization_model->continuityStep(w);
-
-                cout << "5" << endl;
 
                 // Collect system data for output printing and objective calculations.
                 if (import_export_rof_tables != EXPORT_ROF_TABLES) {
                     master_data_collector->collectData(realization);
                 }
-
-                cout << "6" << endl;
             }
             // Export ROF tables for future simulations of the same problem with the same states-of-the-world.
             if (import_export_rof_tables == EXPORT_ROF_TABLES) {

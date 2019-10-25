@@ -90,7 +90,7 @@ void ContinuityModelRealization::setLongTermROFs(const vector<vector<double>> &r
 
 void ContinuityModelRealization::applyDroughtMitigationPolicies(int week) {
     for (DroughtMitigationPolicy* dmp : drought_mitigation_policies) {
-        cout << dmp->id << ", " << dmp->type << endl;
+        //cout << dmp->id << ", " << dmp->type << endl;
         dmp->applyPolicy(week);
     }
 }

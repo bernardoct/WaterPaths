@@ -1146,7 +1146,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                  wjlwtp_low_base_id, wjlwtp_high_base_id} //Pittsboro
         };
 
-        auto table_storage_shift = vector<vector<double>>(4, vector<double>(25, 0.));
+        // NOTE: IF YOU ADD NEW SOURCES, THIS VECTOR NEEDS TO BE CHANGED IN SIZE ACCORDINGLY!!
+        auto table_storage_shift = vector<vector<double>>(6, vector<double>(29, 0.));
         table_storage_shift[uid_raleigh][falls_lake_reallocation_id] = 2000.;
         table_storage_shift[uid_raleigh][richland_creek_quarry_id] = 5000.;
         table_storage_shift[uid_owasa][university_lake_expansion_id] = 100.;
@@ -1154,6 +1155,12 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         table_storage_shift[uid_durham][wjlwtp_high_base_id] = 500.;
         table_storage_shift[uid_durham][michie_expansion_low_id] = 700.;
         table_storage_shift[uid_durham][teer_quarry_id] = 700.;
+
+        auto table_base_storage_shift = vector<vector<double>>(6, vector<double>(29, 0.));
+        table_base_storage_shift[uid_pittsboro][wjlwtp_low_base_id] = 1000.;
+        table_base_storage_shift[uid_pittsboro][wjlwtp_high_base_id] = 1000.;
+        table_base_storage_shift[uid_pittsboro][haw_river_intake_expansion_low_id] = 1000.;
+        table_base_storage_shift[uid_pittsboro][haw_river_intake_expansion_high_id] = 1000.;
 
         vector<DroughtMitigationPolicy *> drought_mitigation_policies;
         /// Restriction policies
@@ -1344,6 +1351,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         	     realizations_to_run,
         	     rof_tables,
         	     table_storage_shift,
+        	     table_base_storage_shift,
         	     rof_tables_directory);
             //realization_start = omp_get_wtime();
             this->master_data_collector = s->runFullSimulation(n_threads, vars);

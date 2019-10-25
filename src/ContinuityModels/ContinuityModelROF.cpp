@@ -62,6 +62,8 @@ ContinuityModelROF::ContinuityModelROF(vector<WaterSource *> water_sources, cons
                 vector<double>((unsigned long) n_utilities);
         current_storage_table_shift =
                 vector<double>((unsigned long) n_utilities);
+        current_base_storage_table_shift =
+                vector<double>((unsigned long) n_utilities);
     }
 }
 
@@ -137,7 +139,8 @@ vector<double> ContinuityModelROF::calculateShortTermROF(int week, int import_ex
     vector<double> risk_of_failure;
     if (import_export_rof_tables == IMPORT_ROF_TABLES) {
         return ContinuityModelROF::calculateShortTermROFTable(week, realization_utilities,
-                utility_base_storage_capacity, ut_storage_to_rof_table, current_storage_table_shift);
+                utility_base_storage_capacity, ut_storage_to_rof_table,
+                current_storage_table_shift, current_base_storage_table_shift);
     } else {
         return ContinuityModelROF::calculateShortTermROFFullCalcs(week);
     }
@@ -150,28 +153,47 @@ vector<double> ContinuityModelROF::calculateShortTermROF(int week, int import_ex
  */
 vector<double> ContinuityModelROF::calculateShortTermROFTable(int week, vector<Utility *> utilities,
         vector<double> utilities_base_storage_capacity, const vector<Matrix2D<double>> &ut_storage_to_rof_table,
-        vector<double> current_storage_table_shift) {
+        vector<double> current_storage_table_shift, vector<double> current_base_storage_table_shift) {
     // vector where risks of failure will be stored.
     auto n_utilities = utilities.size();
     vector<double> risk_of_failure(n_utilities, 0.0);
     double m;
+
+    // checks if new infrastructure became available and, if so, set the
+    // corresponding realization infrastructure online.
+    updateOnlineInfrastructure(week);
+
     for (int u = 0; u < n_utilities; ++u) {
         // Get current stored volume for utility u.
         double utility_storage =
                 utilities[u]->getTotal_stored_volume();
         // Ratio of current and status-quo utility storage capacities
         //        double m = current_and_base_storage_capacity_ratio[u];
+        //FIXME: THIS RATIO CAN BECOME ENORMOUS IF STORAGE IS GREATLY INCREASED BY INFRASTRUCTURE
+        // OCT 2019: NOW INCLUDING BASE STORAGE SHIFT TO COUNTERACT THIS IN CERTAIN CASES
+        // FILLED THE SAME WAY THE STORAGE TABLE SHIFT IS WITHIN THE PROBLEM/TRIANGLE.CPP FILE
         m = utilities[u]->getTotal_storage_capacity() /
-                utilities_base_storage_capacity[u];
+                (utilities_base_storage_capacity[u] + current_base_storage_table_shift[u]);
         // Calculate base table tier that contains the desired ROF by
         // shifting the table around based on new infrastructure -- the
         // shift is made by the part (m - 1) * STORAGE_CAPACITY_RATIO_FAIL *
         // utility_base_storage_capacity[u] - current_storage_table_shift[u]
         double storage_convert = utility_storage +
-                                 STORAGE_CAPACITY_RATIO_FAIL * utilities_base_storage_capacity[u] *
+                                 STORAGE_CAPACITY_RATIO_FAIL *
+                                 (utilities_base_storage_capacity[u] + current_base_storage_table_shift[u]) *
                                  (1. - m) + current_storage_table_shift[u];
         int tier = (int) (storage_convert * NO_OF_INSURANCE_STORAGE_TIERS /
-                utilities_base_storage_capacity[u]);
+                (utilities_base_storage_capacity[u] + current_base_storage_table_shift[u]));
+
+        cout << "In week " << week << " for " << utilities[u]->name
+             << ", storage is " << utility_storage
+             << " while base storage is " << utilities_base_storage_capacity[u]
+             << " and is shifted by " << current_base_storage_table_shift[u]
+             << " leading to a tier of " << tier << endl;
+
+        if (tier >= 74)
+            cout << "VIOLATION OF TIER LIMITS" << endl;
+
         // Mean ROF between the two tiers of the ROF table where
         // current storage is located.
 //        risk_of_failure[u] = ut_storage_to_rof_table[u](week, tier);
@@ -475,13 +497,22 @@ void ContinuityModelROF::updateOnlineInfrastructure(int week) {
                 continuity_utilities.at(u)
                         ->setWaterSourceOnline((int) ws, week);
 
+                cout << "New source " << continuity_water_sources.at(ws)->name
+                     << " was set online by " << continuity_utilities.at(u)->name
+                     << " in week " << week << endl;
 
                 // Update the shift in storage to be used to calculate the
                 // tier in precomputed ROF tables corresponding to the
                 // current storage of a given utility.
-                if (use_precomputed_rof_tables == IMPORT_ROF_TABLES)
+                // OCT 2019: ALSO TRACK CHANGES TO BASE STORAGE, THIS IS MOSTLY A GENERALIZED WORKAROUND
+                // TO PITTSBORO MOVING FROM VERY LITTLE/NO STORAGE TO RELATIVELY MASSIVE STORAGE LEVELS
+                // MIDWAY THROUGH REALIZATION
+                if (use_precomputed_rof_tables == IMPORT_ROF_TABLES) {
                     current_storage_table_shift.at(u) += table_storage_shift.at(u)
                             .at(ws);
+                    current_base_storage_table_shift.at(u) += table_base_storage_shift.at(u)
+                            .at(ws);
+                }
             }
 
             // Update water source capacities in case a reservoir expansion
@@ -514,9 +545,11 @@ void ContinuityModelROF::updateOnlineInfrastructure(int week) {
 
 void ContinuityModelROF::setROFTablesAndShifts(
         const vector<Matrix2D<double>> &storage_to_rof_table,
-        const vector<vector<double>> &table_storage_shift) {
+        const vector<vector<double>> &table_storage_shift,
+        const vector<vector<double>> &table_base_storage_shift) {
     this->ut_storage_to_rof_table = storage_to_rof_table;
     this->table_storage_shift = table_storage_shift;
+    this->table_base_storage_shift = table_base_storage_shift;
 }
 
 

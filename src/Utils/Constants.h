@@ -27,7 +27,7 @@ namespace Constants {
 
     const std::string DEFAULT_DATA_DIR = "TestFiles" + BAR;
     const std::string DEFAULT_OUTPUT_DIR = "output" + BAR;
-    const std::string DEFAULT_ROF_TABLES_DIR = "rof_tables" + BAR;
+    const std::string DEFAULT_ROF_TABLES_DIR = "rof_tables" + BAR; // ALWAYS CREATES THIS FOLDER IF IT DOESN'T EXIST
     const std::string DEFAULT_RDM_TSERIES_DIR = "";
 
     const double PEAKING_FACTOR = 0.85; ///Peaking factor used to move from daily capacity to average weekly capacity.

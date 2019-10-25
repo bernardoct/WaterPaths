@@ -37,6 +37,7 @@ private:
 
     vector<vector<Matrix2D<double>>>* precomputed_rof_tables;
     vector<vector<double>>* table_storage_shift;
+    vector<vector<double>>* table_base_storage_shift;
     MasterDataCollector* master_data_collector = nullptr;
     string rof_tables_folder;
 
@@ -68,6 +69,7 @@ public:
                vector<unsigned long> &realizations_to_run,
                vector<vector<Matrix2D<double>>> &precomputed_rof_tables,
                vector<vector<double>> &table_storage_shift,
+               vector<vector<double>> &table_base_storage_shift,
                string &rof_tables_folder);
 
     Simulation(vector<WaterSource *> &water_sources, Graph &water_sources_graph,

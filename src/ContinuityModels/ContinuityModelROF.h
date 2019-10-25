@@ -27,10 +27,12 @@ protected:
     vector<Matrix2D<double>> ut_storage_to_rof_table;
 
     vector<vector<double>> table_storage_shift;
+    vector<vector<double>> table_base_storage_shift;
     vector<double> utility_base_storage_capacity;;
     vector<double> utility_base_delta_capacity_table;
     vector<double> current_and_base_storage_capacity_ratio;
     vector<double> current_storage_table_shift;
+    vector<double> current_base_storage_table_shift;
 
 public:
     ContinuityModelROF(vector<WaterSource *> water_sources, const Graph &water_sources_graph,
@@ -48,7 +50,8 @@ public:
     vector<double> calculateShortTermROFTable(int week, vector<Utility *> utilities,
                                               vector<double> utilities_base_storage_capacity,
                                               const vector<Matrix2D<double>> &ut_storage_to_rof_table,
-                                              vector<double> current_storage_table_shift);
+                                              vector<double> current_storage_table_shift,
+                                              vector<double> current_base_storage_table_shift);
 
     vector<vector<double>> calculateLongTermROF(int week);
 
@@ -74,7 +77,8 @@ public:
     void printROFTable(const string &folder);
 
     void setROFTablesAndShifts(const vector<Matrix2D<double>> &storage_to_rof_table,
-                               const vector<vector<double>> &table_storage_shift);
+                               const vector<vector<double>> &table_storage_shift,
+                               const vector<vector<double>> &table_base_storage_shift);
 
     void tableROFExceptionHandler(double m, int u, int week);
 

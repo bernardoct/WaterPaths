@@ -9,9 +9,16 @@ let
     };
     phases = "installPhase";
     
+    buildInputs = with stdenv; [ binutils gcc gfortran openmpi ];
+    
     installPhase = ''
       mkdir -p $out/
       tar -C $out -xzf $src
+      
+      cd $out/mpiP-3.4.1/
+      ./configure
+      make
+      make install
     '';
   };
   remora = stdenv.mkDerivation {

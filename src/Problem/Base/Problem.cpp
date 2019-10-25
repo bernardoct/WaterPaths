@@ -26,7 +26,7 @@ vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
     }
 }
 
-void Problem::printTimeSeriesAndPathways() {
+void Problem::printTimeSeriesAndPathways(bool plot_time_series) {
     /// Calculate objective values.
     if (this->master_data_collector != nullptr) {
 //        this->master_data_collector->setOutputDirectory(io_directory);
@@ -42,16 +42,20 @@ void Problem::printTimeSeriesAndPathways() {
         this->master_data_collector->setOutputDirectory(io_directory);
         this->master_data_collector->printPathways(
                 fpw + "_s" + std::to_string(solution_no) + fname_sufix);
-        cout << "Printing time series" << endl;
-        this->master_data_collector->printUtilitiesOutputCompact(
-                0, (int) n_weeks, fu + "_s" + std::to_string(solution_no) +
-                                  fname_sufix);
-        this->master_data_collector->printWaterSourcesOutputCompact(
-                0, (int) n_weeks, fws + "_s" + std::to_string(solution_no) +
-                                  fname_sufix);
-        this->master_data_collector->printPoliciesOutputCompact(
-                0, (int) n_weeks, fp + "_s" + std::to_string(solution_no) +
-                                  fname_sufix);
+
+        // Only print time series if requested.
+        if (plot_time_series) {
+            cout << "Printing time series" << endl;
+            this->master_data_collector->printUtilitiesOutputCompact(
+                    0, (int) n_weeks, fu + "_s" + std::to_string(solution_no) +
+                                      fname_sufix);
+            this->master_data_collector->printWaterSourcesOutputCompact(
+                    0, (int) n_weeks, fws + "_s" + std::to_string(solution_no) +
+                                      fname_sufix);
+            this->master_data_collector->printPoliciesOutputCompact(
+                    0, (int) n_weeks, fp + "_s" + std::to_string(solution_no) +
+                                      fname_sufix);
+        }
         //    data_collector->printUtilitesOutputTabular(0,
         //                                               n_weeks,
         //                                               fu + "_s"

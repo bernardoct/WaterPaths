@@ -49,6 +49,11 @@ vector<vector<double>> Utils::parse2DCsvFile(string file_name, unsigned long max
             l++;
             string s;
             if (!getline(inputFile, s)) break;
+	    if (s.find(" ") != string::npos) {
+		char error[500];
+		sprintf(error, "File %s seems to be space-separated.", file_name.c_str());
+	        throw std::invalid_argument(error);
+	    }
 
             vector<double> record;
             if (s[0] != '#' &&

@@ -84,6 +84,8 @@ public:
     const vector<bool> &getUnder_construction() const;
 
     void intakeExpansionConstructionHandler(unsigned int source_id);
+
+    void waterTreatmentPlantJointConstructionHandler(unsigned int source_id, double &total_storage_capacity);
 };
 
 

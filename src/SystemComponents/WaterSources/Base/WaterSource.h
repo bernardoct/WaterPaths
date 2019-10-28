@@ -186,6 +186,8 @@ public:
     const double getConstruction_time() const;
 
     virtual double getPrioritySourcePotentialVolume(int utility_id) const;
+
+    virtual int getAgreementType() const;
 };
 
 

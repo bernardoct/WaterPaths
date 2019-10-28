@@ -715,6 +715,13 @@ double WaterSource::getWastewater_inflow() const {
     return wastewater_inflow;
 }
 
+int WaterSource::getAgreementType() const {
+    throw logic_error("Error in WaterSource, getAgreementType: "
+                      "only JointWTP class or child classes "
+                      "should try to access agreement type.");
+    return 9999;
+}
+
 double WaterSource::getPermitting_period() const {
     return permitting_time;
 }

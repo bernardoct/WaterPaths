@@ -21,6 +21,7 @@
 #include "../SystemComponents/Bonds/BalloonPaymentBond.h"
 #include "../SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.h"
 #include "../SystemComponents/WaterSources/IntakeExpansion.h"
+#include "../SystemComponents/WaterSources/FixedJointWTP.h"
 #include <fstream>
 #include <algorithm>
 #include <climits>
@@ -195,7 +196,15 @@ vector<WaterSource *> Utils::copyWaterSourceVector(
             water_sources_new.push_back(
                     new AllocatedReservoir(
                             *dynamic_cast<AllocatedReservoir *>(ws)));
-        else if (ws->source_type == NEW_WATER_TREATMENT_PLANT)
+        else if (ws->source_type == NEW_JOINT_WATER_TREATMENT_PLANT) {
+            if (ws->getAgreementType() == NEW_JOINT_WATER_TREATMENT_PLANT_FIXED_ALLOCATIONS) {
+                water_sources_new.push_back(new FixedJointWTP(*dynamic_cast<FixedJointWTP *>(ws)));
+            } else if (ws->getAgreementType() == NEW_JOINT_WATER_TREATMENT_PLANT_VARIABLE_ALLOCATIONS) {
+//                water_sources_new.push_back(new VariableJointWTP(*dynamic_cast<VariableJointWTP *>(ws))); NOT BUILT YET
+            } else {
+                throw logic_error("Error in Utils::copyWaterSourceVector, JointWTP classes not working properly.");
+            }
+        } else if (ws->source_type == NEW_WATER_TREATMENT_PLANT)
             water_sources_new.push_back(
                     new SequentialJointTreatmentExpansion(
                             *dynamic_cast<SequentialJointTreatmentExpansion *>(ws)));

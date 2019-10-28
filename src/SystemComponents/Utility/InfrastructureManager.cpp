@@ -9,6 +9,7 @@
 #include "../WaterSources/IntakeExpansion.h"
 #include "../WaterSources/Relocation.h"
 #include "../../Utils/Utils.h"
+#include "../WaterSources/FixedJointWTP.h"
 
 InfrastructureManager::InfrastructureManager(int id, const vector<double> &infra_construction_triggers,
                                              const vector<vector<int>> &infra_if_built_remove,
@@ -148,6 +149,8 @@ InfrastructureManager::setWaterSourceOnline(unsigned int source_id, int week, do
     /// capacity to the corresponding existing reservoir.
     if (water_sources->at(source_id)->source_type == NEW_WATER_TREATMENT_PLANT) {
         waterTreatmentPlantConstructionHandler(source_id, total_storage_capacity);
+    } else if (water_sources->at(source_id)->source_type == NEW_JOINT_WATER_TREATMENT_PLANT) {
+        waterTreatmentPlantJointConstructionHandler(source_id, total_storage_capacity);
     } else if (water_sources->at(source_id)->source_type ==
                RESERVOIR_EXPANSION) {
         reservoirExpansionConstructionHandler(source_id);
@@ -225,6 +228,31 @@ InfrastructureManager::waterTreatmentPlantConstructionHandler(unsigned int sourc
         non_priority_draw_water_source
                 ->push_back((int) wtp->parent_reservoir_ID);
     }
+    water_sources->at(source_id)->setOnline();
+}
+
+void InfrastructureManager::waterTreatmentPlantJointConstructionHandler(unsigned int source_id, double &total_storage_capacity) {
+    /// Identify type of Joint WTP to be constructed
+    if (water_sources->at(source_id)->getAgreementType() == NEW_JOINT_WATER_TREATMENT_PLANT_FIXED_ALLOCATIONS) {
+        auto wtp = dynamic_cast<FixedJointWTP *> (water_sources->at(source_id));
+
+        /// Add treatment capacity to source
+        double added_capacity = wtp->implementInitialTreatmentCapacity(id);
+        try {
+            water_sources->at(wtp->parent_reservoir_ID)->addTreatmentCapacity(added_capacity, id);
+        } catch (...) {
+            throw runtime_error("Could not add treatment capacity to reservoir.");
+        }
+
+        non_priority_draw_water_source->push_back((int) wtp->parent_reservoir_ID);
+    } else if (water_sources->at(source_id)->getAgreementType() == NEW_JOINT_WATER_TREATMENT_PLANT_VARIABLE_ALLOCATIONS) {
+//        auto wtp = dynamic_cast<VariableJointWTP *> (water_sources->at(source_id)); NOT YET BUILT
+    } else {
+        throw logic_error("Error in InfrastructureManager, waterTreatmentPlaceJointConstructionHandler: "
+                          "WTP to be constructed is not of either fixed or variable treatment allocations.");
+    }
+
+    /// Set source online
     water_sources->at(source_id)->setOnline();
 }
 

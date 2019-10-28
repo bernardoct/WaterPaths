@@ -191,7 +191,7 @@ vector<double> ContinuityModelROF::calculateShortTermROFTable(int week, vector<U
              << " and is shifted by " << current_base_storage_table_shift[u]
              << " leading to a tier of " << tier << endl;
 
-        if (tier >= 74)
+        if (tier > NO_OF_INSURANCE_STORAGE_TIERS-1)
             cout << "VIOLATION OF TIER LIMITS" << endl;
 
         // Mean ROF between the two tiers of the ROF table where

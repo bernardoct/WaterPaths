@@ -683,7 +683,9 @@ DataCollector* MasterDataCollector::createWaterSourceDataCollector(WaterSource* 
              ws->source_type ==
              NEW_WATER_TREATMENT_PLANT ||
              ws->source_type ==
-             SOURCE_RELOCATION)
+             SOURCE_RELOCATION ||
+             ws->source_type ==
+             NEW_JOINT_WATER_TREATMENT_PLANT)
         return new EmptyDataCollector();
     else
         throw invalid_argument("Water source not recognized. "

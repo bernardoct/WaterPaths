@@ -24,6 +24,8 @@
 #include "../SystemComponents/WaterSources/ReservoirExpansion.h"
 #include "../SystemComponents/WaterSources/WaterReuse.h"
 #include "../SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
+#include "../SystemComponents/WaterSources/JointWTP.h"
+#include "../SystemComponents/WaterSources/FixedJointWTP.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
 #include "../DroughtMitigationInstruments/InsuranceStorageToROF.h"
 #include "../Simulation/Simulation.h"
@@ -962,10 +964,18 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
             uid++;
         }
         /// West Jordan Lake treatment plant
-        SequentialJointTreatmentExpansion low_wjlwtp("Low WJLWTP", wjlwtp_low_base_id, jordan_lake_id, 0, {wjlwtp_low_base_id, wjlwtp_high_base_id}, capacities_wjlwtp_upgrade_1,
-                                                     wjlwtp_bonds_capacity_1, construction_time_interval, 12 * WEEKS_IN_YEAR);
-        SequentialJointTreatmentExpansion high_wjlwtp("High WJLWTP", wjlwtp_high_base_id, jordan_lake_id, 1, {wjlwtp_low_base_id, wjlwtp_high_base_id}, capacities_wjlwtp_upgrade_2,
-                                                      wjlwtp_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR);
+//        SequentialJointTreatmentExpansion low_wjlwtp("Low WJLWTP", wjlwtp_low_base_id, jordan_lake_id, 0, {wjlwtp_low_base_id, wjlwtp_high_base_id}, capacities_wjlwtp_upgrade_1,
+//                                                     wjlwtp_bonds_capacity_1, construction_time_interval, 12 * WEEKS_IN_YEAR);
+//        SequentialJointTreatmentExpansion high_wjlwtp("High WJLWTP", wjlwtp_high_base_id, jordan_lake_id, 1, {wjlwtp_low_base_id, wjlwtp_high_base_id}, capacities_wjlwtp_upgrade_2,
+//                                                      wjlwtp_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR);
+
+        /// Western Jordan Lake WTP with fixed long-term treatment allocations
+        FixedJointWTP small_wjlwtp("Small WJLWTP", wjlwtp_low_base_id, jordan_lake_id, 0, 33 * 7,
+                                    {wjlwtp_low_base_id, wjlwtp_high_base_id}, capacities_wjlwtp_upgrade_1,
+                                    wjlwtp_bonds_capacity_1, construction_time_interval, 12 * WEEKS_IN_YEAR);
+        FixedJointWTP large_wjlwtp("Large WJLWTP", wjlwtp_high_base_id, jordan_lake_id, 1, 54 * 7,
+                                   {wjlwtp_low_base_id, wjlwtp_high_base_id}, capacities_wjlwtp_upgrade_2,
+                                   wjlwtp_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR);
 
         /// Bonds Cary treatment plant expansion
         /// July 2019: Pittsboro/CC added to vectors here
@@ -1023,8 +1033,10 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         water_sources.push_back(&caryWtpUpgrade1);
         water_sources.push_back(&caryWtpUpgrade2);
-        water_sources.push_back(&low_wjlwtp);
-        water_sources.push_back(&high_wjlwtp);
+//        water_sources.push_back(&low_wjlwtp);
+//        water_sources.push_back(&high_wjlwtp);
+        water_sources.push_back(&small_wjlwtp);
+        water_sources.push_back(&large_wjlwtp);
 
         water_sources.push_back(&cape_fear_river_intake);
         water_sources.push_back(&haw_river_intake_expansion_low);
@@ -1157,8 +1169,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         table_storage_shift[uid_durham][teer_quarry_id] = 700.;
 
         auto table_base_storage_shift = vector<vector<double>>(6, vector<double>(29, 0.));
-        table_base_storage_shift[uid_pittsboro][wjlwtp_low_base_id] = 1000.;
-        table_base_storage_shift[uid_pittsboro][wjlwtp_high_base_id] = 1000.;
+        table_base_storage_shift[uid_pittsboro][wjlwtp_low_base_id] = 5000.;
+        table_base_storage_shift[uid_pittsboro][wjlwtp_high_base_id] = 5000.;
         table_base_storage_shift[uid_pittsboro][haw_river_intake_expansion_low_id] = 1000.;
         table_base_storage_shift[uid_pittsboro][haw_river_intake_expansion_high_id] = 1000.;
 

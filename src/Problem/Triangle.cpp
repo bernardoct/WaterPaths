@@ -1299,26 +1299,27 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         drought_mitigation_policies.push_back(&t_two);
 
 
-        /// Handle insurance
-        vector<double> insurance_triggers = {owasa_insurance_use,
-                                             durham_insurance_use,
-                                             cary_insurance_use,
-                                             raleigh_insurance_use,
-                                             chatham_insurance_use,
-                                             pittsboro_insurance_use}; //FIXME: Change per solution
-        vector<double> fixed_payouts = {owasa_insurance_payment,
-                                   durham_insurance_payment,
-                                   cary_insurance_payment,
-                                   raleigh_insurance_payment,
-                                   chatham_insurance_payment,
-                                   pittsboro_insurance_payment};
-        vector<int> insured_utilities = {0, 1, 2, 3, 4, 5};
-        double insurance_premium = 1.2;
-        InsuranceStorageToROF in(8, water_sources, g, reservoir_utility_connectivity_matrix, utilities, drought_mitigation_policies,
-                                 min_env_flow_controls, utilities_rdm, water_sources_rdm, policies_rdm, insurance_triggers,
-                                 insurance_premium, fixed_payouts, n_weeks);
-
-        drought_mitigation_policies.push_back(&in);
+        //FIXME: NO INSURANCE FOR NOW, HAVING ISSUES RELATED TO THE ROF TABLES AND STORAGE SHIFTING
+//        /// Handle insurance
+//        vector<double> insurance_triggers = {owasa_insurance_use,
+//                                             durham_insurance_use,
+//                                             cary_insurance_use,
+//                                             raleigh_insurance_use,
+//                                             chatham_insurance_use,
+//                                             pittsboro_insurance_use}; //FIXME: Change per solution
+//        vector<double> fixed_payouts = {owasa_insurance_payment,
+//                                   durham_insurance_payment,
+//                                   cary_insurance_payment,
+//                                   raleigh_insurance_payment,
+//                                   chatham_insurance_payment,
+//                                   pittsboro_insurance_payment};
+//        vector<int> insured_utilities = {0, 1, 2, 3, 4, 5};
+//        double insurance_premium = 1.2;
+//        InsuranceStorageToROF in(8, water_sources, g, reservoir_utility_connectivity_matrix, utilities, drought_mitigation_policies,
+//                                 min_env_flow_controls, utilities_rdm, water_sources_rdm, policies_rdm, insurance_triggers,
+//                                 insurance_premium, fixed_payouts, n_weeks);
+//
+//        drought_mitigation_policies.push_back(&in);
 
         /// Creates simulation object depending on use (or lack thereof) ROF tables
         double start_time = omp_get_wtime();

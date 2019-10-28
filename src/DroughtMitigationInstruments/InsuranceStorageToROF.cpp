@@ -250,9 +250,10 @@ vector<double> InsuranceStorageToROF::calculateShortTermROFTable(int week,
 //             << " and is shifted by " << current_base_storage_table_shift[u]
 //             << " leading to a tier of " << tier << endl;
 
-        if (tier > NO_OF_INSURANCE_STORAGE_TIERS - 2) {
+        if (tier > NO_OF_INSURANCE_STORAGE_TIERS) {
             cout << "VIOLATION OF TIER IN INSURANCESTORAGETOROF" << endl;
-            tier = NO_OF_INSURANCE_STORAGE_TIERS - 2;
+            cout << current_storage_table_shift[u] << endl;
+            tier = NO_OF_INSURANCE_STORAGE_TIERS-2;
         }
 
         // Mean ROF between the two tiers of the ROF table where

@@ -43,8 +43,8 @@ stdenv.mkDerivation rec {
     mkdir -p $out/lib
     mv *.exe $out/bin/
     mv *.a *.so $out/lib/
-    mv *.h $out/include/
-    # cp -R * $out # for debugging
+    cp *.h $out/include/
+    cp -R * $out/ # for debugging
   '';
 
 }

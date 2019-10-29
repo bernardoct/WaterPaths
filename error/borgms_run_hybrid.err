@@ -1,0 +1,8 @@
+ModuleCmd_Load.c(200):ERROR:105: Unable to locate a modulefile for 'vim-8.0'
++ cd /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths
++ export TASKS_PER_NODE=4
++ TASKS_PER_NODE=4
++ uniq /var/spool/torque/aux//485311.thecube.cac.cornell.edu
++ awk -v TASKS_PER_NODE=4 '{for(i=0;i<TASKS_PER_NODE;i+=1) print}'
++ cat nodefile
++ mpiexec --hostfile nodefile -n 8 -x OMP_NUM_THREADS ./triangleSimulation -T 4 -t 2344 -r 64 -d /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/ -C -1 -O rof_tables_cac/ -b true -n 500 -o 100 -e 0

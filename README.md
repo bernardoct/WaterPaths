@@ -73,6 +73,7 @@ source build-docker.sh
 source docker-compose.sh up --scale mpi_head=1 --scale mpi_node=3
 docker exec -u nixuser -it waterpaths_mpi_head_1 /bin/sh
 cd ~/WaterPaths
+nix-shell nix/remora.nix
 ```
 
 Then you can run with Borg in MPI-mode, e.g.:

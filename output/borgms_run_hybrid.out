@@ -1,0 +1,621 @@
+compute-1-16
+compute-1-16
+compute-1-16
+compute-1-16
+compute-1-15
+compute-1-15
+compute-1-15
+compute-1-15
+Loading ROF tables
+Loading ROF tables
+Loading ROF tables
+Loading ROF tables
+Loading ROF tables
+Loading ROF tables
+Loading ROF tables
+Loading ROF tables
+Reading input data.
+Reading input data.
+Reading input data.
+Reading input data.
+Reading input data.
+Reading input data.
+Reading input data.
+Reading input data.
+reading RDM file
+Running Borg with:
+n_islands: 2
+nfe: 500
+output freq.: 100
+n_weeks: 2344
+n_realizations: 64
+
+reading RDM file
+Running Borg with:
+n_islands: 2
+nfe: 500
+output freq.: 100
+n_weeks: 2344
+n_realizations: 64
+
+reading RDM file
+Running Borg with:
+n_islands: 2
+nfe: 500
+output freq.: 100
+n_weeks: 2344
+n_realizations: 64
+
+reading RDM file
+Running Borg with:
+n_islands: 2
+nfe: 500
+output freq.: 100
+n_weeks: 2344
+n_realizations: 64
+
+reading RDM file
+Running Borg with:
+n_islands: 2
+nfe: 500
+output freq.: 100
+n_weeks: 2344
+n_realizations: 64
+
+reading RDM file
+Running Borg with:
+n_islands: 2
+nfe: 500
+output freq.: 100
+n_weeks: 2344
+n_realizations: 64
+
+reading RDM file
+Running Borg with:
+n_islands: 2
+nfe: 500
+output freq.: 100
+n_weeks: 2344
+n_realizations: 64
+
+reading RDM file
+Running Borg with:
+n_islands: 2
+nfe: 500
+output freq.: 100
+n_weeks: 2344
+n_realizations: 64
+
+setting up problem
+setting up problem
+setting up problem
+setting up problem
+setting up problem
+setting up problem
+setting up problem
+setting up problem
+Reference set will be in /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths//output//NC_output_MM_S0_N500.set.
+Runtime files will be in /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths//output//NC_runtime_MM_S0_N500.runtime.
+Reference set will be in /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths//output//NC_output_MM_S0_N500.set.
+Runtime files will be in /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths//output//NC_runtime_MM_S0_N500.runtime.
+Reference set will be in /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths//output//NC_output_MM_S0_N500.set.
+Runtime files will be in /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths//output//NC_runtime_MM_S0_N500.runtime.
+Reference set will be in /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths//output//NC_output_MM_S0_N500.set.
+Runtime files will be in /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths//output//NC_runtime_MM_S0_N500.runtime.
+Reference set will be in /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths//output//NC_output_MM_S0_N500.set.
+Runtime files will be in /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths//output//NC_runtime_MM_S0_N500.runtime.
+Reference set will be in /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths//output//NC_output_MM_S0_N500.set.
+Runtime files will be in /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths//output//NC_runtime_MM_S0_N500.runtime.
+Reference set will be in /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths//output//NC_output_MM_S0_N500.set.
+Runtime files will be in /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths//output//NC_runtime_MM_S0_N500.runtime.
+Reference set will be in /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths//output//NC_output_MM_S0_N500.set.
+Runtime files will be in /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths//output//NC_runtime_MM_S0_N500.runtime.
+Function evaluation time: 5.834449 s
+Function evaluation time: 5.908252 s
+Function evaluation time: 6.080818 s
+Function evaluation time: 6.157901 s
+Function evaluation time: 6.248079 s
+Function evaluation time: 6.342697 s
+Function evaluation time: 6.488108 s
+Function evaluation time: 5.786798 s
+Function evaluation time: 6.111581 s
+Function evaluation time: 6.007601 s
+Function evaluation time: 5.981542 s
+Function evaluation time: 6.117183 s
+Function evaluation time: 6.238680 s
+Function evaluation time: 6.309221 s
+Function evaluation time: 5.825446 s
+Function evaluation time: 6.010166 s
+Function evaluation time: 6.259385 s
+Function evaluation time: 6.111103 s
+Function evaluation time: 6.149310 s
+Function evaluation time: 6.095543 s
+Function evaluation time: 6.116554 s
+Function evaluation time: 5.746481 s
+Function evaluation time: 5.995596 s
+Function evaluation time: 5.914030 s
+Function evaluation time: 6.227862 s
+Function evaluation time: 6.188885 s
+Function evaluation time: 6.006310 s
+Function evaluation time: 6.339855 s
+Function evaluation time: 5.999854 s
+Function evaluation time: 6.020917 s
+Function evaluation time: 6.008947 s
+Function evaluation time: 6.110726 s
+Function evaluation time: 6.281928 s
+Function evaluation time: 6.261400 s
+Function evaluation time: 6.297093 s
+Function evaluation time: 5.717138 s
+Function evaluation time: 6.038437 s
+Function evaluation time: 6.239093 s
+Function evaluation time: 6.283278 s
+Function evaluation time: 6.086966 s
+Function evaluation time: 6.254620 s
+Function evaluation time: 6.196328 s
+Function evaluation time: 5.763261 s
+Function evaluation time: 6.157748 s
+Function evaluation time: 6.094992 s
+Function evaluation time: 6.228446 s
+Function evaluation time: 6.342535 s
+Function evaluation time: 6.156774 s
+Function evaluation time: 6.355585 s
+Function evaluation time: 5.752931 s
+Function evaluation time: 6.223647 s
+Function evaluation time: 6.134448 s
+Function evaluation time: 6.192878 s
+Function evaluation time: 6.167263 s
+Function evaluation time: 6.470652 s
+Function evaluation time: 6.095265 s
+Function evaluation time: 5.967429 s
+Function evaluation time: 5.972928 s
+Function evaluation time: 6.154863 s
+Function evaluation time: 6.544958 s
+Function evaluation time: 6.155497 s
+Function evaluation time: 6.454372 s
+Function evaluation time: 6.516478 s
+Function evaluation time: 6.137272 s
+Function evaluation time: 6.323002 s
+Function evaluation time: 7.053022 s
+Function evaluation time: 6.213845 s
+Function evaluation time: 6.124331 s
+Function evaluation time: 6.143857 s
+Function evaluation time: 6.166351 s
+Function evaluation time: 5.781768 s
+Function evaluation time: 6.195531 s
+Function evaluation time: 6.054327 s
+Function evaluation time: 6.344789 s
+Function evaluation time: 6.238788 s
+Function evaluation time: 6.104088 s
+Function evaluation time: 6.199402 s
+Function evaluation time: 5.762604 s
+Function evaluation time: 6.303942 s
+Function evaluation time: 6.078500 s
+Function evaluation time: 6.019581 s
+Function evaluation time: 6.157710 s
+Function evaluation time: 6.234889 s
+Function evaluation time: 6.247102 s
+Function evaluation time: 5.877852 s
+Function evaluation time: 6.223833 s
+Function evaluation time: 6.019490 s
+Function evaluation time: 6.204381 s
+Function evaluation time: 6.137951 s
+Function evaluation time: 6.230347 s
+Function evaluation time: 5.726498 s
+Function evaluation time: 6.060980 s
+Function evaluation time: 6.170240 s
+Function evaluation time: 12.497727 s
+Function evaluation time: 6.072771 s
+Function evaluation time: 5.999735 s
+Function evaluation time: 6.181607 s
+Function evaluation time: 5.758247 s
+Function evaluation time: 6.009817 s
+Function evaluation time: 6.279199 s
+Function evaluation time: 6.135628 s
+Function evaluation time: 6.206979 s
+Function evaluation time: 6.185984 s
+Function evaluation time: 5.976661 s
+Function evaluation time: 6.874444 s
+Function evaluation time: 5.970233 s
+Function evaluation time: 6.001123 s
+Function evaluation time: 6.660873 s
+Function evaluation time: 6.147270 s
+Function evaluation time: 6.006304 s
+Function evaluation time: 6.374784 s
+Function evaluation time: 6.543787 s
+Function evaluation time: 6.196345 s
+Function evaluation time: 5.967439 s
+Function evaluation time: 6.239470 s
+Function evaluation time: 6.075076 s
+Function evaluation time: 6.912051 s
+Function evaluation time: 6.184591 s
+Function evaluation time: 10.044951 s
+Function evaluation time: 6.085182 s
+Function evaluation time: 6.084277 s
+Function evaluation time: 6.211983 s
+Function evaluation time: 7.663351 s
+Function evaluation time: 9.216008 s
+Function evaluation time: 7.832694 s
+Function evaluation time: 5.796005 s
+Function evaluation time: 6.037920 s
+Function evaluation time: 6.079607 s
+Function evaluation time: 6.328885 s
+Function evaluation time: 6.186385 s
+Function evaluation time: 6.090148 s
+Function evaluation time: 6.123984 s
+Function evaluation time: 5.847422 s
+Function evaluation time: 6.070772 s
+Function evaluation time: 6.311384 s
+Function evaluation time: 6.444593 s
+Function evaluation time: 6.157824 s
+Function evaluation time: 5.745248 s
+Function evaluation time: 6.206645 s
+Function evaluation time: 9.652547 s
+Function evaluation time: 5.970378 s
+Function evaluation time: 6.156876 s
+Function evaluation time: 6.103440 s
+Function evaluation time: 5.751424 s
+Function evaluation time: 6.269583 s
+Function evaluation time: 6.075879 s
+Function evaluation time: 6.293372 s
+Function evaluation time: 5.986795 s
+Function evaluation time: 9.049485 s
+Function evaluation time: 6.160122 s
+Function evaluation time: 5.851872 s
+Function evaluation time: 6.072432 s
+Function evaluation time: 6.184167 s
+Function evaluation time: 5.967515 s
+Function evaluation time: 6.318321 s
+Function evaluation time: 6.201664 s
+Function evaluation time: 6.052569 s
+Function evaluation time: 6.206055 s
+Function evaluation time: 6.221936 s
+Function evaluation time: 7.184551 s
+Function evaluation time: 6.477413 s
+Function evaluation time: 9.587575 s
+Function evaluation time: 6.132694 s
+Function evaluation time: 5.988903 s
+Function evaluation time: 12.667300 s
+Function evaluation time: 5.949001 s
+Function evaluation time: 6.384670 s
+Function evaluation time: 5.997200 s
+Function evaluation time: 6.037991 s
+Function evaluation time: 5.922698 s
+Function evaluation time: 6.046732 s
+Function evaluation time: 6.075374 s
+Function evaluation time: 6.138014 s
+Function evaluation time: 6.141073 s
+Function evaluation time: 6.103792 s
+Function evaluation time: 16.089894 s
+Function evaluation time: 6.018749 s
+Function evaluation time: 6.438552 s
+Function evaluation time: 6.150576 s
+Function evaluation time: 12.909323 s
+Function evaluation time: 5.789449 s
+Function evaluation time: 6.301384 s
+Function evaluation time: 6.437978 s
+Function evaluation time: 6.180950 s
+Function evaluation time: 6.035545 s
+Function evaluation time: 5.972391 s
+Function evaluation time: 6.243968 s
+Function evaluation time: 6.115301 s
+Function evaluation time: 6.232985 s
+Function evaluation time: 6.162423 s
+Function evaluation time: 6.560982 s
+Function evaluation time: 6.287298 s
+Function evaluation time: 6.365700 s
+Function evaluation time: 6.044140 s
+Function evaluation time: 8.900908 s
+Function evaluation time: 7.063573 s
+Function evaluation time: 6.058213 s
+Function evaluation time: 6.076236 s
+Function evaluation time: 6.369484 s
+Function evaluation time: 6.405624 s
+Function evaluation time: 6.294434 s
+Function evaluation time: 6.052260 s
+Function evaluation time: 9.732350 s
+Function evaluation time: 6.064554 s
+Function evaluation time: 6.039142 s
+Function evaluation time: 6.033702 s
+Function evaluation time: 12.882436 s
+Function evaluation time: 6.119277 s
+Function evaluation time: 6.421080 s
+Function evaluation time: 5.855178 s
+Function evaluation time: 6.436174 s
+Function evaluation time: 6.233486 s
+Function evaluation time: 6.179924 s
+Function evaluation time: 6.238994 s
+Function evaluation time: 6.092991 s
+Function evaluation time: 6.400715 s
+Function evaluation time: 5.712072 s
+Function evaluation time: 6.519284 s
+Function evaluation time: 6.236044 s
+Function evaluation time: 5.977103 s
+Function evaluation time: 6.287013 s
+Function evaluation time: 6.427376 s
+Function evaluation time: 6.515716 s
+Function evaluation time: 6.028099 s
+Function evaluation time: 6.275505 s
+Function evaluation time: 7.329912 s
+Function evaluation time: 6.410973 s
+Function evaluation time: 7.426336 s
+Function evaluation time: 5.812296 s
+Function evaluation time: 6.548748 s
+Function evaluation time: 6.462944 s
+Function evaluation time: 6.520231 s
+Function evaluation time: 6.061967 s
+Function evaluation time: 6.313703 s
+Function evaluation time: 6.382507 s
+Function evaluation time: 5.735902 s
+Function evaluation time: 6.141119 s
+Function evaluation time: 6.488264 s
+Function evaluation time: 6.838714 s
+Function evaluation time: 6.193201 s
+Function evaluation time: 5.867923 s
+Function evaluation time: 6.233925 s
+Function evaluation time: 6.168047 s
+Function evaluation time: 6.499729 s
+Function evaluation time: 10.489617 s
+Function evaluation time: 6.041921 s
+Function evaluation time: 6.007978 s
+Function evaluation time: 6.712314 s
+Function evaluation time: 6.546131 s
+Function evaluation time: 6.622138 s
+Function evaluation time: 6.462918 s
+Function evaluation time: 6.206106 s
+Function evaluation time: 6.281013 s
+Function evaluation time: 6.024043 s
+Function evaluation time: 6.488690 s
+Function evaluation time: 6.808427 s
+Function evaluation time: 6.166958 s
+Function evaluation time: 6.062989 s
+Function evaluation time: 6.175527 s
+Function evaluation time: 6.155446 s
+Function evaluation time: 6.204541 s
+Function evaluation time: 5.855926 s
+Function evaluation time: 6.468104 s
+Function evaluation time: 6.132309 s
+Function evaluation time: 6.135632 s
+Function evaluation time: 7.931531 s
+Function evaluation time: 6.022867 s
+Function evaluation time: 6.041873 s
+Function evaluation time: 6.092999 s
+Function evaluation time: 6.274914 s
+Function evaluation time: 6.117780 s
+Function evaluation time: 6.199564 s
+Function evaluation time: 6.575927 s
+Function evaluation time: 6.356985 s
+Function evaluation time: 6.042020 s
+Function evaluation time: 5.769171 s
+Function evaluation time: 6.251064 s
+Function evaluation time: 6.170122 s
+Function evaluation time: 6.459666 s
+Function evaluation time: 6.597236 s
+Function evaluation time: 6.170634 s
+Function evaluation time: 6.019511 s
+Function evaluation time: 5.716071 s
+Function evaluation time: 6.249199 s
+Function evaluation time: 6.094390 s
+Function evaluation time: 6.236276 s
+Function evaluation time: 6.029498 s
+Function evaluation time: 6.243385 s
+Function evaluation time: 6.142884 s
+Function evaluation time: 5.926727 s
+Function evaluation time: 6.299498 s
+Function evaluation time: 6.213400 s
+Function evaluation time: 6.453245 s
+Function evaluation time: 6.053668 s
+Function evaluation time: 6.338439 s
+Function evaluation time: 5.748040 s
+Function evaluation time: 6.373148 s
+Function evaluation time: 6.199340 s
+Function evaluation time: 6.132206 s
+Function evaluation time: 6.213436 s
+Function evaluation time: 5.750968 s
+Function evaluation time: 6.166068 s
+Function evaluation time: 6.521818 s
+Function evaluation time: 6.539123 s
+Function evaluation time: 6.058115 s
+Function evaluation time: 6.281689 s
+Function evaluation time: 6.334772 s
+Function evaluation time: 5.914806 s
+Function evaluation time: 5.991580 s
+Function evaluation time: 6.255520 s
+Function evaluation time: 6.188378 s
+Function evaluation time: 6.281200 s
+Function evaluation time: 6.610750 s
+Function evaluation time: 6.482878 s
+Function evaluation time: 6.129631 s
+Function evaluation time: 6.235466 s
+Function evaluation time: 6.466048 s
+Function evaluation time: 7.508335 s
+Function evaluation time: 6.511606 s
+Function evaluation time: 7.714923 s
+Function evaluation time: 6.619423 s
+Function evaluation time: 5.723954 s
+Function evaluation time: 6.377502 s
+Function evaluation time: 7.407453 s
+Function evaluation time: 6.194027 s
+Function evaluation time: 6.311474 s
+Function evaluation time: 6.296050 s
+Function evaluation time: 6.211854 s
+Function evaluation time: 5.741511 s
+Function evaluation time: 6.109224 s
+Function evaluation time: 6.230378 s
+Function evaluation time: 6.121938 s
+Function evaluation time: 6.440044 s
+Function evaluation time: 6.031587 s
+Function evaluation time: 6.595492 s
+Function evaluation time: 8.224860 s
+Function evaluation time: 6.477979 s
+Function evaluation time: 6.279832 s
+Function evaluation time: 6.426056 s
+Function evaluation time: 5.857954 s
+Function evaluation time: 6.366203 s
+Function evaluation time: 6.013110 s
+Function evaluation time: 6.111010 s
+Function evaluation time: 6.216663 s
+Function evaluation time: 6.010490 s
+Function evaluation time: 6.100683 s
+Function evaluation time: 6.160786 s
+Function evaluation time: 6.026056 s
+Function evaluation time: 12.908229 s
+Function evaluation time: 6.332696 s
+Function evaluation time: 9.506256 s
+Function evaluation time: 6.448324 s
+Function evaluation time: 6.302067 s
+Function evaluation time: 6.042674 s
+Function evaluation time: 6.088374 s
+Function evaluation time: 9.696802 s
+Function evaluation time: 6.003748 s
+Function evaluation time: 6.235536 s
+Function evaluation time: 6.124218 s
+Function evaluation time: 7.040163 s
+Function evaluation time: 6.080443 s
+Function evaluation time: 6.500173 s
+Function evaluation time: 6.431824 s
+Function evaluation time: 11.951409 s
+Function evaluation time: 6.112537 s
+Function evaluation time: 7.441623 s
+Function evaluation time: 6.131275 s
+Function evaluation time: 6.210539 s
+Function evaluation time: 6.237028 s
+Function evaluation time: 6.183908 s
+Function evaluation time: 5.739263 s
+Function evaluation time: 6.097917 s
+Function evaluation time: 6.112311 s
+Function evaluation time: 6.182722 s
+Function evaluation time: 6.274832 s
+Function evaluation time: 6.428007 s
+Function evaluation time: 5.999487 s
+Function evaluation time: 5.792442 s
+Function evaluation time: 6.086628 s
+Function evaluation time: 6.083589 s
+Function evaluation time: 6.191127 s
+Function evaluation time: 6.244374 s
+Function evaluation time: 6.237065 s
+Function evaluation time: 6.083191 s
+Function evaluation time: 5.868078 s
+Function evaluation time: 6.089088 s
+Function evaluation time: 6.203706 s
+Function evaluation time: 6.156705 s
+Function evaluation time: 6.136456 s
+Function evaluation time: 6.159628 s
+Function evaluation time: 6.557676 s
+Function evaluation time: 5.994627 s
+Function evaluation time: 5.981788 s
+Function evaluation time: 6.585414 s
+Function evaluation time: 6.199080 s
+Function evaluation time: 6.238736 s
+Function evaluation time: 6.133334 s
+Function evaluation time: 6.772901 s
+Function evaluation time: 6.892096 s
+Function evaluation time: 6.081296 s
+Function evaluation time: 6.035375 s
+Function evaluation time: 6.224191 s
+Function evaluation time: 6.250715 s
+Function evaluation time: 6.594371 s
+Function evaluation time: 6.016465 s
+Function evaluation time: 5.994271 s
+Function evaluation time: 6.064832 s
+Function evaluation time: 6.422679 s
+Function evaluation time: 6.823135 s
+Function evaluation time: 6.356667 s
+Function evaluation time: 6.202370 s
+Function evaluation time: 5.931755 s
+Function evaluation time: 6.461625 s
+Function evaluation time: 6.401208 s
+Function evaluation time: 6.567629 s
+Function evaluation time: 6.456578 s
+Function evaluation time: 6.799076 s
+Function evaluation time: 6.945897 s
+Function evaluation time: 5.777464 s
+Function evaluation time: 6.084076 s
+Function evaluation time: 5.989098 s
+Function evaluation time: 6.165665 s
+Function evaluation time: 6.170009 s
+Function evaluation time: 6.310094 s
+Function evaluation time: 6.629629 s
+Function evaluation time: 5.751819 s
+Function evaluation time: 5.977035 s
+Function evaluation time: 6.199369 s
+Function evaluation time: 6.856901 s
+Function evaluation time: 6.332912 s
+Function evaluation time: 6.098941 s
+Function evaluation time: 6.318056 s
+Function evaluation time: 6.135723 s
+Function evaluation time: 6.492894 s
+Function evaluation time: 6.009919 s
+Function evaluation time: 6.122090 s
+Function evaluation time: 6.264498 s
+Function evaluation time: 6.365967 s
+Function evaluation time: 6.436316 s
+Function evaluation time: 5.761256 s
+Function evaluation time: 6.048369 s
+Function evaluation time: 6.037014 s
+Function evaluation time: 6.234675 s
+Function evaluation time: 6.160872 s
+Function evaluation time: 6.212811 s
+Function evaluation time: 6.138627 s
+Function evaluation time: 5.808894 s
+Function evaluation time: 6.233101 s
+Function evaluation time: 6.022101 s
+Function evaluation time: 6.055999 s
+Function evaluation time: 6.216152 s
+Function evaluation time: 6.263427 s
+Function evaluation time: 6.230301 s
+Function evaluation time: 5.954527 s
+Function evaluation time: 5.988011 s
+Function evaluation time: 6.022753 s
+Function evaluation time: 6.055834 s
+Function evaluation time: 6.302291 s
+Function evaluation time: 5.853803 s
+Function evaluation time: 6.200464 s
+Function evaluation time: 6.416742 s
+Function evaluation time: 6.211499 s
+Function evaluation time: 6.181884 s
+Function evaluation time: 6.020112 s
+Function evaluation time: 5.842803 s
+Function evaluation time: 6.591428 s
+Function evaluation time: 6.210489 s
+Function evaluation time: 6.134308 s
+Function evaluation time: 6.216749 s
+Function evaluation time: 6.039161 s
+Function evaluation time: 5.866495 s
+Function evaluation time: 6.251351 s
+Function evaluation time: 10.065892 s
+Function evaluation time: 6.255241 s
+Function evaluation time: 6.204234 s
+Function evaluation time: 6.159296 s
+Function evaluation time: 6.159688 s
+Function evaluation time: 5.821427 s
+Function evaluation time: 5.981747 s
+Function evaluation time: 6.152476 s
+Function evaluation time: 6.695546 s
+Function evaluation time: 6.579051 s
+Function evaluation time: 6.025437 s
+Function evaluation time: 6.336953 s
+Function evaluation time: 5.799218 s
+Function evaluation time: 6.382259 s
+Function evaluation time: 6.311256 s
+Function evaluation time: 6.172812 s
+Function evaluation time: 6.775920 s
+Function evaluation time: 6.483169 s
+Function evaluation time: 6.083410 s
+Function evaluation time: 6.045089 s
+Function evaluation time: 6.123848 s
+Function evaluation time: 6.299025 s
+Function evaluation time: 6.167722 s
+Function evaluation time: 6.580616 s
+Function evaluation time: 6.047054 s
+Function evaluation time: 5.999585 s
+Function evaluation time: 6.185849 s
+Function evaluation time: 6.195301 s
+Number of failed function evaluations: 0.
+Number of failed function evaluations: 0.
+Number of failed function evaluations: 0.
+master node print, should see only once
+Number of failed function evaluations: 0.
+Number of failed function evaluations: 0.
+Number of failed function evaluations: 0.
+Number of failed function evaluations: 0.
+Number of failed function evaluations: 0.

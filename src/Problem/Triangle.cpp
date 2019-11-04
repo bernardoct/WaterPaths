@@ -32,6 +32,7 @@
 #include "../SystemComponents/Bonds/LevelDebtServiceBond.h"
 #include "../SystemComponents/Bonds/BalloonPaymentBond.h"
 #include "../SystemComponents/WaterSources/IntakeExpansion.h"
+#include "../SystemComponents/WaterSources/VariableJointWTP.h"
 
 #ifdef PARALLEL
 void Triangle::setProblemDefinition(BORG_Problem &problem)
@@ -970,11 +971,27 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 //                                                      wjlwtp_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR);
 
         /// Western Jordan Lake WTP with fixed long-term treatment allocations
-        FixedJointWTP small_wjlwtp("Small WJLWTP", wjlwtp_low_base_id, jordan_lake_id, 0, 33 * 7,
-                                    {wjlwtp_low_base_id, wjlwtp_high_base_id}, capacities_wjlwtp_upgrade_1,
-                                    wjlwtp_bonds_capacity_1, construction_time_interval, 12 * WEEKS_IN_YEAR);
-        FixedJointWTP large_wjlwtp("Large WJLWTP", wjlwtp_high_base_id, jordan_lake_id, 1, 54 * 7,
-                                   {wjlwtp_low_base_id, wjlwtp_high_base_id}, capacities_wjlwtp_upgrade_2,
+        /// Utility IDs: 0 - OWASA, 1 - Durham, 2 - Cary, 3 - Raleigh, 4 - Chatham County, 5 - Pittsboro
+        int uid_owasa = 0;
+        int uid_durham = 1;
+        int uid_cary = 2;
+        int uid_raleigh = 3;
+        int uid_chatham = 4;
+        int uid_pittsboro = 5;
+
+        vector<int> partner_utilities = {uid_owasa, uid_durham, uid_cary, uid_raleigh, uid_chatham, uid_pittsboro};
+//        FixedJointWTP small_wjlwtp("Small WJLWTP", wjlwtp_low_base_id, jordan_lake_id, 0, 33 * 7,
+//                                    {wjlwtp_low_base_id, wjlwtp_high_base_id}, partner_utilities, capacities_wjlwtp_upgrade_1,
+//                                    wjlwtp_bonds_capacity_1, construction_time_interval, 12 * WEEKS_IN_YEAR);
+//        FixedJointWTP large_wjlwtp("Large WJLWTP", wjlwtp_high_base_id, jordan_lake_id, 1, 54 * 7,
+//                                   {wjlwtp_low_base_id, wjlwtp_high_base_id}, partner_utilities, capacities_wjlwtp_upgrade_2,
+//                                   wjlwtp_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR);
+
+        VariableJointWTP small_wjlwtp("Small WJLWTP", wjlwtp_low_base_id, jordan_lake_id, 0, 33 * 7,
+                                   {wjlwtp_low_base_id, wjlwtp_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_1,
+                                   wjlwtp_bonds_capacity_1, construction_time_interval, 12 * WEEKS_IN_YEAR);
+        VariableJointWTP large_wjlwtp("Large WJLWTP", wjlwtp_high_base_id, jordan_lake_id, 1, 54 * 7,
+                                   {wjlwtp_low_base_id, wjlwtp_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_2,
                                    wjlwtp_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR);
 
         /// Bonds Cary treatment plant expansion
@@ -1082,14 +1099,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         vector<int> demand_triggered_infra_order_cary = {cary_wtp_upgrades_low_base_id, cary_wtp_upgrades_high_base_id};
         vector<double> demand_infra_cary = {caryupgrades_2 * 7, caryupgrades_3 * 7};
-
-        /// Utility IDs: 0 - OWASA, 1 - Durham, 2 - Cary, 3 - Raleigh, 4 - Chatham County, 5 - Pittsboro
-        int uid_owasa = 0;
-        int uid_durham = 1;
-        int uid_cary = 2;
-        int uid_raleigh = 3;
-        int uid_chatham = 4;
-        int uid_pittsboro = 5;
 
         Utility cary((char *) "Cary", uid_cary, demand_cary, demand_projection_cary,
                      demand_n_weeks, cary_annual_payment, caryDemandClassesFractions,

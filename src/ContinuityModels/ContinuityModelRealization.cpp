@@ -50,6 +50,38 @@ void ContinuityModelRealization::setLongTermROFDemandProjectionEstimate(const ve
     }
 }
 
+void ContinuityModelRealization::updateJointWTPTreatmentAllocations(int current_week) {
+    // TODO: After year 0 of the joint WTP under variable allocations, when allocations are set based on
+    // how much treatment might be used by each utility based on the storage they have in Jordan Lake
+    // and should be determined based on a Utility::splitDemands-esque routine, then allocations are increased
+    // based on the expected growth by each partner until capacity in the plant is maxed
+    int year = round(current_week/WEEKS_IN_YEAR_ROUND);
+    for (WaterSource *ws : continuity_water_sources)
+        if (ws->isOnline())
+            if (ws->source_type == NEW_JOINT_WATER_TREATMENT_PLANT)
+                if (ws->getAgreementType() == NEW_JOINT_WATER_TREATMENT_PLANT_VARIABLE_ALLOCATIONS) {
+                    vector<double> demand_ratios;
+                    for (int u : *ws->getUtilities_with_allocations())
+                        demand_ratios.push_back(continuity_utilities.at(u)->calculateCurrentToNextYearDemandRatio(year));
+
+                    // reset treatment capacity allocations based on demand ratios
+                    // and then adjust levels in parent source to match
+                    // NOTE: allocated treatment capacity vector for the parent reservoir needs to line up with
+                    // the elements of the one from the JointWTP or allocations will be adjusted incorrectly
+                    // (this should be impossible to do when the objects are initialized, but you never know...)
+                    vector<double> previous_year_treatment_capacities = ws->getAllocatedTreatmentCapacities();
+                    ws->resetAllocations(&demand_ratios); // should skip right to VariableJointWTP definition
+                    continuity_water_sources.at(ws->getParentWaterSourceID())->resetTreatmentAllocations(
+                            previous_year_treatment_capacities,
+                            ws->getAllocatedTreatmentCapacities());
+
+                    // be sure to also adjust utility treatment capacity as capacity changes for the reservoirs
+                    for (int u : *ws->getUtilities_with_allocations())
+                        continuity_utilities.at(u)->updateTreatmentCapacity(
+                                ws->getAllocatedTreatmentCapacities()[u] - previous_year_treatment_capacities[u]);
+                }
+}
+
 void ContinuityModelRealization::setLongTermROFs(const vector<vector<double>> &risks_of_failure, const int week) {
     vector<int> new_infra_triggered;
     int nit; // new infrastruction triggered - id.

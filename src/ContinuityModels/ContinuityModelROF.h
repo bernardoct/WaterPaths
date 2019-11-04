@@ -89,6 +89,8 @@ public:
                                int &week_of_the_year);
 
     void calculateEmptyVolumes(vector<WaterSource *> &realization_water_sources, double *to_full);
+
+    void updateJointWTPTreatmentAllocations(const vector<WaterSource *> &non_rof_water_sources);
 };
 
 

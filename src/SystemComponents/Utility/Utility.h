@@ -124,6 +124,8 @@ public:
 
     void calculateWastewater_releases(int week, double *discharges);
 
+    double calculateCurrentToNextYearDemandRatio(int current_year);
+
     void addWaterSource(WaterSource *water_source);
 
     void splitDemands(
@@ -255,6 +257,8 @@ public:
     void setCurrent_year_demand_record(double current_demand);
 
     vector<double> calculateAnnualAverageWeeklyDemand(vector<double> *demands);
+
+    void updateTreatmentCapacity(double capacity_adjustment);
 };
 
 

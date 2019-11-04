@@ -35,6 +35,8 @@ static const int NC_ERR = 2;
 #include "WaterReuseDataCollector.h"
 #include "AllocatedReservoirDataCollector.h"
 #include "EmptyDataCollector.h"
+#include "../SystemComponents/WaterSources/JointWTP.h"
+#include "JointWTPDataCollector.h"
 
 using namespace Constants;
 
@@ -676,6 +678,8 @@ DataCollector* MasterDataCollector::createWaterSourceDataCollector(WaterSource* 
         return new WaterReuseDataCollector(dynamic_cast<WaterReuse *> (ws), r);
     else if (ws->source_type == ALLOCATED_RESERVOIR)
         return new AllocatedReservoirDataCollector(dynamic_cast<AllocatedReservoir *> (ws), r);
+    else if (ws->source_type == NEW_JOINT_WATER_TREATMENT_PLANT)
+        return new JointWTPDataCollector(dynamic_cast<JointWTP *> (ws), r);
     else if (ws->source_type ==
              RESERVOIR_EXPANSION ||
              ws->source_type ==
@@ -683,9 +687,7 @@ DataCollector* MasterDataCollector::createWaterSourceDataCollector(WaterSource* 
              ws->source_type ==
              NEW_WATER_TREATMENT_PLANT ||
              ws->source_type ==
-             SOURCE_RELOCATION ||
-             ws->source_type ==
-             NEW_JOINT_WATER_TREATMENT_PLANT)
+             SOURCE_RELOCATION)
         return new EmptyDataCollector();
     else
         throw invalid_argument("Water source not recognized. "

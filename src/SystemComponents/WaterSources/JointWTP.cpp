@@ -11,22 +11,24 @@ JointWTP::JointWTP(const char *name,
                    const int expansion_sequence_id,
                    const double total_treatment_capacity,
                    vector<int> connected_sources,
+                   vector<int> *agreement_utility_ids,
+                   vector<double> *agreement_utility_treatment_capacities,
                    vector<Bond *> &bonds,
                    const vector<double> &construction_time_range,
                    double permitting_period)
-        : WaterSource(name, id, vector<Catchment *>(), NONE, NON_INITIALIZED, connected_sources, NEW_JOINT_WATER_TREATMENT_PLANT,
+        : WaterSource(name, id, vector<Catchment *>(), NONE, total_treatment_capacity,
+                      connected_sources,
+                      agreement_utility_ids, agreement_utility_treatment_capacities,
+                      NEW_JOINT_WATER_TREATMENT_PLANT,
                       construction_time_range, permitting_period, bonds),
           expansion_sequence_id(expansion_sequence_id),
-          total_treatment_capacity(total_treatment_capacity),
           joint_agreement_type(agreement_type),
           parent_reservoir_ID((unsigned int) parent_reservoir_ID) {
 }
 
-
 JointWTP::JointWTP(const JointWTP &joint_water_treatment_plant) :
         WaterSource(joint_water_treatment_plant),
         joint_agreement_type(joint_water_treatment_plant.joint_agreement_type),
-        total_treatment_capacity(joint_water_treatment_plant.total_treatment_capacity),
         expansion_sequence_id(joint_water_treatment_plant.expansion_sequence_id),
         parent_reservoir_ID(joint_water_treatment_plant.parent_reservoir_ID) {
 }
@@ -54,4 +56,8 @@ double JointWTP::implementInitialTreatmentCapacity(int utility_id) {
 
 int JointWTP::getAgreementType() const {
     return joint_agreement_type;
+}
+
+int JointWTP::getParentWaterSourceID() const {
+    return parent_reservoir_ID;
 }

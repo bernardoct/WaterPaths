@@ -122,7 +122,7 @@ set(SOURCE_FILES
         src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.h
 #        src/Problem/PaperTestProblem.cpp
 #        src/Problem/PaperTestProblem.h
-        src/SystemComponents/WaterSources/IntakeExpansion.cpp src/SystemComponents/WaterSources/IntakeExpansion.h src/SystemComponents/WaterSources/JointWTP.cpp src/SystemComponents/WaterSources/JointWTP.h src/SystemComponents/WaterSources/FixedJointWTP.cpp src/SystemComponents/WaterSources/FixedJointWTP.h)
+        src/SystemComponents/WaterSources/IntakeExpansion.cpp src/SystemComponents/WaterSources/IntakeExpansion.h src/SystemComponents/WaterSources/JointWTP.cpp src/SystemComponents/WaterSources/JointWTP.h src/SystemComponents/WaterSources/FixedJointWTP.cpp src/SystemComponents/WaterSources/FixedJointWTP.h src/SystemComponents/WaterSources/VariableJointWTP.cpp src/SystemComponents/WaterSources/VariableJointWTP.h src/DataCollector/JointWTPDataCollector.cpp src/DataCollector/JointWTPDataCollector.h)
 
 set(TEST_SOURCE_FILES
         src/ContinuityModels/Base/ContinuityModel.cpp
@@ -231,7 +231,7 @@ set(TEST_SOURCE_FILES
         src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.cpp
         src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.h
         Tests/catch.hpp
-        Tests/Tests.cpp src/SystemComponents/WaterSources/IntakeExpansion.cpp src/SystemComponents/WaterSources/IntakeExpansion.h src/SystemComponents/WaterSources/JointWTP.cpp src/SystemComponents/WaterSources/JointWTP.h src/SystemComponents/WaterSources/FixedJointWTP.cpp src/SystemComponents/WaterSources/FixedJointWTP.h)
+        Tests/Tests.cpp src/SystemComponents/WaterSources/IntakeExpansion.cpp src/SystemComponents/WaterSources/IntakeExpansion.h src/SystemComponents/WaterSources/JointWTP.cpp src/SystemComponents/WaterSources/JointWTP.h src/SystemComponents/WaterSources/FixedJointWTP.cpp src/SystemComponents/WaterSources/FixedJointWTP.h src/SystemComponents/WaterSources/VariableJointWTP.cpp src/SystemComponents/WaterSources/VariableJointWTP.h src/DataCollector/JointWTPDataCollector.cpp src/DataCollector/JointWTPDataCollector.h)
 
 add_executable(TriangleModel ${SOURCE_FILES})
 add_executable(TestTriangleModel ${TEST_SOURCE_FILES})

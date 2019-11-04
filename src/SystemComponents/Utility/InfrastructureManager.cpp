@@ -10,6 +10,7 @@
 #include "../WaterSources/Relocation.h"
 #include "../../Utils/Utils.h"
 #include "../WaterSources/FixedJointWTP.h"
+#include "../WaterSources/VariableJointWTP.h"
 
 InfrastructureManager::InfrastructureManager(int id, const vector<double> &infra_construction_triggers,
                                              const vector<vector<int>> &infra_if_built_remove,
@@ -246,7 +247,22 @@ void InfrastructureManager::waterTreatmentPlantJointConstructionHandler(unsigned
 
         non_priority_draw_water_source->push_back((int) wtp->parent_reservoir_ID);
     } else if (water_sources->at(source_id)->getAgreementType() == NEW_JOINT_WATER_TREATMENT_PLANT_VARIABLE_ALLOCATIONS) {
-//        auto wtp = dynamic_cast<VariableJointWTP *> (water_sources->at(source_id)); NOT YET BUILT
+        auto wtp = dynamic_cast<VariableJointWTP *> (water_sources->at(source_id));
+
+        /// Add treatment capacity to source
+        // this should be changed later to be based on current demand levels rather than some
+        // initial levels; how allocations at the plant change
+        // is based on overall utility demand growth, which is pinned to initial levels
+        // being reasonable at the time the plant comes online...
+        // for early tests, just use presumed set of treatment allocations
+        double added_capacity = wtp->implementInitialTreatmentCapacity(id);
+        try {
+            water_sources->at(wtp->parent_reservoir_ID)->addTreatmentCapacity(added_capacity, id);
+        } catch (...) {
+            throw runtime_error("Could not add treatment capacity to reservoir.");
+        }
+
+        non_priority_draw_water_source->push_back((int) wtp->parent_reservoir_ID);
     } else {
         throw logic_error("Error in InfrastructureManager, waterTreatmentPlaceJointConstructionHandler: "
                           "WTP to be constructed is not of either fixed or variable treatment allocations.");

@@ -15,6 +15,7 @@ using namespace Constants;
 
 class WaterSource {
 protected:
+
     double available_volume = 0;
     double total_outflow = 0;
     double upstream_source_inflow = 0;
@@ -82,6 +83,11 @@ public:
                     vector<double> *allocated_fractions, vector<int> *utilities_with_allocations,
                     const vector<double> construction_time_range, double permitting_period,
                 Bond &bond);
+
+    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
+                double treatment_capacity, vector<int> connected_sources, vector<int> *utilities_with_allocations,
+                vector<double> *utility_treatment_allocations, const int source_type,
+                const vector<double> construction_time_range, double permitting_period, vector<Bond *> bonds);
 
     WaterSource(const WaterSource &water_source);
 
@@ -154,7 +160,7 @@ public:
             vector<double> *allocated_fractions,
             vector<double> *allocated_treatment_fractions);
 
-    void resetAllocations(const vector<double> *new_allocated_fractions);
+    virtual void resetAllocations(const vector<double> *new_allocated_fractions);
 
     void setAvailableAllocatedVolumes(
             vector<double> available_allocated_volumes, double available_volume);
@@ -188,6 +194,15 @@ public:
     virtual double getPrioritySourcePotentialVolume(int utility_id) const;
 
     virtual int getAgreementType() const;
+
+    virtual int getParentWaterSourceID() const;
+
+    void resetTreatmentAllocations(const vector<double> current_treatment_allocations,
+                                   const vector<double> new_treatment_allocations);
+
+    vector<double> getAllocatedTreatmentCapacities() const;
+
+    void setTreatmentAllocations(const vector<double> treatment_capacity_allocations);
 };
 
 

@@ -960,3 +960,19 @@ const InfrastructureManager &Utility::getInfrastructure_construction_manager() c
 double Utility::getDemand_offset() const {
     return demand_offset;
 }
+
+double Utility::calculateCurrentToNextYearDemandRatio(int current_year) {
+    // check one year ahead to update variable WTP allocations
+    return (annual_demand_projections[current_year+1]/current_year_recorded_demand);
+}
+
+void Utility::updateTreatmentCapacity(double capacity_adjustment) {
+    // update treatment capacity based on annual changes due to VariableJointWTP action
+    total_treatment_capacity += capacity_adjustment;
+
+    if (total_treatment_capacity < 0) {
+        cout << "Utility " << name << " capacity was adjusted by " << capacity_adjustment << endl;
+        throw logic_error("Error in Utility::updateTreatmentCapacity, "
+                          "total treatment capacity is negative.");
+    }
+}

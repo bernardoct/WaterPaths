@@ -354,12 +354,18 @@ MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, dou
 
                 // DO NOT change the order of the steps. This would mess up
                 // important dependencies.
-                // Calculate long-term risk-of-failre if current week is first week of the year.
+                // Calculate long-term risk-of-failure if current week is first week of the year.
                 if (Utils::isFirstWeekOfTheYear(w)) {
                     realization_model->setLongTermROFs(
                             rof_model->calculateLongTermROF(w), w);
+
                     /// Oct 2019: added this to pass long-term rof calculation info to realization model for data collection later
                     realization_model->setLongTermROFDemandProjectionEstimate(rof_model->getContinuity_utilities());
+
+                    /// Oct 2019: for JointWTP objects with variable allocations, recalculate treatment allocations
+                    /// within realization and pass to rof continuity model
+                    realization_model->updateJointWTPTreatmentAllocations(w);
+                    rof_model->updateJointWTPTreatmentAllocations(realization_model->getContinuity_water_sources());
                 }
 
                 // Calculate short-term risk-of-failure

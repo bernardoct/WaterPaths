@@ -552,7 +552,18 @@ void ContinuityModelROF::setROFTablesAndShifts(
     this->table_base_storage_shift = table_base_storage_shift;
 }
 
+//FIXME: WHAT IS THE FUNCTIONAL DIFFERENCE BETWEEN WATER_SOURCES VECTORS HERE?
+void ContinuityModelROF::updateJointWTPTreatmentAllocations(const vector<WaterSource *> &non_rof_water_sources) {
+    for (WaterSource *ws : non_rof_water_sources) {
+        if (continuity_water_sources.at(ws->id)->id != ws->id)
+            cout << "Error in ContinuityModelROF::updateJointWTPTreatmentAllocations, mismatch of source IDs.";
 
+        if (ws->source_type == NEW_JOINT_WATER_TREATMENT_PLANT && ws->isOnline()) {
+            continuity_water_sources.at(ws->id)->setTreatmentAllocations(ws->getAllocatedTreatmentCapacities());
+            realization_water_sources.at(ws->id)->setTreatmentAllocations(ws->getAllocatedTreatmentCapacities());
+        }
+    }
+}
 
 void ContinuityModelROF::tableROFExceptionHandler(double m, int u, int week) {
     string error;

@@ -38,6 +38,8 @@ public:
 
 
     void setLongTermROFDemandProjectionEstimate(const vector<Utility *> &rof_utilities);
+
+    void updateJointWTPTreatmentAllocations(int current_week);
 };
 
 

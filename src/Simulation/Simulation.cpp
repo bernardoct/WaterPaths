@@ -363,9 +363,10 @@ MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, dou
                     realization_model->setLongTermROFDemandProjectionEstimate(rof_model->getContinuity_utilities());
 
                     /// Oct 2019: for JointWTP objects with variable allocations, recalculate treatment allocations
-                    /// within realization and pass to rof continuity model
+                    /// within realization and pass to rof continuity model for both the water sources and utilities
                     realization_model->updateJointWTPTreatmentAllocations(w);
                     rof_model->updateJointWTPTreatmentAllocations(realization_model->getContinuity_water_sources());
+                    rof_model->updateUtilityTreatmentAllocations(realization_model->getContinuity_utilities());
                 }
 
                 // Calculate short-term risk-of-failure

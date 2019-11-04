@@ -565,6 +565,16 @@ void ContinuityModelROF::updateJointWTPTreatmentAllocations(const vector<WaterSo
     }
 }
 
+void ContinuityModelROF::updateUtilityTreatmentAllocations(const vector<Utility *> &non_rof_utilities) {
+    for (Utility *u : non_rof_utilities) {
+        if (continuity_utilities.at(u->id)->id != u->id)
+            cout << "Error in ContinuityModelROF::updateUtilityTreatmentAllocations, mismatch of utility IDs.";
+
+        continuity_utilities.at(u->id)->setTreatmentCapacity(u->getTotal_treatment_capacity());
+        realization_utilities.at(u->id)->setTreatmentCapacity(u->getTotal_treatment_capacity());
+    }
+}
+
 void ContinuityModelROF::tableROFExceptionHandler(double m, int u, int week) {
     string error;
     if (m > 1.) {

@@ -259,6 +259,8 @@ public:
     vector<double> calculateAnnualAverageWeeklyDemand(vector<double> *demands);
 
     void updateTreatmentCapacity(double capacity_adjustment);
+
+    void setTreatmentCapacity(double total_capacity);
 };
 
 

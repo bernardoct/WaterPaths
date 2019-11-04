@@ -91,6 +91,8 @@ public:
     void calculateEmptyVolumes(vector<WaterSource *> &realization_water_sources, double *to_full);
 
     void updateJointWTPTreatmentAllocations(const vector<WaterSource *> &non_rof_water_sources);
+
+    void updateUtilityTreatmentAllocations(const vector<Utility *> &non_rof_utilities);
 };
 
 

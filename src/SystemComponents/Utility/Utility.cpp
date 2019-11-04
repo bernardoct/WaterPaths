@@ -976,3 +976,8 @@ void Utility::updateTreatmentCapacity(double capacity_adjustment) {
                           "total treatment capacity is negative.");
     }
 }
+
+void Utility::setTreatmentCapacity(double total_capacity) {
+    // meant to pass treatment capacity from realization model to rof model
+    total_treatment_capacity = total_capacity;
+}

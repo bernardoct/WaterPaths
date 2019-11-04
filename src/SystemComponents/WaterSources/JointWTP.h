@@ -41,6 +41,8 @@ public:
     int getAgreementType() const override;
 
     int getParentWaterSourceID() const override;
+
+    double getAllocatedTreatmentFraction(int utility_id) const override;
 };
 
 

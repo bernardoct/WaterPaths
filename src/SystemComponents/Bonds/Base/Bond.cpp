@@ -84,3 +84,15 @@ bool Bond::isIssued() const {
 void Bond::setIssued() {
     Bond::issued = true;
 }
+
+void Bond::setDebtService(double updated_allocated_fraction_of_annual_debt_service) {
+    throw logic_error("Error in Bond::setDebtService, "
+                      "this should only be called when using "
+                      "a VariableDebtServiceBond and in that "
+                      "case the call would be overriden and "
+                      "taken to that child class of Bond class.");
+}
+
+int Bond::getWaterSourceID() {
+    return id;
+}

@@ -203,6 +203,8 @@ public:
     vector<double> getAllocatedTreatmentCapacities() const;
 
     void setTreatmentAllocations(const vector<double> treatment_capacity_allocations);
+
+    virtual double getAllocatedTreatmentFraction(int utility_id) const;
 };
 
 

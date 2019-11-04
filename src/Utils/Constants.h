@@ -110,6 +110,7 @@ namespace Constants {
     const int LEVEL_DEBT_SERVICE = 0;
     const int BALLOON_PAYMENT = 1;
     const int FLOATING_INTEREST = 2;
+    const int VARIABLE_INTEREST = 3;
 
     const bool BEGIN_REPAYMENT_AT_ISSUANCE = true;
     

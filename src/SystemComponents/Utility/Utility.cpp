@@ -609,6 +609,13 @@ void Utility::setWaterSourceOnline(unsigned int source_id, int week) {
 double Utility::updateCurrent_debt_payment(int week) {
     double current_debt_payment = 0;
 
+    // Check if any bonds are variable debt service bonds
+    // (aka are any tied to VariableJointWTP projects with changing allocations)
+    for (Bond *bond : issued_bonds) {
+        if (bond->type == VARIABLE_INTEREST)
+            bond->setDebtService(water_sources.at(bond->getWaterSourceID())->getAllocatedTreatmentFraction(id));
+    }
+
     // Checks if it's the first week of the year, when outstanding debt
     // payments should be made.
     for (Bond *bond : issued_bonds) {

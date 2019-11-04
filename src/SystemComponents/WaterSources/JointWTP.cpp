@@ -2,6 +2,7 @@
 // Created by dgorelic on 10/28/2019.
 //
 
+#include <numeric>
 #include "JointWTP.h"
 
 JointWTP::JointWTP(const char *name,
@@ -60,4 +61,13 @@ int JointWTP::getAgreementType() const {
 
 int JointWTP::getParentWaterSourceID() const {
     return parent_reservoir_ID;
+}
+
+double JointWTP::getAllocatedTreatmentFraction(int utility_id) const {
+    // this is meant to calculate payment fraction, so need to account for possibility that
+    // not all capacity is allocated in actual WTP
+    double total_fraction_allocated = accumulate(allocated_treatment_fractions.begin(),
+                                                 allocated_treatment_fractions.end(), 0.0);
+
+    return allocated_treatment_fractions[utility_id] / total_fraction_allocated;
 }

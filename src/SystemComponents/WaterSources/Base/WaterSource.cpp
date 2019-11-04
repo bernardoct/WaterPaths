@@ -743,6 +743,10 @@ double WaterSource::getAllocatedTreatmentCapacity(int utility_id) const {
     return total_treatment_capacity;
 }
 
+double WaterSource::getAllocatedTreatmentFraction(int utility_id) const {
+    return 1.0;
+}
+
 vector<double> WaterSource::getAllocatedTreatmentCapacities() const {
     return allocated_treatment_capacities;
 }

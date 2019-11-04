@@ -39,6 +39,10 @@ public:
 
     virtual double getDebtService(int week) = 0;
 
+    virtual void setDebtService(double updated_allocated_fraction_of_annual_debt_service);
+
+    virtual int getWaterSourceID();
+
     virtual double getNetPresentValueAtIssuance(double discount_rate, int week) const = 0;
 
     virtual void

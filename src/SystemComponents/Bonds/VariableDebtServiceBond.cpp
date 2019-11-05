@@ -13,9 +13,9 @@ VariableDebtServiceBond::VariableDebtServiceBond(const int id, const int water_s
                                                  const int n_payments, const double coupon_rate,
                                                  vector<int> pay_on_weeks, bool begin_repayment_at_issuance)
                 : Bond(id, total_unallocated_cost_of_capital, n_payments, pay_on_weeks, coupon_rate,
-                        LEVEL_DEBT_SERVICE, begin_repayment_at_issuance),
-                        initial_debt_fraction(initial_fraction_of_allocated_debt),
-                        water_source_id(water_source_id) {}
+                       VARIABLE_INTEREST, begin_repayment_at_issuance),
+                       initial_debt_fraction(initial_fraction_of_allocated_debt),
+                       water_source_id(water_source_id) {}
 
 VariableDebtServiceBond::~VariableDebtServiceBond() = default;
 

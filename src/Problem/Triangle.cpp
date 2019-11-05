@@ -33,6 +33,7 @@
 #include "../SystemComponents/Bonds/BalloonPaymentBond.h"
 #include "../SystemComponents/WaterSources/IntakeExpansion.h"
 #include "../SystemComponents/WaterSources/VariableJointWTP.h"
+#include "../SystemComponents/Bonds/VariableDebtServiceBond.h"
 
 #ifdef PARALLEL
 void Triangle::setProblemDefinition(BORG_Problem &problem)
@@ -964,6 +965,27 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
             wjlwtp_bonds_capacity_2.emplace_back(new LevelDebtServiceBond(wjlwtp_high_base_id + uid, cost, 25, 0.05, vector<int>(1, 0)));
             uid++;
         }
+
+        /// Variable Bonds West Jordan Lake treatment plant
+        vector<double> initial_debt_service_fractions = {western_wake_treatment_plant_owasa_frac,
+                                                         western_wake_treatment_frac_durham, 0.0,
+                                                         western_wake_treatment_plant_raleigh_frac,
+                                                         western_wake_treatment_plant_chatham_frac,
+                                                         western_wake_treatment_plant_pittsboro_frac};
+
+        vector<Bond *> wjlwtp_variable_bonds_capacity_1;
+        vector<Bond *> wjlwtp_variable_bonds_capacity_2;
+        uid = 0;
+        for (double alloc : initial_debt_service_fractions) {
+            wjlwtp_variable_bonds_capacity_1.emplace_back(
+                    new VariableDebtServiceBond(wjlwtp_low_base_id + uid, wjlwtp_low_base_id,
+                                                243.3, alloc, 25, 0.05, vector<int>(1, 0)));
+            wjlwtp_variable_bonds_capacity_2.emplace_back(
+                    new VariableDebtServiceBond(wjlwtp_high_base_id + uid, wjlwtp_high_base_id,
+                                                (316.8 - 243.3), alloc, 25, 0.05, vector<int>(1, 0)));
+            uid++;
+        }
+
         /// West Jordan Lake treatment plant
 //        SequentialJointTreatmentExpansion low_wjlwtp("Low WJLWTP", wjlwtp_low_base_id, jordan_lake_id, 0, {wjlwtp_low_base_id, wjlwtp_high_base_id}, capacities_wjlwtp_upgrade_1,
 //                                                     wjlwtp_bonds_capacity_1, construction_time_interval, 12 * WEEKS_IN_YEAR);
@@ -988,11 +1010,11 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 //                                   wjlwtp_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR);
 
         VariableJointWTP small_wjlwtp("Small WJLWTP", wjlwtp_low_base_id, jordan_lake_id, 0, 33 * 7,
-                                   {wjlwtp_low_base_id, wjlwtp_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_1,
-                                   wjlwtp_bonds_capacity_1, construction_time_interval, 12 * WEEKS_IN_YEAR);
+                                      {wjlwtp_low_base_id, wjlwtp_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_1,
+                                      wjlwtp_variable_bonds_capacity_1, construction_time_interval, 12 * WEEKS_IN_YEAR);
         VariableJointWTP large_wjlwtp("Large WJLWTP", wjlwtp_high_base_id, jordan_lake_id, 1, 54 * 7,
-                                   {wjlwtp_low_base_id, wjlwtp_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_2,
-                                   wjlwtp_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR);
+                                      {wjlwtp_low_base_id, wjlwtp_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_2,
+                                      wjlwtp_variable_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR);
 
         /// Bonds Cary treatment plant expansion
         /// July 2019: Pittsboro/CC added to vectors here

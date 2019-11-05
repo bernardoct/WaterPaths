@@ -23,6 +23,7 @@
 #include "../SystemComponents/WaterSources/IntakeExpansion.h"
 #include "../SystemComponents/WaterSources/FixedJointWTP.h"
 #include "../SystemComponents/WaterSources/VariableJointWTP.h"
+#include "../SystemComponents/Bonds/VariableDebtServiceBond.h"
 #include <fstream>
 #include <algorithm>
 #include <climits>
@@ -272,6 +273,9 @@ vector<Bond *> Utils::copyBonds(vector<Bond *> bonds_original) {
         else if (bond->type == FLOATING_INTEREST)
             bonds_new.push_back(new FloatingInterestBalloonPaymentBond(
                     *dynamic_cast<FloatingInterestBalloonPaymentBond *>(bond)));
+        else if (bond->type == VARIABLE_INTEREST)
+            bonds_new.push_back(new VariableDebtServiceBond(
+                    *dynamic_cast<VariableDebtServiceBond *>(bond)));
         else
             throw invalid_argument("Your bond type does not have a corresponding "
                                      "copy function in Utils::copyBonds yet.\n");

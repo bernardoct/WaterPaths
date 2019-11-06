@@ -73,3 +73,24 @@ void BalloonPaymentBond::issueBond(int week, int construction_time, double bond_
     /// Interest to be paid every pay period.
     interest_payments = coupon_rate * cost_of_capital;
 }
+
+double BalloonPaymentBond::getPresentValueDebtService(int week, double discount_rate) {
+    // NOTE: pay_on_weeks is a vector with the weeks of each CALENDAR YEAR when payments are due
+    // to designate how many times (and when) per year debt service is due. default is a
+    // length-one vector with value 0 (single annual payment in first (0th) week of year)
+    // FIXME: NOT SURE THIS IS A CORRECT CALCULATION FOR THIS CLASS
+    /// If there are still payments to be made, repayment has begun, and this is a payment week, issue payment.
+    if (n_payments_made < n_payments - 1 &&
+        week > week_issued + begin_repayment_after_n_years * WEEKS_IN_YEAR &&
+        std::find(pay_on_weeks.begin(), pay_on_weeks.end(), Utils::weekOfTheYear(week)) != pay_on_weeks.end()) {
+        
+        return (interest_payments / pay_on_weeks.size()) /
+               pow(1. + discount_rate, round((week - week_issued)/WEEKS_IN_YEAR_ROUND - 1));
+    } else if (n_payments_made == n_payments - 1) {
+        /// Pay principal and last interest.
+        return ((interest_payments + cost_of_capital) / pay_on_weeks.size()) /
+               pow(1. + discount_rate, round((week - week_issued)/WEEKS_IN_YEAR_ROUND - 1));
+    } else {
+        return 0.;
+    }
+}

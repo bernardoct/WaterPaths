@@ -32,6 +32,13 @@ public:
             const vector<UtilitiesDataCollector *>& utility_data,
             vector<unsigned long> realizations = vector<unsigned long>(0));
 
+    static double calculateUnitTotalCostObjective(
+            const vector<UtilitiesDataCollector *>& utility_data,
+            vector<unsigned long> realizations = vector<unsigned long>(0));
+
+    static double calculateNetPresentCostInfrastructureObjectiveForVariableDebtService(
+            const vector<UtilitiesDataCollector *>& utility_data,
+            vector<unsigned long> realizations = vector<unsigned long>(0));
 };
 
 

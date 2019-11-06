@@ -61,6 +61,7 @@ private:
 
     /// Infrastructure cost
     double current_debt_payment = 0;
+    double current_present_valued_debt_payment = 0;
     vector<vector<double>> debt_payment_streams;
     double infra_net_present_cost = 0;
     vector<Bond *> issued_bonds;
@@ -246,7 +247,7 @@ public:
 
     double getLong_term_treatment_risk_of_failure() const;
 
-    double calculateDemandEstimateFromProjection(int year, bool reproject_demand);
+    void calculateDemandEstimateFromProjection(int year, bool reproject_demand);
 
     double getCurrent_year_demand_record() const;
 
@@ -261,6 +262,10 @@ public:
     void updateTreatmentCapacity(double capacity_adjustment);
 
     void setTreatmentCapacity(double total_capacity);
+
+    double updateCurrent_present_value_debt_payment(int week);
+
+    double getCurrent_debt_payment_present_valued() const;
 };
 
 

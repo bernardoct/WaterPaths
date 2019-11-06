@@ -69,3 +69,23 @@ void VariableDebtServiceBond::setDebtService(double updated_allocated_fraction_o
 int VariableDebtServiceBond::getWaterSourceID() {
     return water_source_id;
 }
+
+double VariableDebtServiceBond::getPresentValueDebtService(int week, double discount_rate) {
+    // NOTE: pay_on_weeks is a vector with the weeks of each CALENDAR YEAR when payments are due
+    // to designate how many times (and when) per year debt service is due. default is a
+    // length-one vector with value 0 (single annual payment in first (0th) week of year)
+    /// If there are still payments to be made, repayment has begun,
+    /// and this is a payment week, issue payment.
+    if (n_payments_made < n_payments &&
+        week > week_issued + begin_repayment_after_n_years
+                             * WEEKS_IN_YEAR - 1 &&
+        std::find(pay_on_weeks.begin(), pay_on_weeks.end(),
+                  Utils::weekOfTheYear(week))
+        != pay_on_weeks.end()) {
+
+        return variable_debt_service_payment /
+               pow(1. + discount_rate, round((week - week_issued)/WEEKS_IN_YEAR_ROUND - 1));
+    } else {
+        return 0.;
+    }
+}

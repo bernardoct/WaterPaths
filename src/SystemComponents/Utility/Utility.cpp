@@ -390,7 +390,7 @@ void Utility::checkErrorsAddWaterSourceOnline(WaterSource *water_source) {
  * to estimate demand growth during long-term planning. to be used along with demand buffer.
  * @param week
  */
-double Utility::calculateDemandEstimateFromProjection(int week, bool reproject_demand) {
+void Utility::calculateDemandEstimateFromProjection(int week, bool reproject_demand) {
     /// record year's actual average demand for re-projection in this or later years
     int year = round(week/WEEKS_IN_YEAR_ROUND);
     current_year_recorded_demand = annual_average_weekly_demand[year];
@@ -584,6 +584,7 @@ void Utility::updateContingencyFundAndDebtService(
     // Calculate current debt payment to be made on that week (if first
     // week of year), if any.
     current_debt_payment = updateCurrent_debt_payment(week);
+    current_present_valued_debt_payment = updateCurrent_present_value_debt_payment(week);
 }
 
 void Utility::resetDroughtMitigationVariables() {
@@ -623,6 +624,29 @@ double Utility::updateCurrent_debt_payment(int week) {
     }
 
     return current_debt_payment;
+}
+
+
+/**
+ * Calculates total debt payments to be made in a week, if that's the first week
+ * of the year.
+ * @param week
+ * @param debt_payment_streams
+ * @return
+ */
+double Utility::updateCurrent_present_value_debt_payment(int week) {
+    double current_pv_debt_payment = 0;
+
+    // Checks if it's the first week of the year, when outstanding debt
+    // payments should be made. This version of calculating debt payment
+    // determines present-valued payment for current year and adds that
+    // to handle cases where debt service allocated to a utility can
+    // change over the course of repayment (aka a capacity-sharing agreement)
+    for (Bond *bond : issued_bonds) {
+        current_pv_debt_payment += bond->getPresentValueDebtService(week, infra_discount_rate);
+    }
+
+    return current_pv_debt_payment;
 }
 
 void Utility::issueBond(int new_infra_triggered, int week) {
@@ -885,6 +909,10 @@ double Utility::getInfrastructure_net_present_cost() const {
 
 double Utility::getCurrent_debt_payment() const {
     return current_debt_payment;
+}
+
+double Utility::getCurrent_debt_payment_present_valued() const {
+    return current_present_valued_debt_payment;
 }
 
 double Utility::getCurrent_contingency_fund_contribution() const {

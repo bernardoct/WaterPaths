@@ -55,7 +55,9 @@ string UtilitiesDataCollector::printTabularString(int week) {
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << recorded_annual_demand[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-              << projected_demand_estimate[week];
+              << projected_demand_estimate[week]
+              << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+              << present_valued_debt_service_payments[week];
 
     return outStream.str();
 }
@@ -103,6 +105,8 @@ string UtilitiesDataCollector::printCompactString(int week) {
               << recorded_annual_demand[week]
               << ","
               << projected_demand_estimate[week]
+              << ","
+              << present_valued_debt_service_payments[week]
               << ",";
 
     return outStream.str();
@@ -131,7 +135,8 @@ string UtilitiesDataCollector::printTabularStringHeaderLine1() {
               << setw(COLUMN_WIDTH) << "Debt"
               << setw(COLUMN_WIDTH) << "Final"
               << setw(COLUMN_WIDTH) << "Obs"
-              << setw(COLUMN_WIDTH) << "Proj";
+              << setw(COLUMN_WIDTH) << "Proj"
+              << setw(COLUMN_WIDTH) << "PV Debt";
 
     return outStream.str();
 }
@@ -159,7 +164,8 @@ string UtilitiesDataCollector::printTabularStringHeaderLine2() {
               << setw(COLUMN_WIDTH) << "Service"
               << setw(COLUMN_WIDTH) << "Storage"
               << setw(COLUMN_WIDTH) << "Demand"
-              << setw(COLUMN_WIDTH) << "Demand";
+              << setw(COLUMN_WIDTH) << "Demand"
+              << setw(COLUMN_WIDTH) << "Service";
 
     return outStream.str();
 }
@@ -186,7 +192,8 @@ string UtilitiesDataCollector::printCompactStringHeader() {
               << id << "debt_serv" << ","
               << id << "stor_vol" << ","
               << id << "obs_ann_dem" << ","
-              << id << "proj_dem" << ",";
+              << id << "proj_dem" << ","
+              << id << "pv_debt_serv" << ",";
 
     return outStream.str();
 }
@@ -205,6 +212,7 @@ void UtilitiesDataCollector::collect_data() {
     net_present_infrastructure_cost.push_back(utility->getInfrastructure_net_present_cost());
     gross_revenues.push_back(utility->getGrossRevenue());
     debt_service_payments.push_back(utility->getCurrent_debt_payment());
+    present_valued_debt_service_payments.push_back(utility->getCurrent_debt_payment_present_valued());
     contingency_fund_contribution.push_back(utility->getCurrent_contingency_fund_contribution());
     drought_mitigation_cost.push_back(utility->getDrought_mitigation_cost());
     insurance_contract_cost.push_back(utility->getInsurance_purchase());
@@ -252,6 +260,8 @@ void UtilitiesDataCollector::checkForNans() const {
     if (std::isnan(gross_revenues.back()))
         throw_with_nested(runtime_error(error.c_str()));
     if (std::isnan(debt_service_payments.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(present_valued_debt_service_payments.back()))
         throw_with_nested(runtime_error(error.c_str()));
     if (std::isnan(contingency_fund_contribution.back()))
         throw_with_nested(runtime_error(error.c_str()));
@@ -336,4 +346,16 @@ const vector<double> &UtilitiesDataCollector::getLt_rof() const {
 
 const vector<double> &UtilitiesDataCollector::getRestricted_demand() const {
     return restricted_demand;
+}
+
+const vector<double> &UtilitiesDataCollector::getUnrestricted_demand() const {
+    return unrestricted_demand;
+}
+
+const vector<double> &UtilitiesDataCollector::getRecorded_annual_demand() const {
+    return recorded_annual_demand;
+}
+
+const vector<double> &UtilitiesDataCollector::getPresent_value_debt_service_payments() const {
+    return recorded_annual_demand;
 }

@@ -28,6 +28,8 @@ public:
 
     double getDebtService(int week) override;
 
+    double getPresentValueDebtService(int week, double discount_rate) override;
+
     double getNetPresentValueAtIssuance(double yearly_discount_rate, int week) const override;
 
     void issueBond(int week, int construction_time, double bond_term_multiplier,

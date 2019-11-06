@@ -22,6 +22,7 @@ private:
     vector<double> gross_revenues;
     vector<double> contingency_fund_contribution;
     vector<double> debt_service_payments;
+    vector<double> present_valued_debt_service_payments;
     vector<double> insurance_contract_cost;
     vector<double> insurance_payout;
     vector<double> drought_mitigation_cost;
@@ -82,6 +83,12 @@ public:
     const vector<double> &getRestricted_demand() const;
 
     void checkForNans() const;
+
+    const vector<double> &getRecorded_annual_demand() const;
+
+    const vector<double> &getPresent_value_debt_service_payments() const;
+
+    const vector<double> &getUnrestricted_demand() const;
 };
 
 

@@ -276,3 +276,68 @@ double ObjectivesCalculator::calculateWorseCaseCostsObjective(
         return obj_value;
     }
 }
+
+// meant to roughly be a ratio between all utility costs including drought mitigation and demands
+//
+double ObjectivesCalculator::calculateUnitTotalCostObjective(const vector<UtilitiesDataCollector *> &utility_data,
+                                                             vector<unsigned long> realizations) {
+    unsigned long n_realizations = utility_data.size();
+    if (realizations.empty()) {
+        realizations = vector<unsigned long>(n_realizations);
+        iota(realizations.begin(), realizations.end(), 0);
+    } else {
+        n_realizations = realizations.size();
+    }
+
+    // for each realization, calculate the ratio of NPV infrastructure cost over
+    // total water demanded to get an estimate of cost per unit demand
+    vector<double> realization_unit_cost;
+    double infra_npv_total;
+    double utility_demanded_water;
+    for (const unsigned long &r : realizations) {
+        auto realization = utility_data[r];
+
+        infra_npv_total = 0;
+        utility_demanded_water = 0;
+
+        infra_npv_total = accumulate(
+                realization->getNet_present_infrastructure_cost().begin(),
+                realization->getNet_present_infrastructure_cost().end(), 0.);
+
+        utility_demanded_water = accumulate(
+                realization->getUnrestricted_demand().begin(),
+                realization->getUnrestricted_demand().end(), 0.);
+
+        realization_unit_cost.push_back(infra_npv_total / utility_demanded_water);
+    }
+
+    // take the average across all realizations for the objective value
+    // in the future, this could be some other statistic
+    return accumulate(realization_unit_cost.begin(), realization_unit_cost.end(), 0.0) / n_realizations;
+}
+
+double ObjectivesCalculator::calculateNetPresentCostInfrastructureObjectiveForVariableDebtService(
+        const vector<UtilitiesDataCollector *> &utility_data, vector<unsigned long> realizations) {
+    // NOTE: FOR NOW, THIS METHOD TO CALCULATE INFRA NPV DOES NOT CATCH DEBT SERVICE DUE AFTER
+    // MODELING PERIOD ENDS. MAY BE BEST TO PRIMARILY USE THIS CALCULATION STYLE WITHIN THE UNIT COST
+    // OBJECTIVE CALCULATION. USING THE ORIGINAL INFRA NPV CALCULATION AS AN OBJECTIVE WILL STILL WORK
+    // BUT WILL BE BASED ON INITIAL ALLOCATIONS FOR THE VARIABLE INTEREST RATE AND VARIABLE DS BOND CLASSES.
+    unsigned long n_realizations = utility_data.size();
+    if (realizations.empty()) {
+        realizations = vector<unsigned long>(n_realizations);
+        iota(realizations.begin(), realizations.end(), 0);
+    } else {
+        n_realizations = realizations.size();
+    }
+
+    double infrastructure_npc = 0;
+    for (const unsigned long &r : realizations) {
+        auto realization = utility_data[r];
+        infrastructure_npc += accumulate(
+                realization->getPresent_value_debt_service_payments().begin(),
+                realization->getPresent_value_debt_service_payments().end(),
+                0.);
+    }
+
+    return infrastructure_npc / n_realizations;
+}

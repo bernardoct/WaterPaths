@@ -133,57 +133,49 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         double OWASA_restriction_trigger = vars[1];
         double raleigh_restriction_trigger = vars[2];
         double cary_restriction_trigger = vars[3];
-        double pittsboro_restriction_trigger = OWASA_restriction_trigger;
-        double chatham_restriction_trigger = OWASA_restriction_trigger;
+//        double pittsboro_restriction_trigger = OWASA_restriction_trigger;
+//        double chatham_restriction_trigger = OWASA_restriction_trigger;
 
         double durham_transfer_trigger = vars[4];
         double owasa_transfer_trigger = vars[5];
         double raleigh_transfer_trigger = vars[6];
-        double pittsboro_transfer_trigger = owasa_transfer_trigger;
-        double chatham_transfer_trigger = owasa_transfer_trigger;
+//        double pittsboro_transfer_trigger = owasa_transfer_trigger;
+//        double chatham_transfer_trigger = owasa_transfer_trigger;
 
         double OWASA_JLA = vars[7];
         double Raleigh_JLA = vars[8];
         double Durham_JLA = vars[9];
         double Cary_JLA = vars[10];
-        double Pittsboro_JLA = OWASA_JLA;
-        double Chatham_JLA = OWASA_JLA;
+//        double Pittsboro_JLA = OWASA_JLA;
+//        double Chatham_JLA = OWASA_JLA;
 
         double durham_annual_payment = vars[11]; // contingency fund
         double owasa_annual_payment = vars[12];
         double raleigh_annual_payment = vars[13];
         double cary_annual_payment = vars[14];
-        double pittsboro_annual_payment = owasa_annual_payment;
-        double chatham_annual_payment = owasa_annual_payment;
+//        double pittsboro_annual_payment = owasa_annual_payment;
+//        double chatham_annual_payment = owasa_annual_payment;
 
         double durham_insurance_use = vars[15]; // insurance st_rof
         double owasa_insurance_use = vars[16];
         double raleigh_insurance_use = vars[17];
         double cary_insurance_use = vars[18];
-        double pittsboro_insurance_use = owasa_insurance_use;
-        double chatham_insurance_use = owasa_insurance_use;
+//        double pittsboro_insurance_use = owasa_insurance_use;
+//        double chatham_insurance_use = owasa_insurance_use;
 
         double durham_insurance_payment = vars[19];
         double owasa_insurance_payment = vars[20];
         double raleigh_insurance_payment = vars[21];
         double cary_insurance_payment = vars[22];
-        double pittsboro_insurance_payment = owasa_insurance_payment;
-        double chatham_insurance_payment = owasa_insurance_payment;
+//        double pittsboro_insurance_payment = owasa_insurance_payment;
+//        double chatham_insurance_payment = owasa_insurance_payment;
 
         double durham_inftrigger = vars[23];
         double owasa_inftrigger = vars[24];
         double raleigh_inftrigger = vars[25];
         double cary_inftrigger = vars[26];
-        double pittsboro_inftrigger = owasa_inftrigger;
-        double chatham_inftrigger = owasa_inftrigger;
-        if (import_export_rof_tables == EXPORT_ROF_TABLES) {
-            durham_inftrigger = 1.1;
-            owasa_inftrigger = 1.1;
-            raleigh_inftrigger = 1.1;
-            cary_inftrigger = 1.1;
-            pittsboro_inftrigger = 1.1;
-            chatham_inftrigger = 1.1;
-        }
+//        double pittsboro_inftrigger = owasa_inftrigger;
+//        double chatham_inftrigger = owasa_inftrigger;
 
         double university_lake_expansion_ranking = vars[27]; // 14
         double Cane_creek_expansion_ranking = vars[28]; // 24
@@ -216,25 +208,58 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         double owasa_inf_buffer = vars[54];
         double raleigh_inf_buffer = vars[55];
         double cary_inf_buffer = vars[56];
-        double pittsboro_inf_buffer = 2;
-        double chatham_inf_buffer = 2;
+//        double pittsboro_inf_buffer = 2;
+//        double chatham_inf_buffer = 2;
+
+        /// Nov 2019: new parameter input file expands on existing 57 parameters to include pittsboro and chatham county
+        /// utilities as well as demand projection parameters:
+        double pittsboro_restriction_trigger = vars[57];
+        double pittsboro_transfer_trigger = vars[58];
+        double Pittsboro_JLA = vars[59];
+        double pittsboro_annual_payment = vars[60];
+        double pittsboro_insurance_use = vars[61];
+        double pittsboro_insurance_payment = vars[62];
+        double pittsboro_inftrigger = vars[63];
+        double pittsboro_inf_buffer = vars[64];
+
+        double chatham_restriction_trigger = vars[65];
+        double chatham_transfer_trigger = vars[66];
+        double Chatham_JLA = vars[67];
+        double chatham_annual_payment = vars[68];
+        double chatham_insurance_use = vars[69];
+        double chatham_insurance_payment = vars[70];
+        double chatham_inftrigger = vars[71];
+        double chatham_inf_buffer = vars[72];
+
+        int demand_projection_forecast_length_years = vars[73]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int demand_projection_historical_years_to_use = vars[74]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int demand_projection_frequency_of_reprojection_years = vars[75]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
 
         /// July 2019: pittsboro and chatham county infrastructure projects
         ///             where there are references to input vars, owasa values are used as placeholders
-        // FIXME: THESE ARE HARD-CODED VALUES FOR NOW THROUGHOUT TO BE LINKED TO DECISION VARIABLES
-        double western_wake_treatment_plant_pittsboro_frac = 0.167; // 16.7% of ultimate 2060 capacity
-        double western_wake_treatment_plant_chatham_frac = 0.296; // 29.6% of ultimate 2060 capacity
-        double western_wake_treatment_plant_rank_pittsboro_low = vars[40]; // 20
-        double western_wake_treatment_plant_rank_pittsboro_high = vars[41]; // 21
-        double western_wake_treatment_plant_rank_chatham_low = vars[40]; // 20
-        double western_wake_treatment_plant_rank_chatham_high = vars[41]; // 21
+        double western_wake_treatment_plant_pittsboro_frac = vars[76]; //0.167; // 16.7% of ultimate 2060 capacity
+        double western_wake_treatment_plant_chatham_frac = vars[77]; //0.296; // 29.6% of ultimate 2060 capacity
+        double western_wake_treatment_plant_rank_pittsboro_low = vars[78]; // 20
+        double western_wake_treatment_plant_rank_pittsboro_high = vars[79]; // 21
+        double western_wake_treatment_plant_rank_chatham_low = vars[80]; // 20
+        double western_wake_treatment_plant_rank_chatham_high = vars[81]; // 21
 
         /// potential independent Pittsboro project(s)
-        double haw_river_intake_expansion_rank_low = 0.9;
-        double haw_river_intake_expansion_rank_high = 0.9;
+        double haw_river_intake_expansion_rank_low = vars[82]; //0.9;
+        double haw_river_intake_expansion_rank_high = vars[83]; //0.9;
 
         /// potential independent Chatham County project(s)
-        double cape_fear_river_intake_rank = 0.8;
+        double cape_fear_river_intake_rank = vars[84]; //0.8;
+
+        /// catch ROF tables
+        if (import_export_rof_tables == EXPORT_ROF_TABLES) {
+            durham_inftrigger = 1.1;
+            owasa_inftrigger = 1.1;
+            raleigh_inftrigger = 1.1;
+            cary_inftrigger = 1.1;
+            pittsboro_inftrigger = 1.1;
+            chatham_inftrigger = 1.1;
+        }
 
         /// July 2019: Because of the way infrastructure connectivity needs to be IDd
         ///     this sub-section of ID variables helps keep things in order

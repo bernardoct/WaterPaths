@@ -20,10 +20,12 @@ namespace Constants {
     const std::string BAR = "/";
     const std::string DEFAULT_SYS_IO_DIR = "./";
 #endif
-    const int NUM_OBJECTIVES = 5;
+//    const int NUM_OBJECTIVES = 5;
+    const int NUM_OBJECTIVES = 6; // added unit cost objective
 //#define NUM_DEC_VAR 57;
-    const int NUM_DEC_VAR = 57; // infrastructure turned on
+//    const int NUM_DEC_VAR = 57; // infrastructure turned on
 //    const int NUM_DEC_VAR = 30; // infrastructure turned off
+    const int NUM_DEC_VAR = 85; // new utilities plus infrastructure
 
     const std::string DEFAULT_DATA_DIR = "TestFiles" + BAR;
     const std::string DEFAULT_OUTPUT_DIR = "output" + BAR;

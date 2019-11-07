@@ -382,6 +382,8 @@ void MasterDataCollector::printUtilityObjectivesToRowOutStream(vector<UtilitiesD
     calculatePeakFinancialCostsObjective(u, realizations_ran);
     /// Worse Case Costs
     double worse_cost = ObjectivesCalculator::calculateWorseCaseCostsObjective(u, realizations_ran);
+    /// Unit Cost
+    double unit_cost = ObjectivesCalculator::calculateUnitTotalCostObjective(u, realizations_ran);
 
     outStream << setw(COLUMN_WIDTH) << u[realizations_ran[0]]->name
               /// Reliability
@@ -404,6 +406,10 @@ void MasterDataCollector::printUtilityObjectivesToRowOutStream(vector<UtilitiesD
               << setw(COLUMN_WIDTH * 2)
               << setprecision(COLUMN_PRECISION)
               << worse_cost
+              /// Unit Cost
+              << setw(COLUMN_WIDTH * 2)
+              << setprecision(COLUMN_PRECISION)
+              << unit_cost
               << endl;
 
     objectives.push_back(reliability);
@@ -411,6 +417,7 @@ void MasterDataCollector::printUtilityObjectivesToRowOutStream(vector<UtilitiesD
     objectives.push_back(inf_npc);
     objectives.push_back(financial_cost);
     objectives.push_back(worse_cost);
+    objectives.push_back(unit_cost);
 }
 
 vector<double> MasterDataCollector::calculatePrintObjectives(string file_name, bool print) {
@@ -430,7 +437,8 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name, b
                   //              << setw(COLUMN_WIDTH * 2) << "Jordan Lake Alloc."
                   << setw(COLUMN_WIDTH * 2) << "Infrastructure NPC"
                   << setw(COLUMN_WIDTH * 2) << "Peak Financial Cost"
-                  << setw(COLUMN_WIDTH * 2) << "Worse Case Costs" << endl;
+                  << setw(COLUMN_WIDTH * 2) << "Worse Case Costs"
+                  << setw(COLUMN_WIDTH * 2) << "Unit Cost" << endl;
 
         for (auto &u : utility_collectors) {
             printUtilityObjectivesToRowOutStream(u, outStream, objectives);
@@ -466,6 +474,8 @@ vector<double> MasterDataCollector::calculatePrintObjectives(string file_name, b
                     (ObjectivesCalculator::calculatePeakFinancialCostsObjective(u, realizations_ran));
             objectives.push_back
                     (ObjectivesCalculator::calculateWorseCaseCostsObjective(u, realizations_ran));
+            objectives.push_back
+                    (ObjectivesCalculator::calculateUnitTotalCostObjective(u, realizations_ran));
         }
     }
     return objectives;

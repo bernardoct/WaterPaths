@@ -43,6 +43,7 @@ private:
 
     /// Drought mitigation
     double fund_contribution = 0;
+    double contingency_fund_cap;
     double demand_multiplier = 1;
     double demand_offset = 0;
     double restricted_price = NON_INITIALIZED;
@@ -87,6 +88,7 @@ public:
             vector<double>& annual_demand_projections,
             int number_of_week_demands,
             const double percent_contingency_fund_contribution,
+            const double contingency_fund_cap,
             const vector<vector<double>> &typesMonthlyDemandFraction,
             const vector<vector<double>> &typesMonthlyWaterPrice,
             WwtpDischargeRule wwtp_discharge_rule,
@@ -97,6 +99,7 @@ public:
 
     Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations, vector<double>& annual_demand_projections,
                 int number_of_week_demands, const double percent_contingency_fund_contribution,
+                const double contingency_fund_cap,
                 const vector<vector<double>> &typesMonthlyDemandFraction,
                 const vector<vector<double>> &typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,
                 double demand_buffer, const vector<int> &rof_infra_construction_order,
@@ -109,6 +112,7 @@ public:
 
     Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations, vector<double>& annual_demand_projections,
                 int number_of_week_demands, const double percent_contingency_fund_contribution,
+                const double contingency_fund_cap,
                 const vector<vector<double>> &typesMonthlyDemandFraction,
                 const vector<vector<double>> &typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,
                 double demand_buffer, const vector<int> &rof_infra_construction_order,

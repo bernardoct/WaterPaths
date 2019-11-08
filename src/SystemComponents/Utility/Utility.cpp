@@ -38,6 +38,7 @@ Utility::Utility(
         vector<double>& annual_demand_projections,
         int number_of_week_demands,
         const double percent_contingency_fund_contribution,
+        const double contingency_fund_cap,
         const vector<vector<double>> &typesMonthlyDemandFraction,
         const vector<vector<double>> &typesMonthlyWaterPrice,
         WwtpDischargeRule wwtp_discharge_rule,
@@ -57,6 +58,7 @@ Utility::Utility(
         number_of_week_demands(number_of_week_demands),
         name(name),
         percent_contingency_fund_contribution(percent_contingency_fund_contribution),
+        contingency_fund_cap(contingency_fund_cap),
         demand_projection_forecast_length(demand_projection_forecast_length),
         demand_projection_historical_period_to_use(demand_projection_historical_period_to_use),
         demand_projection_reprojection_frequency(demand_projection_reprojection_frequency),
@@ -91,6 +93,7 @@ Utility::Utility(
  */
 Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations, vector<double>& annual_demand_projections,
                  int number_of_week_demands, const double percent_contingency_fund_contribution,
+                 const double contingency_fund_cap,
                  const vector<vector<double>> &typesMonthlyDemandFraction,
                  const vector<vector<double>> &typesMonthlyWaterPrice,
                  WwtpDischargeRule wwtp_discharge_rule,
@@ -113,6 +116,7 @@ Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_r
         number_of_week_demands(number_of_week_demands),
         name(name),
         percent_contingency_fund_contribution(percent_contingency_fund_contribution),
+        contingency_fund_cap(contingency_fund_cap),
         demand_projection_forecast_length(demand_projection_forecast_length),
         demand_projection_historical_period_to_use(demand_projection_historical_period_to_use),
         demand_projection_reprojection_frequency(demand_projection_reprojection_frequency),
@@ -167,6 +171,7 @@ Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_r
  */
 Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations, vector<double>& annual_demand_projections,
                  int number_of_week_demands, const double percent_contingency_fund_contribution,
+                 const double contingency_fund_cap,
                  const vector<vector<double>> &typesMonthlyDemandFraction,
                  const vector<vector<double>> &typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,
                  double demand_buffer, const vector<int> &rof_infra_construction_order,
@@ -188,6 +193,7 @@ Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_r
         number_of_week_demands(number_of_week_demands),
         name(name),
         percent_contingency_fund_contribution(percent_contingency_fund_contribution),
+        contingency_fund_cap(contingency_fund_cap),
         demand_projection_forecast_length(demand_projection_forecast_length),
         demand_projection_historical_period_to_use(demand_projection_historical_period_to_use),
         demand_projection_reprojection_frequency(demand_projection_reprojection_frequency),
@@ -242,6 +248,7 @@ Utility::Utility(Utility &utility) :
         number_of_week_demands(utility.number_of_week_demands),
         name(utility.name),
         percent_contingency_fund_contribution(utility.percent_contingency_fund_contribution),
+        contingency_fund_cap(contingency_fund_cap),
         demand_buffer(utility.demand_buffer),
         infrastructure_construction_manager(utility.infrastructure_construction_manager) {
     infrastructure_construction_manager.connectWaterSourcesVectorsToUtilitys(water_sources,
@@ -585,10 +592,12 @@ void Utility::updateContingencyFundAndDebtService(
             restricted_demand * (current_price - unrestricted_price);
 
     // contingency fund cannot get negative.
-    contingency_fund = max(contingency_fund + projected_fund_contribution -
-                           revenue_losses - transfer_costs +
-                           recouped_loss_price_surcharge,
-                           0.0);
+    // fund also capped.
+    double previous_fund_level = contingency_fund;
+    contingency_fund = max(
+            min(contingency_fund + projected_fund_contribution - revenue_losses -
+                    transfer_costs + recouped_loss_price_surcharge,
+                contingency_fund_cap), 0.0);
 
     // Update variables for data collection and next iteration.
     drought_mitigation_cost = max(revenue_losses + transfer_costs -
@@ -596,9 +605,10 @@ void Utility::updateContingencyFundAndDebtService(
                                   recouped_loss_price_surcharge,
                                   0.0);
 
+    // reduce actual contribution based on revenue losses and transfer costs or cap on fund
     fund_contribution =
-            projected_fund_contribution - revenue_losses - transfer_costs +
-            recouped_loss_price_surcharge;
+            min(projected_fund_contribution - revenue_losses - transfer_costs + recouped_loss_price_surcharge,
+                    contingency_fund_cap - previous_fund_level);
 
     resetDroughtMitigationVariables();
 

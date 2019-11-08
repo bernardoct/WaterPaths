@@ -41,7 +41,10 @@ Utility::Utility(
         const vector<vector<double>> &typesMonthlyDemandFraction,
         const vector<vector<double>> &typesMonthlyWaterPrice,
         WwtpDischargeRule wwtp_discharge_rule,
-        double demand_buffer) :
+        double demand_buffer,
+        int demand_projection_forecast_length,
+        int demand_projection_historical_period_to_use,
+        int demand_projection_reprojection_frequency) :
         total_storage_capacity(NONE),
         total_available_volume(NONE),
         wwtp_discharge_rule(wwtp_discharge_rule),
@@ -54,6 +57,9 @@ Utility::Utility(
         number_of_week_demands(number_of_week_demands),
         name(name),
         percent_contingency_fund_contribution(percent_contingency_fund_contribution),
+        demand_projection_forecast_length(demand_projection_forecast_length),
+        demand_projection_historical_period_to_use(demand_projection_historical_period_to_use),
+        demand_projection_reprojection_frequency(demand_projection_reprojection_frequency),
         demand_buffer(demand_buffer) {
     calculateWeeklyAverageWaterPrices(typesMonthlyDemandFraction,
                                       typesMonthlyWaterPrice);
@@ -91,7 +97,10 @@ Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_r
                  double demand_buffer, const vector<int> &rof_infra_construction_order,
                  const vector<int> &demand_infra_construction_order,
                  const vector<double> &infra_construction_triggers, double infra_discount_rate,
-                 const vector<vector<int>>& infra_if_built_remove, double bond_term, double bond_interest_rate) :
+                 const vector<vector<int>>& infra_if_built_remove, double bond_term, double bond_interest_rate,
+                 int demand_projection_forecast_length,
+                 int demand_projection_historical_period_to_use,
+                 int demand_projection_reprojection_frequency) :
         total_storage_capacity(NONE),
         total_available_volume(NONE),
         wwtp_discharge_rule(wwtp_discharge_rule),
@@ -104,6 +113,9 @@ Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_r
         number_of_week_demands(number_of_week_demands),
         name(name),
         percent_contingency_fund_contribution(percent_contingency_fund_contribution),
+        demand_projection_forecast_length(demand_projection_forecast_length),
+        demand_projection_historical_period_to_use(demand_projection_historical_period_to_use),
+        demand_projection_reprojection_frequency(demand_projection_reprojection_frequency),
         demand_buffer(demand_buffer) {
     infrastructure_construction_manager =
             InfrastructureManager(id, infra_construction_triggers, infra_if_built_remove,
@@ -160,7 +172,10 @@ Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_r
                  double demand_buffer, const vector<int> &rof_infra_construction_order,
                  const vector<int> &demand_infra_construction_order,
                  const vector<double> &infra_construction_triggers, double infra_discount_rate, double bond_term,
-                 double bond_interest_rate) :
+                 double bond_interest_rate,
+                 int demand_projection_forecast_length,
+                 int demand_projection_historical_period_to_use,
+                 int demand_projection_reprojection_frequency) :
         total_storage_capacity(NONE),
         total_available_volume(NONE),
         wwtp_discharge_rule(wwtp_discharge_rule),
@@ -173,6 +188,9 @@ Utility::Utility(const char *name, int id, vector<vector<double>>& demands_all_r
         number_of_week_demands(number_of_week_demands),
         name(name),
         percent_contingency_fund_contribution(percent_contingency_fund_contribution),
+        demand_projection_forecast_length(demand_projection_forecast_length),
+        demand_projection_historical_period_to_use(demand_projection_historical_period_to_use),
+        demand_projection_reprojection_frequency(demand_projection_reprojection_frequency),
         demand_buffer(demand_buffer) {
     infrastructure_construction_manager = InfrastructureManager(id, infra_construction_triggers,
                                                                 vector<vector<int>>(), infra_discount_rate,
@@ -217,6 +235,9 @@ Utility::Utility(Utility &utility) :
         infra_discount_rate(utility.infra_discount_rate),
         bond_term_multiplier(utility.bond_term_multiplier),
         bond_interest_rate_multiplier(utility.bond_interest_rate_multiplier),
+        demand_projection_forecast_length(utility.demand_projection_forecast_length),
+        demand_projection_historical_period_to_use(utility.demand_projection_historical_period_to_use),
+        demand_projection_reprojection_frequency(utility.demand_projection_reprojection_frequency),
         id(utility.id),
         number_of_week_demands(utility.number_of_week_demands),
         name(utility.name),
@@ -401,25 +422,25 @@ void Utility::calculateDemandEstimateFromProjection(int week, bool reproject_dem
     /// in the future, the look-ahead period for projection does not have to be the same
     /// as the past period used to calculate a new growth rate projection (both set to 5 now)
     double average_growth_rate = 0;
-    if (year >= LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION && reproject_demand && (year % FREQUENCY_OF_DEMAND_REPROJECTION_YEARS == 0)) {
+    if (year >= demand_projection_historical_period_to_use && reproject_demand && (year % demand_projection_reprojection_frequency == 0)) {
         // calculate average annual growth rate over recent past
         average_growth_rate =
-                (annual_average_weekly_demand[year] - annual_average_weekly_demand[year-LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION]) /
-                LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION;
+                (annual_average_weekly_demand[year] - annual_average_weekly_demand[year-demand_projection_historical_period_to_use]) /
+                        demand_projection_historical_period_to_use;
 
         // estimate demand in future year for LTROF calculation
-        future_demand_estimate = current_year_recorded_demand + (average_growth_rate * LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION);
+        future_demand_estimate = current_year_recorded_demand + (average_growth_rate * demand_projection_forecast_length);
 
         // overwrite annual demand projections for future years to use reprojected demands until next reprojection occurs
         int i = 0;
-        for (int yr = year; yr <= year + FREQUENCY_OF_DEMAND_REPROJECTION_YEARS; yr++) {
+        for (int yr = year; yr <= year + demand_projection_reprojection_frequency; yr++) {
             annual_demand_projections[yr] = current_year_recorded_demand + average_growth_rate * i;
             i += 1;
         }
     } else {
         // comment for future expected mistakes: if there is an over-indexing error here, the look-ahead year range
         // is probably too large for the input dataset of annual projected demands, which should be extended
-        future_demand_estimate = annual_demand_projections[year+LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION];
+        future_demand_estimate = annual_demand_projections[year+demand_projection_forecast_length];
     }
 }
 

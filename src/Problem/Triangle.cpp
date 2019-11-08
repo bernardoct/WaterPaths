@@ -231,6 +231,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         double chatham_inftrigger = vars[71];
         double chatham_inf_buffer = vars[72];
 
+        /// Nov 2019: For now, every utility shares same demand projection parameters
+        /// should be expanded for each utility?
         int demand_projection_forecast_length_years = vars[73]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
         int demand_projection_historical_years_to_use = vars[74]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
         int demand_projection_frequency_of_reprojection_years = vars[75]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
@@ -1150,37 +1152,54 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         Utility cary((char *) "Cary", uid_cary, demand_cary, demand_projection_cary,
                      demand_n_weeks, cary_annual_payment, caryDemandClassesFractions,
                      caryUserClassesWaterPrices, wwtp_discharge_cary, cary_inf_buffer, vector<int>(),
-                     demand_triggered_infra_order_cary, demand_infra_cary, discount_rate, bond_term[0], bond_rate[0]);
+                     demand_triggered_infra_order_cary, demand_infra_cary, discount_rate, bond_term[0], bond_rate[0],
+                     demand_projection_forecast_length_years,
+                     demand_projection_historical_years_to_use,
+                     demand_projection_frequency_of_reprojection_years);
         Utility durham((char *) "Durham", uid_durham, demand_durham, demand_projection_durham,
                        demand_n_weeks, durham_annual_payment,
                        durhamDemandClassesFractions, durhamUserClassesWaterPrices, wwtp_discharge_durham,
                        durham_inf_buffer, rof_triggered_infra_order_durham,
-                       vector<int>(), rofs_infra_durham, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[1], bond_rate[1]);
+                       vector<int>(), rofs_infra_durham, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[1], bond_rate[1],
+                       demand_projection_forecast_length_years,
+                       demand_projection_historical_years_to_use,
+                       demand_projection_frequency_of_reprojection_years);
         Utility owasa((char *) "OWASA", uid_owasa, demand_owasa, demand_projection_owasa,
                       demand_n_weeks, owasa_annual_payment,
                       owasaDemandClassesFractions, owasaUserClassesWaterPrices, wwtp_discharge_owasa, owasa_inf_buffer,
                       rof_triggered_infra_order_owasa,
-                      vector<int>(), rofs_infra_owasa, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[2], bond_rate[2]);
+                      vector<int>(), rofs_infra_owasa, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[2], bond_rate[2],
+                      demand_projection_forecast_length_years,
+                      demand_projection_historical_years_to_use,
+                      demand_projection_frequency_of_reprojection_years);
         Utility raleigh((char *) "Raleigh", uid_raleigh, demand_raleigh, demand_projection_raleigh,
                         demand_n_weeks, raleigh_annual_payment,
                         raleighDemandClassesFractions, raleighUserClassesWaterPrices, wwtp_discharge_raleigh,
                         raleigh_inf_buffer, rof_triggered_infra_order_raleigh,
                         vector<int>(), rofs_infra_raleigh, discount_rate,
-                        wjlwtp_remove_from_to_build_list, bond_term[3], bond_rate[3]);
+                        wjlwtp_remove_from_to_build_list, bond_term[3], bond_rate[3],
+                        demand_projection_forecast_length_years,
+                        demand_projection_historical_years_to_use,
+                        demand_projection_frequency_of_reprojection_years);
 
-        // FIXME: SETUP NEW UTILITIES HERE
         /// July 2019: Add Pittsboro and Chatham County utilities with placeholder parameters and input variables
         ///             from OWASA until numbers can be determined
         Utility chatham((char *) "Chatham County", uid_chatham, demand_chatham, demand_projection_chatham,
                         demand_n_weeks, chatham_annual_payment,
                         chathamDemandClassesFractions, chathamUserClassesWaterPrices, wwtp_discharge_chatham,
                         chatham_inf_buffer, rof_triggered_infra_order_chatham,
-                        vector<int>(), rofs_infra_chatham, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[4], bond_rate[4]);
+                        vector<int>(), rofs_infra_chatham, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[4], bond_rate[4],
+                        demand_projection_forecast_length_years,
+                        demand_projection_historical_years_to_use,
+                        demand_projection_frequency_of_reprojection_years);
         Utility pittsboro((char *) "Pittsboro", uid_pittsboro, demand_pittsboro, demand_projection_pittsboro,
                       demand_n_weeks, pittsboro_annual_payment,
                       pittsboroDemandClassesFractions, pittsboroUserClassesWaterPrices, wwtp_discharge_pittsboro,
                       pittsboro_inf_buffer, rof_triggered_infra_order_pittsboro,
-                      vector<int>(), rofs_infra_pittsboro, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[5], bond_rate[5]);
+                      vector<int>(), rofs_infra_pittsboro, discount_rate, wjlwtp_remove_from_to_build_list, bond_term[5], bond_rate[5],
+                      demand_projection_forecast_length_years,
+                      demand_projection_historical_years_to_use,
+                      demand_projection_frequency_of_reprojection_years);
 
         vector<Utility *> utilities;
         utilities.push_back(&cary);

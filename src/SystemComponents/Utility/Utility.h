@@ -70,6 +70,9 @@ private:
     double future_demand_estimate = 0;
     double current_year_recorded_demand = 0;
     vector<double> annual_average_weekly_demand;
+    int demand_projection_forecast_length = LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION;
+    int demand_projection_historical_period_to_use = LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION;
+    int demand_projection_reprojection_frequency = FREQUENCY_OF_DEMAND_REPROJECTION_YEARS;
 
 public:
     const int id;
@@ -87,7 +90,10 @@ public:
             const vector<vector<double>> &typesMonthlyDemandFraction,
             const vector<vector<double>> &typesMonthlyWaterPrice,
             WwtpDischargeRule wwtp_discharge_rule,
-            double demand_buffer);
+            double demand_buffer,
+            int demand_projection_forecast_length,
+            int demand_projection_historical_period_to_use,
+            int demand_projection_reprojection_frequency);
 
     Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations, vector<double>& annual_demand_projections,
                 int number_of_week_demands, const double percent_contingency_fund_contribution,
@@ -96,7 +102,10 @@ public:
                 double demand_buffer, const vector<int> &rof_infra_construction_order,
                 const vector<int> &demand_infra_construction_order,
                 const vector<double> &infra_construction_triggers, double infra_discount_rate,
-                const vector<vector<int>>& infra_if_built_remove, double bond_term, double bond_interest_rate);
+                const vector<vector<int>>& infra_if_built_remove, double bond_term, double bond_interest_rate,
+                int demand_projection_forecast_length,
+                int demand_projection_historical_period_to_use,
+                int demand_projection_reprojection_frequency);
 
     Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations, vector<double>& annual_demand_projections,
                 int number_of_week_demands, const double percent_contingency_fund_contribution,
@@ -105,7 +114,10 @@ public:
                 double demand_buffer, const vector<int> &rof_infra_construction_order,
                 const vector<int> &demand_infra_construction_order,
                 const vector<double> &infra_construction_triggers, double infra_discount_rate, double bond_term,
-                double bond_interest_rate);
+                double bond_interest_rate,
+                int demand_projection_forecast_length,
+                int demand_projection_historical_period_to_use,
+                int demand_projection_reprojection_frequency);
 
     Utility(Utility &utility);
 

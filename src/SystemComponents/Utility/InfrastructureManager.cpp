@@ -264,7 +264,7 @@ void InfrastructureManager::waterTreatmentPlantJointConstructionHandler(unsigned
 
         non_priority_draw_water_source->push_back((int) wtp->parent_reservoir_ID);
     } else {
-        throw logic_error("Error in InfrastructureManager, waterTreatmentPlaceJointConstructionHandler: "
+        throw logic_error("Error in InfrastructureManager::waterTreatmentPlantJointConstructionHandler, "
                           "WTP to be constructed is not of either fixed or variable treatment allocations.");
     }
 

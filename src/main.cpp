@@ -91,9 +91,10 @@ int main(int argc, char *argv[]) {
     vector<vector<double>> utilities_rdm;
     vector<vector<double>> water_sources_rdm;
     vector<vector<double>> policies_rdm;
+    unsigned long triangle_model_formulation = -1;
 
     int c;
-    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:S:A:R:U:P:W:I:C:O:B:")) != -1) {
+    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:S:A:R:U:P:W:I:C:O:B:F:")) != -1) {
         switch (c) {
             case '?':
                 fprintf(stdout,
@@ -132,7 +133,8 @@ int main(int argc, char *argv[]) {
                         "ROF table binaries\n"
                         "\t-C: Import/export rof tables (1: export, 0:"
                         " do nothing (standard), -1: import)\n"
-                        "\t-B: Export objectives for all utilities on a single line",
+                        "\t-B: Export objectives for all utilities on a single line\n"
+                        "\t-F: Triangle model formulation (either 0, 1, or 2)",
                         argv[0], n_realizations, n_weeks, system_io.c_str());
                 return -1;
             case 's':
@@ -216,6 +218,9 @@ int main(int argc, char *argv[]) {
             case 'O':
                 rof_tables_directory = optarg;
                 break;
+            case 'F':
+                triangle_model_formulation = atoi(optarg);
+                break;
             default:
                 fprintf(stderr, "Unknown option (-%c)\n", c);
                 return -1;
@@ -236,6 +241,8 @@ int main(int argc, char *argv[]) {
     problem.setN_weeks(n_weeks);
     problem.setIODirectory(system_io);
     problem.setN_threads((unsigned long) n_threads);
+
+    problem.setFormulation(triangle_model_formulation);
 
     // Load bootstrap samples if necessary.
     if (strlen(bootstrap_file.c_str()) > 2) {

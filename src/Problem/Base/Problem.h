@@ -52,6 +52,8 @@ protected:
     vector<vector<double>> policies_rdm;
     vector<vector<Matrix2D<double>>> rof_tables;
 
+    unsigned long formulation;
+
     double checkAndFixInfraExpansionHighLowOrder(vector<int> *order, vector<double> *trigger, int id_low, int id_high,
             double capacity_low, double capacity_high);
 
@@ -105,6 +107,7 @@ public:
     void runBootstrapRealizationThinning(int standard_solution, int n_sets, int n_bs_samples,
                                          int threads, vector<vector<int>> &realizations_to_run);
 
+    void setFormulation(unsigned long triangle_formulation);
 };
 
 

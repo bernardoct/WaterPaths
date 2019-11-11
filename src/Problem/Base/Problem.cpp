@@ -148,6 +148,12 @@ void Problem::setN_threads(unsigned long n_threads) {
     Problem::n_threads = n_threads;
 }
 
+void Problem::setFormulation(unsigned long triangle_formulation) {
+    Problem::formulation = triangle_formulation;
+
+    cout << "The current model formulation flag is " << triangle_formulation << endl;
+}
+
 const vector<double> &Problem::getObjectives() const {
     return objectives;
 }

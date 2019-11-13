@@ -34,7 +34,7 @@ Durham_Infrastructure_DemandBuffer_Range = c(0,10) # in MGD
 Durham_DemandProjection_ForecastLength = c(5) # years
 Durham_DemandProjection_HistoricalLookBack = c(5) # years
 Durham_DemandProjection_ReprojectionFrequency = c(5) # years
-Durham_SharedJLWTP_TreatmentAllocation = c(0.05) # fraction of total capacity
+Durham_SharedJLWTP_TreatmentAllocation = c(0,0.5) # fraction of total capacity
 
 # OWASA
 OWASA_Restriction_ROF_Trigger_Range = c(0.01,0.25)
@@ -49,7 +49,7 @@ OWASA_Infrastructure_DemandBuffer_Range = c(0,10) # in MGD
 OWASA_DemandProjection_ForecastLength = c(5) # years
 OWASA_DemandProjection_HistoricalLookBack = c(5) # years
 OWASA_DemandProjection_ReprojectionFrequency = c(5) # years
-OWASA_SharedJLWTP_TreatmentAllocation = c(0.05) # fraction of total capacity
+OWASA_SharedJLWTP_TreatmentAllocation = c(0,0.2) # fraction of total capacity
 
 # Raleigh
 Raleigh_Restriction_ROF_Trigger_Range = c(0.01,0.25)
@@ -80,7 +80,7 @@ Chatham_Infrastructure_DemandBuffer_Range = c(0,10) # in MGD
 Chatham_DemandProjection_ForecastLength = c(5) # years
 Chatham_DemandProjection_HistoricalLookBack = c(5) # years
 Chatham_DemandProjection_ReprojectionFrequency = c(5) # years
-Chatham_SharedJLWTP_TreatmentAllocation = c(0.05) # fraction of total capacity
+Chatham_SharedJLWTP_TreatmentAllocation = c(0,0.4) # fraction of total capacity
 
 # Pittsboro
 Pittsboro_Restriction_ROF_Trigger_Range = c(0.01,0.25)
@@ -95,7 +95,7 @@ Pittsboro_Infrastructure_DemandBuffer_Range = c(0,10) # in MGD
 Pittsboro_DemandProjection_ForecastLength = c(5) # years
 Pittsboro_DemandProjection_HistoricalLookBack = c(5) # years
 Pittsboro_DemandProjection_ReprojectionFrequency = c(5) # years
-Pittsboro_SharedJLWTP_TreatmentAllocation = c(0.05) # fraction of total capacity
+Pittsboro_SharedJLWTP_TreatmentAllocation = c(0,0.3) # fraction of total capacity
 
 ## Infrastructure pathway/sequencing parameters organized by utility ---------
 
@@ -140,10 +140,8 @@ Pittsboro_HawRiverIntake_Expansion_High = c(0.01,0.99)
 Pittsboro_SharedJLWTP_Low = c(0.01,0.99)
 Pittsboro_SharedJLWTP_High = c(0.01,0.99)
 
-## Build sets of parameters for 1,000 simulations -----------------------
+## List of all parameter names ------------------------------------------
 all_param_names = ls()
-parameter_sets = matrix(NA,1000,length(all_param_names))
-
 # double-check this, links each parameter (based on their order in ls()) to the order they must be in for
 # the triangle parameter input file (ls should correct R variables in memory to alphabetical order)
 # the indices in this vector are direct from Triangle.cpp and a +1 is added to the vector to correct for
@@ -153,7 +151,10 @@ column_indices_for_each_parameter = c(14,82,88,89,90,56,26,22,18,10,3,46,47,48, 
                                       11,83,91,92,93,53,23,19,15,9,35,34,33,32,0,43,42,50,31,4, # Durham, 20 params
                                       28,12,84,94,95,96,54,24,20,16,7,1,41,40,49,30,29,5,27, # OWASA, 19 params
                                       60,87,103,104,105,80,79,64,63,62,61,59,57,76,75,73,58, # Pittsboro, 17 params
-                                      13,85,97,98,99,39,52,55,25,21,17,8,36,38,2,37,45,44,51,6) + 1
+                                      13,85,97,98,99,39,52,55,25,21,17,8,36,38,2,37,45,44,51,6) + 1 # Raleigh, 20 params
+
+## Build sets of parameters for 1,000 simulations -----------------------
+parameter_sets = matrix(NA,1000,length(all_param_names))
 
 # build many parameter sets based on ranges of values
 for (pset in 1:1000) {
@@ -171,6 +172,51 @@ for (pset in 1:1000) {
 
 write.table(parameter_sets, "parameter_sets_1000_solutions.csv", sep = ",", row.names = F, col.names = F)
 
+
+## Build input file that varies specific parameters and holds all others steady ----------------
+# names need to match exactly with names within the all_parameter_names vector
+# and get their associated index
+params_to_vary = c("Pittsboro_SharedJLWTP_TreatmentAllocation", 
+                   "Chatham_SharedJLWTP_TreatmentAllocation", 
+                   "Durham_SharedJLWTP_TreatmentAllocation", 
+                   "OWASA_SharedJLWTP_TreatmentAllocation")
+
+param_input_file_index = c(); param_ranges = matrix(NA, 4, length(params_to_vary)); pi = 1
+for (p in params_to_vary) {
+  param_input_file_index = c(param_input_file_index,
+                             column_indices_for_each_parameter[which(all_param_names == p)])
+  if (length(get(p)) == 1) {print("Break the loop, this parameter needs a range to vary it."); break} else {
+    param_ranges[,pi] = seq(get(p)[1], get(p)[2], length.out = ncol(param_ranges))
+  }
+  pi = pi + 1
+}
+
+library(tidyverse)
+p_r = as.data.frame(param_ranges)
+p_ranges_expanded = expand(p_r,V1,V2,V3,V4)
+colnames(p_ranges_expanded) = params_to_vary
+
+parameter_sets = matrix(NA,nrow(p_ranges_expanded),length(all_param_names))
+
+# build many parameter sets based on ranges of values
+i = 1
+for (param in all_param_names) {
+  if (param %in% params_to_vary) {
+    full_range_of_param = as.vector(as.matrix(p_ranges_expanded[,which(params_to_vary == param)]))
+    parameter_sets[,column_indices_for_each_parameter[i]] = full_range_of_param
+  } else {
+    if (length(get(param)) == 1) {
+      parameter_sets[,column_indices_for_each_parameter[i]] = get(param)
+    } else {
+      parameter_sets[,column_indices_for_each_parameter[i]] = runif(1,min = get(param)[1], max = get(param)[2])
+    }
+  }
+
+  i = i + 1
+}
+
+write.table(parameter_sets, "parameter_sets_specific_params_varied.csv", 
+            sep = ",", row.names = F, col.names = F)
 
 
 

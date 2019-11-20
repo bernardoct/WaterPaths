@@ -23,7 +23,7 @@ protected:
     double total_demand = 0;
     double policy_added_demand = 0;
     double permitting_time = NON_INITIALIZED;
-    vector<Bond> bonds;
+    vector<Bond *> bonds;
     double upstream_min_env_inflow = 0;
     double capacity = NON_INITIALIZED;
 
@@ -74,7 +74,7 @@ public:
 
     WaterSource(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
                 double treatment_capacity, vector<int> connected_sources, const int source_type,
-                const vector<double> construction_time_range, double permitting_period, vector<Bond> bonds);
+                const vector<double> construction_time_range, double permitting_period, vector<Bond *> bonds);
 
     WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
                     const double capacity, double treatment_capacity, vector<int> built_in_sequence,

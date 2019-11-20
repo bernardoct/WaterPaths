@@ -3,7 +3,7 @@
 //
 
 #include "ReuseParser.h"
-#include "MasterElementParser.h"
+#include "MasterSystemInputFileParser.h"
 
 
 void ReuseParser::parseVariables(vector<vector<string>> &block) {

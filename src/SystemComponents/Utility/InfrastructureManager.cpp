@@ -179,8 +179,7 @@ InfrastructureManager::setWaterSourceOnline(unsigned int source_id, int week, do
 
 void
 InfrastructureManager::waterTreatmentPlantConstructionHandler(unsigned int source_id, double &total_storage_capacity) {
-    auto wtp = dynamic_cast<SequentialJointTreatmentExpansion *>
-    (water_sources->at(source_id));
+    auto wtp = dynamic_cast<SequentialJointTreatmentExpansion *>(water_sources->at(source_id));
 
     /// Add treatment capacity to source
     double added_capacity = wtp->implementTreatmentCapacity(id);

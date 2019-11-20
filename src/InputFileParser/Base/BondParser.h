@@ -26,7 +26,6 @@ protected:
     static void updateId();
 
 public:
-    ~BondParser();
 
     static int getId();
 

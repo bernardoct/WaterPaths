@@ -22,7 +22,7 @@ public:
                                       const int expansion_sequence_id,
                                       vector<int> connected_sources,
                                       vector<double> &sequential_treatment_capacity,
-                                      vector<Bond> &bonds,
+                                      vector<Bond *> &bonds,
                                       const vector<double> &construction_time_range,
                                       double permitting_period);
 

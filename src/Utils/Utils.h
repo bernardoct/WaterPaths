@@ -45,6 +45,10 @@ public:
     static vector<Bond *> copyBonds(vector<Bond *> bonds_original);
 
     static void createDir(string directory);
+
+    static vector<string> tokenizeString(string &line, char token = ' ');
+
+    static vector<int> tokenizeStringInt(string &line, char token = ' ');
 };
 
 

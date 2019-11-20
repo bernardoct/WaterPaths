@@ -108,8 +108,6 @@ set(SOURCE_FILES
         src/Utils/QPSolver/QuadProg++.h
         src/Utils/Utils.cpp
         src/Utils/Utils.h
-        src/Problem/Triangle.cpp
-        src/Problem/Triangle.h
         src/Problem/Base/Problem.cpp
         src/Problem/Base/Problem.h
         src/SystemComponents/Bonds/Base/Bond.cpp
@@ -121,7 +119,7 @@ set(SOURCE_FILES
         src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.cpp
         src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.h
         src/Problem/PaperTestProblem.cpp
-        src/Problem/PaperTestProblem.h)
+        src/Problem/PaperTestProblem.h src/InputFileParser/Base/ElementParser.cpp src/InputFileParser/Base/ElementParser.h src/InputFileParser/Base/WaterSourceParser.cpp src/InputFileParser/Base/WaterSourceParser.h src/InputFileParser/ReuseParser.cpp src/InputFileParser/ReuseParser.h src/InputFileParser/MasterElementParser.cpp src/InputFileParser/MasterElementParser.h src/InputFileParser/Bonds/LevelDebtServiceBondParser.cpp src/InputFileParser/Bonds/LevelDebtServiceBondParser.h src/InputFileParser/Base/BondParser.cpp src/InputFileParser/Base/BondParser.h src/InputFileParser/Bonds/MasterBondParser.cpp src/InputFileParser/Bonds/MasterBondParser.h)
 
 set(TEST_SOURCE_FILES
         src/ContinuityModels/Base/ContinuityModel.cpp
@@ -217,8 +215,6 @@ set(TEST_SOURCE_FILES
         src/Utils/QPSolver/QuadProg++.h
         src/Utils/Utils.cpp
         src/Utils/Utils.h
-        src/Problem/Triangle.cpp
-        src/Problem/Triangle.h
         src/Problem/Base/Problem.cpp
         src/Problem/Base/Problem.h
         src/SystemComponents/Bonds/Base/Bond.cpp
@@ -230,7 +226,7 @@ set(TEST_SOURCE_FILES
         src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.cpp
         src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.h
         Tests/catch.hpp
-        Tests/Tests.cpp)
+        Tests/Tests.cpp src/InputFileParser/Base/ElementParser.cpp src/InputFileParser/Base/ElementParser.h src/InputFileParser/Base/WaterSourceParser.cpp src/InputFileParser/Base/WaterSourceParser.h src/InputFileParser/ReuseParser.cpp src/InputFileParser/ReuseParser.h src/InputFileParser/MasterElementParser.cpp src/InputFileParser/MasterElementParser.h src/InputFileParser/Bonds/LevelDebtServiceBondParser.cpp src/InputFileParser/Bonds/LevelDebtServiceBondParser.h src/InputFileParser/Base/BondParser.cpp src/InputFileParser/Base/BondParser.h src/InputFileParser/Bonds/MasterBondParser.cpp src/InputFileParser/Bonds/MasterBondParser.h)
 
 add_executable(TriangleModel ${SOURCE_FILES})
 add_executable(TestTriangleModel ${TEST_SOURCE_FILES})

@@ -62,7 +62,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
                          double permitting_period, Bond &bond)
         : available_volume(capacity),
           permitting_time(permitting_period),
-          bonds(Utils::copyBonds(vector<Bond *>(1, &bond))),
+          bonds(vector<Bond>(1, bond)),
           capacity(capacity),
           built_in_sequence(connected_sources),
           online(OFFLINE),
@@ -94,7 +94,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
 WaterSource::WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
                          const double capacity, double treatment_capacity, vector<int> connected_sources,
                          const int source_type, const vector<double> construction_time_range,
-                         double permitting_period, vector<Bond *> bonds)
+                         double permitting_period, vector<Bond> bonds)
         : available_volume(capacity),
           permitting_time(permitting_period),
           bonds(bonds),
@@ -170,7 +170,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
                          const vector<double> construction_time_range, double permitting_period, Bond &bond)
         : available_volume(capacity),
           permitting_time(permitting_period),
-          bonds(Utils::copyBonds(vector<Bond *>(1, &bond))),
+          bonds(vector<Bond>(1, bond)),
           capacity(capacity),
           built_in_sequence(built_in_sequence),
           utilities_with_allocations(utilities_with_allocations),
@@ -215,7 +215,7 @@ WaterSource::WaterSource(const WaterSource &water_source) :
         upstream_source_inflow(water_source.upstream_source_inflow),
         upstream_catchment_inflow(water_source.upstream_catchment_inflow),
         permitting_time(water_source.permitting_time),
-        bonds(Utils::copyBonds(water_source.bonds)),
+        bonds(water_source.bonds),
         upstream_min_env_inflow(water_source.upstream_min_env_inflow),
         capacity(water_source.capacity), 
         built_in_sequence(water_source.built_in_sequence),
@@ -252,17 +252,17 @@ WaterSource::WaterSource(const WaterSource &water_source) :
         catchments.emplace_back(catchment);
     }
 }
-
-/**
- * Destructor.
- */
-WaterSource::~WaterSource() {
-//    printf("Destroying bonds. Sad...\n");
-    for (Bond *b : bonds) {
-        delete b;
-//        b = nullptr;
-    }
-}
+//
+///**
+// * Destructor.
+// */
+//WaterSource::~WaterSource() {
+////    printf("Destroying bonds. Sad...\n");
+//    for (Bond *b : bonds) {
+//        delete b;
+////        b = nullptr;
+//    }
+//}
 
 /**
  * Copy assignment operator.
@@ -560,8 +560,8 @@ void WaterSource::setRealization(unsigned long r, vector<double> &rdm_factors) {
     /// Set construction cost overruns according to corresponding rdm factors.
     double construction_cost_multiplier = rdm_factors.at((unsigned int) 1 + 2 * id + 1);
     vector<double> construction_cost_multiplier_vec = vector<double>(1, construction_cost_multiplier);
-    for (Bond *bond : bonds) {
-        bond->setRealizationWaterSource(r, construction_cost_multiplier_vec);
+    for (Bond &bond : bonds) {
+        bond.setRealizationWaterSource(r, construction_cost_multiplier_vec);
     }
 }
 
@@ -721,9 +721,9 @@ const vector<int> &WaterSource::getBuilt_in_sequence() const {
 
 Bond &WaterSource::getBond(int utility_id) {
     if (bonds.size() == 1) {
-        return *bonds[0];
+        return bonds[0];
     } else {
-        return *bonds[utility_id];
+        return bonds[utility_id];
     }
 }
 

@@ -18,6 +18,7 @@ serial-borg-moea
 triangleSimulation
 error/
 output/
+cmake-build-debug/
 
 #
 # Editor files

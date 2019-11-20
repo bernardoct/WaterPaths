@@ -26,6 +26,39 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
+
+
+vector<string> Utils::tokenizeString(string &line, char token) {
+    vector<string> tag_and_values(0);
+    if (line[0] != '#') {
+        istringstream ss(line);
+
+        int c = 0;
+        while (!ss.eof()) {
+            string s;
+            if (!getline(ss, s, token))
+                break;
+            try {
+                tag_and_values.push_back(s);
+            } catch (const std::invalid_argument &e) {
+                cout << "NaN found in file system tag " << ", line " << line << endl;
+                e.what();
+            }
+            c++;
+        }
+    }
+
+    return tag_and_values;
+}
+
+
+vector<int> Utils::tokenizeStringInt(string &line, char token) {
+    vector<string> string_vector = tokenizeString(line, token);
+    vector<int> tokenized_vector;
+    std::transform(string_vector.begin(), string_vector.end(),
+                   back_inserter(tokenized_vector), [](const string & astr){ return stoi(astr); });
+}
+
 /**
  * Reads csv file into table, exported as a vector of vector of doubles.
  * @param file_name input file name (full path).
@@ -50,8 +83,8 @@ vector<vector<double>> Utils::parse2DCsvFile(string file_name, unsigned long max
             string s;
             if (!getline(inputFile, s)) break;
 	    if (s.find(" ") != string::npos) {
-		char error[500];
-		sprintf(error, "File %s seems to be space-separated.", file_name.c_str());
+		    char error[500];
+		    sprintf(error, "File %s seems to be space-separated.", file_name.c_str());
 	        throw std::invalid_argument(error);
 	    }
 
@@ -80,9 +113,9 @@ vector<vector<double>> Utils::parse2DCsvFile(string file_name, unsigned long max
             data.push_back(record);
         }
     } else {
-	string error = "File " + file_name + " not found.";
-	char error_char[error.size() + 1];
-	strcpy(error_char, error.c_str());
+	    string error = "File " + file_name + " not found.";
+	    char error_char[error.size() + 1];
+	    strcpy(error_char, error.c_str());
         throw invalid_argument(error_char);
     }
 

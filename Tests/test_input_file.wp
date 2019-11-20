@@ -1,0 +1,8 @@
+[WATER REUSE]
+name My Reuse Station
+capacity 500
+bond level 50 30 0.05 0
+ctime 3 5
+ptime 10
+
+

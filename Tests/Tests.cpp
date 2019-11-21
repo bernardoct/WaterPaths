@@ -12,8 +12,7 @@
 #include "../src/Utils/Utils.h"
 #include "../src/SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
 #include "../src/ContinuityModels/ContinuityModelRealization.h"
-
-
+#include "../src/InputFileParser/MasterSystemInputFileParser.h"
 
 
 TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance][Exceptions]") {
@@ -252,7 +251,7 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
     vector<int> construction_order = {7};
     vector<int> construction_order_empty;
 
-    Utility utility("U1", 0, demands, streamflow_n_weeks, 0.03, &demand_class_fractions, &user_classes_prices,
+    Utility utility("U1", 0, demands, streamflow_n_weeks, 0.03, demand_class_fractions, user_classes_prices,
                     wwtp_discharge_durham, 0., construction_order, construction_order_empty, rof_triggers, 0.07, 25,
                     0.05);
 
@@ -341,10 +340,10 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
     SECTION("Joint infrastructure", "[Infrastructure][Joint infrastructure]") {
         vector<double> rof_triggers_non_zero = vector<double>(10, 0.1);
         vector<int> construction_order_seq = {0};
-        Utility utility1("U1", 0, demands, streamflow_n_weeks, 0.03, &demand_class_fractions, &user_classes_prices,
+        Utility utility1("U1", 0, demands, streamflow_n_weeks, 0.03, demand_class_fractions, user_classes_prices,
                          wwtp_discharge_durham, 0., construction_order_seq, construction_order_empty, rof_triggers,
                          0.07, 25, 0.05);
-        Utility utility2("U2", 1, demands, streamflow_n_weeks, 0.03, &demand_class_fractions, &user_classes_prices,
+        Utility utility2("U2", 1, demands, streamflow_n_weeks, 0.03, demand_class_fractions, user_classes_prices,
                          wwtp_discharge_durham, 0., construction_order_seq, construction_order_empty, rof_triggers,
                          0.07, 25, 0.05);
         LevelDebtServiceBond bond1(0, 200.0, 25, 0.05, vector<int>(1, 0));
@@ -598,13 +597,15 @@ TEST_CASE("Test Joint Triggering of Allocated Reservoir", "[Allocated Reservoir]
 
 
 
-    Utility utility1((char *) "U1", 0, demands, streamflow_n_weeks, 0.03, &demand_class_fractions, &user_classes_prices,
-                     wwtp_discharge, 0., construction_order_seq, construction_order_empty, rof_triggers,
-                     0.07, 25, 0.05);
+    Utility utility1((char *) "U1", 0, demands, streamflow_n_weeks, 0.03,
+            demand_class_fractions, user_classes_prices, wwtp_discharge, 0.,
+            construction_order_seq, construction_order_empty, rof_triggers,
+            0.07, 25, 0.05);
 
-    Utility utility2((char *) "U2", 1, demands, streamflow_n_weeks, 0.03, &demand_class_fractions, &user_classes_prices,
-                     wwtp_discharge, 0., construction_order_seq, construction_order_empty, rof_triggers,
-                     0.07, 25, 0.05);
+    Utility utility2((char *) "U2", 1, demands, streamflow_n_weeks, 0.03,
+            demand_class_fractions, user_classes_prices, wwtp_discharge, 0.,
+            construction_order_seq, construction_order_empty, rof_triggers,
+            0.07, 25, 0.05);
 
     vector<Utility*> utilities;
     utilities.push_back(&utility1);
@@ -678,7 +679,18 @@ TEST_CASE("Create a utility", "[Utility]"){
             "../TestFiles/caryUserClassesWaterPrices.csv");
 
     Utility watertown((char *) "Watertown", 0, demand_watertown, demand_n_weeks, .1,
-                      &watertownDemandClassesFractions,
-                      &watertownUserClassesWaterPrices, wwtp_discharge_watertown, 0,
-                      construction_order_seq, vector<int>(), rof_triggers, .05, 30, .05);
+                      watertownDemandClassesFractions, watertownUserClassesWaterPrices, wwtp_discharge_watertown, 0,
+                      construction_order_seq, vector<int>(), rof_triggers,
+                      .05, 30, .05);
 };
+
+TEST_CASE("Read water source and bond.", "[Input File Parser][Water Reuse][Bonds]") {
+    MasterSystemInputFileParser parser;
+
+    parser.parseFile("/home/bernardo/CLionProjects/RevampedTriangleModel/Tests/test_input_file.wp");
+    auto water_sources = parser.getWaterSources();
+
+    SECTION("Checking if numeric and text data was parsed correctly.") {
+        REQUIRE(water_sources[0]->id == 0);
+    }
+}

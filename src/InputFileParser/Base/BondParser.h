@@ -19,7 +19,7 @@ protected:
     double cost_of_capital;
     double coupon_rate;
     int n_payments;
-    int begin_repayment_after_n_years = NON_INITIALIZED;
+//    int begin_repayment_after_n_years = NON_INITIALIZED;
     vector<int> pay_on_weeks;
     bool begin_repayment_at_issuance;
 

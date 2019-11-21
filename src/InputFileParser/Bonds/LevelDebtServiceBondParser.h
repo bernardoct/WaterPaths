@@ -17,6 +17,7 @@ private:
     void parseVariables(vector<string> &bond_data) override;
 
 public:
+
     Bond* generate_bond(vector<string> &bond_data) override;
 };
 

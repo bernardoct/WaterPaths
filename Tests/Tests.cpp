@@ -686,11 +686,33 @@ TEST_CASE("Create a utility", "[Utility]"){
 
 TEST_CASE("Read water source and bond.", "[Input File Parser][Water Reuse][Bonds]") {
     MasterSystemInputFileParser parser;
+    string input_test_file = "../Tests/test_input_file.wp";
 
-    parser.parseFile("/home/bernardo/CLionProjects/RevampedTriangleModel/Tests/test_input_file.wp");
-    auto water_sources = parser.getWaterSources();
+    SECTION("Check if block is read appropriately.", "[Read input file block][Water Reuse]") {
+        int l;
+        ifstream inputFile(input_test_file);
+        string line_tag;
+        getline(inputFile, line_tag);
+        auto block = parser.readBlock(inputFile, l);
+
+        REQUIRE(block.size() == 5);
+        REQUIRE(block[0][0] == "name");
+        REQUIRE(block[1][1] == "500");
+        REQUIRE(block[2][1] == "level");
+        REQUIRE(block[4][1] == "10");
+    }
 
     SECTION("Checking if numeric and text data was parsed correctly.") {
+        parser.parseFile(input_test_file);
+        auto water_sources = parser.getWaterSources();
+
         REQUIRE(water_sources[0]->id == 0);
+        REQUIRE(water_sources[0]->getConstruction_time() < 5.1 * WEEKS_IN_YEAR);
+        REQUIRE(water_sources[0]->getConstruction_time() > 2.9 * WEEKS_IN_YEAR);
+        REQUIRE(water_sources[0]->getBond(0).type == LEVEL_DEBT_SERVICE);
+        REQUIRE(water_sources[0]->getBond(0).pay_on_weeks[0] == 0);
+        REQUIRE(water_sources[0]->getBond(0).pay_on_weeks.size() == 1);
+        REQUIRE(!water_sources[0]->getBond(0).isIssued());
+        REQUIRE(water_sources[0]->name == "My Reuse Station");
     }
 }

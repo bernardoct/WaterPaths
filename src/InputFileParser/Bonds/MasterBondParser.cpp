@@ -15,8 +15,6 @@ MasterBondParser::~MasterBondParser() {
 }
 
 Bond *MasterBondParser::generate_bond(vector<string> &bond_data) {
-    LevelDebtServiceBondParser level_debt_service_bond_parser;
-
     if (bond_data[1] == "level") {
         parsed_bonds.push_back(level_debt_service_bond_parser.generate_bond(bond_data));
     } else {

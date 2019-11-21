@@ -57,6 +57,8 @@ vector<int> Utils::tokenizeStringInt(string &line, char token) {
     vector<int> tokenized_vector;
     std::transform(string_vector.begin(), string_vector.end(),
                    back_inserter(tokenized_vector), [](const string & astr){ return stoi(astr); });
+
+    return tokenized_vector;
 }
 
 /**

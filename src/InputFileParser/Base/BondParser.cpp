@@ -22,7 +22,7 @@ void BondParser::parseVariables(vector<string> &bond_data) {
     cost_of_capital = stod(bond_data[2]);
     n_payments = stoi(bond_data[3]);
     coupon_rate = stod(bond_data[4]);
-    pay_on_weeks = Utils::tokenizeStringInt(bond_data[5], ',');
+    Utils::tokenizeString(bond_data[5], pay_on_weeks, ',');
     if (bond_data.size() < 7) {
         throw invalid_argument("Bond must either have the first payment deferred or immediate.");
     } else if (bond_data[6] == "deferred") {

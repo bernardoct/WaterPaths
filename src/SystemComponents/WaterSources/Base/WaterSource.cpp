@@ -24,7 +24,7 @@ int WaterSource::seed = NON_INITIALIZED;
  * @param treatment_capacity
  * @param source_type
  */
-WaterSource::WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
+WaterSource::WaterSource(string name, const int id, const vector<Catchment *> &catchments,
                          const double capacity, vector<int> connected_sources, double treatment_capacity,
                          const int source_type)
         : available_volume(capacity),
@@ -56,7 +56,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
  * @param construction_time_range
  * @param construction_cost_of_capital
  */
-WaterSource::WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
+WaterSource::WaterSource(string name, const int id, const vector<Catchment *> &catchments,
                          const double capacity, double treatment_capacity, vector<int> connected_sources,
                          const int source_type, const vector<double> construction_time_range,
                          double permitting_period, Bond &bond)
@@ -91,7 +91,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
  * @param permitting_period
  * @param bonds
  */
-WaterSource::WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
+WaterSource::WaterSource(string name, const int id, const vector<Catchment *> &catchments,
                          const double capacity, double treatment_capacity, vector<int> connected_sources,
                          const int source_type, const vector<double> construction_time_range,
                          double permitting_period, vector<Bond *> bonds)
@@ -124,7 +124,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
  * @param treatment_capacity
  * @param source_type
  */
-WaterSource::WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
+WaterSource::WaterSource(string name, const int id, const vector<Catchment *> &catchments,
                          const double capacity, double treatment_capacity, vector<int> connected_sources,
                          const int source_type, vector<double> *allocated_treatment_fractions,
                          vector<double> *allocated_fractions, vector<int> *utilities_with_allocations)
@@ -163,7 +163,7 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
  * @param construction_time_range
  * @param construction_cost_of_capital
  */
-WaterSource::WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
+WaterSource::WaterSource(string name, const int id, const vector<Catchment *> &catchments,
                          const double capacity, double treatment_capacity, vector<int> built_in_sequence,
                          const int source_type, vector<double> *allocated_treatment_fractions,
                          vector<double> *allocated_fractions, vector<int> *utilities_with_allocations,

@@ -14,6 +14,7 @@ using namespace std;
 class MasterSystemInputFileParser {
 
     vector<WaterSource *> water_sources;
+    int simulation_time = NON_INITIALIZED;
 public:
     ~MasterSystemInputFileParser();
 

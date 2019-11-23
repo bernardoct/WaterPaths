@@ -65,12 +65,12 @@ private:
 public:
     const int id;
     const int number_of_week_demands;
-    const char *name;
+    string name;
     const double percent_contingency_fund_contribution;
     const double demand_buffer;
 
     Utility(
-            const char *name, int id,
+            string name, int id,
             vector<vector<double>>& demands_all_realizations,
             int number_of_week_demands,
             const double percent_contingency_fund_contribution,
@@ -79,7 +79,7 @@ public:
             WwtpDischargeRule wwtp_discharge_rule,
             double demand_buffer);
 
-    Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations,
+    Utility(string name, int id, vector<vector<double>>& demands_all_realizations,
                 int number_of_week_demands, const double percent_contingency_fund_contribution,
                 const vector<vector<double>> &typesMonthlyDemandFraction,
                 const vector<vector<double>> &typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,
@@ -89,7 +89,7 @@ public:
                 const vector<vector<int>>& infra_if_built_remove, double
             bond_term, double bond_interest_rate);
 
-    Utility(const char *name, int id, vector<vector<double>>& demands_all_realizations,
+    Utility(string name, int id, vector<vector<double>>& demands_all_realizations,
                 int number_of_week_demands, const double percent_contingency_fund_contribution,
                 const vector<vector<double>> &typesMonthlyDemandFraction,
                 const vector<vector<double>> &typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,

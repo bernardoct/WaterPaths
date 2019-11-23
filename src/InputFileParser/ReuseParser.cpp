@@ -6,8 +6,8 @@
 #include "MasterSystemInputFileParser.h"
 
 
-void ReuseParser::parseVariables(vector<vector<string>> &block) {
-    WaterSourceParser::parseVariables(block);
+void ReuseParser::parseVariables(vector<vector<string>> &block, int n_realizations, int n_weeks) {
+    WaterSourceParser::parseVariables(block, n_realizations, n_weeks);
 
     if (block.size() == 2) {
         constructor_type = EXISTING_REUSE_STATION;
@@ -18,12 +18,10 @@ void ReuseParser::parseVariables(vector<vector<string>> &block) {
     }
 }
 
-WaterSource* ReuseParser::generateSource(vector<vector<string>> &block) {
+WaterSource* ReuseParser::generateSource(vector<vector<string>> &block, int n_realizations, int n_weeks) {
     updateId();
 
-    parseVariables(block);
-
-    const char* name = this->name.c_str();
+    parseVariables(block, n_realizations, n_weeks);
 
     if (constructor_type == EXISTING_REUSE_STATION) {
         return new WaterReuse(name, getId(), capacity);

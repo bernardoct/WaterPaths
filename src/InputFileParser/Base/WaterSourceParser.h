@@ -26,11 +26,14 @@ protected:
     static void updateId();
 
 public:
+
+    virtual ~WaterSourceParser();
+
     static int getId();
 
-    virtual void parseVariables(vector<vector<string>> &block);
+    virtual void parseVariables(vector<vector<string>> &block, int n_realizations, int n_weeks);
 
-    virtual WaterSource* generateSource(vector<vector<string>> &block)=0;
+    virtual WaterSource* generateSource(vector<vector<string>> &block, int n_realizations, int n_weeks)=0;
 };
 
 

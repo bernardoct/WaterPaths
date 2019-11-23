@@ -9,9 +9,9 @@
 
 
 AllocatedReservoir::AllocatedReservoir(
-        const char *name, const int id, const vector<Catchment *> &catchments,
+        string name, const int id, const vector<Catchment *> &catchments,
         const double capacity, const double max_treatment_capacity,
-        EvaporationSeries &evaporation_series, DataSeries *storage_area_curve,
+        EvaporationSeries &evaporation_series, DataSeries &storage_area_curve,
         vector<int> *utilities_with_allocations,
         vector<double> *allocated_fractions, vector<double> *allocated_treatment_fractions)
         : Reservoir(name,
@@ -28,9 +28,9 @@ AllocatedReservoir::AllocatedReservoir(
           has_water_quality_pool(wq_pool_id != NON_INITIALIZED) {
 }
 
-AllocatedReservoir::AllocatedReservoir(const char *name, const int id, const vector<Catchment *> &catchments,
+AllocatedReservoir::AllocatedReservoir(string name, const int id, const vector<Catchment *> &catchments,
                                        const double capacity, const double max_treatment_capacity,
-                                       EvaporationSeries &evaporation_series, DataSeries *storage_area_curve,
+                                       EvaporationSeries &evaporation_series, DataSeries &storage_area_curve,
                                        const vector<double> &construction_time_range, double permitting_period,
                                        Bond &bond, vector<int> *utilities_with_allocations,
                                        vector<double> *allocated_fractions,
@@ -42,7 +42,7 @@ AllocatedReservoir::AllocatedReservoir(const char *name, const int id, const vec
 }
 
 AllocatedReservoir::AllocatedReservoir(
-        const char *name, const int id, const vector<Catchment *> &catchments,
+        string name, const int id, const vector<Catchment *> &catchments,
         const double capacity, const double max_treatment_capacity,
         EvaporationSeries &evaporation_series, double storage_area,
         vector<int> *utilities_with_allocations,
@@ -62,7 +62,7 @@ AllocatedReservoir::AllocatedReservoir(
           has_water_quality_pool(wq_pool_id != NON_INITIALIZED) {
 }
 
-AllocatedReservoir::AllocatedReservoir(const char *name, const int id, const vector<Catchment *> &catchments,
+AllocatedReservoir::AllocatedReservoir(string name, const int id, const vector<Catchment *> &catchments,
                                        const double capacity, const double max_treatment_capacity,
                                        EvaporationSeries &evaporation_series, double storage_area,
                                        const vector<double> &construction_time_range, double permitting_period,
@@ -129,7 +129,7 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
     /// Calculates water lost through evaporation.
     evaporated_volume =
             (fixed_area ? area * evaporation_series.getEvaporation(week) :
-             storage_area_curve->get_dependent_variable(available_volume) *
+             storage_area_curve.get_dependent_variable(available_volume) *
              evaporation_series.getEvaporation(week));
 
     /// Calculate new stored volume and outflow based on continuity.
@@ -299,29 +299,11 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
                         "total_upstream_inflow: %f\n"
                         "upstream_catchment_inflow: %f\nevaporation: %f\n"
                         "total_demand: %f\npolicy_added_demand: %f\n"
-                        "total_outflow: %f\ncontinuity error: %f\n"
-                        "demands_0: %f\n"
-                        "demands_1: %f\n"
-                        "demands_2: %f\n"
-                        "demands_3: %f\n"
-                        "alloc_vols_0: %f\n"
-                        "alloc_vols_1: %f\n"
-                        "alloc_vols_2: %f\n"
-                        "alloc_vols_3: %f\n"
-                        "alloc_vols_4: %f\n",
-                name, week, sum_allocations, available_volume_old, available_volume,
+                        "total_outflow: %f\ncontinuity error: %f\n",
+                name.c_str(), week, sum_allocations, available_volume_old, available_volume,
                 total_upstream_inflow, upstream_catchment_inflow,
                 evaporated_volume, total_demand, policy_added_demand,
-                total_outflow, cont_error,
-                demand_outflow[0],
-                demand_outflow[1],
-                demand_outflow[2],
-                demand_outflow[3],
-                available_allocated_volumes[0],
-                available_allocated_volumes[1],
-                available_allocated_volumes[2],
-                available_allocated_volumes[3],
-                available_allocated_volumes[4]);
+                total_outflow, cont_error);
 
 	throw runtime_error(error);
 //        throw_with_nested(runtime_error(error));

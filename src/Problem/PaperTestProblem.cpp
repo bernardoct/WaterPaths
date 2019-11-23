@@ -302,9 +302,6 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     vector<Catchment *> gage_lillington;
     gage_lillington.push_back(&cape_fear_river_at_lillington);
 
-    // Create storage vs. area reservoir curves
-    //FIXME DISCUSS WITH BERNARDO HOW THIS WORKS TO MAKE SURE CORRECT, WHY DO ONLY SOME RES HAVE THESE CURVES?
-
     // CURRENTLY THIS IS THE STORAGE OF FALLS + DURHAM (MICHIE AND LR) + WB
     // ASSUMING DURHAM AND WB SCALE PROPORTIONALLY TO FALLS
     // WB and Durham storage added to water supply capacity
@@ -314,22 +311,22 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     vector<double> autumn_lake_storage = {0, autumn_lake_supply_capacity,
                                           autumn_lake_storage_capacity};
     vector<double> autumn_lake_area = {0.32 * 5734, 0.32 * 29000, 0.28 * 40434};
-    DataSeries autumn_lake_storage_area(&autumn_lake_storage, &autumn_lake_area);
+    DataSeries autumn_lake_storage_area(autumn_lake_storage, autumn_lake_area);
 
     vector<double> new_river_res_storage = {0, 7300 * calibrate_volume_multiplier};
     vector<double> new_river_res_area = {0, 0.3675 * new_river_res_storage[1]};
-    DataSeries new_river_storage_area(&new_river_res_storage,
-                                      &new_river_res_area);
+    DataSeries new_river_storage_area(new_river_res_storage,
+                                      new_river_res_area);
 
     vector<double> sugar_creek_res_storage = {0, 4500};//2909};
     vector<double> sugar_creek_res_area = {0, 0.3675 * sugar_creek_res_storage[1]};
-    DataSeries sugar_creek_storage_area(&sugar_creek_res_storage,
-                                        &sugar_creek_res_area);
+    DataSeries sugar_creek_storage_area(sugar_creek_res_storage,
+                                        sugar_creek_res_area);
 
     vector<double> granite_quarry_storage = {0, 1500};
     vector<double> granite_quarry_area = {0, 0.3675 * granite_quarry_storage[1]};
-    DataSeries granite_quarry_storage_area(&granite_quarry_storage,
-                                           &granite_quarry_area);
+    DataSeries granite_quarry_storage_area(granite_quarry_storage,
+                                           granite_quarry_area);
 
     // Create minimum environmental flow rules (controls)
     // Autumn is combining Falls+Durham+WB
@@ -426,7 +423,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                                    autumn_lake_storage_capacity,
                                    ILLIMITED_TREATMENT_CAPACITY,
                                    evaporation_falls_lake,
-                                   &autumn_lake_storage_area,
+                                   autumn_lake_storage_area,
                                    &autumn_lake_allocations_ids,
                                    &autumn_lake_allocation_fractions,
                                    &autumn_lake_treatment_allocation_fractions);
@@ -456,7 +453,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                                            new_river_res_storage[1],
                                            ILLIMITED_TREATMENT_CAPACITY,
                                            evaporation_falls_lake,
-                                           &new_river_storage_area,
+                                           new_river_storage_area,
                                            construction_time_interval,
                                            17 * WEEKS_IN_YEAR,
                                            new_river_bond,
@@ -471,7 +468,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                                     sugar_creek_res_storage[1],
                                     ILLIMITED_TREATMENT_CAPACITY,
                                     evaporation_jordan_lake,
-                                    &sugar_creek_storage_area,
+                                    sugar_creek_storage_area,
                                     construction_time_interval,
                                     17 * WEEKS_IN_YEAR,
                                     sugar_bond);
@@ -483,7 +480,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                              granite_quarry_storage[1],
                              ILLIMITED_TREATMENT_CAPACITY,
                              evaporation_jordan_lake,
-			     &granite_quarry_storage_area);
+			                 granite_quarry_storage_area);
 //                             &granite_quarry_storage_area,
 //                             construction_time_interval,
 //                             17 * WEEKS_IN_YEAR,

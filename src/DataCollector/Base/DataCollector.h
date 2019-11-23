@@ -14,10 +14,10 @@ public:
     const int id;
     const int type;
     const int table_width;
-    const char *name;
+    string name;
     unsigned long realization;
 
-    explicit DataCollector(int id, const char *name, unsigned long realization, int type, int table_width);
+    explicit DataCollector(int id, string name, unsigned long realization, int type, int table_width);
 
     virtual ~DataCollector();
 

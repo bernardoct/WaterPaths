@@ -46,9 +46,8 @@ public:
 
     static void createDir(string directory);
 
-    static vector<string> tokenizeString(string &line, char token = ' ');
-
-    static vector<int> tokenizeStringInt(string &line, char token = ' ');
+    template <class T>
+    static void tokenizeString(string &line, vector<T> &tokenized_vector, char token = ' ');
 };
 
 

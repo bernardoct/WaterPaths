@@ -14,26 +14,29 @@ using namespace std;
 class DataSeries : public ControlRules {
 private:
 
-    vector<double> *series_x;
-    vector<double> *series_y;
+    vector<double> series_x;
+    vector<double> series_y;
+    unsigned long length;
+
+    double get_dependent_variable(double x, int week) override;
+
+    double get_dependent_variable(int x, int week) override;
 
 public:
-    const unsigned long length;
 
-    DataSeries(vector<double> *series_x, vector<double> *series_y);
+    DataSeries(vector<double> &series_x, vector<double> &series_y);
 
-//    double get_dependent_variable(double x);
+    DataSeries();
+
+    DataSeries(DataSeries const &data_series);
+
+    DataSeries &operator=(const DataSeries &reservoir);
 
     const vector<double> &getSeries_x() const;
 
     double get_dependent_variable(double x) override;
 
     double get_dependent_variable(int x) override;
-
-private:
-    double get_dependent_variable(double x, int week) override;
-
-    double get_dependent_variable(int x, int week) override;
 
 };
 

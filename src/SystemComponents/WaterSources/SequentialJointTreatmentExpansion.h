@@ -17,7 +17,7 @@ private:
 public:
     const int expansion_sequence_id;
 
-    SequentialJointTreatmentExpansion(const char *name, const int id,
+    SequentialJointTreatmentExpansion(string name, const int id,
                                       const int parent_reservoir_ID,
                                       const int expansion_sequence_id,
                                       vector<int> connected_sources,

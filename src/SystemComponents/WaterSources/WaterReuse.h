@@ -12,9 +12,9 @@ class WaterReuse : public WaterSource {
 private:
     double treated_volume = NON_INITIALIZED;
 public:
-    WaterReuse(const char *name, const int id, const double capacity);
+    WaterReuse(string name, const int id, const double capacity);
 
-    WaterReuse(const char *name, const int id, const double treatment_capacity,
+    WaterReuse(string name, const int id, const double treatment_capacity,
                    const vector<double> &construction_time_range, double permitting_period,
                    Bond &bond);
     WaterReuse(const WaterReuse &reuse);

@@ -14,7 +14,7 @@ int WaterSourceParser::getId() {
     return id;
 }
 
-void WaterSourceParser::parseVariables(vector<vector<string>> &block) {
+void WaterSourceParser::parseVariables(vector<vector<string>> &block, int n_realizations, int n_weeks) {
     for (vector<string> &line : block) {
         if (line[0] == "name") {
             for (auto i = line.begin() + 1; i != line.end(); ++i)
@@ -34,3 +34,10 @@ void WaterSourceParser::parseVariables(vector<vector<string>> &block) {
         }
     }
 }
+
+WaterSourceParser::~WaterSourceParser() {
+    for (Bond *b : bonds) {
+        delete b;
+    }
+}
+

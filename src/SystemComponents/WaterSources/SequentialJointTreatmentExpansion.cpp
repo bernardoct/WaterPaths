@@ -17,7 +17,7 @@
  * @param construction_time_range
  * @param permitting_period
  */
-SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(const char *name, const int id,
+SequentialJointTreatmentExpansion::SequentialJointTreatmentExpansion(string name, const int id,
                                                                      const int parent_reservoir_ID,
                                                                      const int expansion_sequence_id,
                                                                      vector<int> connected_sources,

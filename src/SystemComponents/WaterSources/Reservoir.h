@@ -16,50 +16,46 @@ using namespace std;
 
 class Reservoir : public WaterSource {
 protected:
-    DataSeries *storage_area_curve;
+    DataSeries storage_area_curve;
     double area = NON_INITIALIZED;
 
 public:
     const bool fixed_area;
     EvaporationSeries evaporation_series;
 
-    Reservoir(
-            const char *name, const int id,
+    Reservoir(string name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
             const double max_treatment_capacity,
             EvaporationSeries &evaporation_series,
-            DataSeries *storage_area_curve, int source_type = RESERVOIR);
+            DataSeries &storage_area_curve, int source_type = RESERVOIR);
 
-    Reservoir(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
+    Reservoir(string name, const int id, const vector<Catchment *> &catchments, const double capacity,
               const double max_treatment_capacity, EvaporationSeries &evaporation_series,
-              DataSeries *storage_area_curve, const vector<double> &construction_time_range,
+              DataSeries &storage_area_curve, const vector<double> &construction_time_range,
               double permitting_period, Bond &bond, int source_type = RESERVOIR);
 
-    Reservoir(
-            const char *name, const int id,
+    Reservoir(string name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
             const double max_treatment_capacity,
             EvaporationSeries &evaporation_series, double storage_area,
             int source_type = RESERVOIR);
 
-    Reservoir(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
+    Reservoir(string name, const int id, const vector<Catchment *> &catchments, const double capacity,
               const double max_treatment_capacity, EvaporationSeries &evaporation_series,
               double storage_area, const vector<double> &construction_time_range, double permitting_period,
               Bond &bond, int source_type = RESERVOIR);
 
-    Reservoir(
-            const char *name, const int id,
+    Reservoir(string name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
             const double max_treatment_capacity,
             EvaporationSeries &evaporation_series,
-            DataSeries *storage_area_curve,
+            DataSeries &storage_area_curve,
             vector<double> *allocated_treatment_fractions,
             vector<double> *allocated_fractions,
             vector<int> *utilities_with_allocations,
             int source_type = RESERVOIR);
 
-    Reservoir(
-            const char *name, const int id,
+    Reservoir(string name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
             const double max_treatment_capacity,
             EvaporationSeries &evaporation_series,
@@ -69,14 +65,14 @@ public:
             vector<int> *utilities_with_allocations,
             int source_type = RESERVOIR);
 
-    Reservoir(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
+    Reservoir(string name, const int id, const vector<Catchment *> &catchments, const double capacity,
               const double max_treatment_capacity, EvaporationSeries &evaporation_series,
-              DataSeries *storage_area_curve, vector<double> *allocated_treatment_fractions,
+              DataSeries &storage_area_curve, vector<double> *allocated_treatment_fractions,
               vector<double> *allocated_fractions, vector<int> *utilities_with_allocations,
               const vector<double> &construction_time_range, double permitting_period,
               Bond &bond, int source_type = RESERVOIR);
 
-    Reservoir(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
+    Reservoir(string name, const int id, const vector<Catchment *> &catchments, const double capacity,
               const double max_treatment_capacity, EvaporationSeries &evaporation_series,
               double storage_area, vector<double> *allocated_treatment_fractions,
               vector<double> *allocated_fractions, vector<int> *utilities_with_allocations,

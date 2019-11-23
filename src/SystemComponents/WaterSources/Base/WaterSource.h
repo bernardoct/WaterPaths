@@ -54,29 +54,29 @@ protected:
 
 public:
     const int id;
-    const char *name;
+    string name;
     const int source_type;
     const double construction_time;
 
-    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
-                    const double capacity, vector<int> connected_sources, double treatment_capacity,
-                    const int source_type);
+    WaterSource(string name, const int id, const vector<Catchment *> &catchments,
+                const double capacity, vector<int> connected_sources, double treatment_capacity,
+                const int source_type);
 
-    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
+    WaterSource(string name, const int id, const vector<Catchment *> &catchments,
                 const double capacity, double treatment_capacity, vector<int> connected_sources,
                 const int source_type, vector<double> *allocated_treatment_fractions,
                 vector<double> *allocated_fractions, vector<int> *utilities_with_allocations);
 
-    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
+    WaterSource(string name, const int id, const vector<Catchment *> &catchments,
                 const double capacity, double treatment_capacity, vector<int> connected_sources,
                 const int source_type, const vector<double> construction_time_range,
                 double permitting_period, Bond &bond);
 
-    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
+    WaterSource(string name, const int id, const vector<Catchment *> &catchments, const double capacity,
                 double treatment_capacity, vector<int> connected_sources, const int source_type,
                 const vector<double> construction_time_range, double permitting_period, vector<Bond *> bonds);
 
-    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
+    WaterSource(string name, const int id, const vector<Catchment *> &catchments,
                     const double capacity, double treatment_capacity, vector<int> built_in_sequence,
                     const int source_type, vector<double> *allocated_treatment_fractions,
                     vector<double> *allocated_fractions, vector<int> *utilities_with_allocations,

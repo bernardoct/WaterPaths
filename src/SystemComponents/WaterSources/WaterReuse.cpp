@@ -6,13 +6,13 @@
 #include <numeric>
 #include "WaterReuse.h"
 
-WaterReuse::WaterReuse(const char *name, const int id, const double capacity)
+WaterReuse::WaterReuse(string name, const int id, const double capacity)
         : WaterSource(name, id, vector<Catchment *>(), capacity, vector<int>(), capacity, WATER_REUSE) {
     available_volume = capacity;
 }
 
 
-WaterReuse::WaterReuse(const char *name, const int id, const double treatment_capacity,
+WaterReuse::WaterReuse(string name, const int id, const double treatment_capacity,
                        const vector<double> &construction_time_range, double permitting_period,
                        Bond &bond) : WaterSource(name, id, vector<Catchment *>(), NONE, treatment_capacity,
                                                                           vector<int>(), WATER_REUSE, construction_time_range,

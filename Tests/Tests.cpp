@@ -567,18 +567,18 @@ TEST_CASE("Test Joint Triggering of Allocated Reservoir", "[Allocated Reservoir]
     // Reservoirs
     vector<double> res_storage = {0, 1000};
     vector<double> res_area = {0, 0.3675 * 1000};
-    DataSeries reservoir_storage_area(&res_storage, &res_area);
+    DataSeries reservoir_storage_area(res_storage, res_area);
 
 
     Reservoir reservoir_zero("existing reservoir 0", 0, vector<Catchment *>(), 1000.0,
-                        ILLIMITED_TREATMENT_CAPACITY, evaporation_series, &reservoir_storage_area);
+                        ILLIMITED_TREATMENT_CAPACITY, evaporation_series, reservoir_storage_area);
 
     // Reservoir
     Reservoir reservoir_one("existing reservoir 1", 1, river_catchments, 1000.0,
-                            ILLIMITED_TREATMENT_CAPACITY, evaporation_series, &reservoir_storage_area);
+                            ILLIMITED_TREATMENT_CAPACITY, evaporation_series, reservoir_storage_area);
 
     Reservoir dummy_endpoint("existing reservoir 1", 3, river_catchments, 1000.0,
-                             ILLIMITED_TREATMENT_CAPACITY, evaporation_series, &reservoir_storage_area);
+                             ILLIMITED_TREATMENT_CAPACITY, evaporation_series, reservoir_storage_area);
 
 
     // Setup Infrastructure construction manager holding reservoir
@@ -624,8 +624,8 @@ TEST_CASE("Test Joint Triggering of Allocated Reservoir", "[Allocated Reservoir]
 
     vector<double> allocated_res_storage = {0, 1000};
     vector<double> allocated_res_area = {0, 0.3675 * 1000};
-    DataSeries allocated_reservoir_storage_area(&allocated_res_storage,
-                                                & allocated_res_area);
+    DataSeries allocated_reservoir_storage_area(allocated_res_storage,
+                                                allocated_res_area);
 
     LevelDebtServiceBond bond(0, 100.0, 25, 0.05, vector<int>(1, 0));
     vector<double> construction_time_interval = {3.0, 5.0};
@@ -634,7 +634,7 @@ TEST_CASE("Test Joint Triggering of Allocated Reservoir", "[Allocated Reservoir]
                                            river_catchments, 1000.0,
                                            ILLIMITED_TREATMENT_CAPACITY,
                                            evaporation_series,
-                                           &allocated_reservoir_storage_area,
+                                           allocated_reservoir_storage_area,
                                            construction_time_interval,
                                            17*WEEKS_IN_YEAR,
                                            bond,

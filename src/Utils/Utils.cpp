@@ -25,11 +25,11 @@
 #include <climits>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <type_traits>
 
-
-
-vector<string> Utils::tokenizeString(string &line, char token) {
-    vector<string> tag_and_values(0);
+template<class T>
+void Utils::tokenizeString(string &line, vector<T> &tokenized_vector, char token) {
+    tokenized_vector = vector<T>(0);
     if (line[0] != '#') {
         istringstream ss(line);
 
@@ -39,7 +39,13 @@ vector<string> Utils::tokenizeString(string &line, char token) {
             if (!getline(ss, s, token))
                 break;
             try {
-                tag_and_values.push_back(s);
+                if (std::is_same<T, double>::value) tokenized_vector.push_back(stof(s));
+                else if (std::is_same<T, int>::value) tokenized_vector.push_back(stoi(s));
+                else if (std::is_same<T, string>::value) tokenized_vector.push_back(s);
+                else throw invalid_argument("Template function Utils::tokenize "
+                                            "can only be used with int, double, "
+                                            "and string.");
+
             } catch (const std::invalid_argument &e) {
                 cout << "NaN found in file system tag " << ", line " << line << endl;
                 e.what();
@@ -47,18 +53,6 @@ vector<string> Utils::tokenizeString(string &line, char token) {
             c++;
         }
     }
-
-    return tag_and_values;
-}
-
-
-vector<int> Utils::tokenizeStringInt(string &line, char token) {
-    vector<string> string_vector = tokenizeString(line, token);
-    vector<int> tokenized_vector;
-    std::transform(string_vector.begin(), string_vector.end(),
-                   back_inserter(tokenized_vector), [](const string & astr){ return stoi(astr); });
-
-    return tokenized_vector;
 }
 
 /**

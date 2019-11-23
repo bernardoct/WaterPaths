@@ -14,13 +14,12 @@ private:
     const int EXISTING_REUSE_STATION = 0;
     const int NON_EXISTING_REUSE_STATION = 1;
 
-    double capacity = NON_INITIALIZED;
     int constructor_type = NON_INITIALIZED;
 
 public:
-    void parseVariables(vector<vector<string>> &block) override;
+    void parseVariables(vector<vector<string>> &block, int n_realizations, int n_weeks) override;
 
-    WaterSource* generateSource(vector<vector<string>> &block) override;
+    WaterSource* generateSource(vector<vector<string>> &block, int n_realizations, int n_weeks) override;
 };
 
 

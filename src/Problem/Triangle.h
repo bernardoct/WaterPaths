@@ -48,6 +48,7 @@ private:
     vector<vector<double>> evap_jordan_lake;
     vector<vector<double>> demand_to_wastewater_fraction_owasa_raleigh;
     vector<vector<double>> demand_to_wastewater_fraction_durham;
+    vector<vector<double>> demand_to_wastewater_fraction_chatham;
     vector<vector<double>> caryDemandClassesFractions;
     vector<vector<double>> durhamDemandClassesFractions;
     vector<vector<double>> raleighDemandClassesFractions;

@@ -19,10 +19,13 @@ DataSeries::DataSeries(vector<double> &series_x, vector<double> &series_y) : ser
 
 DataSeries::DataSeries() : length(Constants::NON_INITIALIZED) {}
 
-DataSeries::DataSeries(DataSeries const &data_series) : length(data_series.length) {}
+DataSeries::DataSeries(DataSeries const &data_series) : length(data_series.length),
+            series_x(data_series.series_x), series_y(data_series.series_y) {}
 
-DataSeries &DataSeries::operator=(const DataSeries &reservoir) {
-    length = reservoir.length;
+DataSeries &DataSeries::operator=(const DataSeries &data_series) {
+    length = data_series.length;
+    series_x = data_series.series_x;
+    series_y = data_series.series_y;
 }
 
 /**

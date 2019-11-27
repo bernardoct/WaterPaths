@@ -124,8 +124,8 @@ set(SOURCE_FILES
         src/InputFileParser/Base/ElementParser.h
         src/InputFileParser/Base/WaterSourceParser.cpp
         src/InputFileParser/Base/WaterSourceParser.h
-        src/InputFileParser/ReuseParser.cpp
-        src/InputFileParser/ReuseParser.h
+        src/InputFileParser/WaterSources/ReuseParser.cpp
+        src/InputFileParser/WaterSources/ReuseParser.h
         src/InputFileParser/MasterSystemInputFileParser.cpp
         src/InputFileParser/MasterSystemInputFileParser.h
         src/InputFileParser/Bonds/LevelDebtServiceBondParser.cpp
@@ -133,7 +133,11 @@ set(SOURCE_FILES
         src/InputFileParser/Base/BondParser.cpp
         src/InputFileParser/Base/BondParser.h
         src/InputFileParser/Bonds/MasterBondParser.cpp
-        src/InputFileParser/Bonds/MasterBondParser.h)
+        src/InputFileParser/Bonds/MasterBondParser.h
+        src/InputFileParser/WaterSources/ReservoirParser.cpp
+        src/InputFileParser/WaterSources/ReservoirParser.h src/InputFileParser/WaterSources/AllocatedReservoirParser.cpp src/InputFileParser/WaterSources/AllocatedReservoirParser.h src/InputFileParser/Exceptions/MissingParameter.cpp src/InputFileParser/Exceptions/MissingParameter.h src/InputFileParser/Exceptions/MutuallyImplicativeTags.cpp src/InputFileParser/Exceptions/MutuallyImplicativeTags.h
+        src/InputFileParser/WaterSources/ReservoirExpansionParser.cpp
+        src/InputFileParser/WaterSources/ReservoirExpansionParser.h)
 
 set(TEST_SOURCE_FILES
         src/ContinuityModels/Base/ContinuityModel.cpp
@@ -239,14 +243,14 @@ set(TEST_SOURCE_FILES
         src/SystemComponents/Bonds/BalloonPaymentBond.h
         src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.cpp
         src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.h
-        Tests/catch.hpp
+        Tests/Catch2/single_include/catch2/catch.hpp
         Tests/Tests.cpp
         src/InputFileParser/Base/ElementParser.cpp
         src/InputFileParser/Base/ElementParser.h
         src/InputFileParser/Base/WaterSourceParser.cpp
         src/InputFileParser/Base/WaterSourceParser.h
-        src/InputFileParser/ReuseParser.cpp
-        src/InputFileParser/ReuseParser.h
+        src/InputFileParser/WaterSources/ReuseParser.cpp
+        src/InputFileParser/WaterSources/ReuseParser.h
         src/InputFileParser/MasterSystemInputFileParser.cpp
         src/InputFileParser/MasterSystemInputFileParser.h
         src/InputFileParser/Bonds/LevelDebtServiceBondParser.cpp
@@ -254,7 +258,21 @@ set(TEST_SOURCE_FILES
         src/InputFileParser/Base/BondParser.cpp
         src/InputFileParser/Base/BondParser.h
         src/InputFileParser/Bonds/MasterBondParser.cpp
-        src/InputFileParser/Bonds/MasterBondParser.h)
+        src/InputFileParser/Bonds/MasterBondParser.h
+        src/InputFileParser/WaterSources/ReservoirParser.cpp
+        src/InputFileParser/WaterSources/ReservoirParser.h
+        src/InputFileParser/EvaporationSeriesParser.cpp
+        src/InputFileParser/EvaporationSeriesParser.h
+        src/InputFileParser/CatchmentParser.cpp
+        src/InputFileParser/CatchmentParser.h
+        src/InputFileParser/WaterSources/AllocatedReservoirParser.cpp
+        src/InputFileParser/WaterSources/AllocatedReservoirParser.h
+        src/InputFileParser/Exceptions/MissingParameter.cpp
+        src/InputFileParser/Exceptions/MissingParameter.h
+        src/InputFileParser/Exceptions/MutuallyImplicativeTags.cpp
+        src/InputFileParser/Exceptions/MutuallyImplicativeTags.h
+        src/InputFileParser/WaterSources/ReservoirExpansionParser.cpp
+        src/InputFileParser/WaterSources/ReservoirExpansionParser.h)
 
 add_executable(TriangleModel ${SOURCE_FILES})
 add_executable(TestTriangleModel ${TEST_SOURCE_FILES})

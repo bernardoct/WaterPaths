@@ -30,7 +30,7 @@ public:
 
     DataSeries(DataSeries const &data_series);
 
-    DataSeries &operator=(const DataSeries &reservoir);
+    DataSeries &operator=(const DataSeries &data_series);
 
     const vector<double> &getSeries_x() const;
 

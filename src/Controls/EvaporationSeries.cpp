@@ -4,8 +4,10 @@
 
 #include "EvaporationSeries.h"
 
+EvaporationSeries::EvaporationSeries() {}
+
 EvaporationSeries::EvaporationSeries(
-        vector<vector<double>> *evaporation_series, int series_length)
+        vector<vector<double>> &evaporation_series, int series_length)
         : Catchment(evaporation_series,
                     series_length) {}
 

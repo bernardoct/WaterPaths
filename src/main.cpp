@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
             case '?':
                 fprintf(stdout,
                         "%s\n"
-                        "\t-?: print this message\n"
+                        "\t-?: print this error_message\n"
                         "\t-s: solutions file (hard coded solutions)\n"
                         "\t-u: uncertain factors file (hard coded values)\n"
                         "\t-T: number of threads (auto)\n"

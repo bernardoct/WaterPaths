@@ -12,8 +12,8 @@ AllocatedReservoir::AllocatedReservoir(
         string name, const int id, const vector<Catchment *> &catchments,
         const double capacity, const double max_treatment_capacity,
         EvaporationSeries &evaporation_series, DataSeries &storage_area_curve,
-        vector<int> *utilities_with_allocations,
-        vector<double> *allocated_fractions, vector<double> *allocated_treatment_fractions)
+        vector<int> utilities_with_allocations,
+        vector<double> allocated_fractions, vector<double> allocated_treatment_fractions)
         : Reservoir(name,
                     id,
                     catchments,
@@ -32,9 +32,9 @@ AllocatedReservoir::AllocatedReservoir(string name, const int id, const vector<C
                                        const double capacity, const double max_treatment_capacity,
                                        EvaporationSeries &evaporation_series, DataSeries &storage_area_curve,
                                        const vector<double> &construction_time_range, double permitting_period,
-                                       Bond &bond, vector<int> *utilities_with_allocations,
-                                       vector<double> *allocated_fractions,
-                                       vector<double> *allocated_treatment_fractions)
+                                       Bond &bond, vector<int> utilities_with_allocations,
+                                       vector<double> allocated_fractions,
+                                       vector<double> allocated_treatment_fractions)
         : Reservoir(name, id, catchments, capacity, max_treatment_capacity, evaporation_series, storage_area_curve,
                     allocated_treatment_fractions, allocated_fractions, utilities_with_allocations,
                     construction_time_range, permitting_period, bond, ALLOCATED_RESERVOIR),
@@ -45,9 +45,9 @@ AllocatedReservoir::AllocatedReservoir(
         string name, const int id, const vector<Catchment *> &catchments,
         const double capacity, const double max_treatment_capacity,
         EvaporationSeries &evaporation_series, double storage_area,
-        vector<int> *utilities_with_allocations,
-        vector<double> *allocated_fractions, vector<double>
-        *allocated_treatment_fractions)
+        vector<int> utilities_with_allocations,
+        vector<double> allocated_fractions, vector<double>
+        allocated_treatment_fractions)
         : Reservoir(name,
                     id,
                     catchments,
@@ -66,9 +66,9 @@ AllocatedReservoir::AllocatedReservoir(string name, const int id, const vector<C
                                        const double capacity, const double max_treatment_capacity,
                                        EvaporationSeries &evaporation_series, double storage_area,
                                        const vector<double> &construction_time_range, double permitting_period,
-                                       Bond &bond, vector<int> *utilities_with_allocations,
-                                       vector<double> *allocated_fractions,
-                                       vector<double> *allocated_treatment_fractions)
+                                       Bond &bond, vector<int> utilities_with_allocations,
+                                       vector<double> allocated_fractions,
+                                       vector<double> allocated_treatment_fractions)
         : Reservoir(name, id, catchments, capacity, max_treatment_capacity, evaporation_series, storage_area,
                     allocated_treatment_fractions, allocated_fractions, utilities_with_allocations,
                     construction_time_range, permitting_period, bond, ALLOCATED_RESERVOIR),
@@ -144,7 +144,7 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
     /// calculate spillage and set all allocations to full. Otherwise,
     /// distributed inflows and outflows among respective allocations.
     if (available_volume_new > capacity) {
-        for (int u : *utilities_with_allocations)
+        for (int &u : utilities_with_allocations)
             available_allocated_volumes[u] = this->capacity *
                                              allocated_fractions[u];
         total_outflow = outflow_new + available_volume_new - capacity;
@@ -174,7 +174,7 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
             if (overallocation) {
                 /// Calculate combined excess allocation and combined allocation
                 /// fraction.
-                for (int u : *utilities_with_allocations) {
+                for (int &u : utilities_with_allocations) {
                     /// Calculation of amount exceeding all individual allocations
                     if (available_allocated_volumes[u] >=
                         allocated_capacities[u]) {
@@ -191,7 +191,7 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
                 double rellocation_excess = 0;
                 while (excess_allocated_water > 0 &&
                        fraction_needing_water > 0) {
-                    for (int u : *utilities_with_allocations) {
+                    for (int &u : utilities_with_allocations) {
                         /// Redistribute excess based on allocations fractions.
                         if (available_allocated_volumes[u] <
                             allocated_capacities[u]) {
@@ -217,7 +217,7 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
                     excess_allocated_water = rellocation_excess;
                     rellocation_excess = 0;
                     fraction_needing_water = 0;
-                    for (int u : *utilities_with_allocations) {
+                    for (int &u : utilities_with_allocations) {
                         if (available_allocated_volumes[u] <
                             allocated_capacities[u])
                             fraction_needing_water += allocated_fractions[u];
@@ -226,7 +226,7 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
 
                 /// If there's still an excess but all allocations are at capacity,
                 /// release the rest as environmental flows.
-                for (int u : *utilities_with_allocations) {
+                for (int &u : utilities_with_allocations) {
                     if (available_allocated_volumes[u] >
                         allocated_capacities[u]) {
                         total_outflow += available_allocated_volumes[u] -
@@ -242,7 +242,7 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
     /// Sanity checking from now on.
     double sum_allocations = accumulate(available_allocated_volumes.begin(),
                                         available_allocated_volumes.end(),
-                                        0.f);
+                                        0.);
 
     double cont_error = abs(available_volume_old - direct_demand + total_upstream_inflow +
                             upstream_catchment_inflow - evaporated_volume -
@@ -317,7 +317,7 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
 void AllocatedReservoir::addCapacity(double capacity) {
     WaterSource::addCapacity(capacity);
 
-    for (int i : *utilities_with_allocations)
+    for (int &i : utilities_with_allocations)
         allocated_capacities[i] += capacity * allocated_fractions[i];
 }
 
@@ -339,20 +339,20 @@ void AllocatedReservoir::addTreatmentCapacity(const double added_plant_treatment
 
     /// Update treatment allocation fractions based on new allocated amounts
     /// and new total treatment capacity.
-    for (int i = 0; i < (int) utilities_with_allocations->size(); ++i) {
+    for (int i = 0; i < (int) utilities_with_allocations.size(); ++i) {
         allocated_treatment_fractions[i] = allocated_treatment_capacities[i]
                                            / total_treatment_capacity;
     }
 }
 
 bool AllocatedReservoir::mass_balance_with_wq_pool(double net_inflow,
-                                                     vector<double>
+                                                   vector<double>
                                                      &demand_outflow) {
     bool overallocation = false;
     int u;
     double negative_utility_allocation = 0;
-    for (int i = 0; i < (int) utilities_with_allocations->size() - 1; ++i) {
-        u = (*utilities_with_allocations)[i];
+    for (int i = 0; i < (int) utilities_with_allocations.size() - 1; ++i) {
+        u = utilities_with_allocations[i];
         /// Split inflows and evaporation among allocations and
         /// subtract demands.
         available_allocated_volumes[u] +=
@@ -377,7 +377,7 @@ bool AllocatedReservoir::mass_balance_with_wq_pool(double net_inflow,
 
     /// the water quality pool has no demand but provides the
     /// minimum environmental flows.
-    u = utilities_with_allocations->back();
+    u = utilities_with_allocations.back();
     available_allocated_volumes[u] +=
             net_inflow * allocated_fractions[u] -
             min_environmental_outflow + negative_utility_allocation;
@@ -404,11 +404,11 @@ bool AllocatedReservoir::mass_balance_with_wq_pool(double net_inflow,
 }
 
 bool AllocatedReservoir::mass_balance_without_wq_pool(double net_inflow,
-                                                   vector<double>
+                                                      vector<double>
                                                    &demand_outflow) {
     bool overallocation = false;
     net_inflow -= min_environmental_outflow;
-    for (int u : *utilities_with_allocations) {
+    for (int &u : utilities_with_allocations) {
         /// Split inflows, min environmental outflows and evaporation among
         /// allocations and subtract demands.
         available_allocated_volumes[u] +=
@@ -430,7 +430,7 @@ void AllocatedReservoir::setOnline() {
     /// start empty and gradually fill as inflows start coming in.
     available_volume = 0;
     ///set all allocated volumes to zero
-    for (int u : *utilities_with_allocations) {
+    for (int &u : utilities_with_allocations) {
         available_allocated_volumes[u] = 0;
     }
 }
@@ -452,7 +452,7 @@ double AllocatedReservoir::getAllocatedCapacity(int utility_id) {
 
 void AllocatedReservoir::setFull() {
     WaterSource::setFull();
-    for (int u : *utilities_with_allocations)
+    for (int &u : utilities_with_allocations)
         available_allocated_volumes[u] = allocated_capacities[u];
 }
 

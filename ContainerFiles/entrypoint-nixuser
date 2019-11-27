@@ -1,9 +1,0 @@
-#!/bin/bash
-SOURCE_NIX="source $ENVSDIR/.nix-profile/etc/profile.d/nix.sh"
-${SOURCE_NIX}
-
-#
-# Preload required packages into nix-store
-#
-cd "$HOME/WaterPaths/" || exit 1
-nix-shell nix/shell.nix

@@ -11,7 +11,7 @@
 class AllocatedReservoir : public Reservoir {
 protected:
     const bool has_water_quality_pool;
-    double continuity_error;
+    double continuity_error = NON_INITIALIZED;
 
 public:
     AllocatedReservoir(
@@ -20,32 +20,32 @@ public:
             const double max_treatment_capacity,
             EvaporationSeries &evaporation_series,
             DataSeries &storage_area_curve,
-            vector<int> *utilities_with_allocations,
-            vector<double> *allocated_fractions, vector<double>
-            *allocated_treatment_fractions);
+            vector<int> utilities_with_allocations,
+            vector<double> allocated_fractions, vector<double>
+            allocated_treatment_fractions);
 
     AllocatedReservoir(string name, const int id, const vector<Catchment *> &catchments,
                        const double capacity, const double max_treatment_capacity,
                        EvaporationSeries &evaporation_series, DataSeries &storage_area_curve,
                        const vector<double> &construction_time_range, double permitting_period, Bond &bond,
-                       vector<int> *utilities_with_allocations, vector<double> *allocated_fractions,
-                       vector<double> *allocated_treatment_fractions);
+                       vector<int> utilities_with_allocations, vector<double> allocated_fractions,
+                       vector<double> allocated_treatment_fractions);
 
     AllocatedReservoir(
             string name, const int id,
             const vector<Catchment *> &catchments, const double capacity,
             const double max_treatment_capacity,
             EvaporationSeries &evaporation_series, double storage_area,
-            vector<int> *utilities_with_allocations,
-            vector<double> *allocated_fractions, vector<double>
-            *allocated_treatment_fractions);
+            vector<int> utilities_with_allocations,
+            vector<double> allocated_fractions, vector<double>
+            allocated_treatment_fractions);
 
     AllocatedReservoir(string name, const int id, const vector<Catchment *> &catchments,
                        const double capacity, const double max_treatment_capacity,
                        EvaporationSeries &evaporation_series, double storage_area,
                        const vector<double> &construction_time_range, double permitting_period, Bond &bond,
-                       vector<int> *utilities_with_allocations, vector<double> *allocated_fractions,
-                       vector<double> *allocated_treatment_fractions);
+                       vector<int> utilities_with_allocations, vector<double> allocated_fractions,
+                       vector<double> allocated_treatment_fractions);
 
     AllocatedReservoir &operator=(
             const AllocatedReservoir
@@ -89,4 +89,4 @@ public:
 };
 
 
-#endif //TRIANGLEMODEL_ALLOCATEDRESERVOIR_H
+#endif //TRIANGLEMODEL_ALLOCATEDRESERVOIRPARSER_H

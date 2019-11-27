@@ -1,8 +1,33 @@
+10 525
 [WATER REUSE]
 name My Reuse Station
-capacity 500
+treatment_capacity 500
 bond level 50 30 0.05 0 immediate
 ctime 3 5
 ptime 10
 
+[RESERVOIR]
+name My Reservoir
+treatment_capacity 500
+capacity 2000
+bond level 100 30 0.05 0 deferred
+ctime 4 6
+ptime 15
+streamflow_files ../TestFiles/inflows/durham_inflows.csv ../TestFiles/inflows/falls_lake_inflows.csv
+evaporation_file ../TestFiles/evaporation/durham_evap.csv
+storage_area_curve 0,50,100 0,500,2000
+
+[ALLOCATED RESERVOIR]
+name My Reservoir
+treatment_capacity 1000
+capacity 2000
+bond level 100 30 0.05 0 deferred
+ctime 4 6
+ptime 15
+streamflow_files ../TestFiles/inflows/durham_inflows.csv ../TestFiles/inflows/falls_lake_inflows.csv
+evaporation_file ../TestFiles/evaporation/durham_evap.csv
+storage_area_curve 0,50,100 0,500,2000
+utilities_with_allocations 0,1
+allocated_fractions 0.3,0.5
+allocated_treatment_fractions 0.4,0.6
 

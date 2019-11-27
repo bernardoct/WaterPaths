@@ -27,33 +27,33 @@
 #include <sys/stat.h>
 #include <type_traits>
 
-template<class T>
-void Utils::tokenizeString(string &line, vector<T> &tokenized_vector, char token) {
-    tokenized_vector = vector<T>(0);
-    if (line[0] != '#') {
-        istringstream ss(line);
-
-        int c = 0;
-        while (!ss.eof()) {
-            string s;
-            if (!getline(ss, s, token))
-                break;
-            try {
-                if (std::is_same<T, double>::value) tokenized_vector.push_back(stof(s));
-                else if (std::is_same<T, int>::value) tokenized_vector.push_back(stoi(s));
-                else if (std::is_same<T, string>::value) tokenized_vector.push_back(s);
-                else throw invalid_argument("Template function Utils::tokenize "
-                                            "can only be used with int, double, "
-                                            "and string.");
-
-            } catch (const std::invalid_argument &e) {
-                cout << "NaN found in file system tag " << ", line " << line << endl;
-                e.what();
-            }
-            c++;
-        }
-    }
-}
+//template<class T>
+//void Utils::tokenizeString(string &line, vector<T> &tokenized_vector, char token) {
+//    tokenized_vector = vector<T>(0);
+//    if (line[0] != '#') {
+//        istringstream ss(line);
+//
+//        int c = 0;
+//        while (!ss.eof()) {
+//            string s;
+//            if (!getline(ss, s, token))
+//                break;
+//            try {
+//                if (std::is_same<T, double>::value) tokenized_vector.push_back(stof(s));
+//                else if (std::is_same<T, int>::value) tokenized_vector.push_back(stoi(s));
+//                else if (std::is_same<T, string>::value) tokenized_vector.push_back(s);
+//                else throw invalid_argument("Template function Utils::tokenize "
+//                                            "can only be used with int, double, "
+//                                            "and string.");
+//
+//            } catch (const std::invalid_argument &e) {
+//                cout << "NaN found in file system tag " << ", line " << line << endl;
+//                e.what();
+//            }
+//            c++;
+//        }
+//    }
+//}
 
 /**
  * Reads csv file into table, exported as a vector of vector of doubles.

@@ -23,6 +23,7 @@ protected:
     double total_demand = 0;
     double policy_added_demand = 0;
     double permitting_time = NON_INITIALIZED;
+
     vector<Bond *> bonds;
     double upstream_min_env_inflow = 0;
     double capacity = NON_INITIALIZED;
@@ -35,7 +36,7 @@ protected:
     vector<double> allocated_fractions;
     vector<double> supply_allocated_fractions;
 
-    vector<int> *utilities_with_allocations = nullptr;
+    vector<int> utilities_with_allocations;
     int wq_pool_id = NON_INITIALIZED;
     double total_allocated_fraction = NON_INITIALIZED;
     bool online;
@@ -64,8 +65,8 @@ public:
 
     WaterSource(string name, const int id, const vector<Catchment *> &catchments,
                 const double capacity, double treatment_capacity, vector<int> connected_sources,
-                const int source_type, vector<double> *allocated_treatment_fractions,
-                vector<double> *allocated_fractions, vector<int> *utilities_with_allocations);
+                const int source_type, vector<double> allocated_treatment_fractions,
+                vector<double> allocated_fractions, vector<int> utilities_with_allocations);
 
     WaterSource(string name, const int id, const vector<Catchment *> &catchments,
                 const double capacity, double treatment_capacity, vector<int> connected_sources,
@@ -78,8 +79,8 @@ public:
 
     WaterSource(string name, const int id, const vector<Catchment *> &catchments,
                     const double capacity, double treatment_capacity, vector<int> built_in_sequence,
-                    const int source_type, vector<double> *allocated_treatment_fractions,
-                    vector<double> *allocated_fractions, vector<int> *utilities_with_allocations,
+                    const int source_type, vector<double> allocated_treatment_fractions,
+                    vector<double> allocated_fractions, vector<int> utilities_with_allocations,
                     const vector<double> construction_time_range, double permitting_period,
                 Bond &bond);
 
@@ -95,8 +96,8 @@ public:
 
     bool operator==(const WaterSource *other);
 
-    void continuityWaterSource(int week, double upstream_source_inflow,
-                                   double wastewater_inflow,
+    void continuityWaterSource(int week, double &upstream_source_inflow,
+                                   double &wastewater_inflow,
                                    vector<double> &demand_outflow);
 
     virtual void addTreatmentCapacity(const double added_treatment_capacity, int utility_id);
@@ -150,9 +151,9 @@ public:
     double getTotal_treatment_capacity(int utility_id) const;
 
     void setAllocations(
-            vector<int> *utilities_with_allocations,
-            vector<double> *allocated_fractions,
-            vector<double> *allocated_treatment_fractions);
+            vector<int> &utilities_with_allocations,
+            vector<double> &allocated_fractions,
+            vector<double> &allocated_treatment_fractions);
 
     void resetAllocations(const vector<double> *new_allocated_fractions);
 
@@ -161,7 +162,7 @@ public:
 
     vector<double> getAvailable_allocated_volumes() const;
 
-    vector<int> *getUtilities_with_allocations() const;
+    const vector<int> &getUtilitiesWithAllocations() const;
 
     double getWastewater_inflow() const;
 
@@ -184,6 +185,8 @@ public:
     static void unsetSeed();
 
     const double getConstruction_time() const;
+
+    const vector<Catchment> &getCatchments() const;
 };
 
 

@@ -6,8 +6,8 @@
 #define TRIANGLEMODEL_REUSEPARSER_H
 
 
-#include "Base/WaterSourceParser.h"
-#include "../SystemComponents/WaterSources/WaterReuse.h"
+#include "../Base/WaterSourceParser.h"
+#include "../../SystemComponents/WaterSources/WaterReuse.h"
 
 class ReuseParser : public WaterSourceParser {
 private:
@@ -17,9 +17,14 @@ private:
     int constructor_type = NON_INITIALIZED;
 
 public:
+    explicit ReuseParser();
+
     void parseVariables(vector<vector<string>> &block, int n_realizations, int n_weeks) override;
 
-    WaterSource* generateSource(vector<vector<string>> &block, int n_realizations, int n_weeks) override;
+    WaterSource *
+    generateSource(int id, vector<vector<string>> &block, int line_no, int n_realizations, int n_weeks) override;
+
+    void checkMissingOrExtraParams(int line_no, vector<vector<string>> &block) override;
 };
 
 

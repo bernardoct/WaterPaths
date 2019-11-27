@@ -16,7 +16,7 @@ class AllocatedReservoirDataCollector : public ReservoirDataCollector {
 
 public:
     AllocatedReservoirDataCollector(AllocatedReservoir *allocated_reservoir,
-                                        unsigned long realization);
+                                    unsigned long realization);
 
     string printTabularString(int week) override;
 

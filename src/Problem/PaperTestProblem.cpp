@@ -236,15 +236,15 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
     int streamflow_n_weeks = (int) streamflows_durham[0].size();
 
-    EvaporationSeries evaporation_durham(&evap_durham, streamflow_n_weeks); //Evaporation
-    EvaporationSeries evaporation_falls_lake(&evap_falls_lake, streamflow_n_weeks); //Evaporation
-    EvaporationSeries evaporation_jordan_lake(&evap_jordan_lake, streamflow_n_weeks); // Lake Michael
+    EvaporationSeries evaporation_durham(evap_durham, streamflow_n_weeks); //Evaporation
+    EvaporationSeries evaporation_falls_lake(evap_falls_lake, streamflow_n_weeks); //Evaporation
+    EvaporationSeries evaporation_jordan_lake(evap_jordan_lake, streamflow_n_weeks); // Lake Michael
 
     // Create catchments and corresponding vectors
 
     // Autumn Lake (abstracted Neuse River Basin)
-    Catchment lower_flat_river(&streamflows_flat, streamflow_n_weeks);
-    Catchment little_river_raleigh_autumn(&streamflows_llr, streamflow_n_weeks);
+    Catchment lower_flat_river(streamflows_flat, streamflow_n_weeks);
+    Catchment little_river_raleigh_autumn(streamflows_llr, streamflow_n_weeks);
 
     // Add catchments to vector
     vector<Catchment *> catchment_autumn;
@@ -252,10 +252,10 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     catchment_autumn.push_back(&little_river_raleigh_autumn);
 
     // College Rock Reservoir Catchment (abstracted from upper cape fear)
-    Catchment phils_creek(&streamflows_phils, streamflow_n_weeks);
-    Catchment morgan_creek(&streamflows_morgan, streamflow_n_weeks);
-    Catchment crabtree_creek_cr(&streamflows_crabtree, streamflow_n_weeks);
-    Catchment cane_creek_cr(&streamflows_cane, streamflow_n_weeks);
+    Catchment phils_creek(streamflows_phils, streamflow_n_weeks);
+    Catchment morgan_creek(streamflows_morgan, streamflow_n_weeks);
+    Catchment crabtree_creek_cr(streamflows_crabtree, streamflow_n_weeks);
+    Catchment cane_creek_cr(streamflows_cane, streamflow_n_weeks);
 
     // Add catchments to vector
     // College Rock (University Lake)
@@ -266,14 +266,14 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     catchment_college_rock.push_back(&phils_creek);
 
     // Granite Quarry (Stone Quarry)
-    Catchment durham_inflows(&streamflows_durham, streamflow_n_weeks); // use Durham inflows for half the inflows
+    Catchment durham_inflows(streamflows_durham, streamflow_n_weeks); // use Durham inflows for half the inflows
     vector<Catchment *> catchment_granite_quarry;
     catchment_granite_quarry.push_back(&phils_creek);
     catchment_granite_quarry.push_back(&durham_inflows);
 
     // Sugar Creek (Cane Creek)
-    Catchment swift_creek(&streamflows_swift, streamflow_n_weeks);
-    Catchment sugar_creek(&streamflows_cane, streamflow_n_weeks);
+    Catchment swift_creek(streamflows_swift, streamflow_n_weeks);
+    Catchment sugar_creek(streamflows_cane, streamflow_n_weeks);
 
     // Add catchment to vector
     vector<Catchment *> catchment_sugar_creek;
@@ -281,22 +281,22 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     catchment_sugar_creek.push_back(&swift_creek);
 
     // Lake Michael Catchment (abstracted lower cape fear)
-    Catchment lower_haw_river(&streamflows_haw, streamflow_n_weeks);
+    Catchment lower_haw_river(streamflows_haw, streamflow_n_weeks);
 
     // Add catchment to vector
     vector<Catchment *> catchment_lower_haw_river;
     catchment_lower_haw_river.push_back(&lower_flat_river);
 
     // New River Reservoir catchment
-    Catchment little_river_raleigh_nrr(&streamflows_llr, streamflow_n_weeks);
-    Catchment clayton_gage(&streamflows_clayton, streamflow_n_weeks);
+    Catchment little_river_raleigh_nrr(streamflows_llr, streamflow_n_weeks);
+    Catchment clayton_gage(streamflows_clayton, streamflow_n_weeks);
 
     vector<Catchment *> catchment_new_river;
     catchment_new_river.push_back(&little_river_raleigh_nrr);
     catchment_new_river.push_back(&clayton_gage);
 
     // Downstream Gage
-    Catchment cape_fear_river_at_lillington(&streamflows_lillington, streamflow_n_weeks);
+    Catchment cape_fear_river_at_lillington(streamflows_lillington, streamflow_n_weeks);
 
     // Add catchment to vector
     vector<Catchment *> gage_lillington;
@@ -396,7 +396,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 //            {2, 4} //Fallsland
 //    };
 
-// Create existing reservoirs
+// Create existing_infrastructure reservoirs
     // combined university lake and stone quarry
     Reservoir college_rock_reservoir("College Rock Reservoir",
                                      0,
@@ -413,9 +413,9 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                                     548,
                                     evaporation_jordan_lake,
                                     13940,
-                                    &lake_michael_allocations_ids,
-                                    &lake_michael_allocation_fractions,
-                                    &lake_michael_treatment_allocation_fractions);
+                                    lake_michael_allocations_ids,
+                                    lake_michael_allocation_fractions,
+                                    lake_michael_treatment_allocation_fractions);
 
     AllocatedReservoir autumn_lake("Autumn Lake",
                                    2,
@@ -424,9 +424,9 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                                    ILLIMITED_TREATMENT_CAPACITY,
                                    evaporation_falls_lake,
                                    autumn_lake_storage_area,
-                                   &autumn_lake_allocations_ids,
-                                   &autumn_lake_allocation_fractions,
-                                   &autumn_lake_treatment_allocation_fractions);
+                                   autumn_lake_allocations_ids,
+                                   autumn_lake_allocation_fractions,
+                                   autumn_lake_treatment_allocation_fractions);
 
     // Create potential sources
 
@@ -457,9 +457,9 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
                                            construction_time_interval,
                                            17 * WEEKS_IN_YEAR,
                                            new_river_bond,
-                                           &nrr_allocations_ids,
-                                           &nrr_allocation_fractions,
-                                           &nrr_treatment_allocation_fractions);
+                                           nrr_allocations_ids,
+                                           nrr_allocation_fractions,
+                                           nrr_treatment_allocation_fractions);
 
     LevelDebtServiceBond sugar_bond(5, 150.0, 25, 0.05, vector<int>(1, 0));
     Reservoir sugar_creek_reservoir("Sugar Creek Reservoir",

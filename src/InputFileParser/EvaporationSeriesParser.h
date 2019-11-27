@@ -9,11 +9,12 @@
 #include "../Controls/EvaporationSeries.h"
 
 class EvaporationSeriesParser {
-    static vector<vector<vector<double>>> parsed_evaporation_csv_matrices;
-    static vector<EvaporationSeries> parsed_evaporation_series;
+    vector<vector<vector<double>>> parsed_evaporation_series_data;
+    vector<EvaporationSeries> parsed_evaporation_series;
 
 public:
-    static EvaporationSeries &parseSeries(string path, int n_weeks, int n_realizations);
+    EvaporationSeries &parseSeries(string path, int n_weeks, int n_realizations);
+
 };
 
 

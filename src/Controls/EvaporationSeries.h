@@ -10,8 +10,10 @@
 
 class EvaporationSeries : public Catchment {
 public:
+    EvaporationSeries();
+
     EvaporationSeries(
-            vector<vector<double>> *evaporation_series, int series_length);
+            vector<vector<double>> &evaporation_series, int series_length);
 
     EvaporationSeries(const EvaporationSeries &evaporation_series);
 

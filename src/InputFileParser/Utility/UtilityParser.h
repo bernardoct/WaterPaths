@@ -38,9 +38,14 @@ public:
     void parseVariables(vector<vector<string>> &block, int n_realizations);
 
     Utility *
-    generateUtility(int id, vector<vector<string>> &block, int line_no, int n_realizations);
+    generateUtility(int id, vector<vector<string>> &block,
+                    int line_no, int n_realizations,
+                    const map<string, int> &ws_name_to_id);
 
     void checkMissingOrExtraParams(vector<vector<string>> &block, int line_no);
+
+    void preProcessBlock(vector<vector<string>> &block, int l,
+                         const map<string, int> &ws_name_to_id);
 };
 
 

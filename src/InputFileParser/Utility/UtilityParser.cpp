@@ -7,16 +7,24 @@
 #include "../../Utils/Utils.h"
 #include "../Exceptions/MissingParameter.h"
 #include "../Exceptions/InconsistentMutuallyImplicativeParameters.h"
+#include "../AuxDataParser.h"
 
-UtilityParser::UtilityParser() {
+UtilityParser::UtilityParser() = default;
 
-}
+UtilityParser::~UtilityParser() = default;
 
-UtilityParser::~UtilityParser() {
+void UtilityParser::preProcessBlock(vector<vector<string>> &block, int l, const map<string,int>& ws_name_to_id) {
 
+    AuxDataParser::replaceNameById(block, "[UTILITY]", l,
+            "wwtp_discharge_rule", 2, ws_name_to_id);
+    AuxDataParser::replaceNameById(block, "[UTILITY]", l,
+            "rof_infra_construction_order", 1, ws_name_to_id);
+    AuxDataParser::replaceNameById(block, "[UTILITY]", l,
+            "demand_infra_construction_order", 1, ws_name_to_id);
 }
 
 void UtilityParser::parseVariables(vector<vector<string>> &block, int n_realizations) {
+
     vector<unsigned long> rows_read(0);
     for (unsigned long i = 0; i < block.size(); ++i) {
         vector<string> line = block[i];
@@ -81,7 +89,10 @@ void UtilityParser::parseVariables(vector<vector<string>> &block, int n_realizat
 }
 
 Utility *
-UtilityParser::generateUtility(int id, vector<vector<string>> &block, int line_no, int n_realizations) {
+UtilityParser::generateUtility(int id, vector<vector<string>> &block,
+                               int line_no, int n_realizations,
+                               const map<string, int> &ws_name_to_id) {
+    preProcessBlock(block, line_no, ws_name_to_id);
     parseVariables(block, n_realizations);
     WaterSourceParser::checkForUnreadTags(line_no, block, tag_name);
 

@@ -10,18 +10,26 @@
 
 class ReservoirExpansionParser : public WaterSourceParser {
 
-    unsigned long parent_reservoir_ID;
+    unsigned long parent_reservoir_ID = NON_INITIALIZED;
 
 public:
     explicit ReservoirExpansionParser();
 
-    void parseVariables(vector<vector<string>> &block, int n_realizations, int n_weeks) override;
+    void parseVariables(vector<vector<string>> &block, int n_realizations,
+                        int n_weeks) override;
 
     WaterSource *
-    generateSource(int id, vector<vector<string>> &block, int line_no, int n_realizations, int n_weeks) override;
+    generateSource(int id, vector<vector<string>> &block, int line_no,
+                   int n_realizations, int n_weeks,
+                   const map<string, int> &ws_name_to_id,
+                   const map<string, int> &utility_name_to_id) override;
 
-    void checkMissingOrExtraParams(int line_no, vector<vector<string>> &block) override;
+    void checkMissingOrExtraParams(int line_no,
+                                   vector<vector<string>> &block) override;
 
+    void
+    preProcessBlock(vector<vector<string>> &block, const string &tag, int l,
+                    const map<string, int> &ws_name_to_id);
 };
 
 

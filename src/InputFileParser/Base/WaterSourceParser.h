@@ -32,16 +32,24 @@ public:
 
     virtual ~WaterSourceParser();
 
-    virtual void parseVariables(vector<vector<string>> &block, int n_realizations, int n_weeks);
+    virtual void parseVariables(vector<vector<string>> &block,
+                                int n_realizations, int n_weeks);
 
     virtual WaterSource *
-    generateSource(int id, vector<vector<string>> &block, int line_no, int n_realizations, int n_weeks) =0;
+    generateSource(int id, vector<vector<string>> &block, int line_no,
+                   int n_realizations, int n_weeks,
+                   const map<string, int> &ws_name_to_id,
+                   const map<string, int> &utility_name_to_id) = 0;
 
-    virtual void checkMissingOrExtraParams(int line_no, vector<vector<string>> &block);
+    virtual void checkMissingOrExtraParams(int line_no,
+                                           vector<vector<string>> &block);
 
-    static void checkForUnreadTags(int line_no, const vector<vector<string>> &block, const string& tag_name);
+    static void checkForUnreadTags(int line_no,
+                                   const vector<vector<string>> &block,
+                                   const string &tag_name);
 
-    static void cleanBlock(vector<vector<string>> &block, vector<unsigned long> &rows_read);
+    static void cleanBlock(vector<vector<string>> &block,
+                           vector<unsigned long> &rows_read);
 };
 
 

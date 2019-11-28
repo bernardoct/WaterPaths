@@ -20,13 +20,15 @@ class MasterSystemInputFileParser {
     vector<WaterSource *> water_sources;
     vector<UtilityParser *> utility_parsers;
     vector<Utility *> utilities;
+    vector<vector<int>> reservoir_utility_connectivity_matrix;
 
     Graph water_sources_graph;
     Graph utilities_graph;
 
     int simulation_time = NON_INITIALIZED;
 
-    map<string, int> name_to_id;
+    map<string, int> ws_name_to_id;
+    map<string, int> utility_name_to_id;
 public:
     ~MasterSystemInputFileParser();
 
@@ -41,8 +43,6 @@ public:
     bool createWaterSource(int l, const vector<int> &realizations_weeks, vector<vector<string>> &blocks,
                            const string &tag);
 
-    void replaceNameById(vector<vector<string>> &block, const string &tag_name, int line_no, string param_name, int param_pos);
-
     const vector<WaterSource *>& getWaterSources() const;
 
     const vector<Utility *>& getUtilities() const;
@@ -53,8 +53,8 @@ public:
                        const string &tag);
 
     bool
-    createWaterSourceGraph(int l, const vector<int> &realizations_weeks, vector<vector<string>> &block,
-                           const string &tag);
+    createGraphsAndMatrices(int l, const vector<int> &realizations_weeks, vector<vector<string>> &block,
+                            const string &tag);
 };
 
 

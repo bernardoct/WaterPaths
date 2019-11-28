@@ -63,6 +63,28 @@ infra_discount_rate 0.07
 bond_term 25
 bond_interest_rate 0.05
 
-[WATER SOURCE GRAPH]
+[UTILITY]
+name My_Other_Utility
+demands ../TestFiles/demands/durham_demand.csv
+number_of_week_demands 2000
+percent_contingency_fund_contribution 0.03
+typesMonthlyDemandFraction ../TestFiles/durhamDemandClassesFractions.csv
+typesMonthlyWaterPrice ../TestFiles/durhamUserClassesWaterPrices.csv
+wwtp_discharge_rule ../TestFiles/demand_to_wastewater_fraction_durham.csv My_Reservoir,My_Allocated_Reservoir
+demand_buffer 0.35
+rof_infra_construction_order My_Reservoir,My_Reuse_Station
+infra_construction_triggers 0.2,0.1
+infra_discount_rate 0.07
+bond_term 25
+bond_interest_rate 0.05
+
+[WATER SOURCES GRAPH]
 My_Other_Reservoir,My_Reservoir
 My_Reservoir,My_Allocated_Reservoir
+
+[WS TO UTILITY MATRIX]
+My_Utility My_Reservoir,My_Reuse_Station,My_Allocated_Reservoir
+My_Other_Utility My_Allocated_Reservoir,My_Other_Reservoir
+
+[UTILITIES GRAPH]
+My_Utility,My_Other_Utility

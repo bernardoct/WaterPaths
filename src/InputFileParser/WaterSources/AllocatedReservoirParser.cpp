@@ -6,7 +6,7 @@
 #include "../../SystemComponents/WaterSources/AllocatedReservoir.h"
 #include "../Exceptions/MissingParameter.h"
 
-AllocatedReservoirParser::AllocatedReservoirParser() : ReservoirParser() {}
+AllocatedReservoirParser::AllocatedReservoirParser() : ReservoirParser("[ALLOCATED RESERVOIR]") {}
 
 WaterSource *
 AllocatedReservoirParser::generateSource(int id, vector<vector<string>> &block, int line_no, int n_realizations,
@@ -14,7 +14,6 @@ AllocatedReservoirParser::generateSource(int id, vector<vector<string>> &block, 
 
     parseVariables(block, n_realizations, n_weeks);
     checkMissingOrExtraParams(line_no, block);
-    //TODO: ADD EXCEPTION HANDLING FOR MISSING VARIABLES.
 
     if (existing_infrastructure && variable_area) {
         return new AllocatedReservoir(name, id, catchments, capacity,

@@ -123,11 +123,6 @@ vector<int> Graph::topologicalSort() {
         return top_order;
     }
 
-    // Print topological order
-//    for (int i = 0; i < top_order.size(); i++)
-//        cout << top_order[i] << " ";
-//    cout << endl;
-
     return top_order;
 }
 

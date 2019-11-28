@@ -6,7 +6,7 @@
 #include "WaterSourceParser.h"
 #include "../../Utils/Utils.h"
 #include "../Exceptions/MissingParameter.h"
-#include "../Exceptions/MutuallyImplicativeTags.h"
+#include "../Exceptions/InconsistentMutuallyImplicativeParameters.h"
 
 
 WaterSourceParser::WaterSourceParser(string tag_name) : tag_name(tag_name) {}
@@ -17,9 +17,7 @@ void WaterSourceParser::parseVariables(vector<vector<string>> &block,
     for (unsigned long i = 0; i < block.size(); ++i){
         vector<string> line = block[i];
         if (line[0] == "name") {
-            for (auto n = line.begin() + 1; n != line.end(); ++n)
-                name.append(*n + " ");
-            name.pop_back();
+            name = line[1];
             rows_read.push_back(i);
         } else if (line[0] == "capacity") {
             capacity = stof(line[1]);
@@ -27,6 +25,7 @@ void WaterSourceParser::parseVariables(vector<vector<string>> &block,
         } else if (line[0] == "bond") {
             bonds.push_back(master_bond_parser.generate_bond(line));
             rows_read.push_back(i);
+            existing_infrastructure = false;
         } else if (line[0] == "ctime") {
             if (line.size() != 3)
                 throw invalid_argument("Lines \"construction_time\" must have "
@@ -34,9 +33,11 @@ void WaterSourceParser::parseVariables(vector<vector<string>> &block,
                                        "lower limits.");
             construction_time = {stod(line[1]), stod(line[2])};
             rows_read.push_back(i);
+            existing_infrastructure = false;
         } else if (line[0] == "ptime") {
             permitting_time = stoi(line[1]);
             rows_read.push_back(i);
+            existing_infrastructure = false;
         } else if (line[0] == "treatment_capacity") {
             treatment_capacity = stod(line[1]);
             rows_read.push_back(i);
@@ -53,14 +54,6 @@ void WaterSourceParser::parseVariables(vector<vector<string>> &block,
     }
 
     cleanBlock(block, rows_read);
-}
-
-void WaterSourceParser::cleanBlock(vector<vector<string>> &block, vector<unsigned long> &rows_read) const {
-    sort(rows_read.begin(), rows_read.end());
-    reverse(rows_read.begin(), rows_read.end());
-    for (unsigned long &i : rows_read) {
-        block.erase(block.begin() + i);
-    }
 }
 
 WaterSourceParser::~WaterSourceParser() {
@@ -81,7 +74,7 @@ void WaterSourceParser::checkMissingOrExtraParams(int line_no, vector<vector<str
                     construction_time.empty()) ||
           (!bonds.empty() && permitting_time != NON_INITIALIZED &&
           !construction_time.empty()))) {
-        throw MutuallyImplicativeTags(
+        throw InconsistentMutuallyImplicativeParameters(
                 "bonds, permitting_time, construction_time",
                 tag_name, line_no
                 );
@@ -91,13 +84,17 @@ void WaterSourceParser::checkMissingOrExtraParams(int line_no, vector<vector<str
          allocated_treatment_fractions.empty()) ||
         (!utilities_with_allocations.empty() && !allocated_fractions.empty() &&
          !allocated_treatment_fractions.empty()))) {
-        throw MutuallyImplicativeTags(
+        throw InconsistentMutuallyImplicativeParameters(
                 "utilities_with_allocations, allocated_fractions, "
                 "allocated_treatment_fractions", tag_name, line_no
                 );
     }
 
     // Check for tags that were not read.
+    checkForUnreadTags(line_no, block, tag_name);
+}
+
+void WaterSourceParser::checkForUnreadTags(int line_no, const vector<vector<string>> &block, const string& tag_name) {
     if (!block.empty()) {
         string extra_params;
         for (auto line : block) {
@@ -110,3 +107,10 @@ void WaterSourceParser::checkMissingOrExtraParams(int line_no, vector<vector<str
     }
 }
 
+void WaterSourceParser::cleanBlock(vector<vector<string>> &block, vector<unsigned long> &rows_read) {
+    sort(rows_read.begin(), rows_read.end());
+    reverse(rows_read.begin(), rows_read.end());
+    for (unsigned long &i : rows_read) {
+        block.erase(block.begin() + i);
+    }
+}

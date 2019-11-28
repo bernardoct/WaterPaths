@@ -11,11 +11,12 @@
 #include "../src/SystemComponents/Utility/Utility.h"
 #include "../src/Utils/Utils.h"
 #include "../src/SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
+#include "../src/SystemComponents/WaterSources/ReservoirExpansion.h"
 #include "../src/ContinuityModels/ContinuityModelRealization.h"
 #include "../src/InputFileParser/MasterSystemInputFileParser.h"
 #include "../src/InputFileParser/CatchmentParser.h"
 #include "../src/InputFileParser/Exceptions/MissingParameter.h"
-#include "../src/InputFileParser/Exceptions/MutuallyImplicativeTags.h"
+#include "../src/InputFileParser/Exceptions/InconsistentMutuallyImplicativeParameters.h"
 
 
 TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance][Exceptions]") {
@@ -64,12 +65,12 @@ TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance
         allocated_lake.setMin_environmental_outflow(50.);
         allocated_lake.applyContinuity(0, 0., 0., demands);
 
-        REQUIRE(allocated_lake.getAvailableVolume() == 99900.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(0) == 4982.5);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(1) == 9985.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(2) == 14967.5);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(3) == 19990.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(4) == 49975.);
+        CHECK(allocated_lake.getAvailableVolume() == 99900.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(0) == 4982.5);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(1) == 9985.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(2) == 14967.5);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(3) == 19990.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(4) == 49975.);
     }
 
     SECTION("Mass balance partially full, upstream flow, wastewater, no allocation full") {
@@ -77,12 +78,12 @@ TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance
         allocated_lake.setMin_environmental_outflow(50.);
         allocated_lake.applyContinuity(0, 10., 30., demands);
 
-        REQUIRE(allocated_lake.getAvailableVolume() == 99940.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(0) == 4984.5);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(1) == 9989.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(2) == 14973.5);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(3) == 19998.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(4) == 49995.);
+        CHECK(allocated_lake.getAvailableVolume() == 99940.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(0) == 4984.5);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(1) == 9989.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(2) == 14973.5);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(3) == 19998.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(4) == 49995.);
     }
 
     SECTION("Mass balance partially full, upstream flow, wastewater, no allocation full, two time steps") {
@@ -91,12 +92,12 @@ TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance
         allocated_lake.applyContinuity(0, 10., 30., demands);
         allocated_lake.applyContinuity(1, 10., 30., demands);
 
-        REQUIRE(allocated_lake.getAvailableVolume() == 99880.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(0) == 4969);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(1) == 9978.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(2) == 14947);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(3) == 19996.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(4) == 49990.);
+        CHECK(allocated_lake.getAvailableVolume() == 99880.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(0) == 4969);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(1) == 9978.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(2) == 14947);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(3) == 19996.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(4) == 49990.);
     }
 
     SECTION("Mass balance partially full, no upstream flow, no wastewater, one allocation full with redistribution") {
@@ -104,12 +105,12 @@ TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance
         allocated_lake.setMin_environmental_outflow(50.);
         allocated_lake.applyContinuity(0, 0., 0., demands);
 
-        REQUIRE(allocated_lake.getAvailableVolume() == 99920.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(0) == 4983.125);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(1) == 9986.25);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(2) == 14969.375);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(3) == 20000.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(4) == 49981.25);
+        CHECK(allocated_lake.getAvailableVolume() == 99920.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(0) == 4983.125);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(1) == 9986.25);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(2) == 14969.375);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(3) == 20000.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(4) == 49981.25);
     }
 
     SECTION("Mass balance partially full, upstream flow, wastewater, no allocation full, multiple time steps, "
@@ -120,12 +121,12 @@ TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance
             allocated_lake.applyContinuity(w, 10., 30., demands);
         }
 
-        REQUIRE(allocated_lake.getAvailableVolume() == 33810.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(0) == 1676.5);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(1) == 6753.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(2) == 8429.5);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(3) == 16906.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(4) == 45.);
+        CHECK(allocated_lake.getAvailableVolume() == 33810.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(0) == 1676.5);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(1) == 6753.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(2) == 8429.5);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(3) == 16906.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(4) == 45.);
     }
 
     SECTION("Mass balance partially full, multiple time steps, insufficient wq for 3 weeks", "[Negative storage]") {
@@ -135,12 +136,12 @@ TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance
             allocated_lake.applyContinuity(w, 10., 30., demands);
         }
 
-        REQUIRE(allocated_lake.getAvailableVolume() == 31900.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(0) == 1285.5);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(1) == 6371.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(2) == 7656.5);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(3) == 16542.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(4) == 45.);
+        CHECK(allocated_lake.getAvailableVolume() == 31900.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(0) == 1285.5);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(1) == 6371.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(2) == 7656.5);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(3) == 16542.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(4) == 45.);
     }
 
     SECTION("Mass balance partially full, multiple time steps, insufficient wq for 3 weeks", "[Negative storage]") {
@@ -150,12 +151,12 @@ TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance
             allocated_lake.applyContinuity(w, 10., 30., demands);
         }
 
-        REQUIRE(allocated_lake.getAvailableVolume() == 83900.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(0) == 0.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(1) == 8090.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(2) == 11135.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(3) == 18180.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(4) == 46495.);
+        CHECK(allocated_lake.getAvailableVolume() == 83900.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(0) == 0.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(1) == 8090.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(2) == 11135.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(3) == 18180.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(4) == 46495.);
     }
 
     SECTION("Mass balance partially full, multiple time steps, insufficient wq for 3 weeks", "[Negative storage]") {
@@ -165,13 +166,13 @@ TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance
             allocated_lake.applyContinuity(w, 10., 30., demands);
         }
 
-        REQUIRE(allocated_lake.getAvailableVolume() == 37405.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(0) == 0.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(1) == 8090.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(2) == 11135.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(3) == 18180.);
-        REQUIRE(allocated_lake.getAvailableAllocatedVolume(4) == 0.);
-        REQUIRE(allocated_lake.getTotal_outflow() >= 0.);
+        CHECK(allocated_lake.getAvailableVolume() == 37405.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(0) == 0.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(1) == 8090.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(2) == 11135.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(3) == 18180.);
+        CHECK(allocated_lake.getAvailableAllocatedVolume(4) == 0.);
+        CHECK(allocated_lake.getTotal_outflow() >= 0.);
     }
 
     SECTION("Exception for treatment capacity allocated to water quality pool.", "[Exception]") {
@@ -179,7 +180,7 @@ TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance
         vector<int> jl_allocations_ids_wq_pool = {0, 1, 2, 3, WATER_QUALITY_ALLOCATION};
         vector<double> jl_treatment_allocation_fractions_extra_for_wq_pool = {0.333, 0.333, 0.233, 0.0, 0.1};
 
-        REQUIRE_THROWS([&]() {
+        CHECK_THROWS([&]() {
             AllocatedReservoir allocated_lake("Jordan Lake",
                                               0,
                                               catchment_haw,
@@ -265,8 +266,8 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
             vector<double> construction_time_interval = {3., 5.};
             WaterReuse reuse("Test", 18, 5., construction_time_interval,
                              7 * WEEKS_IN_YEAR, bond);
-            REQUIRE(reuse.getConstruction_time() > WEEKS_IN_YEAR * 3);
-            REQUIRE(reuse.getConstruction_time() < WEEKS_IN_YEAR * 5);
+            CHECK(reuse.getConstruction_time() > WEEKS_IN_YEAR * 3 - 1);
+            CHECK(reuse.getConstruction_time() < WEEKS_IN_YEAR * 5 + 1);
         }
     }
 
@@ -289,7 +290,7 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
 
         SECTION("Begin building infrastructure", "[Infrastructure]") {
             infrastructure_construction_manager.beginConstruction(55, 7);
-            REQUIRE(infrastructure_construction_manager.getUnder_construction()[7]);
+            CHECK(infrastructure_construction_manager.getUnder_construction()[7]);
         }
 
         SECTION("Set watersource online", "[Infrastructure]") {
@@ -297,7 +298,7 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
                                                                      total_treatment_capacity, total_available_volume,
                                                                      total_stored_volume);
 
-            REQUIRE(water_sources[7]->isOnline());
+            CHECK(water_sources[7]->isOnline());
         }
 
         SECTION("Infrastruture handler high LT-ROF but week < permitting period", "[Infrastructure]") {
@@ -305,7 +306,7 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
                                                                                   total_treatment_capacity,
                                                                                   total_available_volume,
                                                                                   total_stored_volume);
-            REQUIRE(!infrastructure_construction_manager.getUnder_construction()[7]);
+            CHECK(!infrastructure_construction_manager.getUnder_construction()[7]);
         }
 
         SECTION("Infrastruture handler high LT-ROF but week > permitting period", "[Infrastructure]") {
@@ -313,7 +314,7 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
                                                                                   total_treatment_capacity,
                                                                                   total_available_volume,
                                                                                   total_stored_volume);
-            REQUIRE(infrastructure_construction_manager.getUnder_construction()[7]);
+            CHECK(infrastructure_construction_manager.getUnder_construction()[7]);
         }
     }
 
@@ -324,18 +325,18 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
 
         SECTION("Infrastruture handler high LT-ROF but week < permitting period") {
             utility.infrastructureConstructionHandler(1., 0);
-            REQUIRE(!utility.getInfrastructure_construction_manager().getUnder_construction()[7]);
+            CHECK(!utility.getInfrastructure_construction_manager().getUnder_construction()[7]);
         }
 
         SECTION("Infrastruture handler high LT-ROF but week > permitting period") {
             utility.infrastructureConstructionHandler(1., 1461);
-            REQUIRE(utility.getInfrastructure_construction_manager().getUnder_construction()[7]);
+            CHECK(utility.getInfrastructure_construction_manager().getUnder_construction()[7]);
         }
 
         SECTION("Infrastructure beginning and finishing") {
             utility.infrastructureConstructionHandler(1., 1461);
             utility.infrastructureConstructionHandler(1., 1461 + (int) reservoir.construction_time + 1);
-            REQUIRE(!utility.getInfrastructure_construction_manager().getUnder_construction()[7]);
+            CHECK(!utility.getInfrastructure_construction_manager().getUnder_construction()[7]);
         }
     }
 
@@ -394,16 +395,16 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
             model.setLongTermROFs(lt_rofs, 100);
 
             // Check triggering
-            REQUIRE(model.getContinuity_utilities()[0]->
+            CHECK(model.getContinuity_utilities()[0]->
                     getInfrastructure_construction_manager().getUnder_construction()[0]);
-            REQUIRE(model.getContinuity_utilities()[1]->
+            CHECK(model.getContinuity_utilities()[1]->
                     getInfrastructure_construction_manager().getUnder_construction()[0]);
-            REQUIRE(!model.getContinuity_water_sources()[0]->isOnline());
+            CHECK(!model.getContinuity_water_sources()[0]->isOnline());
 
             // Check financial
-            REQUIRE(model.getContinuity_utilities()[0]->
+            CHECK(model.getContinuity_utilities()[0]->
                     getInfrastructure_net_present_cost() == Approx(134.99));
-            REQUIRE(model.getContinuity_utilities()[1]->
+            CHECK(model.getContinuity_utilities()[1]->
                     getInfrastructure_net_present_cost() ==
                     Approx(202.49).epsilon(0.005));
         }
@@ -414,15 +415,15 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
             model.setLongTermROFs(lt_rofs, 100);
             // Finish construction and set source online
             model.setLongTermROFs(lt_rofs, 362);
-            REQUIRE(!model.getContinuity_utilities()[0]->
+            CHECK(!model.getContinuity_utilities()[0]->
                             getInfrastructure_construction_manager()
                     .getUnder_construction()[0]);
-            REQUIRE(!model.getContinuity_utilities()[1]->
+            CHECK(!model.getContinuity_utilities()[1]->
                             getInfrastructure_construction_manager()
                     .getUnder_construction()[0]);
-            REQUIRE(model.getContinuity_water_sources()[1]->
+            CHECK(model.getContinuity_water_sources()[1]->
                     getAllocatedTreatmentCapacity(0) == 40);
-            REQUIRE(model.getContinuity_water_sources()[1]->
+            CHECK(model.getContinuity_water_sources()[1]->
                     getAllocatedTreatmentCapacity(1) == 70);
         }
     }
@@ -448,8 +449,8 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
             SECTION("One source online and other offline") {
                 utility.splitDemands(0, split_demands);
 
-                REQUIRE(split_demands[0][0] == 100.);
-                REQUIRE(split_demands[7][0] == 0.);
+                CHECK(split_demands[0][0] == 100.);
+                CHECK(split_demands[7][0] == 0.);
             }
 
             SECTION("Two sources online") {
@@ -458,8 +459,8 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
                 utility.updateTotalAvailableVolume();
                 utility.splitDemands(0, split_demands);
 
-                REQUIRE(split_demands[0][0] == 75.);
-                REQUIRE(split_demands[7][0] == 25.);
+                CHECK(split_demands[0][0] == 75.);
+                CHECK(split_demands[7][0] == 25.);
             }
 
             SECTION("Two sources online, unfulfilled demand") {
@@ -470,9 +471,9 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
                 utility.updateTotalAvailableVolume();
                 utility.splitDemands(0, split_demands);
 
-                REQUIRE(split_demands[0][0] == 20.);
-                REQUIRE(split_demands[7][0] == 10.);
-                REQUIRE(utility.getUnfulfilled_demand() == 70.);
+                CHECK(split_demands[0][0] == 20.);
+                CHECK(split_demands[7][0] == 10.);
+                CHECK(utility.getUnfulfilled_demand() == 70.);
             }
         }
     }
@@ -486,16 +487,16 @@ TEST_CASE("Bonds") {
         LevelDebtServiceBond bond(0, 100.0, 25, 0.05, vector<int>(1, 0));
         SECTION("No discount nor premium") {
             bond.issueBond(0, 156, 1., 1.);
-            REQUIRE(bond.getNetPresentValueAtIssuance(0.05, 0) == Approx(86.38).epsilon(e));
-            REQUIRE(bond.getNetPresentValueAtIssuance(0.07, 0) == Approx(67.50).epsilon(e));
-            REQUIRE(bond.getNetPresentValueAtIssuance(0.03, 0) == Approx(113.07).epsilon(e));
-            REQUIRE(bond.getDebtService(104) == 0.);
+            CHECK(bond.getNetPresentValueAtIssuance(0.05, 0) == Approx(86.38).epsilon(e));
+            CHECK(bond.getNetPresentValueAtIssuance(0.07, 0) == Approx(67.50).epsilon(e));
+            CHECK(bond.getNetPresentValueAtIssuance(0.03, 0) == Approx(113.07).epsilon(e));
+            CHECK(bond.getDebtService(104) == 0.);
             for (int w = 156; w < 1410; ++w) {
                 if (Utils::weekOfTheYear(w) == 0) {
-                    REQUIRE(bond.getDebtService((int) w) == Approx(7.10).epsilon(e));
+                    CHECK(bond.getDebtService((int) w) == Approx(7.10).epsilon(e));
                 }
             }
-            REQUIRE(bond.getDebtService(1461) == 0.);
+            CHECK(bond.getDebtService(1461) == 0.);
         }
     }
 
@@ -503,15 +504,15 @@ TEST_CASE("Bonds") {
         LevelDebtServiceBond bond(0, 100.0, 25, 0.05, vector<int>(1, 0), BEGIN_REPAYMENT_AT_ISSUANCE);
         SECTION("No discount nor premium") {
             bond.issueBond(0, 156, 1., 1.);
-            REQUIRE(bond.getNetPresentValueAtIssuance(0.05, 0) == Approx(100).epsilon(e));
-            REQUIRE(bond.getNetPresentValueAtIssuance(0.07, 0) == Approx(82.69).epsilon(e));
-            REQUIRE(bond.getNetPresentValueAtIssuance(0.03, 0) == Approx(123.55).epsilon(e));
+            CHECK(bond.getNetPresentValueAtIssuance(0.05, 0) == Approx(100).epsilon(e));
+            CHECK(bond.getNetPresentValueAtIssuance(0.07, 0) == Approx(82.69).epsilon(e));
+            CHECK(bond.getNetPresentValueAtIssuance(0.03, 0) == Approx(123.55).epsilon(e));
             for (int w = 52; w < 1305; ++w) {
                 if (Utils::weekOfTheYear(w) == 0) {
-                    REQUIRE(bond.getDebtService((int) w) == Approx(7.10).epsilon(e));
+                    CHECK(bond.getDebtService((int) w) == Approx(7.10).epsilon(e));
                 }
             }
-            REQUIRE(bond.getDebtService(1304) == 0.);
+            CHECK(bond.getDebtService(1304) == 0.);
         }
     }
 }
@@ -654,9 +655,9 @@ TEST_CASE("Test Joint Triggering of Allocated Reservoir", "[Allocated Reservoir]
 
       SECTION("Testing initial reservoir allocation volumes") {
          //Available volumes should all be initialized to zero
-        REQUIRE(allocated_reservoir.getAvailableVolume() == 0);
-        REQUIRE(allocated_reservoir.getAvailable_allocated_volumes()[0] == 0);
-        REQUIRE(allocated_reservoir.getAvailable_allocated_volumes()[1] == 0);
+        CHECK(allocated_reservoir.getAvailableVolume() == 0);
+        CHECK(allocated_reservoir.getAvailable_allocated_volumes()[0] == 0);
+        CHECK(allocated_reservoir.getAvailable_allocated_volumes()[1] == 0);
       }
 
 }
@@ -692,33 +693,33 @@ TEST_CASE("Read time series.", "[Time series parsing]") {
         vector<string> paths = {"../TestFiles/inflows/durham_inflows.csv",
                                 "../TestFiles/inflows/falls_lake_inflows.csv"};
         CatchmentParser catchment_parser;
-        catchment_parser.parseSeries(paths, 3000);
+        catchment_parser.parseSeries(paths, 3000, 1000);
 
         auto catchments = catchment_parser.getParsedCatchments();
-        vector<double> rdms(0);
+        vector<double> rdms(50, 1.);
         catchments[0]->setRealization(1, rdms);
         catchments[1]->setRealization(10, rdms);
-        REQUIRE(catchments.size() == 2);
-        REQUIRE(catchments[0]->getStreamflow(0) == Approx(2525.78));
-        REQUIRE(catchments[1]->getStreamflow(0) == Approx(2409.25));
+        CHECK(catchments.size() == 2);
+        CHECK(catchments[0]->getStreamflow(0) == Approx(2525.78));
+        CHECK(catchments[1]->getStreamflow(0) == Approx(2409.25));
     }
 }
 
 
-TEST_CASE("Read input file.", "[Input File Parser][Reservoir][Allocated Reservoir][Water Reuse][Bonds][Time series parsing][Exceptions]") {
+TEST_CASE("Read input file.", "[Input File Parser][Reservoir][Allocated Reservoir][Input File Parser][Reservoir Expansion][Water Reuse][Bonds][Time series parsing][Exceptions][Water Sources Graph]") {
     int zero_week = - (int) (WEEKS_IN_YEAR * WEEKS_ROF_SHORT_TERM) + 104;
     auto rdm_vec = vector<double>(50, 1.);
 
     SECTION("Check missing parameter exception handling for input parser", "[Input File Parser][Exceptions]") {
         MasterSystemInputFileParser parser;
         string input_test_file = "../Tests/test_input_file_missing_name.wp";
-        REQUIRE_THROWS_AS(parser.parseFile(input_test_file), MissingParameter);
+        CHECK_THROWS_AS(parser.parseFile(input_test_file), MissingParameter);
     }
 
     SECTION("Check mutually implicative exception handling for input parser", "[Input File Parser][Exceptions]") {
         MasterSystemInputFileParser parser;
         string input_test_file = "../Tests/test_input_file_incomplete_non_existing_ws.wp";
-        REQUIRE_THROWS_AS(parser.parseFile(input_test_file), MutuallyImplicativeTags);
+        CHECK_THROWS_AS(parser.parseFile(input_test_file), InconsistentMutuallyImplicativeParameters);
     }
 
     string input_test_file = "../Tests/test_input_file.wp";
@@ -730,59 +731,96 @@ TEST_CASE("Read input file.", "[Input File Parser][Reservoir][Allocated Reservoi
         string line;
         getline(inputFile, line);
         getline(inputFile, line);
+        getline(inputFile, line);
         auto block = parser.readBlock(inputFile, l, line);
 
-        REQUIRE(block.size() == 5);
-        REQUIRE(block[0][0] == "name");
-        REQUIRE(block[1][1] == "500");
-        REQUIRE(block[2][1] == "level");
-        REQUIRE(block[4][1] == "10");
+        CHECK(block.size() == 9);
+        CHECK(block[0][0] == "name");
+        CHECK(block[1][1] == "500");
+        CHECK(block[3][1] == "level");
+        CHECK(block[4][1] == "4");
     }
 
     MasterSystemInputFileParser parser;
     parser.parseFile(input_test_file);
-    auto water_sources = parser.getWaterSources();
 
-    SECTION("Checking if reuse station numeric and text data was parsed correctly.", "[Input File Parser][Water Reuse][Bonds]") {
+    SECTION("Checking if water sources numeric and text data was parsed correctly.", "[Input File Parser][Water Sources][Bonds]") {
+        auto water_sources = parser.getWaterSources();
 
-        REQUIRE(water_sources[0]->id == 0);
-        REQUIRE(water_sources[0]->getConstruction_time() < 5.1 * WEEKS_IN_YEAR);
-        REQUIRE(water_sources[0]->getConstruction_time() > 2.9 * WEEKS_IN_YEAR);
-        REQUIRE(water_sources[0]->getBond(0).type == LEVEL_DEBT_SERVICE);
-        REQUIRE(water_sources[0]->getBond(0).pay_on_weeks[0] == 0);
-        REQUIRE(water_sources[0]->getBond(0).pay_on_weeks.size() == 1);
-        REQUIRE(!water_sources[0]->getBond(0).isIssued());
-        REQUIRE(water_sources[0]->name == "My Reuse Station");
+        SECTION("Checking if reuse station numeric and text data was parsed correctly.",
+                "[Input File Parser][Water Reuse][Bonds]") {
+
+            CHECK(water_sources[3]->id == 3);
+            CHECK(water_sources[3]->getConstruction_time() < 5.1 * WEEKS_IN_YEAR);
+            CHECK(water_sources[3]->getConstruction_time() > 2.9 * WEEKS_IN_YEAR);
+            CHECK(water_sources[3]->getBond(0).type == LEVEL_DEBT_SERVICE);
+            CHECK(water_sources[3]->getBond(0).pay_on_weeks[0] == 0);
+            CHECK(water_sources[3]->getBond(0).pay_on_weeks.size() == 1);
+            CHECK(!water_sources[3]->getBond(0).isIssued());
+            CHECK(water_sources[3]->name == "My_Reuse_Station");
+        }
+
+        SECTION("Checking if reservoir numeric and text data was parsed correctly.",
+                "[Input File Parser][Reservoir][Bonds]") {
+
+            CHECK(water_sources[0]->id == 0);
+            CHECK(water_sources[0]->getConstruction_time() < 6.1 * WEEKS_IN_YEAR);
+            CHECK(water_sources[0]->getConstruction_time() > 3.9 * WEEKS_IN_YEAR);
+            CHECK(water_sources[0]->getBond(0).type == LEVEL_DEBT_SERVICE);
+            CHECK(water_sources[0]->getBond(0).pay_on_weeks[0] == 0);
+            CHECK(water_sources[0]->getBond(0).pay_on_weeks.size() == 1);
+            CHECK(!water_sources[0]->getBond(0).isIssued());
+            CHECK(water_sources[0]->name == "My_Reservoir");
+            water_sources[1]->setRealization(0, rdm_vec);
+            CHECK(dynamic_cast<Reservoir *>(water_sources[1])->getStorageAreaCurve().getSeries_x()[1] == 500);
+            CHECK(dynamic_cast<Reservoir *>(water_sources[1])->getEvaporationSeries().getEvaporation(zero_week) ==
+                  -0.0062453998252749443);
+        }
+
+        SECTION("Checking if allocated reservoir numeric and text data was parsed correctly.",
+                "[Input File Parser][Allocated Reservoir][Bonds]") {
+
+            CHECK(water_sources[1]->id == 1);
+            CHECK(water_sources[1]->getConstruction_time() < 6.1 * WEEKS_IN_YEAR);
+            CHECK(water_sources[1]->getConstruction_time() > 3.9 * WEEKS_IN_YEAR);
+            CHECK(water_sources[1]->getBond(0).type == LEVEL_DEBT_SERVICE);
+            CHECK(water_sources[1]->getBond(0).pay_on_weeks[0] == 0);
+            CHECK(water_sources[1]->getBond(0).pay_on_weeks.size() == 1);
+            CHECK(!water_sources[1]->getBond(0).isIssued());
+            CHECK(water_sources[1]->name == "My_Allocated_Reservoir");
+            water_sources[1]->setRealization(0, rdm_vec);
+            CHECK(dynamic_cast<AllocatedReservoir *>(water_sources[1])->getStorageAreaCurve().getSeries_x()[1] == 500);
+            CHECK(dynamic_cast<AllocatedReservoir *>(water_sources[1])->getAllocatedCapacity(1) == 1000);
+            CHECK(dynamic_cast<AllocatedReservoir *>(water_sources[1])->getAllocatedTreatmentCapacity(1) == 600);
+        }
+
+        SECTION("Checking if reservoir expansion numeric and text data was parsed correctly.",
+                "[Input File Parser][Reservoir Expansion][Bonds]") {
+
+            CHECK(water_sources[4]->id == 4);
+            CHECK(water_sources[4]->getConstruction_time() < 6.1 * WEEKS_IN_YEAR);
+            CHECK(water_sources[4]->getConstruction_time() > 3.9 * WEEKS_IN_YEAR);
+            CHECK(water_sources[4]->getBond(0).type == LEVEL_DEBT_SERVICE);
+            CHECK(water_sources[4]->getBond(0).pay_on_weeks[1] == 25);
+            CHECK(water_sources[4]->getBond(0).pay_on_weeks.size() == 2);
+            CHECK(!water_sources[4]->getBond(0).isIssued());
+            CHECK(water_sources[4]->name == "My_Reservoir_Expansion");
+            CHECK(water_sources[4]->getSupplyCapacity() == 500);
+            CHECK(dynamic_cast<ReservoirExpansion *>(water_sources[4])->parent_reservoir_ID == 0);
+        }
     }
 
-    SECTION("Checking if reservoir numeric and text data was parsed correctly.", "[Input File Parser][Reservoir][Bonds]") {
-
-        REQUIRE(water_sources[1]->id == 1);
-        REQUIRE(water_sources[1]->getConstruction_time() < 6.1 * WEEKS_IN_YEAR);
-        REQUIRE(water_sources[1]->getConstruction_time() > 3.9 * WEEKS_IN_YEAR);
-        REQUIRE(water_sources[1]->getBond(0).type == LEVEL_DEBT_SERVICE);
-        REQUIRE(water_sources[1]->getBond(0).pay_on_weeks[0] == 0);
-        REQUIRE(water_sources[1]->getBond(0).pay_on_weeks.size() == 1);
-        REQUIRE(!water_sources[1]->getBond(0).isIssued());
-        REQUIRE(water_sources[1]->name == "My Reservoir");
-        water_sources[1]->setRealization(0, rdm_vec);
-        REQUIRE(dynamic_cast<Reservoir *>(water_sources[1])->getStorageAreaCurve().getSeries_x()[1] == 500);
-        REQUIRE(dynamic_cast<Reservoir *>(water_sources[1])->getEvaporationSeries().getEvaporation(zero_week) == -0.0062453998252749443);
+    SECTION("Checking if utility numeric and text data was parsed correctly.", "[Input File Parser][Utility][Bonds]") {
+        auto utilities = parser.getUtilities();
+        CHECK(utilities[0]->id == 0);
+        CHECK(utilities[0]->name == "My_Utility");
+        vector<int> expected_infra_const_order = {0, 3};
+        CHECK(utilities[0]->getRof_infrastructure_construction_order() == expected_infra_const_order);
     }
 
-    SECTION("Checking if allocated reservoir numeric and text data was parsed correctly.", "[Input File Parser][Allocated Reservoir][Bonds]") {
-
-        REQUIRE(water_sources[2]->id == 2);
-        REQUIRE(water_sources[2]->getConstruction_time() < 6.1 * WEEKS_IN_YEAR);
-        REQUIRE(water_sources[2]->getConstruction_time() > 3.9 * WEEKS_IN_YEAR);
-        REQUIRE(water_sources[2]->getBond(0).type == LEVEL_DEBT_SERVICE);
-        REQUIRE(water_sources[2]->getBond(0).pay_on_weeks[0] == 0);
-        REQUIRE(water_sources[2]->getBond(0).pay_on_weeks.size() == 1);
-        REQUIRE(!water_sources[2]->getBond(0).isIssued());
-        REQUIRE(water_sources[2]->name == "My Reservoir");
-        water_sources[2]->setRealization(0, rdm_vec);
-        REQUIRE(dynamic_cast<AllocatedReservoir *>(water_sources[2])->getStorageAreaCurve().getSeries_x()[1] == 500);
-        REQUIRE(dynamic_cast<AllocatedReservoir *>(water_sources[2])->getAllocatedCapacity(1) == 1000);
-        REQUIRE(dynamic_cast<AllocatedReservoir *>(water_sources[2])->getAllocatedTreatmentCapacity(1) == 600);
+    SECTION("Checking if graph was was imported properly.", "[Input File Parser][Water Sources Graph][Bonds]") {
+        const auto& water_sources_graph = parser.getWaterSourcesGraph();
+        vector<int> top_order = {2, 0, 1};
+        CHECK(water_sources_graph.getTopological_order() == top_order);
     }
 }

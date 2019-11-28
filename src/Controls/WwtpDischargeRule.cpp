@@ -6,6 +6,10 @@
 #include "WwtpDischargeRule.h"
 #include "../Utils/Constants.h"
 
+
+
+WwtpDischargeRule::WwtpDischargeRule() = default;
+
 WwtpDischargeRule::WwtpDischargeRule(
         vector<vector<double>> year_series_fraction_discharge,
         vector<int> discharge_to_source_ids) :

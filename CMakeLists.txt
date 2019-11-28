@@ -135,9 +135,15 @@ set(SOURCE_FILES
         src/InputFileParser/Bonds/MasterBondParser.cpp
         src/InputFileParser/Bonds/MasterBondParser.h
         src/InputFileParser/WaterSources/ReservoirParser.cpp
-        src/InputFileParser/WaterSources/ReservoirParser.h src/InputFileParser/WaterSources/AllocatedReservoirParser.cpp src/InputFileParser/WaterSources/AllocatedReservoirParser.h src/InputFileParser/Exceptions/MissingParameter.cpp src/InputFileParser/Exceptions/MissingParameter.h src/InputFileParser/Exceptions/MutuallyImplicativeTags.cpp src/InputFileParser/Exceptions/MutuallyImplicativeTags.h
+        src/InputFileParser/WaterSources/ReservoirParser.h
+        src/InputFileParser/WaterSources/AllocatedReservoirParser.cpp
+        src/InputFileParser/WaterSources/AllocatedReservoirParser.h
+        src/InputFileParser/Exceptions/MissingParameter.cpp
+        src/InputFileParser/Exceptions/MissingParameter.h
+        src/InputFileParser/Exceptions/InconsistentMutuallyImplicativeParameters.cpp
+        src/InputFileParser/Exceptions/InconsistentMutuallyImplicativeParameters.h
         src/InputFileParser/WaterSources/ReservoirExpansionParser.cpp
-        src/InputFileParser/WaterSources/ReservoirExpansionParser.h)
+        src/InputFileParser/WaterSources/ReservoirExpansionParser.h src/InputFileParser/Utility/UtilityParser.cpp src/InputFileParser/Utility/UtilityParser.h src/InputFileParser/AuxDataParser.cpp src/InputFileParser/AuxDataParser.h)
 
 set(TEST_SOURCE_FILES
         src/ContinuityModels/Base/ContinuityModel.cpp
@@ -269,10 +275,10 @@ set(TEST_SOURCE_FILES
         src/InputFileParser/WaterSources/AllocatedReservoirParser.h
         src/InputFileParser/Exceptions/MissingParameter.cpp
         src/InputFileParser/Exceptions/MissingParameter.h
-        src/InputFileParser/Exceptions/MutuallyImplicativeTags.cpp
-        src/InputFileParser/Exceptions/MutuallyImplicativeTags.h
+        src/InputFileParser/Exceptions/InconsistentMutuallyImplicativeParameters.cpp
+        src/InputFileParser/Exceptions/InconsistentMutuallyImplicativeParameters.h
         src/InputFileParser/WaterSources/ReservoirExpansionParser.cpp
-        src/InputFileParser/WaterSources/ReservoirExpansionParser.h)
+        src/InputFileParser/WaterSources/ReservoirExpansionParser.h src/InputFileParser/Utility/UtilityParser.cpp src/InputFileParser/Utility/UtilityParser.h src/InputFileParser/AuxDataParser.cpp src/InputFileParser/AuxDataParser.h)
 
 add_executable(TriangleModel ${SOURCE_FILES})
 add_executable(TestTriangleModel ${TEST_SOURCE_FILES})

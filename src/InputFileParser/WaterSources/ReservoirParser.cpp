@@ -10,6 +10,8 @@
 
 ReservoirParser::ReservoirParser() : WaterSourceParser("[RESERVOIR]") {}
 
+ReservoirParser::ReservoirParser(string tag_name) : WaterSourceParser(tag_name) {}
+
 void ReservoirParser::parseVariables(vector<vector<string>> &block, int n_realizations, int n_weeks) {
     WaterSourceParser::parseVariables(block, n_realizations, n_weeks);
 

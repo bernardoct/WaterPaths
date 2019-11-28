@@ -13,6 +13,8 @@
 
 class ReservoirParser : public WaterSourceParser {
 protected:
+    ReservoirParser(string tag_name);
+
     unsigned long BLOCK_LEN_EXISTING_RESERVOIR = 7;
     unsigned long BLOCK_LEN_NON_EXISTING_RESERVOIR = 10;
 

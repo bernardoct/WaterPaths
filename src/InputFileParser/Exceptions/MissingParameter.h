@@ -11,11 +11,11 @@
 
 using namespace std;
 
-class MissingParameter : virtual public exception {
+class MissingParameter : public exception {
 private:
     runtime_error error_message;
 public:
-    explicit
+
     MissingParameter(const string &missing_param_name, const string &tag_name, int line_number);
 
     ~MissingParameter() noexcept override = default;

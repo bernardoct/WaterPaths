@@ -23,9 +23,7 @@ protected:
     vector<double> allocated_treatment_fractions;
     vector<double> allocated_fractions;
     vector<int> utilities_with_allocations;
-    bool existing_infrastructure = false;
-
-    void cleanBlock(vector<vector<string>> &block, vector<unsigned long> &rows_read) const;
+    bool existing_infrastructure = true;
 
 public:
     const string tag_name;
@@ -40,6 +38,10 @@ public:
     generateSource(int id, vector<vector<string>> &block, int line_no, int n_realizations, int n_weeks) =0;
 
     virtual void checkMissingOrExtraParams(int line_no, vector<vector<string>> &block);
+
+    static void checkForUnreadTags(int line_no, const vector<vector<string>> &block, const string& tag_name);
+
+    static void cleanBlock(vector<vector<string>> &block, vector<unsigned long> &rows_read);
 };
 
 

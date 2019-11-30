@@ -35,8 +35,11 @@ protected:
     unsigned long n_threads;
     int n_utilities = NON_INITIALIZED;
     string io_directory;
+    string output_sub_directory;
     string fname_sufix;
     string evap_inflows_suffix;
+    string demand_path_suffix;
+    string demand_path_subfolder;
     string rof_tables_directory;
 
     vector<unsigned long > realizations_to_run;
@@ -71,6 +74,8 @@ public:
     void setSol_number(unsigned long sol_number);
 
     void setIODirectory(const string &io_directory);
+
+    void setOutputSubDirectory(const string &output_sub_directory_path);
 
     const vector<double> &getObjectives() const;
 
@@ -108,6 +113,10 @@ public:
                                          int threads, vector<vector<int>> &realizations_to_run);
 
     void setFormulation(unsigned long triangle_formulation);
+
+    void setDemand_path_suffix(const string &dem_suf);
+
+    void setDemand_path_subfolder(const string &dem_subfolder);
 };
 
 

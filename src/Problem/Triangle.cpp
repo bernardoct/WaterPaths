@@ -1783,31 +1783,32 @@ void Triangle::readInputData() {
             evap_jordan_lake = evap_owasa;
         }
 
-        //cout << "Reading demands." << endl;
+        cout << "Reading demands from demands sub-folder " << demand_path_subfolder << " with input file suffix " << demand_path_suffix << endl;
+
 #pragma omp single
         demand_cary = Utils::parse2DCsvFile(
-                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "full_sets/cary_demands_scenario_as_projected.csv", n_realizations);
+                io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
+                BAR + "cary_demands_scenario_" + demand_path_suffix + ".csv", n_realizations);
 #pragma omp single
         demand_durham = Utils::parse2DCsvFile(
-                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "full_sets/durham_demands_scenario_as_projected.csv", n_realizations);
+                io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
+                BAR + "durham_demands_scenario_" + demand_path_suffix + ".csv", n_realizations);
 #pragma omp single
         demand_raleigh = Utils::parse2DCsvFile(
-                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "full_sets/raleigh_demands_scenario_as_projected.csv", n_realizations);
+                io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
+                BAR + "raleigh_demands_scenario_" + demand_path_suffix + ".csv", n_realizations);
 #pragma omp single
         demand_owasa = Utils::parse2DCsvFile(
-                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "full_sets/owasa_demands_scenario_as_projected.csv", n_realizations);
+                io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
+                BAR + "owasa_demands_scenario_" + demand_path_suffix + ".csv", n_realizations);
 #pragma omp single
         demand_pittsboro = Utils::parse2DCsvFile(
-                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "full_sets/pittsboro_demands_scenario_as_projected.csv", n_realizations);
+                io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
+                BAR + "pittsboro_demands_scenario_" + demand_path_suffix + ".csv", n_realizations);
 #pragma omp single
         demand_chatham = Utils::parse2DCsvFile(
-                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "full_sets/chatham_demands_scenario_as_projected.csv", n_realizations);
+                io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
+                BAR + "chatham_demands_scenario_" + demand_path_suffix + ".csv", n_realizations);
 
         //cout << "Reading demand projections." << endl;
         /// DEMAND PROJECTION FILES ARE 51 ELEMENTS LONG
@@ -1816,28 +1817,28 @@ void Triangle::readInputData() {
         /// ARE OUT TO 2060
 #pragma omp single
         demand_projection_cary = Utils::parse1DCsvFile(
-                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "full_sets/cary_annual_demand_projections.csv", 51);
+                io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
+                BAR + "cary_annual_demand_projections.csv", 51);
 #pragma omp single
         demand_projection_durham = Utils::parse1DCsvFile(
-                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "full_sets/durham_annual_demand_projections.csv", 51);
+                io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
+                BAR + "durham_annual_demand_projections.csv", 51);
 #pragma omp single
         demand_projection_raleigh = Utils::parse1DCsvFile(
-                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "full_sets/raleigh_annual_demand_projections.csv", 51);
+                io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
+                BAR + "raleigh_annual_demand_projections.csv", 51);
 #pragma omp single
         demand_projection_owasa = Utils::parse1DCsvFile(
-                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "full_sets/owasa_annual_demand_projections.csv", 51);
+                io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
+                BAR + "owasa_annual_demand_projections.csv", 51);
 #pragma omp single
         demand_projection_pittsboro = Utils::parse1DCsvFile(
-                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "full_sets/pittsboro_annual_demand_projections.csv", 51);
+                io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
+                BAR + "pittsboro_annual_demand_projections.csv", 51);
 #pragma omp single
         demand_projection_chatham = Utils::parse1DCsvFile(
-                io_directory + DEFAULT_DATA_DIR + "demands" + evap_inflows_suffix +
-                BAR + "full_sets/chatham_annual_demand_projections.csv", 51);
+                io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
+                BAR + "chatham_annual_demand_projections.csv", 51);
 
         //cout << "Reading others." << endl;
 #pragma omp single

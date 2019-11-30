@@ -14,7 +14,7 @@
 vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
     if (this->master_data_collector != nullptr) {
         if (print_files) {
-            this->master_data_collector->setOutputDirectory(io_directory);
+            this->master_data_collector->setOutputDirectory(io_directory, output_sub_directory);
         }
         string fo = "Objectives";
         objectives = this->master_data_collector->calculatePrintObjectives(
@@ -29,7 +29,7 @@ vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
 void Problem::printTimeSeriesAndPathways(bool plot_time_series) {
     /// Calculate objective values.
     if (this->master_data_collector != nullptr) {
-//        this->master_data_collector->setOutputDirectory(io_directory);
+//        this->master_data_collector->setOutputDirectory(io_directory, output_sub_directory);
 
         /// Print output files.
         string fu = "Utilities";
@@ -39,7 +39,7 @@ void Problem::printTimeSeriesAndPathways(bool plot_time_series) {
 
         //FIXME:PRINT_POLICIES_OUTPUT_TABULAR BLOWING UP MEMORY.
         cout << "Printing Pathways" << endl;
-        this->master_data_collector->setOutputDirectory(io_directory);
+        this->master_data_collector->setOutputDirectory(io_directory, output_sub_directory);
         this->master_data_collector->printPathways(
                 fpw + "_s" + std::to_string(solution_no) + fname_sufix);
 
@@ -142,6 +142,14 @@ void Problem::setFname_sufix(const string &fname_sufix) {
 
 void Problem::setEvap_inflows_suffix(const string &evap_inflows_suffix) {
     Problem::evap_inflows_suffix = evap_inflows_suffix;
+}
+
+void Problem::setDemand_path_suffix(const string &dem_suf) {
+    Problem::demand_path_suffix = dem_suf;
+}
+
+void Problem::setDemand_path_subfolder(const string &dem_subfolder) {
+    Problem::demand_path_subfolder = dem_subfolder;
 }
 
 void Problem::setN_threads(unsigned long n_threads) {
@@ -370,6 +378,10 @@ void Problem::setImport_export_rof_tables(int import_export_rof_tables, string r
 
 void Problem::runBootstrapRealizationThinning(int standard_solution, int n_sets, int n_bs_samples,
                                               int threads, vector<vector<int>> &realizations_to_run) {
-    master_data_collector->setOutputDirectory(io_directory);
+    master_data_collector->setOutputDirectory(io_directory, output_sub_directory);
     master_data_collector->performBootstrapAnalysis(standard_solution, n_sets, n_bs_samples, threads, realizations_to_run);
+}
+
+void Problem::setOutputSubDirectory(const string &output_sub_directory_path) {
+    this->output_sub_directory = output_sub_directory_path;
 }

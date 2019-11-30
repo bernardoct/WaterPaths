@@ -654,10 +654,10 @@ void MasterDataCollector::printPathways(string file_name) {
     outStream.close();
 }
 
-void MasterDataCollector::setOutputDirectory(string io_directory) {
+void MasterDataCollector::setOutputDirectory(string io_directory, string sub_directory) {
     // Check if io_directory is not being set for the same io_directory it is already set. Avoids unnecessary verbose.
     if (io_directory != output_directory) {
-        output_directory = io_directory + DEFAULT_OUTPUT_DIR;
+        output_directory = io_directory + DEFAULT_OUTPUT_DIR + sub_directory;
         Utils::createDir(output_directory);
         cout << "Output will be printed to folder " << output_directory << endl;
     }

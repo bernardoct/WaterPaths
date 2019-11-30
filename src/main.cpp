@@ -61,6 +61,7 @@ int main(int argc, char *argv[]) {
     unsigned long n_weeks = 1565;
 
     string system_io = DEFAULT_DATA_DIR;
+    string output_sub_directory_path;
     string solution_file = "-1";
     string uncertainty_file = "-1";
     string bootstrap_file = "-1";
@@ -68,6 +69,8 @@ int main(int argc, char *argv[]) {
     string policies_rdm_file = "-1";
     string water_sources_rdm_file = "-1";
     string inflows_evap_directory_suffix = "-1";
+    string demand_path_suffix = "-1";
+    string demand_path_subfolder = "-1";
     string rof_tables_directory = DEFAULT_ROF_TABLES_DIR;
     unsigned long standard_solution = 0;
     int n_threads = 2;
@@ -94,7 +97,7 @@ int main(int argc, char *argv[]) {
     unsigned long triangle_model_formulation = -1;
 
     int c;
-    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:S:A:R:U:P:W:I:C:O:B:F:")) != -1) {
+    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:S:A:R:U:P:W:I:C:O:B:F:D:E:")) != -1) {
         switch (c) {
             case '?':
                 fprintf(stdout,
@@ -134,7 +137,9 @@ int main(int argc, char *argv[]) {
                         "\t-C: Import/export rof tables (1: export, 0:"
                         " do nothing (standard), -1: import)\n"
                         "\t-B: Export objectives for all utilities on a single line\n"
-                        "\t-F: Triangle model formulation (either 0, 1, or 2)",
+                        "\t-F: Triangle model formulation (either 0, 1, or 2)\n",
+                        "\t-D: Triangle model sub-folder of demand input files\n",
+                        "\t-E: Triangle model suffix for demand scenario input files",
                         argv[0], n_realizations, n_weeks, system_io.c_str());
                 return -1;
             case 's':
@@ -221,6 +226,13 @@ int main(int argc, char *argv[]) {
             case 'F':
                 triangle_model_formulation = atoi(optarg);
                 break;
+            case 'D':
+                demand_path_subfolder = optarg;
+                break;
+            case 'E':
+                demand_path_suffix = optarg;
+                output_sub_directory_path = optarg + BAR;
+                break;
             default:
                 fprintf(stderr, "Unknown option (-%c)\n", c);
                 return -1;
@@ -240,6 +252,7 @@ int main(int argc, char *argv[]) {
     // Set basic realization parameters.
     problem.setN_weeks(n_weeks);
     problem.setIODirectory(system_io);
+    problem.setOutputSubDirectory(output_sub_directory_path);
     problem.setN_threads((unsigned long) n_threads);
 
     problem.setFormulation(triangle_model_formulation);
@@ -265,6 +278,12 @@ int main(int argc, char *argv[]) {
     // Set up input/output suffix, if necessary.
     if (strlen(inflows_evap_directory_suffix.c_str()) > 2) {
         problem.setEvap_inflows_suffix(inflows_evap_directory_suffix);
+    }
+    if (strlen(demand_path_subfolder.c_str()) > 2) {
+        problem.setDemand_path_subfolder(demand_path_subfolder);
+    }
+    if (strlen(demand_path_suffix.c_str()) > 2) {
+        problem.setDemand_path_suffix(demand_path_suffix);
     }
     // Read RDM file, if any
     if (strlen(utilities_rdm_file.c_str()) > 2) {

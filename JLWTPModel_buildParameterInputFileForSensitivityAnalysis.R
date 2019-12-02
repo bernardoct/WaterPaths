@@ -34,7 +34,7 @@ Durham_Infrastructure_DemandBuffer_Range = c(0,10) # in MGD
 Durham_DemandProjection_ForecastLength = c(5) # years
 Durham_DemandProjection_HistoricalLookBack = c(5) # years
 Durham_DemandProjection_ReprojectionFrequency = c(5) # years
-Durham_SharedJLWTP_TreatmentAllocation = c(0,0.5) # fraction of total capacity
+Durham_SharedJLWTP_TreatmentAllocation = c(0.01,0.5) # fraction of total capacity
 
 # OWASA
 OWASA_Restriction_ROF_Trigger_Range = c(0.01,0.25)
@@ -49,7 +49,7 @@ OWASA_Infrastructure_DemandBuffer_Range = c(0,10) # in MGD
 OWASA_DemandProjection_ForecastLength = c(5) # years
 OWASA_DemandProjection_HistoricalLookBack = c(5) # years
 OWASA_DemandProjection_ReprojectionFrequency = c(5) # years
-OWASA_SharedJLWTP_TreatmentAllocation = c(0,0.2) # fraction of total capacity
+OWASA_SharedJLWTP_TreatmentAllocation = c(0.01,0.2) # fraction of total capacity
 
 # Raleigh
 Raleigh_Restriction_ROF_Trigger_Range = c(0.01,0.25)
@@ -80,7 +80,7 @@ Chatham_Infrastructure_DemandBuffer_Range = c(0,10) # in MGD
 Chatham_DemandProjection_ForecastLength = c(5) # years
 Chatham_DemandProjection_HistoricalLookBack = c(5) # years
 Chatham_DemandProjection_ReprojectionFrequency = c(5) # years
-Chatham_SharedJLWTP_TreatmentAllocation = c(0,0.4) # fraction of total capacity
+Chatham_SharedJLWTP_TreatmentAllocation = c(0.01,0.4) # fraction of total capacity
 
 # Pittsboro
 Pittsboro_Restriction_ROF_Trigger_Range = c(0.01,0.25)
@@ -95,7 +95,7 @@ Pittsboro_Infrastructure_DemandBuffer_Range = c(0,10) # in MGD
 Pittsboro_DemandProjection_ForecastLength = c(5) # years
 Pittsboro_DemandProjection_HistoricalLookBack = c(5) # years
 Pittsboro_DemandProjection_ReprojectionFrequency = c(5) # years
-Pittsboro_SharedJLWTP_TreatmentAllocation = c(0,0.3) # fraction of total capacity
+Pittsboro_SharedJLWTP_TreatmentAllocation = c(0.01,0.3) # fraction of total capacity
 
 ## Infrastructure pathway/sequencing parameters organized by utility ---------
 

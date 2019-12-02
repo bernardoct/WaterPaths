@@ -176,10 +176,10 @@ write.table(parameter_sets, "parameter_sets_1000_solutions.csv", sep = ",", row.
 ## Build input file that varies specific parameters and holds all others steady ----------------
 # names need to match exactly with names within the all_parameter_names vector
 # and get their associated index
-params_to_vary = c("Pittsboro_SharedJLWTP_TreatmentAllocation", 
+params_to_vary = c("OWASA_SharedJLWTP_TreatmentAllocation", 
                    "Chatham_SharedJLWTP_TreatmentAllocation", 
                    "Durham_SharedJLWTP_TreatmentAllocation", 
-                   "OWASA_SharedJLWTP_TreatmentAllocation")
+                   "Pittsboro_SharedJLWTP_TreatmentAllocation")
 
 param_input_file_index = c(); param_ranges = matrix(NA, 4, length(params_to_vary)); pi = 1
 for (p in params_to_vary) {

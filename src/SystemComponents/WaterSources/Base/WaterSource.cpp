@@ -790,9 +790,11 @@ void WaterSource::resetTreatmentAllocations(
         int u = utilities_with_allocations->at(i);
         // check for negativity issues
         if (allocated_treatment_capacities[u] < 0) {
+            //FIXME: SOLVE WHY THIS IS HAPPENING IN CERTAIN REALIZATIONS OF VARIABLE ALLOCATION FORMULATION
             cout << "Utility " << u << ", Alloc. Trmt Cap. = " << allocated_treatment_capacities[u] << endl;
-            throw logic_error("Error in WaterSource::resetTreatmentAllocations, "
-                              "allocated treatment capacity for a utility is negative.");
+            allocated_treatment_capacities[u] = 0;
+//            throw logic_error("Error in WaterSource::resetTreatmentAllocations, "
+//                              "allocated treatment capacity for a utility is negative.");
         }
 
 

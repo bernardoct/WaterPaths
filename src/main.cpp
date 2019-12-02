@@ -375,9 +375,14 @@ int main(int argc, char *argv[]) {
         } else {
             double time_0 = omp_get_wtime();
             ofstream objs_file;
-            string file_name = system_io + "output" + BAR + "Objectives" +
+            string objective_path_name = system_io + "output" + BAR + to_string(triangle_model_formulation) +
+                                         BAR + demand_path_suffix;
+            string file_name = system_io + "output" + BAR + to_string(triangle_model_formulation) +
+                    BAR + demand_path_suffix +
+                    BAR + "Objectives" +
                     (rdm_no == NON_INITIALIZED ? "" : "_RDM" + to_string(rdm_no)) +
                                "_sols" + to_string(first_solution) + "_to_" + to_string(last_solution) + ".csv";
+            Utils::createDir(objective_path_name);
             objs_file.open(file_name);
             printf("Objectives file will be printed at %s.\n", file_name.c_str());
             for (int s = first_solution; s < last_solution; ++s) {

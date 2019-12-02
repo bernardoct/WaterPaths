@@ -252,7 +252,7 @@ int main(int argc, char *argv[]) {
     // Set basic realization parameters.
     problem.setN_weeks(n_weeks);
     problem.setIODirectory(system_io);
-    problem.setOutputSubDirectory(output_sub_directory_path);
+    problem.setOutputSubDirectory(to_string(triangle_model_formulation) + BAR + output_sub_directory_path);
     problem.setN_threads((unsigned long) n_threads);
 
     problem.setFormulation(triangle_model_formulation);

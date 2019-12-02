@@ -350,7 +350,7 @@ MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, dou
 //        try {
             //double start = omp_get_wtime();
             for (int w = 0; w < (int) total_simulation_time; ++w) {
-                cout << w << endl;
+                //cout << w << endl;
 
                 // DO NOT change the order of the steps. This would mess up
                 // important dependencies.

@@ -185,14 +185,14 @@ vector<double> ContinuityModelROF::calculateShortTermROFTable(int week, vector<U
         int tier = (int) (storage_convert * NO_OF_INSURANCE_STORAGE_TIERS /
                 (utilities_base_storage_capacity[u] + current_base_storage_table_shift[u]));
 
-        cout << "In week " << week << " for " << utilities[u]->name
-             << ", storage is " << utility_storage
-             << " while base storage is " << utilities_base_storage_capacity[u]
-             << " and is shifted by " << current_base_storage_table_shift[u]
-             << " leading to a tier of " << tier << endl;
+//        cout << "In week " << week << " for " << utilities[u]->name
+//             << ", storage is " << utility_storage
+//             << " while base storage is " << utilities_base_storage_capacity[u]
+//             << " and is shifted by " << current_base_storage_table_shift[u]
+//             << " leading to a tier of " << tier << endl;
 
-        if (tier > NO_OF_INSURANCE_STORAGE_TIERS-1)
-            cout << "VIOLATION OF TIER LIMITS" << endl;
+//        if (tier > NO_OF_INSURANCE_STORAGE_TIERS-1)
+//            cout << "VIOLATION OF TIER LIMITS" << endl;
 
         // Mean ROF between the two tiers of the ROF table where
         // current storage is located.
@@ -497,9 +497,9 @@ void ContinuityModelROF::updateOnlineInfrastructure(int week) {
                 continuity_utilities.at(u)
                         ->setWaterSourceOnline((int) ws, week);
 
-                cout << "New source " << continuity_water_sources.at(ws)->name
-                     << " was set online by " << continuity_utilities.at(u)->name
-                     << " in week " << week << endl;
+//                cout << "New source " << continuity_water_sources.at(ws)->name
+//                     << " was set online by " << continuity_utilities.at(u)->name
+//                     << " in week " << week << endl;
 
                 // Update the shift in storage to be used to calculate the
                 // tier in precomputed ROF tables corresponding to the

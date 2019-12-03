@@ -278,7 +278,7 @@ double ObjectivesCalculator::calculateWorseCaseCostsObjective(
 }
 
 // meant to roughly be a ratio between all utility costs including drought mitigation and demands
-//
+// USING CURRENT VALUES OF DEBT SERVICE, NOT TOTAL NPV, WILL NOT CAPTURE DEBT SERVICE PAST 2060
 double ObjectivesCalculator::calculateUnitTotalCostObjective(const vector<UtilitiesDataCollector *> &utility_data,
                                                              vector<unsigned long> realizations) {
     unsigned long n_realizations = utility_data.size();
@@ -300,9 +300,13 @@ double ObjectivesCalculator::calculateUnitTotalCostObjective(const vector<Utilit
         infra_npv_total = 0;
         utility_demanded_water = 0;
 
-        infra_npv_total = accumulate(
-                realization->getNet_present_infrastructure_cost().begin(),
-                realization->getNet_present_infrastructure_cost().end(), 0.);
+//        infra_npv_total = accumulate(
+//                realization->getNet_present_infrastructure_cost().begin(),
+//                realization->getNet_present_infrastructure_cost().end(), 0.);
+
+        infra_npv_total += accumulate(
+                realization->getPresent_value_debt_service_payments().begin(),
+                realization->getPresent_value_debt_service_payments().end(), 0.);
 
         utility_demanded_water = accumulate(
                 realization->getUnrestricted_demand().begin(),

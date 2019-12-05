@@ -13,8 +13,8 @@
 #include "InfrastructureManager.h"
 
 /**
- * Main constructor for the Utility class.
- * @param name Utility name (e.g. Raleigh_water)
+ * Main constructor for the UtilityParser class.
+ * @param name UtilityParser name (e.g. Raleigh_water)
  * @param id Numeric ID assigned to that utility.
  * @param demands_all_realizations Text file containing utility's demand series.
  * @param number_of_week_demands Length of weeks in demand series.
@@ -44,8 +44,6 @@ Utility::Utility(
         wwtp_discharge_rule(wwtp_discharge_rule),
         demands_all_realizations(demands_all_realizations),
         infra_discount_rate(NON_INITIALIZED),
-        bond_term_multiplier(NON_INITIALIZED),
-        bond_interest_rate_multiplier(NON_INITIALIZED),
         id(id),
         number_of_week_demands(number_of_week_demands),
         name(name),
@@ -57,7 +55,7 @@ Utility::Utility(
 
 /**
  * Constructor for when there is infrastructure to be built.
- * @param name Utility name (e.g. Raleigh_water)
+ * @param name UtilityParser name (e.g. Raleigh_water)
  * @param id Numeric id assigned to that utility.
  * @param demands_all_realizations Text file containing utility's demand series.
  * @param number_of_week_demands Length of weeks in demand series.
@@ -85,15 +83,12 @@ Utility::Utility(string name, int id, vector<vector<double>>& demands_all_realiz
                  double demand_buffer, const vector<int> &rof_infra_construction_order,
                  const vector<int> &demand_infra_construction_order,
                  const vector<double> &infra_construction_triggers, double infra_discount_rate,
-                 const vector<vector<int>>& infra_if_built_remove, double
-                 bond_term, double bond_interest_rate) :
+                 const vector<vector<int>>& infra_if_built_remove) :
         total_storage_capacity(NONE),
         total_available_volume(NONE),
         wwtp_discharge_rule(wwtp_discharge_rule),
         demands_all_realizations(demands_all_realizations),
         infra_discount_rate(infra_discount_rate),
-        bond_term_multiplier(bond_term),
-        bond_interest_rate_multiplier(bond_interest_rate),
         id(id),
         number_of_week_demands(number_of_week_demands),
         name(name),
@@ -101,7 +96,7 @@ Utility::Utility(string name, int id, vector<vector<double>>& demands_all_realiz
         demand_buffer(demand_buffer) {
     infrastructure_construction_manager =
             InfrastructureManager(id, infra_construction_triggers, infra_if_built_remove,
-                                  infra_discount_rate, bond_term, bond_interest_rate,
+                                  infra_discount_rate,
                                   rof_infra_construction_order, demand_infra_construction_order);
 
     infrastructure_construction_manager.connectWaterSourcesVectorsToUtilitys(water_sources,
@@ -127,7 +122,7 @@ Utility::Utility(string name, int id, vector<vector<double>>& demands_all_realiz
 
 /**
  * Constructor for when there is infrastructure to be built.
- * @param name Utility name (e.g. Raleigh_water)
+ * @param name UtilityParser name (e.g. Raleigh_water)
  * @param id Numeric id assigned to that utility.
  * @param demands_all_realizations Text file containing utility's demand series.
  * @param number_of_week_demands Length of weeks in demand series.
@@ -151,15 +146,12 @@ Utility::Utility(string name, int id, vector<vector<double>>& demands_all_realiz
                  const vector<vector<double>> &typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,
                  double demand_buffer, const vector<int> &rof_infra_construction_order,
                  const vector<int> &demand_infra_construction_order,
-                 const vector<double> &infra_construction_triggers, double infra_discount_rate, double bond_term,
-                 double bond_interest_rate) :
+                 const vector<double> &infra_construction_triggers, double infra_discount_rate) :
         total_storage_capacity(NONE),
         total_available_volume(NONE),
         wwtp_discharge_rule(wwtp_discharge_rule),
         demands_all_realizations(demands_all_realizations),
         infra_discount_rate(infra_discount_rate),
-        bond_term_multiplier(bond_term),
-        bond_interest_rate_multiplier(bond_interest_rate),
         id(id),
         number_of_week_demands(number_of_week_demands),
         name(name),
@@ -167,7 +159,6 @@ Utility::Utility(string name, int id, vector<vector<double>>& demands_all_realiz
         demand_buffer(demand_buffer) {
     infrastructure_construction_manager = InfrastructureManager(id, infra_construction_triggers,
                                                                 vector<vector<int>>(), infra_discount_rate,
-                                                                bond_term, bond_interest_rate,
                                                                 rof_infra_construction_order,
                                                                 demand_infra_construction_order);
 
@@ -360,7 +351,7 @@ void Utility::checkErrorsAddWaterSourceOnline(WaterSource *water_source) {
     for (WaterSource *ws : water_sources) {
         if ((ws != nullptr) && ws->id == water_source->id) {
             cout << "Water source ID: " << water_source->id << endl <<
-                 "Utility ID: " << id << endl;
+                 "UtilityParser ID: " << id << endl;
             throw invalid_argument("Attempt to add water source with "
                                      "duplicate ID to utility.");
         }

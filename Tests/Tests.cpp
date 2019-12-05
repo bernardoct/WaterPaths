@@ -4,6 +4,7 @@
 
 
 #define CATCH_CONFIG_MAIN
+
 #include "Catch2/single_include/catch2/catch.hpp"
 #include "../src/SystemComponents/WaterSources/AllocatedReservoir.h"
 #include "../src/SystemComponents/WaterSources/WaterReuse.h"
@@ -17,14 +18,22 @@
 #include "../src/InputFileParser/CatchmentParser.h"
 #include "../src/InputFileParser/Exceptions/MissingParameter.h"
 #include "../src/InputFileParser/Exceptions/InconsistentMutuallyImplicativeParameters.h"
+#include "../src/DroughtMitigationInstruments/Transfers.h"
+#include "../src/Controls/FixedMinEnvFlowControl.h"
+#include "../src/Controls/SeasonalMinEnvFlowControl.h"
+#include "../src/Controls/InflowMinEnvFlowControl.h"
 
+using namespace Catch::literals;
 
-TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance][Exceptions]") {
+TEST_CASE("Mass balance Allocated reservoir",
+          "[AllocatedReservoir][Mass Balance][Exceptions]") {
     int streamflow_n_weeks = 52 * (1 + 50);
     vector<vector<double>> streamflows_haw =
-            vector<vector<double>>(1, vector<double>((unsigned long) streamflow_n_weeks, 300.));
+            vector<vector<double>>(1, vector<double>(
+                    (unsigned long) streamflow_n_weeks, 300.));
     vector<vector<double>> evap_jordan_lake =
-            vector<vector<double>>(1, vector<double>((unsigned long) streamflow_n_weeks, 250.));
+            vector<vector<double>>(1, vector<double>(
+                    (unsigned long) streamflow_n_weeks, 250.));
     Catchment lower_haw_river(streamflows_haw, streamflow_n_weeks);
     vector<Catchment *> catchment_haw;
     catchment_haw.push_back(&lower_haw_river);
@@ -44,7 +53,8 @@ TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance
             0.3 * jl_supply_capacity / jl_storage_capacity, // 15000 MG
             0.4 * jl_supply_capacity / jl_storage_capacity, // 20000 MG
             jl_wq_capacity / jl_storage_capacity};          // 50000 MG
-    vector<double> jl_treatment_allocation_fractions = {0.333, 0.333, 0.333, 0.0};
+    vector<double> jl_treatment_allocation_fractions = {0.333, 0.333, 0.333,
+                                                        0.0};
 
     AllocatedReservoir allocated_lake("Jordan Lake",
                                       0,
@@ -129,7 +139,8 @@ TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance
         CHECK(allocated_lake.getAvailableAllocatedVolume(4) == 45.);
     }
 
-    SECTION("Mass balance partially full, multiple time steps, insufficient wq for 3 weeks", "[Negative storage]") {
+    SECTION("Mass balance partially full, multiple time steps, insufficient wq for 3 weeks",
+            "[Negative storage]") {
         vector<double> demands = {200., 200., 400., 200.};
         allocated_lake.setMin_environmental_outflow(3000.);
         for (int w = 0; w < 19; ++w) {
@@ -144,7 +155,8 @@ TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance
         CHECK(allocated_lake.getAvailableAllocatedVolume(4) == 45.);
     }
 
-    SECTION("Mass balance partially full, multiple time steps, insufficient wq for 3 weeks", "[Negative storage]") {
+    SECTION("Mass balance partially full, multiple time steps, insufficient wq for 3 weeks",
+            "[Negative storage]") {
         vector<double> demands = {600., 200., 400., 200.};
         allocated_lake.setMin_environmental_outflow(300.);
         for (int w = 0; w < 10; ++w) {
@@ -159,7 +171,8 @@ TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance
         CHECK(allocated_lake.getAvailableAllocatedVolume(4) == 46495.);
     }
 
-    SECTION("Mass balance partially full, multiple time steps, insufficient wq for 3 weeks", "[Negative storage]") {
+    SECTION("Mass balance partially full, multiple time steps, insufficient wq for 3 weeks",
+            "[Negative storage]") {
         vector<double> demands = {600., 200., 400., 200.};
         allocated_lake.setMin_environmental_outflow(5500.);
         for (int w = 0; w < 10; ++w) {
@@ -175,10 +188,13 @@ TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance
         CHECK(allocated_lake.getTotal_outflow() >= 0.);
     }
 
-    SECTION("Exception for treatment capacity allocated to water quality pool.", "[Exception]") {
+    SECTION("Exception for treatment capacity allocated to water quality pool.",
+            "[Exception]") {
 
-        vector<int> jl_allocations_ids_wq_pool = {0, 1, 2, 3, WATER_QUALITY_ALLOCATION};
-        vector<double> jl_treatment_allocation_fractions_extra_for_wq_pool = {0.333, 0.333, 0.233, 0.0, 0.1};
+        vector<int> jl_allocations_ids_wq_pool = {0, 1, 2, 3,
+                                                  WATER_QUALITY_ALLOCATION};
+        vector<double> jl_treatment_allocation_fractions_extra_for_wq_pool = {
+                0.333, 0.333, 0.233, 0.0, 0.1};
 
         CHECK_THROWS([&]() {
             AllocatedReservoir allocated_lake("Jordan Lake",
@@ -196,13 +212,16 @@ TEST_CASE("Mass balance Allocated reservoir", "[AllocatedReservoir][Mass Balance
 
 }
 
-TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][Utility][Bonds]") {
+TEST_CASE("UtilityParser and infrastructure basic functionalities",
+          "[Infrastructure][UtilityParser][BondParsers]") {
     // Reservoir data
     int streamflow_n_weeks = 52 * (70 + 50);
     vector<vector<double>> streamflows =
-            vector<vector<double>>(1, vector<double>((unsigned long) streamflow_n_weeks, 300.));
+            vector<vector<double>>(1, vector<double>(
+                    (unsigned long) streamflow_n_weeks, 300.));
     vector<vector<double>> evaporation =
-            vector<vector<double>>(1, vector<double>((unsigned long) streamflow_n_weeks, 250.));
+            vector<vector<double>>(1, vector<double>(
+                    (unsigned long) streamflow_n_weeks, 250.));
 
     Catchment river_catchment(streamflows, streamflow_n_weeks);
     vector<Catchment *> river_catchments(1, &river_catchment);
@@ -211,31 +230,33 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
     LevelDebtServiceBond bond(0, 100.0, 25, 0.05, vector<int>(1, 0));
 
     // Reservoir
-    Reservoir reservoir("Little River Reservoir (Raleigh)", 7, vector<Catchment *>(), 3700.0,
+    Reservoir reservoir("Little River Reservoir (Raleigh)", 7,
+                        vector<Catchment *>(), 3700.0,
                         ILLIMITED_TREATMENT_CAPACITY, evaporation_series, 1.,
                         {4.5, 4.50001}, 17 * WEEKS_IN_YEAR, bond);
 
-    // Utility data
+    // UtilityParser data
     vector<vector<double>> demands =
-            vector<vector<double>>(1, vector<double>((unsigned long) streamflow_n_weeks, 100.));
+            vector<vector<double>>(1, vector<double>(
+                    (unsigned long) streamflow_n_weeks, 100.));
     vector<int> durham_ws_return_id = {};
     WwtpDischargeRule wwtp_discharge_durham(
             vector<vector<double>>(),
             durham_ws_return_id);
     vector<vector<int>> wjlwtp_remove_from_to_build_list;
 
-    vector<vector<double>> demand_class_fractions = {{0.173046633,0.170108967,0.195049165,0.039185639,0.065861249,0,0,0.345705321,0,0.011043025,0.89},
-                                                     {0.174218798,0.176103061,0.23872941,0.044298325,0.072064026,0,0,0.287271971,0,0.00731441,0.91},
-                                                     {0.165397772,0.153365266,0.192593725,0.033804252,0.067691513,0,0,0.377294656,0,0.009852817,0.84},
-                                                     {0.174090772,0.168076618,0.19902952,0.039942618,0.064681076,0,0,0.346182747,0,0.007996648,0.88},
-                                                     {0.146306233,0.142541416,0.182540819,0.03397242,0.064700708,0,0,0.404017943,0,0.025920462,0.82},
-                                                     {0.142660453,0.141824612,0.177751136,0.038466639,0.059367893,0,0,0.395287674,0,0.044641593,0.75},
-                                                     {0.125978495,0.12909426,0.164147643,0.043465465,0.05819444,0,0,0.408360658,0,0.070759039,0.83},
-                                                     {0.132975086,0.137751684,0.168810089,0.048402154,0.063577059,0,0,0.372134783,0,0.076349145,0.84},
-                                                     {0.124916911,0.124843094,0.158802204,0.03935136,0.059549521,0,0,0.412025491,0,0.080511419,0.87},
-                                                     {0.140403715,0.141682851,0.174901252,0.043405443,0.062146593,0,0,0.370492303,0,0.066967843,0.89},
-                                                     {0.140226464,0.137090428,0.178922408,0.038725701,0.066038848,0,0,0.38148803,0,0.057508121,0.87},
-                                                     {0.156423153,0.152041568,0.186688374,0.038647627,0.066779948,0,0,0.355242017,0,0.044177313,0.89}};
+    vector<vector<double>> demand_class_fractions = {{0.173046633, 0.170108967, 0.195049165, 0.039185639, 0.065861249, 0, 0, 0.345705321, 0, 0.011043025, 0.89},
+                                                     {0.174218798, 0.176103061, 0.23872941,  0.044298325, 0.072064026, 0, 0, 0.287271971, 0, 0.00731441,  0.91},
+                                                     {0.165397772, 0.153365266, 0.192593725, 0.033804252, 0.067691513, 0, 0, 0.377294656, 0, 0.009852817, 0.84},
+                                                     {0.174090772, 0.168076618, 0.19902952,  0.039942618, 0.064681076, 0, 0, 0.346182747, 0, 0.007996648, 0.88},
+                                                     {0.146306233, 0.142541416, 0.182540819, 0.03397242,  0.064700708, 0, 0, 0.404017943, 0, 0.025920462, 0.82},
+                                                     {0.142660453, 0.141824612, 0.177751136, 0.038466639, 0.059367893, 0, 0, 0.395287674, 0, 0.044641593, 0.75},
+                                                     {0.125978495, 0.12909426,  0.164147643, 0.043465465, 0.05819444,  0, 0, 0.408360658, 0, 0.070759039, 0.83},
+                                                     {0.132975086, 0.137751684, 0.168810089, 0.048402154, 0.063577059, 0, 0, 0.372134783, 0, 0.076349145, 0.84},
+                                                     {0.124916911, 0.124843094, 0.158802204, 0.03935136,  0.059549521, 0, 0, 0.412025491, 0, 0.080511419, 0.87},
+                                                     {0.140403715, 0.141682851, 0.174901252, 0.043405443, 0.062146593, 0, 0, 0.370492303, 0, 0.066967843, 0.89},
+                                                     {0.140226464, 0.137090428, 0.178922408, 0.038725701, 0.066038848, 0, 0, 0.38148803,  0, 0.057508121, 0.87},
+                                                     {0.156423153, 0.152041568, 0.186688374, 0.038647627, 0.066779948, 0, 0, 0.355242017, 0, 0.044177313, 0.89}};
     vector<vector<double>> user_classes_prices = {{2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7},
                                                   {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7},
                                                   {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7},
@@ -255,13 +276,16 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
     vector<int> construction_order = {7};
     vector<int> construction_order_empty;
 
-    Utility utility("U1", 0, demands, streamflow_n_weeks, 0.03, demand_class_fractions, user_classes_prices,
-                    wwtp_discharge_durham, 0., construction_order, construction_order_empty, rof_triggers, 0.07, 25,
+    Utility utility("U1", 0, demands, streamflow_n_weeks, 0.03,
+                    demand_class_fractions, user_classes_prices,
+                    wwtp_discharge_durham, 0., construction_order,
+                    construction_order_empty, rof_triggers, 0.07, 25,
                     0.05);
 
     utility.addWaterSource(&reservoir);
 
-    SECTION("Construction time within bounds.", "[WaterSource][Infrastructure]") {
+    SECTION("Construction time within bounds.",
+            "[WaterSource][Infrastructure]") {
         for (int i = 0; i < 10; ++i) {
             vector<double> construction_time_interval = {3., 5.};
             WaterReuse reuse("Test", 18, 5., construction_time_interval,
@@ -272,8 +296,13 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
     }
 
     SECTION("Infrastructure manager", "[InfrastructureManager]") {
-        InfrastructureManager infrastructure_construction_manager(0, rof_triggers, infra_built_remove, 0.06, 25, 0.05,
-                                                                  construction_order, vector<int>());
+        InfrastructureManager infrastructure_construction_manager(0,
+                                                                  rof_triggers,
+                                                                  infra_built_remove,
+                                                                  0.06, 25,
+                                                                  0.05,
+                                                                  construction_order,
+                                                                  vector<int>());
 
         vector<WaterSource *> water_sources(8);
         vector<int> priority_draw_water_source;
@@ -283,8 +312,9 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
         double total_treatment_capacity;
         double total_available_volume;
         double total_stored_volume;
-        infrastructure_construction_manager.connectWaterSourcesVectorsToUtilitys(water_sources, priority_draw_water_source,
-                                                                                 non_priority_draw_water_source);
+        infrastructure_construction_manager.connectWaterSourcesVectorsToUtilitys(
+                water_sources, priority_draw_water_source,
+                non_priority_draw_water_source);
         water_sources[7] = &reservoir;
         infrastructure_construction_manager.addWaterSource(&reservoir);
 
@@ -294,34 +324,40 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
         }
 
         SECTION("Set watersource online", "[Infrastructure]") {
-            infrastructure_construction_manager.setWaterSourceOnline((unsigned int) 7, 0, total_storage_capacity,
-                                                                     total_treatment_capacity, total_available_volume,
-                                                                     total_stored_volume);
+            infrastructure_construction_manager.setWaterSourceOnline(
+                    (unsigned int) 7, 0, total_storage_capacity,
+                    total_treatment_capacity, total_available_volume,
+                    total_stored_volume);
 
             CHECK(water_sources[7]->isOnline());
         }
 
-        SECTION("Infrastruture handler high LT-ROF but week < permitting period", "[Infrastructure]") {
-            infrastructure_construction_manager.infrastructureConstructionHandler(1., 53, 0, total_storage_capacity,
-                                                                                  total_treatment_capacity,
-                                                                                  total_available_volume,
-                                                                                  total_stored_volume);
+        SECTION("Infrastruture handler high LT-ROF but week < permitting period",
+                "[Infrastructure]") {
+            infrastructure_construction_manager.infrastructureConstructionHandler(
+                    1., 53, 0, total_storage_capacity,
+                    total_treatment_capacity,
+                    total_available_volume,
+                    total_stored_volume);
             CHECK(!infrastructure_construction_manager.getUnder_construction()[7]);
         }
 
-        SECTION("Infrastruture handler high LT-ROF but week > permitting period", "[Infrastructure]") {
-            infrastructure_construction_manager.infrastructureConstructionHandler(1., 1000, 0, total_storage_capacity,
-                                                                                  total_treatment_capacity,
-                                                                                  total_available_volume,
-                                                                                  total_stored_volume);
+        SECTION("Infrastruture handler high LT-ROF but week > permitting period",
+                "[Infrastructure]") {
+            infrastructure_construction_manager.infrastructureConstructionHandler(
+                    1., 1000, 0, total_storage_capacity,
+                    total_treatment_capacity,
+                    total_available_volume,
+                    total_stored_volume);
             CHECK(infrastructure_construction_manager.getUnder_construction()[7]);
         }
     }
 
-    SECTION("Utility infrastructure construction", "[Utility][Infrastructure]") {
+    SECTION("UtilityParser infrastructure construction",
+            "[UtilityParser][Infrastructure]") {
 
-            vector<double> utility_rdm(4, 1.);
-            utility.setRealization(0, utility_rdm);
+        vector<double> utility_rdm(4, 1.);
+        utility.setRealization(0, utility_rdm);
 
         SECTION("Infrastruture handler high LT-ROF but week < permitting period") {
             utility.infrastructureConstructionHandler(1., 0);
@@ -335,7 +371,9 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
 
         SECTION("Infrastructure beginning and finishing") {
             utility.infrastructureConstructionHandler(1., 1461);
-            utility.infrastructureConstructionHandler(1., 1461 + (int) reservoir.construction_time + 1);
+            utility.infrastructureConstructionHandler(1., 1461 +
+                                                          (int) reservoir.construction_time +
+                                                          1);
             CHECK(!utility.getInfrastructure_construction_manager().getUnder_construction()[7]);
         }
     }
@@ -344,11 +382,15 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
     SECTION("Joint infrastructure", "[Infrastructure][Joint infrastructure]") {
         vector<double> rof_triggers_non_zero = vector<double>(10, 0.1);
         vector<int> construction_order_seq = {0};
-        Utility utility1("U1", 0, demands, streamflow_n_weeks, 0.03, demand_class_fractions, user_classes_prices,
-                         wwtp_discharge_durham, 0., construction_order_seq, construction_order_empty, rof_triggers,
+        Utility utility1("U1", 0, demands, streamflow_n_weeks, 0.03,
+                         demand_class_fractions, user_classes_prices,
+                         wwtp_discharge_durham, 0., construction_order_seq,
+                         construction_order_empty, rof_triggers,
                          0.07, 25, 0.05);
-        Utility utility2("U2", 1, demands, streamflow_n_weeks, 0.03, demand_class_fractions, user_classes_prices,
-                         wwtp_discharge_durham, 0., construction_order_seq, construction_order_empty, rof_triggers,
+        Utility utility2("U2", 1, demands, streamflow_n_weeks, 0.03,
+                         demand_class_fractions, user_classes_prices,
+                         wwtp_discharge_durham, 0., construction_order_seq,
+                         construction_order_empty, rof_triggers,
                          0.07, 25, 0.05);
         LevelDebtServiceBond bond1(0, 200.0, 25, 0.05, vector<int>(1, 0));
         LevelDebtServiceBond bond2(1, 300.0, 25, 0.05, vector<int>(1, 0));
@@ -378,7 +420,8 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
         vector<Utility *> utilities =
                 Utils::copyUtilityVector({&utility1, &utility2});
 
-        vector<vector<int>> water_sources_to_utilities = {{0, 1}, {0, 1}};
+        vector<vector<int>> water_sources_to_utilities = {{0, 1},
+                                                          {0, 1}};
         vector<DroughtMitigationPolicy *> dmps;
         vector<MinEnvFlowControl *> mev;
         auto rdm = vector<vector<double>>(2, vector<double>(50, 1.));
@@ -406,7 +449,7 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
                     getInfrastructure_net_present_cost() == Approx(134.99));
             CHECK(model.getContinuity_utilities()[1]->
                     getInfrastructure_net_present_cost() ==
-                    Approx(202.49).epsilon(0.005));
+                  Approx(202.49).epsilon(0.005));
         }
 
         SECTION("Test setting joint infrastructure online after construction "
@@ -429,12 +472,12 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
     }
 
 
-    SECTION("Utility other functions", "[Utility]") {
+    SECTION("UtilityParser other functions", "[UtilityParser]") {
 
         vector<double> utility_rdm(4, 1.);
         utility.setRealization(0, utility_rdm);
 
-        SECTION("Utility split demands", "[splitDemands]") {
+        SECTION("UtilityParser split demands", "[splitDemands]") {
             Reservoir reservoir2("R2", 0, vector<Catchment *>(), 3700. * 3,
                                  ILLIMITED_TREATMENT_CAPACITY,
                                  evaporation_series, 1.);
@@ -455,7 +498,8 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
 
             SECTION("Two sources online") {
                 utility.setWaterSourceOnline(7, 0);
-                reservoir.applyContinuity(0, 10000, 0, split_demands[0]); // Fill reservoir
+                reservoir.applyContinuity(0, 10000, 0,
+                                          split_demands[0]); // Fill reservoir
                 utility.updateTotalAvailableVolume();
                 utility.splitDemands(0, split_demands);
 
@@ -465,9 +509,11 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
 
             SECTION("Two sources online, unfulfilled demand") {
                 utility.setWaterSourceOnline(7, 0);
-                reservoir.applyContinuity(0, 260, 0, split_demands[0]); // Fill reservoir
+                reservoir.applyContinuity(0, 260, 0,
+                                          split_demands[0]); // Fill reservoir
                 vector<double> demand_reservoir2(1, 3700. * 3 - 270.);
-                reservoir2.applyContinuity(0, 0, 0, demand_reservoir2); // Fill reservoir
+                reservoir2.applyContinuity(0, 0, 0,
+                                           demand_reservoir2); // Fill reservoir
                 utility.updateTotalAvailableVolume();
                 utility.splitDemands(0, split_demands);
 
@@ -480,36 +526,46 @@ TEST_CASE("Utility and infrastructure basic functionalities", "[Infrastructure][
 }
 
 
-TEST_CASE("Bonds") {
+TEST_CASE("BondParsers") {
     double e = 0.005;
 
-    SECTION("Level debt service begin after inauguration", "[Bonds]") {
+    SECTION("Level debt service begin after inauguration", "[BondParsers]") {
         LevelDebtServiceBond bond(0, 100.0, 25, 0.05, vector<int>(1, 0));
         SECTION("No discount nor premium") {
             bond.issueBond(0, 156, 1., 1.);
-            CHECK(bond.getNetPresentValueAtIssuance(0.05, 0) == Approx(86.38).epsilon(e));
-            CHECK(bond.getNetPresentValueAtIssuance(0.07, 0) == Approx(67.50).epsilon(e));
-            CHECK(bond.getNetPresentValueAtIssuance(0.03, 0) == Approx(113.07).epsilon(e));
+            CHECK(bond.getNetPresentValueAtIssuance(0.05, 0) ==
+                  Approx(86.38).epsilon(e));
+            CHECK(bond.getNetPresentValueAtIssuance(0.07, 0) ==
+                  Approx(67.50).epsilon(e));
+            CHECK(bond.getNetPresentValueAtIssuance(0.03, 0) ==
+                  Approx(113.07).epsilon(e));
             CHECK(bond.getDebtService(104) == 0.);
             for (int w = 156; w < 1410; ++w) {
                 if (Utils::weekOfTheYear(w) == 0) {
-                    CHECK(bond.getDebtService((int) w) == Approx(7.10).epsilon(e));
+                    CHECK(bond.getDebtService((int) w) ==
+                          Approx(7.10).epsilon(e));
                 }
             }
             CHECK(bond.getDebtService(1461) == 0.);
         }
     }
 
-    SECTION("Level debt service begin the year after issuance", "[Bonds]") {
-        LevelDebtServiceBond bond(0, 100.0, 25, 0.05, vector<int>(1, 0), BEGIN_REPAYMENT_AT_ISSUANCE);
+    SECTION("Level debt service begin the year after issuance",
+            "[BondParsers]") {
+        LevelDebtServiceBond bond(0, 100.0, 25, 0.05, vector<int>(1, 0),
+                                  BEGIN_REPAYMENT_AT_ISSUANCE);
         SECTION("No discount nor premium") {
             bond.issueBond(0, 156, 1., 1.);
-            CHECK(bond.getNetPresentValueAtIssuance(0.05, 0) == Approx(100).epsilon(e));
-            CHECK(bond.getNetPresentValueAtIssuance(0.07, 0) == Approx(82.69).epsilon(e));
-            CHECK(bond.getNetPresentValueAtIssuance(0.03, 0) == Approx(123.55).epsilon(e));
+            CHECK(bond.getNetPresentValueAtIssuance(0.05, 0) ==
+                  Approx(100).epsilon(e));
+            CHECK(bond.getNetPresentValueAtIssuance(0.07, 0) ==
+                  Approx(82.69).epsilon(e));
+            CHECK(bond.getNetPresentValueAtIssuance(0.03, 0) ==
+                  Approx(123.55).epsilon(e));
             for (int w = 52; w < 1305; ++w) {
                 if (Utils::weekOfTheYear(w) == 0) {
-                    CHECK(bond.getDebtService((int) w) == Approx(7.10).epsilon(e));
+                    CHECK(bond.getDebtService((int) w) ==
+                          Approx(7.10).epsilon(e));
                 }
             }
             CHECK(bond.getDebtService(1304) == 0.);
@@ -518,22 +574,26 @@ TEST_CASE("Bonds") {
 }
 
 
-TEST_CASE("Test Joint Triggering of Allocated Reservoir", "[Allocated Reservoir][Infrastructure]"){
+TEST_CASE("Test Joint Triggering of Allocated Reservoir",
+          "[Allocated Reservoir][Infrastructure]") {
     // Reservoir data
     int streamflow_n_weeks = 52 * (70 + 100);
     vector<vector<double>> streamflows =
-            vector<vector<double>>(1, vector<double>((unsigned long) streamflow_n_weeks, 300.));
+            vector<vector<double>>(1, vector<double>(
+                    (unsigned long) streamflow_n_weeks, 300.));
     vector<vector<double>> evaporation =
-            vector<vector<double>>(1, vector<double>((unsigned long) streamflow_n_weeks, 250.));
+            vector<vector<double>>(1, vector<double>(
+                    (unsigned long) streamflow_n_weeks, 250.));
 
     Catchment river_catchment(streamflows, streamflow_n_weeks);
     vector<Catchment *> river_catchments(1, &river_catchment);
     EvaporationSeries evaporation_series(evaporation, streamflow_n_weeks);
 
 
-       // Utility data
+    // UtilityParser data
     vector<vector<double>> demands =
-            vector<vector<double>>(1, vector<double>((unsigned long) streamflow_n_weeks, 100.));
+            vector<vector<double>>(1, vector<double>(
+                    (unsigned long) streamflow_n_weeks, 100.));
     vector<int> ws_return_id = {3};
 
     vector<vector<double>> demand_to_wastewater_fraction = Utils::parse2DCsvFile(
@@ -543,18 +603,18 @@ TEST_CASE("Test Joint Triggering of Allocated Reservoir", "[Allocated Reservoir]
             demand_to_wastewater_fraction,
             ws_return_id);
 
-    vector<vector<double>> demand_class_fractions = {{0.173046633,0.170108967,0.195049165,0.039185639,0.065861249,0,0,0.345705321,0,0.011043025,0.89},
-                                                     {0.174218798,0.176103061,0.23872941,0.044298325,0.072064026,0,0,0.287271971,0,0.00731441,0.91},
-                                                     {0.165397772,0.153365266,0.192593725,0.033804252,0.067691513,0,0,0.377294656,0,0.009852817,0.84},
-                                                     {0.174090772,0.168076618,0.19902952,0.039942618,0.064681076,0,0,0.346182747,0,0.007996648,0.88},
-                                                     {0.146306233,0.142541416,0.182540819,0.03397242,0.064700708,0,0,0.404017943,0,0.025920462,0.82},
-                                                     {0.142660453,0.141824612,0.177751136,0.038466639,0.059367893,0,0,0.395287674,0,0.044641593,0.75},
-                                                     {0.125978495,0.12909426,0.164147643,0.043465465,0.05819444,0,0,0.408360658,0,0.070759039,0.83},
-                                                     {0.132975086,0.137751684,0.168810089,0.048402154,0.063577059,0,0,0.372134783,0,0.076349145,0.84},
-                                                     {0.124916911,0.124843094,0.158802204,0.03935136,0.059549521,0,0,0.412025491,0,0.080511419,0.87},
-                                                     {0.140403715,0.141682851,0.174901252,0.043405443,0.062146593,0,0,0.370492303,0,0.066967843,0.89},
-                                                     {0.140226464,0.137090428,0.178922408,0.038725701,0.066038848,0,0,0.38148803,0,0.057508121,0.87},
-                                                     {0.156423153,0.152041568,0.186688374,0.038647627,0.066779948,0,0,0.355242017,0,0.044177313,0.89}};
+    vector<vector<double>> demand_class_fractions = {{0.173046633, 0.170108967, 0.195049165, 0.039185639, 0.065861249, 0, 0, 0.345705321, 0, 0.011043025, 0.89},
+                                                     {0.174218798, 0.176103061, 0.23872941,  0.044298325, 0.072064026, 0, 0, 0.287271971, 0, 0.00731441,  0.91},
+                                                     {0.165397772, 0.153365266, 0.192593725, 0.033804252, 0.067691513, 0, 0, 0.377294656, 0, 0.009852817, 0.84},
+                                                     {0.174090772, 0.168076618, 0.19902952,  0.039942618, 0.064681076, 0, 0, 0.346182747, 0, 0.007996648, 0.88},
+                                                     {0.146306233, 0.142541416, 0.182540819, 0.03397242,  0.064700708, 0, 0, 0.404017943, 0, 0.025920462, 0.82},
+                                                     {0.142660453, 0.141824612, 0.177751136, 0.038466639, 0.059367893, 0, 0, 0.395287674, 0, 0.044641593, 0.75},
+                                                     {0.125978495, 0.12909426,  0.164147643, 0.043465465, 0.05819444,  0, 0, 0.408360658, 0, 0.070759039, 0.83},
+                                                     {0.132975086, 0.137751684, 0.168810089, 0.048402154, 0.063577059, 0, 0, 0.372134783, 0, 0.076349145, 0.84},
+                                                     {0.124916911, 0.124843094, 0.158802204, 0.03935136,  0.059549521, 0, 0, 0.412025491, 0, 0.080511419, 0.87},
+                                                     {0.140403715, 0.141682851, 0.174901252, 0.043405443, 0.062146593, 0, 0, 0.370492303, 0, 0.066967843, 0.89},
+                                                     {0.140226464, 0.137090428, 0.178922408, 0.038725701, 0.066038848, 0, 0, 0.38148803,  0, 0.057508121, 0.87},
+                                                     {0.156423153, 0.152041568, 0.186688374, 0.038647627, 0.066779948, 0, 0, 0.355242017, 0, 0.044177313, 0.89}};
     vector<vector<double>> user_classes_prices = {{2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7},
                                                   {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7},
                                                   {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7},
@@ -574,15 +634,21 @@ TEST_CASE("Test Joint Triggering of Allocated Reservoir", "[Allocated Reservoir]
     DataSeries reservoir_storage_area(res_storage, res_area);
 
 
-    Reservoir reservoir_zero("existing_infrastructure reservoir 0", 0, vector<Catchment *>(), 1000.0,
-                        ILLIMITED_TREATMENT_CAPACITY, evaporation_series, reservoir_storage_area);
+    Reservoir reservoir_zero("existing_infrastructure reservoir 0", 0,
+                             vector<Catchment *>(), 1000.0,
+                             ILLIMITED_TREATMENT_CAPACITY, evaporation_series,
+                             reservoir_storage_area);
 
     // Reservoir
-    Reservoir reservoir_one("existing_infrastructure reservoir 1", 1, river_catchments, 1000.0,
-                            ILLIMITED_TREATMENT_CAPACITY, evaporation_series, reservoir_storage_area);
+    Reservoir reservoir_one("existing_infrastructure reservoir 1", 1,
+                            river_catchments, 1000.0,
+                            ILLIMITED_TREATMENT_CAPACITY, evaporation_series,
+                            reservoir_storage_area);
 
-    Reservoir dummy_endpoint("existing_infrastructure reservoir 1", 3, river_catchments, 1000.0,
-                             ILLIMITED_TREATMENT_CAPACITY, evaporation_series, reservoir_storage_area);
+    Reservoir dummy_endpoint("existing_infrastructure reservoir 1", 3,
+                             river_catchments, 1000.0,
+                             ILLIMITED_TREATMENT_CAPACITY, evaporation_series,
+                             reservoir_storage_area);
 
 
     // Setup Infrastructure construction manager holding reservoir
@@ -600,22 +666,25 @@ TEST_CASE("Test Joint Triggering of Allocated Reservoir", "[Allocated Reservoir]
     vector<int> construction_order_seq = {2};
 
 
-
     Utility utility1((char *) "U1", 0, demands, streamflow_n_weeks, 0.03,
-            demand_class_fractions, user_classes_prices, wwtp_discharge, 0.,
-            construction_order_seq, construction_order_empty, rof_triggers,
-            0.07, 25, 0.05);
+                     demand_class_fractions, user_classes_prices,
+                     wwtp_discharge, 0.,
+                     construction_order_seq, construction_order_empty,
+                     rof_triggers,
+                     0.07, 25, 0.05);
 
     Utility utility2((char *) "U2", 1, demands, streamflow_n_weeks, 0.03,
-            demand_class_fractions, user_classes_prices, wwtp_discharge, 0.,
-            construction_order_seq, construction_order_empty, rof_triggers,
-            0.07, 25, 0.05);
+                     demand_class_fractions, user_classes_prices,
+                     wwtp_discharge, 0.,
+                     construction_order_seq, construction_order_empty,
+                     rof_triggers,
+                     0.07, 25, 0.05);
 
-    vector<Utility*> utilities;
+    vector<Utility *> utilities;
     utilities.push_back(&utility1);
     utilities.push_back(&utility2);
 
-    vector<vector<int>> reservoir_utility_connectivity_matrix ={
+    vector<vector<int>> reservoir_utility_connectivity_matrix = {
             {0, 2}, // utility1
             {1, 2}  // utility2
     };
@@ -640,7 +709,7 @@ TEST_CASE("Test Joint Triggering of Allocated Reservoir", "[Allocated Reservoir]
                                            evaporation_series,
                                            allocated_reservoir_storage_area,
                                            construction_time_interval,
-                                           17*WEEKS_IN_YEAR,
+                                           17 * WEEKS_IN_YEAR,
                                            bond,
                                            utilities_with_allocations,
                                            allocated_fractions,
@@ -653,19 +722,20 @@ TEST_CASE("Test Joint Triggering of Allocated Reservoir", "[Allocated Reservoir]
 
     allocated_reservoir.setOnline();
 
-      SECTION("Testing initial reservoir allocation volumes") {
-         //Available volumes should all be initialized to zero
+    SECTION("Testing initial reservoir allocation volumes") {
+        //Available volumes should all be initialized to zero
         CHECK(allocated_reservoir.getAvailableVolume() == 0);
         CHECK(allocated_reservoir.getAvailable_allocated_volumes()[0] == 0);
         CHECK(allocated_reservoir.getAvailable_allocated_volumes()[1] == 0);
-      }
+    }
 
 }
 
-TEST_CASE("Create a utility", "[Utility]"){
+TEST_CASE("Create a utility", "[UtilityParser]") {
     unsigned long n_realizations = 5;
     auto demand_n_weeks = (int) round(46 * WEEKS_IN_YEAR);
-    vector<vector<double>> demand_watertown = Utils::parse2DCsvFile("../TestFiles/demands/cary_demand.csv", n_realizations);
+    vector<vector<double>> demand_watertown = Utils::parse2DCsvFile(
+            "../TestFiles/demands/cary_demand.csv", n_realizations);
 
     vector<int> watertown_ws_return_id;
     vector<vector<double>> watertown_discharge_fraction_series;
@@ -682,8 +752,11 @@ TEST_CASE("Create a utility", "[Utility]"){
     vector<vector<double>> watertownUserClassesWaterPrices = Utils::parse2DCsvFile(
             "../TestFiles/caryUserClassesWaterPrices.csv");
 
-    Utility watertown((char *) "Watertown", 0, demand_watertown, demand_n_weeks, .1,
-                      watertownDemandClassesFractions, watertownUserClassesWaterPrices, wwtp_discharge_watertown, 0,
+    Utility watertown((char *) "Watertown", 0, demand_watertown, demand_n_weeks,
+                      .1,
+                      watertownDemandClassesFractions,
+                      watertownUserClassesWaterPrices, wwtp_discharge_watertown,
+                      0,
                       construction_order_seq, vector<int>(), rof_triggers,
                       .05, 30, .05);
 };
@@ -705,27 +778,31 @@ TEST_CASE("Read time series.", "[Time series parsing]") {
     }
 }
 
+TEST_CASE("Read input file.",
+          "[Input File Parser][Reservoir][Allocated Reservoir][Input File Parser][Reservoir Expansion][Water Reuse][BondParsers][Time series parsing][Exceptions][Water Sources Graph]") {
 
-TEST_CASE("Read input file.", "[Input File Parser][Reservoir][Allocated Reservoir][Input File Parser][Reservoir Expansion][Water Reuse][Bonds][Time series parsing][Exceptions][Water Sources Graph]") {
-    int zero_week = - (int) (WEEKS_IN_YEAR * WEEKS_ROF_SHORT_TERM) + 104;
     auto rdm_vec = vector<double>(50, 1.);
 
-    SECTION("Check missing parameter exception handling for input parser", "[Input File Parser][Exceptions]") {
-        MasterSystemInputFileParser parser;
+    SECTION("Check missing parameter exception handling for input parser",
+            "[Input File Parser][Exceptions]") {
+        MasterSystemInputFileParser parser(<#initializer#>);
         string input_test_file = "../Tests/test_input_file_missing_name.wp";
         CHECK_THROWS_AS(parser.parseFile(input_test_file), MissingParameter);
     }
 
-    SECTION("Check mutually implicative exception handling for input parser", "[Input File Parser][Exceptions]") {
-        MasterSystemInputFileParser parser;
+    SECTION("Check mutually implicative exception handling for input parser",
+            "[Input File Parser][Exceptions]") {
+        MasterSystemInputFileParser parser(<#initializer#>);
         string input_test_file = "../Tests/test_input_file_incomplete_non_existing_ws.wp";
-        CHECK_THROWS_AS(parser.parseFile(input_test_file), InconsistentMutuallyImplicativeParameters);
+        CHECK_THROWS_AS(parser.parseFile(input_test_file),
+                        InconsistentMutuallyImplicativeParameters);
     }
 
     string input_test_file = "../Tests/test_input_file.wp";
 
-    SECTION("Check if block is read appropriately.", "[Input File Parser][Read input file block][Water Reuse][Bonds]") {
-        MasterSystemInputFileParser parser;
+    SECTION("Check if block is read appropriately.",
+            "[Input File Parser][Read input file block][Water Reuse][BondParsers]") {
+        MasterSystemInputFileParser parser(<#initializer#>);
         int l;
         ifstream inputFile(input_test_file);
         string line;
@@ -734,93 +811,219 @@ TEST_CASE("Read input file.", "[Input File Parser][Reservoir][Allocated Reservoi
         getline(inputFile, line);
         auto block = parser.readBlock(inputFile, l, line);
 
-        CHECK(block.size() == 9);
+        CHECK(block.size() == 6);
         CHECK(block[0][0] == "name");
-        CHECK(block[1][1] == "500");
-        CHECK(block[3][1] == "level");
-        CHECK(block[4][1] == "4");
+        CHECK(block[1][1] == "560");
+        CHECK(block[3].size() == 4);
+        CHECK(block[5][1] == "222");
     }
 
-    MasterSystemInputFileParser parser;
+}
+
+int zero_week = -(int) (WEEKS_IN_YEAR * WEEKS_ROF_SHORT_TERM) + 104;
+auto rdm_vec = vector<double>(50, 1.);
+string input_test_file = "../Tests/test_input_file.wp";
+
+TEST_CASE(
+        "Checking if water sources numeric and text data was parsed correctly.",
+        "[Input File Parser][Water Sources][BondParsers]") {
+    MasterSystemInputFileParser parser(<#initializer#>);
     parser.parseFile(input_test_file);
+    auto water_sources = parser.getWaterSources();
 
-    SECTION("Checking if water sources numeric and text data was parsed correctly.", "[Input File Parser][Water Sources][Bonds]") {
-        auto water_sources = parser.getWaterSources();
+    SECTION("Checking if built reservoir numeric and text data was parsed correctly.",
+            "[Input File Parser][Reservoir][BondParsers]") {
 
-        SECTION("Checking if reuse station numeric and text data was parsed correctly.",
-                "[Input File Parser][Water Reuse][Bonds]") {
-
-            CHECK(water_sources[3]->id == 3);
-            CHECK(water_sources[3]->getConstruction_time() < 5.1 * WEEKS_IN_YEAR);
-            CHECK(water_sources[3]->getConstruction_time() > 2.9 * WEEKS_IN_YEAR);
-            CHECK(water_sources[3]->getBond(0).type == LEVEL_DEBT_SERVICE);
-            CHECK(water_sources[3]->getBond(0).pay_on_weeks[0] == 0);
-            CHECK(water_sources[3]->getBond(0).pay_on_weeks.size() == 1);
-            CHECK(!water_sources[3]->getBond(0).isIssued());
-            CHECK(water_sources[3]->name == "My_Reuse_Station");
-        }
-
-        SECTION("Checking if reservoir numeric and text data was parsed correctly.",
-                "[Input File Parser][Reservoir][Bonds]") {
-
-            CHECK(water_sources[0]->id == 0);
-            CHECK(water_sources[0]->getConstruction_time() < 6.1 * WEEKS_IN_YEAR);
-            CHECK(water_sources[0]->getConstruction_time() > 3.9 * WEEKS_IN_YEAR);
-            CHECK(water_sources[0]->getBond(0).type == LEVEL_DEBT_SERVICE);
-            CHECK(water_sources[0]->getBond(0).pay_on_weeks[0] == 0);
-            CHECK(water_sources[0]->getBond(0).pay_on_weeks.size() == 1);
-            CHECK(!water_sources[0]->getBond(0).isIssued());
-            CHECK(water_sources[0]->name == "My_Reservoir");
-            water_sources[1]->setRealization(0, rdm_vec);
-            CHECK(dynamic_cast<Reservoir *>(water_sources[1])->getStorageAreaCurve().getSeries_x()[1] == 500);
-            CHECK(dynamic_cast<Reservoir *>(water_sources[1])->getEvaporationSeries().getEvaporation(zero_week) ==
-                  -0.0062453998252749443);
-        }
-
-        SECTION("Checking if allocated reservoir numeric and text data was parsed correctly.",
-                "[Input File Parser][Allocated Reservoir][Bonds]") {
-
-            CHECK(water_sources[1]->id == 1);
-            CHECK(water_sources[1]->getConstruction_time() < 6.1 * WEEKS_IN_YEAR);
-            CHECK(water_sources[1]->getConstruction_time() > 3.9 * WEEKS_IN_YEAR);
-            CHECK(water_sources[1]->getBond(0).type == LEVEL_DEBT_SERVICE);
-            CHECK(water_sources[1]->getBond(0).pay_on_weeks[0] == 0);
-            CHECK(water_sources[1]->getBond(0).pay_on_weeks.size() == 1);
-            CHECK(!water_sources[1]->getBond(0).isIssued());
-            CHECK(water_sources[1]->name == "My_Allocated_Reservoir");
-            water_sources[1]->setRealization(0, rdm_vec);
-            CHECK(dynamic_cast<AllocatedReservoir *>(water_sources[1])->getStorageAreaCurve().getSeries_x()[1] == 500);
-            CHECK(dynamic_cast<AllocatedReservoir *>(water_sources[1])->getAllocatedCapacity(1) == 1000);
-            CHECK(dynamic_cast<AllocatedReservoir *>(water_sources[1])->getAllocatedTreatmentCapacity(1) == 600);
-        }
-
-        SECTION("Checking if reservoir expansion numeric and text data was parsed correctly.",
-                "[Input File Parser][Reservoir Expansion][Bonds]") {
-
-            CHECK(water_sources[4]->id == 4);
-            CHECK(water_sources[4]->getConstruction_time() < 6.1 * WEEKS_IN_YEAR);
-            CHECK(water_sources[4]->getConstruction_time() > 3.9 * WEEKS_IN_YEAR);
-            CHECK(water_sources[4]->getBond(0).type == LEVEL_DEBT_SERVICE);
-            CHECK(water_sources[4]->getBond(0).pay_on_weeks[1] == 25);
-            CHECK(water_sources[4]->getBond(0).pay_on_weeks.size() == 2);
-            CHECK(!water_sources[4]->getBond(0).isIssued());
-            CHECK(water_sources[4]->name == "My_Reservoir_Expansion");
-            CHECK(water_sources[4]->getSupplyCapacity() == 500);
-            CHECK(dynamic_cast<ReservoirExpansion *>(water_sources[4])->parent_reservoir_ID == 0);
-        }
+        CHECK(water_sources[0]->id == 0);
+        CHECK(water_sources[0]->name == "College_Rock_Reservoir");
+        CHECK(dynamic_cast<Reservoir *>(water_sources[0])->getArea() ==
+              222);
+        CHECK(dynamic_cast<Reservoir *>(water_sources[0])->getSupplyCapacity() ==
+              1049);
     }
 
-    SECTION("Checking if utility numeric and text data was parsed correctly.", "[Input File Parser][Utility][Bonds]") {
-        auto utilities = parser.getUtilities();
-        CHECK(utilities[0]->id == 0);
-        CHECK(utilities[0]->name == "My_Utility");
-        vector<int> expected_infra_const_order = {0, 3};
-        CHECK(utilities[0]->getRof_infrastructure_construction_order() == expected_infra_const_order);
+    SECTION("Checking if built allocated reservoir numeric and text data was parsed correctly.",
+            "[Input File Parser][Allocated Reservoir]") {
+
+        CHECK(water_sources[3]->id == 3);
+        CHECK(water_sources[3]->name == "Autumn_Lake");
+        CHECK(water_sources[3]->getAllocatedFraction(1) == 0.19);
+        CHECK(water_sources[3]->getAllocatedTreatmentCapacity(2) == 52000.);
+        CHECK(dynamic_cast<AllocatedReservoir *>(water_sources[3])->getStorageAreaCurve().getSeries_x()[1] ==
+              14000);
     }
 
-    SECTION("Checking if graph was was imported properly.", "[Input File Parser][Water Sources Graph][Bonds]") {
-        const auto& water_sources_graph = parser.getWaterSourcesGraph();
-        vector<int> top_order = {2, 0, 1};
+    SECTION("Checking if non-built allocated reservoir numeric and text data was parsed correctly.",
+            "[Input File Parser][Allocated Reservoir][BondParsers]") {
+
+        CHECK(water_sources[5]->id == 5);
+        CHECK(water_sources[5]->getConstruction_time() <
+              5.1 * WEEKS_IN_YEAR);
+        CHECK(water_sources[5]->getConstruction_time() >
+              2.9 * WEEKS_IN_YEAR);
+        CHECK(water_sources[5]->getBond(0).type == LEVEL_DEBT_SERVICE);
+        CHECK(water_sources[5]->getBond(0).pay_on_weeks[0] == 0);
+        CHECK(water_sources[5]->getBond(0).pay_on_weeks.size() == 1);
+        CHECK(!water_sources[5]->getBond(0).isIssued());
+        CHECK(water_sources[5]->name == "New_River_Reservoir");
+        water_sources[5]->setRealization(0, rdm_vec);
+        CHECK(dynamic_cast<Reservoir *>(water_sources[5])->getStorageAreaCurve().getSeries_x()[1] ==
+              7300);
+        CHECK(dynamic_cast<Reservoir *>(water_sources[5])->getEvaporationSeries().getEvaporation(
+                zero_week) == Approx(0.0068410998f));
+    }
+
+    SECTION("Checking if reuse station numeric and text data was parsed correctly.",
+            "[Input File Parser][Reuse Station][BondParsers]") {
+
+        CHECK(water_sources[9]->id == 9);
+        CHECK(water_sources[9]->getConstruction_time() <
+              5.1 * WEEKS_IN_YEAR);
+        CHECK(water_sources[9]->getConstruction_time() >
+              2.9 * WEEKS_IN_YEAR);
+        CHECK(water_sources[9]->getBond(0).type == LEVEL_DEBT_SERVICE);
+        CHECK(water_sources[9]->getBond(0).pay_on_weeks[0] == 0);
+        CHECK(water_sources[9]->getBond(0).pay_on_weeks.size() == 1);
+        CHECK(water_sources[9]->getBond(0).getCostOfCapital() == 50);
+        CHECK(water_sources[9]->getBond(0).getCouponRate() == 0.05);
+        CHECK(water_sources[9]->getBond(0).getNPayments() == 30);
+        CHECK(!water_sources[9]->getBond(0).isIssued());
+        CHECK(water_sources[9]->name == "Watertown_Reuse_I");
+        CHECK(water_sources[9]->getTotalTreatmentCapacity() == 35);
+    }
+
+    SECTION("Checking if reservoir expansion numeric and text data was parsed correctly.",
+            "[Input File Parser][Reservoir Expansion][BondParsers]") {
+
+        CHECK(water_sources[8]->id == 8);
+        CHECK(water_sources[8]->getConstruction_time() <
+              6.1 * WEEKS_IN_YEAR);
+        CHECK(water_sources[8]->getConstruction_time() >
+              3.9 * WEEKS_IN_YEAR);
+        CHECK(water_sources[8]->name == "College_Rock_Expansion_High");
+        CHECK(water_sources[8]->getSupplyCapacity() == 2500);
+        CHECK(water_sources[8]->getBond(0).type == LEVEL_DEBT_SERVICE);
+        CHECK(water_sources[8]->getBond(0).pay_on_weeks[0] == 0);
+        CHECK(water_sources[8]->getBond(0).pay_on_weeks.size() == 1);
+        CHECK(water_sources[8]->getBond(0).getCostOfCapital() == 100);
+        CHECK(water_sources[8]->getBond(0).getCouponRate() == 0.05);
+        CHECK(water_sources[8]->getBond(0).getNPayments() == 30);
+        CHECK(!water_sources[8]->getBond(0).isIssued());
+        CHECK(dynamic_cast<ReservoirExpansion *>(water_sources[8])->parent_reservoir_ID ==
+              0);
+    }
+}
+
+TEST_CASE("Checking if utility numeric and text data was parsed correctly.",
+          "[Input File Parser][UtilityParser][BondParsers]") {
+    MasterSystemInputFileParser parser(<#initializer#>);
+    parser.parseFile(input_test_file);
+    auto utilities = parser.getUtilities();
+    CHECK(utilities[0]->id == 0);
+    CHECK(utilities[0]->name == "Watertown");
+    vector<int> expected_infra_const_order = {5, 7, 8, 9, 10};
+    CHECK(utilities[0]->getRof_infrastructure_construction_order() ==
+          expected_infra_const_order);
+    CHECK(utilities[0]->getInfrastructure_construction_manager().getId() ==
+          0);
+    CHECK(utilities[0]->getInfrastructure_construction_manager().getInfraDiscountRate() ==
+          0.07);
+    vector<double> expected_rof_triggers = {1e10, 1e10, 1e10, 1e10, 1e10,
+                                            .1, 1e10, 0.1, 0.1, 0.1, 0.1};
+    CHECK(utilities[0]->getInfrastructure_construction_manager().getInfraConstructionTriggers() ==
+          expected_rof_triggers);
+}
+
+TEST_CASE("Check parsers of auxiliary data.",
+          "[Input File Parser][Water Sources Graph][source to utility matrix]") {
+    MasterSystemInputFileParser parser(<#initializer#>);
+    parser.parseFile(input_test_file);
+    SECTION("Checking if graph was imported properly.") {
+        const auto &water_sources_graph = parser.getWaterSourcesGraph();
+        vector<int> top_order = {0, 1, 2, 6, 3, 5, 4};
         CHECK(water_sources_graph.getTopological_order() == top_order);
     }
+    SECTION("Checking if connectivity matrix was imported properly.") {
+        auto matrix = parser.getReservoirUtilityConnectivityMatrix();
+        CHECK(matrix[0][0] == 0);
+        CHECK(matrix[0][6] == 10);
+        CHECK(matrix[2][1] == 12);
+    }
+    SECTION("Checking if storage shift table was imported properly.") {
+        auto matrix = parser.getTableStorageShift();
+        CHECK(matrix[0][0] == 0);
+        CHECK(matrix[2][5] == 1500);
+        CHECK(matrix[2][12] == 1000);
+        CHECK(matrix[2][10] == 0);
+    }
+}
+
+TEST_CASE("Checking if drought mitigation instruments are imported properly.",
+          "[Input File Parser][Restrictions][Transfers][Drought Mitigation Policies]") {
+    MasterSystemInputFileParser parser(<#initializer#>);
+    parser.parseFile(input_test_file);
+    const auto &drought_mitigation_policies = parser.getDroughtMitigationPolicy();
+    SECTION("Checking if restrictions are imported properly",
+            "[Input File Parser][Restrictions][Drought Mitigation Policies]") {
+        CHECK(dynamic_cast<Restrictions *>(drought_mitigation_policies[0])->id ==
+              0);
+        vector<double> stage_multipliers = {0.9, 0.75, 0.65, 0.5};
+        vector<double> stage_triggers = {0.05, 0.2, 0.4, 0.65};
+        CHECK(dynamic_cast<Restrictions *>(drought_mitigation_policies[0])->getStageMultipliers() ==
+              stage_multipliers);
+        CHECK(dynamic_cast<Restrictions *>(drought_mitigation_policies[0])->getStageTriggers() ==
+              stage_triggers);
+    }
+
+    SECTION("Checking if transfers are imported properly",
+            "[Input File Parser][Restrictions][Drought Mitigation Policies]") {
+        CHECK(drought_mitigation_policies[3]->id == 3);
+        vector<int> expected_utilities_ids = {1, 2, 0};
+        CHECK(dynamic_cast<Transfers *>(drought_mitigation_policies[3])->getUtilities_ids() ==
+              expected_utilities_ids);
+        int n_utils = 3;
+        vector<vector<int>> expected_Aeq = {{-1, -1, 0,  1, 0,  0,},
+                                            {0,  1,  1,  0, -1, 0,},
+                                            {1,  0,  -1, 0, 0,  -1}};
+        auto Aeq = dynamic_cast<Transfers *>(drought_mitigation_policies[3])->getAeq();
+        for (int i = 0; i < n_utils; ++i) {
+            for (int j = 0; j < 2 * n_utils; ++j) {
+                CHECK(Aeq[i][j] == expected_Aeq[i][j]);
+            }
+        }
+
+        auto ub = dynamic_cast<Transfers *>(drought_mitigation_policies[3])->getUb();
+        CHECK(ub[0] == 140);
+        CHECK(ub[1] == 140);
+        CHECK(ub[2] == 105);
+    }
+}
+
+TEST_CASE("Checking if reservoir control rules are imported properly.",
+          "[Input File Parser][Reservoir Control Rules]") {
+    MasterSystemInputFileParser parser(<#initializer#>);
+    parser.parseFile(input_test_file);
+    const auto &reservoir_control_rules = parser.getReservoirControlRules();
+    auto nrr_control = dynamic_cast<FixedMinEnvFlowControl *>(reservoir_control_rules[0]);
+    CHECK(nrr_control->water_source_id == 5);
+    CHECK(nrr_control->getRelease(0) == 0);
+    auto gq_control = dynamic_cast<FixedMinEnvFlowControl *>(reservoir_control_rules[1]);
+    CHECK(gq_control->water_source_id == 1);
+    CHECK(gq_control->getRelease(0) == 0);
+    auto crr_control = dynamic_cast<FixedMinEnvFlowControl *>(reservoir_control_rules[2]);
+    CHECK(crr_control->water_source_id == 0);
+    CHECK(crr_control->getRelease(0) == 0);
+
+    auto scr_control = dynamic_cast<InflowMinEnvFlowControl *>(reservoir_control_rules[3]);
+    vector<double> sugar_creek_inflows = {1.0, 3.5, 7.0, 10.5, 12.579};
+    vector<double> sugar_creek_releases = {1.0, 3.5, 7.0, 10.5, 12.579};
+    CHECK(scr_control->water_source_id == 6);
+    CHECK(scr_control->getInflows() == sugar_creek_inflows);
+    CHECK(scr_control->getReleases() == sugar_creek_releases);
+    auto al_control = dynamic_cast<SeasonalMinEnvFlowControl *>(reservoir_control_rules[4]);
+    vector<int> autumn_controls_weeks = {0, 13, 43, 53};
+    vector<double> autumn_releases = {357, 490, 357};
+    CHECK(al_control->water_source_id == 3);
+    CHECK(al_control->getWeekThresholds() == autumn_controls_weeks);
+    CHECK(al_control->getMinEnvFlows() == autumn_releases);
 }

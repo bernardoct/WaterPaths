@@ -16,10 +16,10 @@ private:
     bool issued = false;
 protected:
     int week_issued;
-    double cost_of_capital;
-    double coupon_rate;
-    int n_payments;
     int begin_repayment_after_n_years = NON_INITIALIZED;
+    double coupon_rate;
+    double cost_of_capital;
+    int n_payments;
 public:
     const int type;
     const vector<int> pay_on_weeks;
@@ -49,6 +49,12 @@ public:
     bool isIssued() const;
 
     void setIssued();
+
+    double getCouponRate() const;
+
+    double getCostOfCapital() const;
+
+    int getNPayments() const;
 
 };
 

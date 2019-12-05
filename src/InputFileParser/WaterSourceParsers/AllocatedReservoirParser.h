@@ -10,7 +10,7 @@
 
 class AllocatedReservoirParser : public ReservoirParser {
 public:
-    AllocatedReservoirParser();
+    AllocatedReservoirParser(bool generate_tables);
 
     WaterSource *
     generateSource(int id, vector<vector<string>> &block, int line_no,

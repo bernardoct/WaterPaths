@@ -19,8 +19,8 @@ private:
 //    map<int, int> util_id_to_vertex_id;
     vector<int> util_id_to_vertex_id;
     vector<int> buyers_ids;
-    vector<double> allocations;
-    vector<double> conveyed_volumes;
+    vector<double> allocations; /// Amount transfered to each utility
+    vector<double> conveyed_volumes; /// Flow rate through pipes
     vector<double> buyers_transfer_triggers;
     vector<double> flow_rates_and_allocations;
     Utility *source_utility = nullptr;
@@ -58,6 +58,15 @@ public:
     void setRealization(unsigned long realization_id, vector<double> &utilities_rdm,
                         vector<double> &water_sources_rdm, vector<double> &policy_rdm) override;
 
+    const double getSourceTreatmentBuffer() const;
+
+    double getAveragePipeCapacity() const;
+
+    const vector<double> &getBuyersTransferTriggers() const;
+
+    const Matrix<double> &getAeq() const;
+
+    const Vector<double> &getUb() const;
 };
 
 

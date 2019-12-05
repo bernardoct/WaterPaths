@@ -85,10 +85,10 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
         utilities_capacities.push_back(u->getTotal_storage_capacity());
         if (utilities_capacities.back() == 0) {
             char error[1000];
-            sprintf(error, "Utility %d has no storage capacity (0 MGD), which "
-                           "would lead to an ROF value of 0/0. WaterPaths "
-                           "currently requires utilities to have non-zero "
-                           "storage capacity\n", u->id);
+            sprintf(error, "Utility %s has no currently-built storage capacity"
+                           " (0 MGD), which would lead to an ROF value of 0/0. "
+                           "WaterPaths currently requires utilities to have "
+                           "non-zero storage capacity\n", u->name.c_str());
             throw invalid_argument(error);
         }
     }

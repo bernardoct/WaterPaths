@@ -60,7 +60,7 @@ public:
 
     virtual void updateOnlineInfrastructure(int week);
 
-    virtual ~ContinuityModelROF();
+    ~ContinuityModelROF() override;
 
     void updateStorageToROFTable(double storage_percent_decrement,
                                  int week_of_the_year,

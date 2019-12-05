@@ -57,7 +57,7 @@ private:
     static string convert_token(string &s, the_type<string>) { return s; };
 public:
     template <class T>
-    static void tokenizeString(string &line, vector<T> &tokenized_vector, char token = ' ') {
+    static void tokenizeString(const string &line, vector<T> &tokenized_vector, char token = ' ') {
         tokenized_vector = vector<T>(0);
         if (line[0] != '#') {
             istringstream ss(line);
@@ -70,7 +70,7 @@ public:
                 try {
                     tokenized_vector.push_back(convert_token(s, the_type<T>()));
                 } catch (const std::invalid_argument &e) {
-                    cout << "NaN found in file system tag " << ", line " << line << endl;
+                    cout << "NaN found in string \"" << line << "\"" << endl;
                     e.what();
                 }
                 c++;

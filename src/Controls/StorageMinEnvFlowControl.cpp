@@ -18,6 +18,14 @@ StorageMinEnvFlowControl::StorageMinEnvFlowControl(
 }
 
 StorageMinEnvFlowControl::StorageMinEnvFlowControl(
+        int water_source_id, vector<double>& storages, vector<double>& releases)
+        : MinEnvFlowControl(water_source_id, vector<int>(water_source_id),
+                            vector<int>(),
+                            STORAGE_CONTROLS),
+          storages(storages),
+          releases(releases) {}
+
+StorageMinEnvFlowControl::StorageMinEnvFlowControl(
         const StorageMinEnvFlowControl &min_env_control) :
         MinEnvFlowControl(min_env_control),
         storages(min_env_control.storages),

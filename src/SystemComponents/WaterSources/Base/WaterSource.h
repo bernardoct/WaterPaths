@@ -148,8 +148,6 @@ public:
 
     virtual double getAllocatedTreatmentCapacity(int utility_id) const;
 
-    double getTotal_treatment_capacity(int utility_id) const;
-
     void setAllocations(
             vector<int> &utilities_with_allocations,
             vector<double> &allocated_fractions,
@@ -187,6 +185,9 @@ public:
     const double getConstruction_time() const;
 
     const vector<Catchment> &getCatchments() const;
+
+    double getTotalTreatmentCapacity() const;
+
 };
 
 

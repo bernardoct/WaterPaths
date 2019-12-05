@@ -12,12 +12,18 @@
 class Restrictions : public DroughtMitigationPolicy {
 
 private:
-    vector<double> stage_multipliers;
-    const vector<double> stage_triggers;
     double current_multiplier = 0;
     vector<vector<double>> restricted_weekly_average_volumetric_price;
 
+    vector<double> stage_multipliers;
+    vector<double> stage_triggers;
 public:
+    const vector<double> &getStageMultipliers() const;
+
+    const vector<double> &getStageTriggers() const;
+
+public:
+
     Restrictions(const int id, const vector<double> &stage_multipliers,
                  const vector<double> &stage_triggers);
 

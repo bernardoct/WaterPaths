@@ -16,3 +16,5 @@ EvaporationSeries &EvaporationSeriesParser::parseSeries(string path, int n_weeks
 
     return parsed_evaporation_series.back();
 }
+
+EvaporationSeriesParser::~EvaporationSeriesParser() = default;

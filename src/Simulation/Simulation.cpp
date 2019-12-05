@@ -187,7 +187,7 @@ void Simulation::setupSimulation(vector<WaterSource *> &water_sources, Graph &wa
                      << " (" << utilities[u]->name << ")  but is  not  "
                              "present in  utility's list of water sources."
                      << endl;
-                throw invalid_argument("Utility's construction order and "
+                throw invalid_argument("UtilityParser's construction order and "
                                                     "owned sources mismatch.");
             }
 

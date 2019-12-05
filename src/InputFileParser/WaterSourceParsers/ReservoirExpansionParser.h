@@ -16,7 +16,9 @@ public:
     explicit ReservoirExpansionParser();
 
     void parseVariables(vector<vector<string>> &block, int n_realizations,
-                        int n_weeks) override;
+                        int n_weeks, int line_no,
+                        const map<string, int> &ws_name_to_id,
+                        const map<string, int> &utility_name_to_id) override;
 
     WaterSource *
     generateSource(int id, vector<vector<string>> &block, int line_no,

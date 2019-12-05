@@ -17,7 +17,7 @@ File $Id: QuadProg++.cc 232 2007-06-21 12:29:00Z digasper $
 #include <sstream>
 #include "QuadProg++.h"
 
-// Utility functions for updating some data needed by the solution method 
+// UtilityParser functions for updating some data needed by the solution method
 void compute_d(Vector<double> &d, const Matrix<double> &J, const Vector<double> &np);
 
 void update_z(Vector<double> &z, const Matrix<double> &J, const Vector<double> &d, int iq);
@@ -29,7 +29,7 @@ bool add_constraint(Matrix<double> &R, Matrix<double> &J, Vector<double> &d, int
 void delete_constraint(Matrix<double> &R, Matrix<double> &J, Vector<int> &A, Vector<double> &u, int n, int p, int &iq,
                        int l);
 
-// Utility functions for computing the Cholesky decomposition and solving
+// UtilityParser functions for computing the Cholesky decomposition and solving
 // linear systems
 void cholesky_decomposition(Matrix<double> &A);
 
@@ -39,7 +39,7 @@ void forward_elimination(const Matrix<double> &L, Vector<double> &y, const Vecto
 
 void backward_elimination(const Matrix<double> &U, Vector<double> &x, const Vector<double> &y);
 
-// Utility functions for computing the scalar product and the euclidean 
+// UtilityParser functions for computing the scalar product and the euclidean
 // distance between two numbers
 double scalar_product(const Vector<double> &x, const Vector<double> &y);
 

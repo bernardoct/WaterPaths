@@ -5,45 +5,18 @@
 #include <algorithm>
 #include "AuxDataParser.h"
 #include "../Utils/Utils.h"
+#include "AuxParserFunctions.h"
 
-
-Graph AuxDataParser::parseGraph(vector<vector<string>> &block, map<string, int> &name_to_id, const string &tag, int l) {
-
-    for (auto line : block) {
-        replaceNameById(block, tag, l, line[0], 0, name_to_id);
-    }
-
-    vector<vector<int>> edges;
-    vector<int> edges_list;
-    for (auto line : block) {
-        vector<int> edges_line;
-        Utils::tokenizeString(line[0], edges_line, ',');
-        if (edges_line.size() != 2)
-            throw invalid_argument("All rows in graph block must have two entries (starting and ending points");
-
-        edges.push_back(edges_line);
-        edges_list.insert(edges_list.end(), edges_line.begin(), edges_line.end());
-    }
-
-    sort(edges_list.begin(), edges_list.end());
-    edges_list.erase(unique(edges_list.begin(), edges_list.end()), edges_list.end());
-
-    Graph g(edges_list.size());
-
-    for (auto edges_line : edges) {
-        g.addEdge(edges_line[0], edges_line[1]);
-    }
-
-    return g;
-}
 
 vector<vector<int>> AuxDataParser::parseReservoirUtilityConnectivityMatrix(
         vector<vector<string>> &block, const map<string, int> &ws_name_to_id,
         const map<string, int> &utility_name_to_id, const string &tag, int l) {
 
     for (auto line : block) {
-        replaceNameById(block, tag, l, line[0], 1, ws_name_to_id);
-        replaceNameById(block, tag, l, line[0], 0, utility_name_to_id);
+        AuxParserFunctions::replaceNameById(block, tag, l, line[0], 1,
+                                            ws_name_to_id);
+        AuxParserFunctions::replaceNameById(block, tag, l, line[0], 0,
+                                            utility_name_to_id);
     }
 
     vector<vector<int>> reservoir_utility_connectivity_matrix(block.size());
@@ -56,30 +29,42 @@ vector<vector<int>> AuxDataParser::parseReservoirUtilityConnectivityMatrix(
     return reservoir_utility_connectivity_matrix;
 }
 
-void AuxDataParser::replaceNameById(vector<vector<string>> &block,
-        const string &tag_name, int line_no, string param_name,
-        int param_pos, map<string, int> name_to_id) {
-    for (vector<string> &line : block) {
-        if (line[0] == param_name) {
-            vector<string> names;
-            Utils::tokenizeString(line[param_pos], names, ',');
-            string ids;
+vector<vector<double>>
+AuxDataParser::tableStorageShiftParser(vector<vector<string>> &block,
+                                       const map<string, int> &ws_name_to_id,
+                                       const map<string, int> &utility_name_to_id,
+                                       const string &tag, int l) {
 
-            for (auto & name : names) {
-                try {
-                    name = to_string(name_to_id[name]) + ",";
-                    ids += name;
-                } catch (...) {
-                    char error[256];
-                    sprintf(error, "Could not find %s of %s in line %d. "
-                                   "All %s must be added in the input file above "
-                                   "associated %ss.", name.c_str(), param_name.c_str(), line_no,
-                            param_name.c_str(), tag_name.c_str());
-                    throw invalid_argument(error);
-                }
-            }
-            ids.pop_back();
-            line[param_pos] = ids;
+    for (vector<string> &line : block) {
+        try {
+            line[0] = to_string(utility_name_to_id.at(line[0]));
+            line[1] = to_string(ws_name_to_id.at(line[1]));
+        } catch (const std::out_of_range &e) {
+            char error[500];
+            sprintf(error,
+                    "Wrong name in %s in line %d. Are either %s or %s mispelled "
+                    "in either in storage shift table or in utility/water "
+                    "source?", tag.c_str(), l, line[0].c_str(), line[1].c_str()
+            );
+            throw invalid_argument(error);
         }
+    }
+
+    try {
+        vector<vector<double>> table_storage_shift(
+                AuxParserFunctions::getMax(utility_name_to_id).second + 1,
+                vector<double>(
+                        AuxParserFunctions::getMax(ws_name_to_id).second + 1,
+                        0));
+        for (auto line : block) {
+            vector<int> v = {stoi(line[0]), stoi(line[1])};
+            table_storage_shift[v[0]][v[1]] = stod(line[2]);
+        }
+
+        return table_storage_shift;
+    } catch (...) {
+        char error[128];
+        sprintf(error, "Something is wrong with %s in line %d", tag.c_str(), l);
+        throw invalid_argument(error);
     }
 }

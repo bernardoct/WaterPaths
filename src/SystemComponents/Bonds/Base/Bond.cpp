@@ -10,8 +10,8 @@ Bond::Bond(const int id, const double cost_of_capital, const int n_payments,
         id(id), cost_of_capital(cost_of_capital), n_payments(n_payments),
         pay_on_weeks(pay_on_weeks), type(type) {
 
-    /// If bond is to start being paid for at issuance, set repayment delay
-    /// to 0. Otherwise it will be set at issuance.
+    // If bond is to start being paid for at issuance, set repayment delay
+    // to 0. Otherwise it will be set at issuance.
     if (begin_repayment_at_issuance) {
         begin_repayment_after_n_years = 0;
     }
@@ -30,8 +30,8 @@ Bond::Bond(const int id, const double cost_of_capital, const int n_payments,
         pay_on_weeks(pay_on_weeks),
         coupon_rate(coupon_rate), type(type) {
 
-    /// If bond is to start being paid for at issuance, set repayment delay
-    /// to 0. Otherwise it will be set at issuance.
+    // If bond is to start being paid for at issuance, set repayment delay
+    // to 0. Otherwise it will be set at issuance.
     if (begin_repayment_at_issuance) {
         begin_repayment_after_n_years = 0;
     }
@@ -65,7 +65,7 @@ void Bond::issueBond(int week, int construction_time,
                      double bond_term_multiplier,
                      double bond_interest_rate_multiplier) {
 
-    /// Set date to begin repayment
+    // Set date to begin repayment
     if (begin_repayment_after_n_years == NON_INITIALIZED) {
         begin_repayment_after_n_years =
                 (int) (construction_time / WEEKS_IN_YEAR) + 1;
@@ -83,4 +83,16 @@ bool Bond::isIssued() const {
 
 void Bond::setIssued() {
     Bond::issued = true;
+}
+
+double Bond::getCouponRate() const {
+    return coupon_rate;
+}
+
+double Bond::getCostOfCapital() const {
+    return cost_of_capital;
+}
+
+int Bond::getNPayments() const {
+    return n_payments;
 }

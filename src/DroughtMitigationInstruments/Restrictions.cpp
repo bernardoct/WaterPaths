@@ -133,3 +133,11 @@ void Restrictions::setRealization(unsigned long realization_id, vector<double> &
         sm *= policy_rdm.at((unsigned long) id);
     }
 }
+
+const vector<double> &Restrictions::getStageMultipliers() const {
+    return stage_multipliers;
+}
+
+const vector<double> &Restrictions::getStageTriggers() const {
+    return stage_triggers;
+}

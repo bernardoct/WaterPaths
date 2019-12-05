@@ -32,3 +32,11 @@ double InflowMinEnvFlowControl::getRelease(int week) {
     }
     return release;
 }
+
+const vector<double> &InflowMinEnvFlowControl::getInflows() const {
+    return inflows;
+}
+
+const vector<double> &InflowMinEnvFlowControl::getReleases() const {
+    return releases;
+}

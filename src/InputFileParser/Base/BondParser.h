@@ -29,7 +29,7 @@ public:
 
     static int getId();
 
-    virtual void parseVariables(vector<string> &bond_data);
+    virtual void parseVariables(const vector<string> &bond_data);
 
     /**
      * Gets tokenized contents of bond line and converts into a bond. All bonds must be fully specified in one line.
@@ -41,7 +41,7 @@ public:
      * operations.
      * @return A bond object.
      */
-    virtual Bond* generate_bond(vector<string> &bond_data);
+    virtual Bond* generateBond(const vector<string> &bond_data)=0;
 };
 
 

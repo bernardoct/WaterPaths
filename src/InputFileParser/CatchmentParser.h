@@ -13,7 +13,9 @@ class CatchmentParser {
     vector<Catchment *> parsed_catchments;
 
 public:
-    virtual ~CatchmentParser();
+    CatchmentParser();
+
+    ~CatchmentParser();
 
     void parseSeries(vector<string> paths, int n_weeks = NON_INITIALIZED,
                      int n_realizations = NON_INITIALIZED);

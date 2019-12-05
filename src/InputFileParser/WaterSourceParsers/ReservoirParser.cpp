@@ -3,23 +3,29 @@
 //
 
 #include "ReservoirParser.h"
-#include "../CatchmentParser.h"
 #include "../../Utils/Utils.h"
 #include "../Exceptions/MissingParameter.h"
+#include "../AuxParserFunctions.h"
 
 
-ReservoirParser::ReservoirParser() : WaterSourceParser("[RESERVOIR]") {}
+ReservoirParser::ReservoirParser(bool generate_tables)
+        : WaterSourceParser("[RESERVOIR]"), generate_tables(generate_tables) {}
 
-ReservoirParser::ReservoirParser(string tag_name) : WaterSourceParser(
-        tag_name) {}
+ReservoirParser::ReservoirParser(string tag_name, bool generate_tables)
+        : WaterSourceParser(tag_name), generate_tables(generate_tables) {}
 
 void ReservoirParser::parseVariables(vector<vector<string>> &block,
-                                     int n_realizations, int n_weeks) {
-    WaterSourceParser::parseVariables(block, n_realizations, n_weeks);
+                                     int n_realizations, int n_weeks,
+                                     int line_no,
+                                     const map<string, int> &ws_name_to_id,
+                                     const map<string, int> &utility_name_to_id) {
+    WaterSourceParser::parseVariables(block, n_realizations, n_weeks, line_no,
+                                      ws_name_to_id, utility_name_to_id);
+
+    // capacity multiplier for pre-computed rof-tables generation.
+    if (generate_tables) capacity *= Constants::BASE_STORAGE_CAPACITY_MULTIPLIER;
 
     vector<unsigned long> rows_read;
-
-//    for (vector<string> &line : block) {
     for (unsigned long i = 0; i < block.size(); ++i) {
         vector<string> &line = block[i];
         if (line[0] == "streamflow_files") {
@@ -41,12 +47,17 @@ void ReservoirParser::parseVariables(vector<vector<string>> &block,
                                                                        n_realizations);
             rows_read.push_back(i);
         } else if (line[0] == "storage_area_curve") {
-            vector<double> area_curve;
-            Utils::tokenizeString(line[1], area_curve, ',');
             vector<double> storage_curve;
+            Utils::tokenizeString(line[1], storage_curve, ',');
+            vector<double> area_curve;
             Utils::tokenizeString(line[2], area_curve, ',');
 
-            storage_vs_area_curves = DataSeries(area_curve, area_curve);
+            // capacity multiplier for pre-computed rof-tables generation.
+            if (generate_tables) {
+                for (double &s : storage_curve) s *= Constants::BASE_STORAGE_CAPACITY_MULTIPLIER;
+            }
+
+            storage_vs_area_curves = DataSeries(storage_curve, area_curve);
             variable_area = true;
             rows_read.push_back(i);
         } else if (line[0] == "storage_area") {
@@ -55,7 +66,7 @@ void ReservoirParser::parseVariables(vector<vector<string>> &block,
         }
     }
 
-    cleanBlock(block, rows_read);
+    AuxParserFunctions::cleanBlock(block, rows_read);
 }
 
 WaterSource *
@@ -65,7 +76,8 @@ ReservoirParser::generateSource(int id, vector<vector<string>> &block,
                                 const map<string, int> &ws_name_to_id,
                                 const map<string, int> &utility_name_to_id) {
 
-    parseVariables(block, n_realizations, n_weeks);
+    parseVariables(block, n_realizations, n_weeks, line_no,
+                   ws_name_to_id, utility_name_to_id);
     checkMissingOrExtraParams(line_no, block);
 
     if (existing_infrastructure && variable_area) {
@@ -106,4 +118,6 @@ void ReservoirParser::checkMissingOrExtraParams(int line_no,
                                "(one is needed)", tag_name, line_no);
     }
 }
+
+ReservoirParser::~ReservoirParser() = default;
 

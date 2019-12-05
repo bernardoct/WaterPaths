@@ -330,38 +330,31 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
 
     // Create minimum environmental flow rules (controls)
     // Autumn is combining Falls+Durham+WB
-    //FIXME FIX THESE FLOW REQUIREMENTS
-    vector<int> autumn_controls_weeks = {0, 13, 43, 53};
-    vector<double> autumn_releases = {(39 + 10 + 2) * 7, (65 + 4 + 1) * 7, (39 + 10 + 2) * 7};
-
-    SeasonalMinEnvFlowControl autumn_min_env_control(2, autumn_controls_weeks, autumn_releases);
 
     // Lake Michael is based off the Jordan Lake and uses its class
     double lake_michael_supply_capacity = 9100.0 * table_gen_storage_multiplier * calibrate_volume_multiplier; // reduced to .69 of JL cap
     double lake_michael_wq_capacity = 10825.0 * table_gen_storage_multiplier * calibrate_volume_multiplier;
-    JordanLakeMinEnvFlowControl lake_michael_min_env_control( 1,
-                                                              cape_fear_river_at_lillington, 64.63, 129.26, 25.85, 93.89,
-                                                              190.84, 287.79, lake_michael_supply_capacity, lake_michael_wq_capacity);
-
-    //FIXME SUGAR CREEK BASED ON CCR, SO LEAVING AS IS, IS THIS A GOOD IDEA?
+    vector<int> autumn_controls_weeks = {0, 13, 43, 53};
+    vector<double> autumn_releases = {(39 + 10 + 2) * 7, (65 + 4 + 1) * 7, (39 + 10 + 2) * 7};
     vector<double> sugar_creek_inflows = {0.1422 * 7, 0.5 * 7, 1 * 7, 1.5 * 7,
                                           1.797 * 7};
     vector<double> sugar_creek_releases = {0.1422 * 7, 0.5 * 7, 1 * 7, 1.5 * 7,
                                            1.797 * 7};
-
-    InflowMinEnvFlowControl sugar_creek_min_env_control(3,
-                                                        sugar_creek_inflows,
-                                                        sugar_creek_releases);
-
-    // College Rock and Granite Quarry have no min flow
-    FixedMinEnvFlowControl college_rock_min_env_control(0, 0);
-    FixedMinEnvFlowControl granite_quarry_min_env_control(0, 0);
-
-    //FIXME made these numbers up
     vector<int> new_river_controls_weeks = {0, 13, 43, 53};
     vector<double> new_river_releases = {3 * 7, 8 * 7, 3 * 7};
 
-    SeasonalMinEnvFlowControl new_river_min_env_control(4, new_river_controls_weeks, new_river_releases);
+    // College Rock and Granite Quarry have no min flow
+    FixedMinEnvFlowControl college_rock_min_env_control(0, 0);
+    JordanLakeMinEnvFlowControl lake_michael_min_env_control( 1,
+                                                              cape_fear_river_at_lillington, 64.63, 129.26, 25.85, 93.89,
+                                                              190.84, 287.79, lake_michael_supply_capacity, lake_michael_wq_capacity);
+    SeasonalMinEnvFlowControl autumn_min_env_control(2, autumn_controls_weeks, autumn_releases);
+    InflowMinEnvFlowControl sugar_creek_min_env_control(3,
+                                                        sugar_creek_inflows,
+                                                        sugar_creek_releases);
+    FixedMinEnvFlowControl new_river_min_env_control(4, 0);
+//    SeasonalMinEnvFlowControl new_river_min_env_control(4, new_river_controls_weeks, new_river_releases);
+    FixedMinEnvFlowControl granite_quarry_min_env_control(6, 0);
 
     vector<MinEnvFlowControl *> min_env_flow_controls;
     min_env_flow_controls.push_back(&autumn_min_env_control);
@@ -382,19 +375,12 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     vector<double> lake_michael_treatment_allocation_fractions = {1., 0.0, 0.0};
 
     // Autumn Lake parameters
-    //FIXME: can reallocate to make more interesting
     vector<int> autumn_lake_allocations_ids = {1, 2, WATER_QUALITY_ALLOCATION};
     vector<double> autumn_lake_allocation_fractions = {
             0.22 * autumn_lake_supply_capacity / autumn_lake_storage_capacity,
             0.78 * autumn_lake_supply_capacity / autumn_lake_storage_capacity,
             autumn_lake_wq_capacity / autumn_lake_storage_capacity};
     vector<double> autumn_lake_treatment_allocation_fractions = {0.38, 0.62};
-
-//    vector<vector<int>> reservoir_utility_connectivity_matrix = {
-//            {0, 1, 4, 7, 8, 9, 10, 11, 12}, //Watertown
-//            {2, 5, 6}, //Dryville
-//            {2, 4} //Fallsland
-//    };
 
 // Create existing_infrastructure reservoirs
     // combined university lake and stone quarry
@@ -445,8 +431,8 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs, double *con
     vector<int> nrr_allocations_ids = {1, 2, WATER_QUALITY_ALLOCATION};
     vector<double> nrr_allocation_fractions = {0.3, 0.4, 0.3};
     vector<double> nrr_treatment_allocation_fractions = {0.5, 0.5};
-    LevelDebtServiceBond new_river_bond(4, 263.0, 25, 0.05, vector<int>(1, 0));
 
+    LevelDebtServiceBond new_river_bond(4, 263.0, 25, 0.05, vector<int>(1, 0));
     AllocatedReservoir new_river_reservoir("New River Reservoir",
                                            4,
                                            catchment_new_river,

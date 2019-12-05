@@ -6,6 +6,14 @@
 #include "../Utils/Utils.h"
 
 
+CatchmentParser::CatchmentParser() = default;
+
+CatchmentParser::~CatchmentParser() {
+    for (auto c : parsed_catchments) {
+        delete c;
+    }
+}
+
 void CatchmentParser::parseSeries(vector<string> paths, int n_weeks, int n_realizations) {
     if (n_weeks == NON_INITIALIZED) {
         throw invalid_argument("Number of weeks to be parsed must be provided to catchment parser.");
@@ -23,10 +31,4 @@ void CatchmentParser::parseSeries(vector<string> paths, int n_weeks, int n_reali
 
 const vector<Catchment *> &CatchmentParser::getParsedCatchments() const {
     return parsed_catchments;
-}
-
-CatchmentParser::~CatchmentParser() {
-    for (auto c : parsed_catchments) {
-        delete c;
-    }
 }

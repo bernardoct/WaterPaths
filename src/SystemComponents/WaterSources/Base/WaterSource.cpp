@@ -364,7 +364,7 @@ void WaterSource::setAllocations(
         string error = "Water Source " + to_string(id) + 
 		" has allocation fractions whose sum are more than 1:\n ";
 	for (int i = 0; i < allocated_fractions.size(); ++i) {
-		error += "Utility " + to_string(utilities_with_allocations[i]) 
+		error += "UtilityParser " + to_string(utilities_with_allocations[i])
 			+ ": " + to_string(allocated_fractions[i]) + "\n";
 	}
 
@@ -670,10 +670,6 @@ double WaterSource::getAllocatedTreatmentCapacity(int utility_id) const {
     return total_treatment_capacity;
 }
 
-double WaterSource::getTotal_treatment_capacity(int utility_id) const {
-    return total_treatment_capacity;
-}
-
 void WaterSource::resetAllocations(
         const vector<double>
         *new_allocated_fractions) {
@@ -754,5 +750,9 @@ void WaterSource::unsetSeed() {
 
 const vector<Catchment> &WaterSource::getCatchments() const {
     return catchments;
+}
+
+double WaterSource::getTotalTreatmentCapacity() const {
+    return total_treatment_capacity;
 }
 

@@ -18,7 +18,8 @@ int BondParser::getId() {
     return id;
 }
 
-void BondParser::parseVariables(vector<string> &bond_data) {
+void BondParser::parseVariables(const vector<string> &bond_data) {
+    BondParser::updateId();
     cost_of_capital = stod(bond_data[2]);
     n_payments = stoi(bond_data[3]);
     coupon_rate = stod(bond_data[4]);
@@ -32,9 +33,4 @@ void BondParser::parseVariables(vector<string> &bond_data) {
     } else {
         throw invalid_argument("Bond must either have the first payment deferred or immediate.");
     }
-}
-
-Bond *BondParser::generate_bond(vector<string> &bond_data) {
-    updateId();
-    return nullptr;
 }

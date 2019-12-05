@@ -51,9 +51,9 @@ private:
     double restricted_demand = 0;
     double unrestricted_demand = 0;
     int n_sources = 0;
-    double infra_discount_rate;
-    double bond_term_multiplier;
-    double bond_interest_rate_multiplier;
+    double infra_discount_rate = NON_INITIALIZED;
+    double bond_term_multiplier = 1.;
+    double bond_interest_rate_multiplier = 1.;
     double max_capacity = 0;
 
     /// Infrastructure cost
@@ -86,8 +86,7 @@ public:
                 double demand_buffer, const vector<int> &rof_infra_construction_order,
                 const vector<int> &demand_infra_construction_order,
                 const vector<double> &infra_construction_triggers, double infra_discount_rate,
-                const vector<vector<int>>& infra_if_built_remove, double
-            bond_term, double bond_interest_rate);
+                const vector<vector<int>>& infra_if_built_remove);
 
     Utility(string name, int id, vector<vector<double>>& demands_all_realizations,
                 int number_of_week_demands, const double percent_contingency_fund_contribution,
@@ -95,8 +94,7 @@ public:
                 const vector<vector<double>> &typesMonthlyWaterPrice, WwtpDischargeRule wwtp_discharge_rule,
                 double demand_buffer, const vector<int> &rof_infra_construction_order,
                 const vector<int> &demand_infra_construction_order,
-                const vector<double> &infra_construction_triggers, double infra_discount_rate, double bond_term,
-                double bond_interest_rate);
+                const vector<double> &infra_construction_triggers, double infra_discount_rate);
 
     Utility(Utility &utility);
 

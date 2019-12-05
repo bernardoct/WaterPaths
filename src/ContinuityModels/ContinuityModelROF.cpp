@@ -512,7 +512,7 @@ void ContinuityModelROF::tableROFExceptionHandler(double m, int u, int week) {
     if (m > 1.) {
         error = "ROF tables being extrapolated  because current "
                 "capacity is greater than table base capacity."
-                " Utility " + to_string(u) + ", m=" +
+                " UtilityParser " + to_string(u) + ", m=" +
                 to_string(m) + ". You should try regenerating "
                                "tables with a higher value for constant "
                                "BASE_STORAGE_CAPACITY_MULTIPLIER  and higher"

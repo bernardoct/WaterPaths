@@ -13,6 +13,8 @@ class EvaporationSeriesParser {
     vector<EvaporationSeries> parsed_evaporation_series;
 
 public:
+    ~EvaporationSeriesParser();
+
     EvaporationSeries &parseSeries(string path, int n_weeks, int n_realizations);
 
 };

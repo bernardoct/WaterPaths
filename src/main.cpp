@@ -4,6 +4,7 @@
 #include "Problem/PaperTestProblem.h"
 //#include "Problem/Triangle.h"
 #include "Utils/Utils.h"
+#include "InputFileParser/MasterSystemInputFileParser.h"
 
 #ifdef  PARALLEL
 #include "../Borg/borgms.h"
@@ -22,7 +23,6 @@ using namespace Constants;
 using namespace Solutions;
 
 PaperTestProblem *problem_ptr;
-//Triangle *problem_ptr;
 int failures = 0;
 
 void eval(double *vars, double *objs, double *consts) {
@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
     string utilities_rdm_file = "-1";
     string policies_rdm_file = "-1";
     string water_sources_rdm_file = "-1";
-    string inflows_evap_directory_suffix = "-1";
+    string system_input_file = "-1";
     string rof_tables_directory = DEFAULT_ROF_TABLES_DIR;
     unsigned long standard_solution = 0;
     int n_threads = 2;
@@ -91,7 +91,9 @@ int main(int argc, char *argv[]) {
     vector<vector<double>> policies_rdm;
 
     int c;
-    while ((c = getopt(argc, argv, "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:S:A:R:U:P:W:I:C:O:B:")) != -1) {
+    while ((c = getopt(argc, argv,
+                       "?s:u:T:r:t:d:f:l:m:v:c:p:b:i:n:o:e:y:S:A:R:U:P:W:I:C:O:B:")) !=
+           -1) {
         switch (c) {
             case '?':
                 fprintf(stdout,
@@ -119,7 +121,7 @@ int main(int argc, char *argv[]) {
                         "\t-S: number of bootstrap samples per set for bootstrap analysis.\n"
                         "\t-A: number of sets of bootstrap samples for bootstrap analysis.\n"
                         "\t-R: RDM sample number\n"
-                        "\t-U: Utility RDM file\n"
+                        "\t-U: UtilityParser RDM file\n"
                         "\t-P: Policies RDM file\n"
                         "\t-W: Water sources RDM file\n"
                         "\t-I: Inflows and evaporation folder suffix to"
@@ -200,7 +202,7 @@ int main(int argc, char *argv[]) {
                 water_sources_rdm_file = optarg;
                 break;
             case 'I':
-                inflows_evap_directory_suffix = optarg;
+                system_input_file = optarg;
                 break;
             case 'C':
                 import_export_rof_table = atoi(optarg);
@@ -221,7 +223,6 @@ int main(int argc, char *argv[]) {
     }
 
     PaperTestProblem problem(n_weeks, import_export_rof_table);
-//    Triangle problem(n_weeks, import_export_rof_table);
     if (seed > -1) {
         WaterSource::setSeed(seed);
         MasterDataCollector::setSeed(seed);
@@ -234,7 +235,8 @@ int main(int argc, char *argv[]) {
 
     // Load bootstrap samples if necessary.
     if (strlen(bootstrap_file.c_str()) > 2) {
-        auto bootstrap_samples_double = Utils::parse2DCsvFile(system_io + bootstrap_file);
+        auto bootstrap_samples_double = Utils::parse2DCsvFile(
+                system_io + bootstrap_file);
         for (auto &v : bootstrap_samples_double) {
             realizations_to_run.push_back(vector<int>(v.begin(), v.end()));
             if (*std::max_element(v.begin(), v.end()) >= n_realizations)
@@ -250,37 +252,38 @@ int main(int argc, char *argv[]) {
                 "You must specify an input output directory.");
     }
 
-    // Set up input/output suffix, if necessary.
-    if (strlen(inflows_evap_directory_suffix.c_str()) > 2) {
-        problem.setEvap_inflows_suffix(inflows_evap_directory_suffix);
-    }
     // Read RDM file, if any
     if (strlen(utilities_rdm_file.c_str()) > 2) {
         cout << "reading RDM file" << endl;
         if (rdm_no != NON_INITIALIZED) {
-            auto utilities_rdm_row = Utils::parse2DCsvFile(system_io + utilities_rdm_file)[rdm_no];
-            auto policies_rdm_row = Utils::parse2DCsvFile(system_io + policies_rdm_file)[rdm_no];
-            auto water_sources_rdm_row = Utils::parse2DCsvFile(system_io + water_sources_rdm_file)[rdm_no];
+            auto utilities_rdm_row = Utils::parse2DCsvFile(
+                    system_io + utilities_rdm_file)[rdm_no];
+            auto policies_rdm_row = Utils::parse2DCsvFile(
+                    system_io + policies_rdm_file)[rdm_no];
+            auto water_sources_rdm_row = Utils::parse2DCsvFile(
+                    system_io + water_sources_rdm_file)[rdm_no];
 
-            utilities_rdm = std::vector<vector<double>>(n_realizations, utilities_rdm_row);
-            policies_rdm = std::vector<vector<double>>(n_realizations, policies_rdm_row);
-            water_sources_rdm = std::vector<vector<double>>(n_realizations, water_sources_rdm_row);
+            utilities_rdm = std::vector<vector<double>>(n_realizations,
+                                                        utilities_rdm_row);
+            policies_rdm = std::vector<vector<double>>(n_realizations,
+                                                       policies_rdm_row);
+            water_sources_rdm = std::vector<vector<double>>(n_realizations,
+                                                            water_sources_rdm_row);
 
             problem.setRDMReevaluation(rdm_no, utilities_rdm,
                                        water_sources_rdm, policies_rdm);
 
-            if (strlen(inflows_evap_directory_suffix.c_str()) > 2)
-                problem.setFname_sufix("_RDM" + std::to_string(rdm_no) +
-                                       "_infevap" + inflows_evap_directory_suffix);
-            else
-                problem.setFname_sufix("_RDM" + std::to_string(rdm_no));
+            problem.setFname_sufix("_RDM" + std::to_string(rdm_no));
         } else {
-            utilities_rdm = Utils::parse2DCsvFile(system_io + utilities_rdm_file);
-            water_sources_rdm = Utils::parse2DCsvFile(system_io + water_sources_rdm_file);
+            utilities_rdm = Utils::parse2DCsvFile(
+                    system_io + utilities_rdm_file);
+            water_sources_rdm = Utils::parse2DCsvFile(
+                    system_io + water_sources_rdm_file);
             policies_rdm = Utils::parse2DCsvFile(system_io + policies_rdm_file);
             if (n_realizations > utilities_rdm.size()) {
-                throw length_error("If no rdm number is passed, the number of realizations needs to be smaller "
-                                   "or equal to the number of rows in the rdm files.");
+                throw length_error(
+                        "If no rdm number is passed, the number of realizations needs to be smaller "
+                        "or equal to the number of rows in the rdm files.");
             }
             problem.setRDMReevaluation(rdm_no, utilities_rdm,
                                        water_sources_rdm, policies_rdm);
@@ -290,10 +293,13 @@ int main(int argc, char *argv[]) {
 
     // Set realizations to be run -- otherwise, n_realizations realizations will be run.
     if (!realizations_to_run.empty() && (n_sets <= 0 || n_bs_samples <= 0)) {
-        auto realizations_to_run_ul = vector<unsigned long>(realizations_to_run[0].begin(),
-                                                            realizations_to_run[0].end());
+        auto realizations_to_run_ul = vector<unsigned long>(
+                realizations_to_run[0].begin(),
+                realizations_to_run[0].end());
         problem.setRealizationsToRun(realizations_to_run_ul);
-        problem.setN_realizations(*max_element(realizations_to_run_ul.begin(), realizations_to_run_ul.end()) + 1);
+        problem.setN_realizations(*max_element(realizations_to_run_ul.begin(),
+                                               realizations_to_run_ul.end()) +
+                                  1);
     } else {
         problem.setN_realizations(n_realizations);
     }
@@ -314,7 +320,8 @@ int main(int argc, char *argv[]) {
         if (strlen(solution_file.c_str()) > 2) {
             solutions = Utils::parse2DCsvFile(system_io + solution_file);
             if (standard_solution >= solutions.size())
-                throw invalid_argument("Number of solutions in file <= solution ID.\n");
+                throw invalid_argument(
+                        "Number of solutions in file <= solution ID.\n");
         } else {
             throw invalid_argument("You must specify a solutions file.\n");
         }
@@ -322,21 +329,24 @@ int main(int argc, char *argv[]) {
         // Run model
         if (first_solution == -1) {
             cout << endl << endl << endl << "Running solution "
-                 << standard_solution 
-	         << (rdm_no != NON_INITIALIZED ? " RDM " : "")
-	         << (rdm_no != NON_INITIALIZED ? to_string(rdm_no).c_str() : "")
-	         << endl;
+                 << standard_solution
+                 << (rdm_no != NON_INITIALIZED ? " RDM " : "")
+                 << (rdm_no != NON_INITIALIZED ? to_string(rdm_no).c_str() : "")
+                 << endl;
             problem.setSol_number(standard_solution);
-            problem_ptr->functionEvaluation(solutions[standard_solution].data(), c_obj, c_constr);
+            problem_ptr->functionEvaluation(solutions[standard_solution].data(),
+                                            c_obj, c_constr);
 
             // Export pathways and objectives, otherwise, if required, run bootstrap sub-sampling.
             if (n_sets > 0 && n_bs_samples > 0) {
                 problem_ptr->runBootstrapRealizationThinning(
-                        (int) standard_solution, n_sets, n_bs_samples, n_threads, realizations_to_run);
+                        (int) standard_solution, n_sets, n_bs_samples,
+                        n_threads, realizations_to_run);
             } else if (import_export_rof_table != EXPORT_ROF_TABLES) {
                 if (plotting)
                     problem.printTimeSeriesAndPathways();
-                auto objectives = problem_ptr->calculateAndPrintObjectives(!print_objs_row);
+                auto objectives = problem_ptr->calculateAndPrintObjectives(
+                        !print_objs_row);
                 //            trianglePtr->getMaster_data_collector()->printNETCDFUtilities("netcdf_output");
             }
 
@@ -345,19 +355,26 @@ int main(int argc, char *argv[]) {
             double time_0 = omp_get_wtime();
             ofstream objs_file;
             string file_name = system_io + "output" + BAR + "Objectives" +
-                    (rdm_no == NON_INITIALIZED ? "" : "_RDM" + to_string(rdm_no)) +
-                               "_sols" + to_string(first_solution) + "_to_" + to_string(last_solution) + ".csv";
+                               (rdm_no == NON_INITIALIZED ? "" : "_RDM" +
+                                                                 to_string(
+                                                                         rdm_no)) +
+                               "_sols" + to_string(first_solution) + "_to_" +
+                               to_string(last_solution) + ".csv";
             objs_file.open(file_name);
-            printf("Objectives file will be printed at %s.\n", file_name.c_str());
+            printf("Objectives file will be printed at %s.\n",
+                   file_name.c_str());
             for (int s = first_solution; s < last_solution; ++s) {
                 cout << endl << endl << endl << "Running solution "
-                     << s 
-		        << (rdm_no != NON_INITIALIZED ? " RDM " : "")
-		        << (rdm_no != NON_INITIALIZED ? to_string(rdm_no).c_str() : "")
-		        << endl;
+                     << s
+                     << (rdm_no != NON_INITIALIZED ? " RDM " : "")
+                     << (rdm_no != NON_INITIALIZED ? to_string(rdm_no).c_str()
+                                                   : "")
+                     << endl;
                 problem.setSol_number((unsigned long) s);
-                problem_ptr->functionEvaluation(solutions[s].data(), c_obj, c_constr);
-                vector<double> objectives = problem_ptr->calculateAndPrintObjectives(false);
+                problem_ptr->functionEvaluation(solutions[s].data(), c_obj,
+                                                c_constr);
+                vector<double> objectives = problem_ptr->calculateAndPrintObjectives(
+                        false);
                 problem.printTimeSeriesAndPathways(plotting);
                 problem_ptr->destroyDataCollector();
                 string line;
@@ -368,7 +385,8 @@ int main(int argc, char *argv[]) {
                 objs_file << line << endl;
             }
             objs_file.close();
-            printf("Time to simulate %d solutions: %f s", last_solution - first_solution, omp_get_wtime() - time_0);
+            printf("Time to simulate %d solutions: %f s",
+                   last_solution - first_solution, omp_get_wtime() - time_0);
         }
 
         return 0;
@@ -382,9 +400,9 @@ int main(int argc, char *argv[]) {
             "n_weeks: %lu\n"
             "n_realizations: %lu\n\n",
             n_islands, nfe, output_frequency, n_weeks, n_realizations);
-         
-        // for debugging borg, creating file to print each ranks DVs which isdone in Eval function   
-        
+
+        // for debugging borg, creating file to print each ranks DVs which isdone in Eval function
+
         BORG_Algorithm_ms_startup(&argc, &argv);
         // BORG_Algorithm_ms_islands((int) n_islands);
         // BORG_Algorithm_ms_initialization(INITIALIZATION_LATIN_GLOBAL);
@@ -402,15 +420,15 @@ int main(int argc, char *argv[]) {
         if (seed > -1) {
             srand(seed);
             WaterSource::setSeed(seed);
-	    BORG_Random_seed(seed);
+        BORG_Random_seed(seed);
         }
         char output_directory[256], output_file_name[256];
-	char io_directory[256];
+    char io_directory[256];
         char runtime[256];
         FILE* outputFile = nullptr;
 
-	sprintf(output_directory, "%s%s", system_io.c_str(), DEFAULT_OUTPUT_DIR.c_str());
-	//Utils::createDir(string(output_directory));
+    sprintf(output_directory, "%s%s", system_io.c_str(), DEFAULT_OUTPUT_DIR.c_str());
+    //Utils::createDir(string(output_directory));
 
         // sprintf(output_file_name, "%sNC_output_MM_S%d_N%lu.set", output_directory, seed, nfe);
         sprintf(output_file_name, "%sNC_output_MS_S%d_N%lu.set", output_directory, seed, nfe);
@@ -432,7 +450,7 @@ int main(int argc, char *argv[]) {
         //int rank; // different seed on each processor
         //MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         //BORG_Random_seed(37*seed*(rank+1));
-        
+
         BORG_Archive result = BORG_Algorithm_ms_run(problem); // this actually runs the optimization
         //BORG_Archive result = BORG_Algorithm_run(problem, nfe);
         // If this is the master node, print out the final archive
@@ -454,9 +472,17 @@ int main(int argc, char *argv[]) {
         BORG_Algorithm_ms_shutdown();
         BORG_Problem_destroy(problem);
 #else
-        throw invalid_argument("This version of WaterPaths was not compiled with Borg.");
+        throw invalid_argument(
+                "This version of WaterPaths was not compiled with Borg.");
 #endif
 
         return 0;
     }
 }
+//
+//int main(int argc, char *argv[]) {
+//
+//    string input_test_file = "../Tests/test_input_file.wp";
+//    MasterSystemInputFileParser parser;
+//    parser.parseFile(input_test_file);
+//}

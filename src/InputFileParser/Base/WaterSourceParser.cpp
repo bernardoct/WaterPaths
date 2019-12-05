@@ -7,15 +7,20 @@
 #include "../../Utils/Utils.h"
 #include "../Exceptions/MissingParameter.h"
 #include "../Exceptions/InconsistentMutuallyImplicativeParameters.h"
+#include "../AuxParserFunctions.h"
 
 
 WaterSourceParser::WaterSourceParser(string tag_name) : tag_name(tag_name) {}
 
-void WaterSourceParser::parseVariables(vector<vector<string>> &block,
-                                        int n_realizations, int n_weeks) {
+void WaterSourceParser::parseVariables(vector <vector<string>> &block,
+                                       int n_realizations, int n_weeks,
+                                       int line_no,
+                                       const map<string, int> &ws_name_to_id,
+                                       const map<string, int> &utility_name_to_id) {
+
     vector<unsigned long> rows_read(0);
-    for (unsigned long i = 0; i < block.size(); ++i){
-        vector<string> line = block[i];
+    for (unsigned long i = 0; i < block.size(); ++i) {
+        vector <string> line = block[i];
         if (line[0] == "name") {
             name = line[1];
             rows_read.push_back(i);
@@ -53,7 +58,7 @@ void WaterSourceParser::parseVariables(vector<vector<string>> &block,
         }
     }
 
-    cleanBlock(block, rows_read);
+    AuxParserFunctions::cleanBlock(block, rows_read);
 }
 
 WaterSourceParser::~WaterSourceParser() {
@@ -63,7 +68,8 @@ WaterSourceParser::~WaterSourceParser() {
     bonds.clear();
 }
 
-void WaterSourceParser::checkMissingOrExtraParams(int line_no, vector<vector<string>> &block) {
+void WaterSourceParser::checkMissingOrExtraParams(int line_no,
+                                                  vector <vector<string>> &block) {
     if (name.empty()) {
         throw MissingParameter("name", tag_name, line_no);
     } else if (capacity == NON_INITIALIZED) {
@@ -71,46 +77,26 @@ void WaterSourceParser::checkMissingOrExtraParams(int line_no, vector<vector<str
     }
 
     if (!((bonds.empty() && permitting_time == NON_INITIALIZED &&
-                    construction_time.empty()) ||
+           construction_time.empty()) ||
           (!bonds.empty() && permitting_time != NON_INITIALIZED &&
-          !construction_time.empty()))) {
+           !construction_time.empty()))) {
         throw InconsistentMutuallyImplicativeParameters(
                 "bonds, permitting_time, construction_time",
                 tag_name, line_no
-                );
+        );
     }
 
     if (!((utilities_with_allocations.empty() && allocated_fractions.empty() &&
-         allocated_treatment_fractions.empty()) ||
-        (!utilities_with_allocations.empty() && !allocated_fractions.empty() &&
-         !allocated_treatment_fractions.empty()))) {
+           allocated_treatment_fractions.empty()) ||
+          (!utilities_with_allocations.empty() &&
+           !allocated_fractions.empty() &&
+           !allocated_treatment_fractions.empty()))) {
         throw InconsistentMutuallyImplicativeParameters(
                 "utilities_with_allocations, allocated_fractions, "
                 "allocated_treatment_fractions", tag_name, line_no
-                );
+        );
     }
 
     // Check for tags that were not read.
-    checkForUnreadTags(line_no, block, tag_name);
-}
-
-void WaterSourceParser::checkForUnreadTags(int line_no, const vector<vector<string>> &block, const string& tag_name) {
-    if (!block.empty()) {
-        string extra_params;
-        for (auto line : block) {
-            extra_params += line[0] + " ";
-        }
-        char error[5000];
-        sprintf(error, "Parameters %s do not belong to a %s (line %d)",
-                extra_params.c_str(), tag_name.c_str(), line_no);
-        throw invalid_argument(error);
-    }
-}
-
-void WaterSourceParser::cleanBlock(vector<vector<string>> &block, vector<unsigned long> &rows_read) {
-    sort(rows_read.begin(), rows_read.end());
-    reverse(rows_read.begin(), rows_read.end());
-    for (unsigned long &i : rows_read) {
-        block.erase(block.begin() + i);
-    }
+    AuxParserFunctions::checkForUnreadTags(line_no, block, tag_name);
 }

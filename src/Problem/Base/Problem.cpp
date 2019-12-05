@@ -33,7 +33,7 @@ void Problem::printTimeSeriesAndPathways(bool plot_time_series) {
 
         /// Print output files.
         string fu = "Utilities";
-        string fws = "WaterSources";
+        string fws = "WaterSourceParsers";
         string fp = "Policies";
         string fpw = "Pathways";
 

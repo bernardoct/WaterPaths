@@ -1,6 +1,6 @@
 # Parsing Your Own Class
 
-Input file parsing in WaterPaths is managed by the MasterSystemInputFileParser class. Its method parseFile reads the header of the input file containing the number of realizations and weeks to be simulated and parses all elements describing the system . The data pertaining to each element, be it a water source, utility, or a connectivity graph, is demarcated with a tag following the format "\[MY TAG\]". Right below tag, the data is organized one parameter and its data per line, as in "paramter_name text_string 0 1 2,3,4". In this example, the line is comprised of the name of the parameter (preferably corresponding to the name of the variable in the code of the parser itself), a string variable, two doubles or integers, and a vector or integers. More details about how to use already implemented code, how to organize your parser, and about how to integrate it within WaterPaths parser are given below.  
+Input file parsing in WaterPaths is managed by the MasterSystemInputFileParser class. Its method parseFile reads the header of the input file containing the number of realizations and weeks to be simulated and parses all elements describing the system . The data pertaining to each element, be it a water source, utility, or a connectivity graph, is demarcated with a tag following the format "\[MY TAG\]". Right below tag, the data is organized one parameter and its data per line, as in "parameter_name text_string 0 1 2,3,4". In this example, the line is comprised of the name of the parameter (preferably corresponding to the name of the variable in the code of the parser itself), a string variable, two doubles or integers, and a vector or integers. More details about how to use already implemented code, how to organize your parser, and about how to integrate it within WaterPaths parser are given below.  
 
 ## Water Sources
 
@@ -8,7 +8,7 @@ WaterPaths does the parsing of several basic variables common to all water sourc
 
 1.  All water sources parsers are to publicly extend the WaterSourceParser class, located in [src/InputFileParser/Base/WaterSourceParser.h](https://github.com/bernardoct/WaterPaths/tree/inputFileParser/src/InputFileParser/Base). 
 2. Variables for all variables that may be used in any constructor of the relevant water source must be declared in the header file for persistence and organization.
-3. The parsing of the data from the *block* variable is to be centralized and performed in the method *parseVariables(vector\<vector\<string\>\> &block, int line_no, int n_realizations, int n_weeks)*. The *parseVariables* loops through *block* and stores in class variables declared in the header copies of its strings converted to the appropriate formats---useful functions for the conversion of strings to doubles, ints and vectors are *stoi(string var)*, *stod(string var)*, and *Utils::tokenizeString*. After a line (vector\<string\> in block) is read, its index is to be stored in a vector, say *vector<unsigned long> rows_read*. Lastly, the function *cleanBlock(block, rows_read);* must be called at the very bottom of *parseVariables* so that the read parameters are deleted from the block to allow for later checking for unread parameters. A call to the *function WaterSourceParser::parseVariables* can be added to the beginning of the new *MyNewParser::parseVariables* function to avoid coding the parsing of common variables such as name, bonds, etc. Below is an example of the parseVariables function:
+3. The parsing of the data from the *block* variable is to be centralized and performed in the method *parseVariables(vector\<vector\<string\>\> &block, int line_no, int n_realizations, int n_weeks)*. The *parseVariables* loops through *block* and stores in class variables declared in the header copies of its strings converted to the appropriate formats---useful functions for the conversion of strings to doubles, ints and vectors are *stoi(string var)*, *stod(string var)*, and *Utils::tokenizeString*. After a line (vector\<string\> in block) is read, its index is to be stored in a vector, say *vector<unsigned long> rows_read*. Lastly, the function *cleanBlock(block, rows_read);* must be called at the very bottom of *parseVariables* so that the read parameters are deleted from the block to allow for later checking for unread parameters. A call to the *function WaterSourceParser::parseVariables* can be added to the beginning of the new *MyNewParser::parseVariables* function to avoid coding the parsing of common variables such as name, bond, etc. Below is an example of the parseVariables function:
 
 ```cpp
 void NewClassParser::parseVariables(vector<vector<string>> &block, int n_realizations, int n_weeks) {
@@ -37,8 +37,9 @@ void NewClassParser::parseVariables(vector<vector<string>> &block, int n_realiza
     cleanBlock(block, rows_read);
 }
 ```
+4. Data pertaining to bonds are to be added to the water sources block. The parameter name is to be "bond", followed by type of bond (string), followed by other data (double, int, string, vector). See more detailed instructions in the next section.
 
-4. The new parser must implement the pure virtual method *generateSource(int id, vector\<vector\<string\>\> &block, int line_no, int n_realizations, int n_weeks)*, which is the method that returns the pointer to the newly created water source object. This method is to create a water source object from the received id and block variable, containing all parameters and corresponding data. The *line_no* variable is used mostly for throwing exceptions that show the number of the line where the problem is and the number of realizations and weeks are used to parse csv files, if needed. The method *parseVariables* is to be called at the beginning of the *generateSource* method followed by the *checkMissingOrExtraParams(line_no, block);* method to check for parameters not read and for inconsistencies in mutually implicative parameters (e.g. a bond interest rate is provided but not a bond term). Different constructors for the new source can be called depending on which variables were parsed, as in the example below:
+5. The new parser must implement the pure virtual method *generateSource(int id, vector\<vector\<string\>\> &block, int line_no, int n_realizations, int n_weeks)*, which is the method that returns the pointer to the newly created water source object. This method is to create a water source object from the received id and block variable, containing all parameters and corresponding data. The *line_no* variable is used mostly for throwing exceptions that show the number of the line where the problem is and the number of realizations and weeks are used to parse csv files, if needed. The method *parseVariables* is to be called at the beginning of the *generateSource* method followed by the *checkMissingOrExtraParams(line_no, block);* method to check for parameters not read and for inconsistencies in mutually implicative parameters (e.g. a bond interest rate is provided but not a bond term). Different constructors for the new source can be called depending on which variables were parsed, as in the example below:
 
 ```cpp
 WaterSource *ReservoirParser::generateSource(int id, vector<vector<string>> &block, int line_no, int n_realizations,
@@ -69,7 +70,7 @@ WaterSource *ReservoirParser::generateSource(int id, vector<vector<string>> &blo
     }
 }
 ```
-5. Sometimes blocks will have variables that need to be preprocessed before they can be parsed and input into a constructor. Examples are names of water sources and utilities being replaced by their IDs, which are assigned by the master parser without user's knowledge. To preprocess a block, the user is advised to create a *preProcessBlock* method taking as parameters, for example, block, tag_name, line_no, ws_name_to_id. The replacement of name by ID can be performed by means of the function *AuxDataParser::replaceNameById* method. In the example below, *replacementNameById* looks into the block of a reservoir expansion for the parameter "parent_reservoir" and replaces its first ("1") value, which is here the name of a reservoir, by the corresponding reservoir id. 
+6. Sometimes blocks will have variables that need to be preprocessed before they can be parsed and input into a constructor. Examples are names of water sources and utilities being replaced by their IDs, which are assigned by the master parser without user's knowledge. To preprocess a block, the user is advised to create a *preProcessBlock* method taking as parameters, for example, block, tag_name, line_no, ws_name_to_id. The replacement of name by ID can be performed by means of the function *AuxDataParser::replaceNameById* method. In the example below, *replacementNameById* looks into the block of a reservoir expansion for the parameter "parent_reservoir" and replaces its first ("1") value, which is here the name of a reservoir, by the corresponding reservoir id. 
 ```cpp
 WaterSource *
 ReservoirExpansionParser::generateSource(int id, vector<vector<string>> &block,
@@ -77,7 +78,7 @@ ReservoirExpansionParser::generateSource(int id, vector<vector<string>> &block,
                                          int n_weeks,
                                          const map<string, int> &ws_name_to_id,
                                          const map<string, int> &utility_name_to_id) {
-    preProcessBlock(block, tag_name, line_no, ws_name_to_id);
+    preProcessBlock(block, tag_name, line_no, ws_name_to_id); //BLOCK PREPROCESSING
     parseVariables(block, n_realizations, n_weeks);
     checkMissingOrExtraParams(line_no, block);
 
@@ -91,18 +92,21 @@ void ReservoirExpansionParser::checkMissingOrExtraParams(int line_no,
     WaterSourceParser::checkMissingOrExtraParams(line_no, block);
 }
 ```
-6. The next step is to add a tag/block reader to the function *MasterSystemInputFileParser::createWaterSource* in [MasterSystemInputFileParser.cpp](https://github.com/bernardoct/WaterPaths/blob/inputFileParser/src/InputFileParser/MasterSystemInputFileParser.cpp). The block checks for the appropriate tag, creates the data parser, and uses it to create a pointer to the newly created object and store it in the *water_sources* vector. An example is shown below:
+7. The next step is to add a tag/block reader to the function *MasterSystemInputFileParser::createWaterSource* in [MasterSystemInputFileParser.cpp](https://github.com/bernardoct/WaterPaths/blob/inputFileParser/src/InputFileParser/MasterSystemInputFileParser.cpp). The block checks for the appropriate tag, creates the data parser, and uses it to create a pointer to the newly created object and store it in the *water_sources* vector. An example is shown below:
 ```cpp
    if (tag == "[RESERVOIR EXPANSION]") {
         water_source_parsers.push_back(new ReservoirExpansionParser());
-        water_sources.push_back(
-                water_source_parsers.back()->generateSource(
-                        ws_id, block, l, realizations_weeks[0],
-                        realizations_weeks[1]
-                        )
-        );
-   } else if ...
+   } else if (tag == ...
 ```
+
+## Exceptions
+
+## Bonds
+
+The logic for implementing bond parsers is similar to that of water sources parsers, in that there is a *parseVariables* method already implemented for common variables (id, cost_of_capital, coupon_rate, n_payments, begin_repayment_after_n_years, pay_on_weeks, and begin_repayment_at_issuance) and that any bond parser must implement the virtual method *generateBond(const vector<string> &bond_data)*. Here area a few extra instructions:
+
+1. The id of the next bond is tracked by a static BondParser::id variable, which is updated in the *BondParser::parseVariables* method and can be accessed for the creation of a new bond by the method *BondParser::getId()*. 
+2. Data pertaining to bonds are to be added to the block pertaining to the water sources it pays for. The parameter name is to be "bond", followed by type of bond (string), followed by other data (double, int, string, vector, etc.).
 
 ## Drought Mitigation Policies
 

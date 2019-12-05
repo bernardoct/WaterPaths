@@ -24,6 +24,10 @@ public:
 
 
     double getRelease(int week) override;
+
+    const vector<int> &getWeekThresholds() const;
+
+    const vector<double> &getMinEnvFlows() const;
 };
 
 

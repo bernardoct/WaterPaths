@@ -9,14 +9,12 @@
 #include "../Base/WaterSourceParser.h"
 #include "../CatchmentParser.h"
 #include "../EvaporationSeriesParser.h"
+#include "../../Utils/DataSeries.h"
 
 
 class ReservoirParser : public WaterSourceParser {
 protected:
-    ReservoirParser(string tag_name);
-
-    unsigned long BLOCK_LEN_EXISTING_RESERVOIR = 7;
-    unsigned long BLOCK_LEN_NON_EXISTING_RESERVOIR = 10;
+    explicit ReservoirParser(string tag_name, bool generate_tables);
 
     CatchmentParser catchment_parser;
     EvaporationSeriesParser evaporation_series_parser;
@@ -24,15 +22,20 @@ protected:
 
     double storage_area = NON_INITIALIZED;
     bool variable_area = false;
+    bool generate_tables = false;
 
     vector<Catchment *> catchments;
     DataSeries storage_vs_area_curves;
 
 public:
-    ReservoirParser();
+    ReservoirParser(bool generate_tables);
+
+    ~ReservoirParser() override;
 
     void parseVariables(vector<vector<string>> &block, int n_realizations,
-                        int n_weeks) override;
+                        int n_weeks, int line_no,
+                        const map<string, int> &ws_name_to_id,
+                        const map<string, int> &utility_name_to_id) override;
 
     WaterSource *
     generateSource(int id, vector<vector<string>> &block, int line_no,

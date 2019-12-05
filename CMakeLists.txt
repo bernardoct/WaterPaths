@@ -36,15 +36,12 @@ set(SOURCE_FILES
         src/Controls/WwtpDischargeRule.h
         src/DroughtMitigationInstruments/Base/DroughtMitigationPolicy.cpp
         src/DroughtMitigationInstruments/Base/DroughtMitigationPolicy.h
-        #        src/DroughtMitigationInstruments/InsurancePseudoROF.cpp
-        #        src/DroughtMitigationInstruments/InsurancePseudoROF.h
         src/DroughtMitigationInstruments/InsuranceStorageToROF.cpp
         src/DroughtMitigationInstruments/InsuranceStorageToROF.h
         src/DroughtMitigationInstruments/Restrictions.cpp
         src/DroughtMitigationInstruments/Restrictions.h
         src/DroughtMitigationInstruments/Transfers.cpp
         src/DroughtMitigationInstruments/Transfers.h
-        src/main.cpp
         src/Simulation/Simulation.cpp
         src/Simulation/Simulation.h
         src/SystemComponents/Utility/InfrastructureManager.cpp
@@ -118,32 +115,33 @@ set(SOURCE_FILES
         src/SystemComponents/Bonds/BalloonPaymentBond.h
         src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.cpp
         src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.h
-        src/Problem/PaperTestProblem.cpp
-        src/Problem/PaperTestProblem.h
-        src/InputFileParser/Base/ElementParser.cpp
-        src/InputFileParser/Base/ElementParser.h
+        src/main.cpp
         src/InputFileParser/Base/WaterSourceParser.cpp
         src/InputFileParser/Base/WaterSourceParser.h
-        src/InputFileParser/WaterSources/ReuseParser.cpp
-        src/InputFileParser/WaterSources/ReuseParser.h
+        src/InputFileParser/WaterSourceParsers/ReuseParser.cpp
+        src/InputFileParser/WaterSourceParsers/ReuseParser.h
         src/InputFileParser/MasterSystemInputFileParser.cpp
         src/InputFileParser/MasterSystemInputFileParser.h
-        src/InputFileParser/Bonds/LevelDebtServiceBondParser.cpp
-        src/InputFileParser/Bonds/LevelDebtServiceBondParser.h
+        src/InputFileParser/BondParsers/LevelDebtServiceBondParser.cpp
+        src/InputFileParser/BondParsers/LevelDebtServiceBondParser.h
         src/InputFileParser/Base/BondParser.cpp
         src/InputFileParser/Base/BondParser.h
-        src/InputFileParser/Bonds/MasterBondParser.cpp
-        src/InputFileParser/Bonds/MasterBondParser.h
-        src/InputFileParser/WaterSources/ReservoirParser.cpp
-        src/InputFileParser/WaterSources/ReservoirParser.h
-        src/InputFileParser/WaterSources/AllocatedReservoirParser.cpp
-        src/InputFileParser/WaterSources/AllocatedReservoirParser.h
+        src/InputFileParser/BondParsers/MasterBondParser.cpp
+        src/InputFileParser/BondParsers/MasterBondParser.h
+        src/InputFileParser/WaterSourceParsers/ReservoirParser.cpp
+        src/InputFileParser/WaterSourceParsers/ReservoirParser.h
+        src/InputFileParser/EvaporationSeriesParser.cpp
+        src/InputFileParser/EvaporationSeriesParser.h
+        src/InputFileParser/CatchmentParser.cpp
+        src/InputFileParser/CatchmentParser.h
+        src/InputFileParser/WaterSourceParsers/AllocatedReservoirParser.cpp
+        src/InputFileParser/WaterSourceParsers/AllocatedReservoirParser.h
         src/InputFileParser/Exceptions/MissingParameter.cpp
         src/InputFileParser/Exceptions/MissingParameter.h
         src/InputFileParser/Exceptions/InconsistentMutuallyImplicativeParameters.cpp
         src/InputFileParser/Exceptions/InconsistentMutuallyImplicativeParameters.h
-        src/InputFileParser/WaterSources/ReservoirExpansionParser.cpp
-        src/InputFileParser/WaterSources/ReservoirExpansionParser.h src/InputFileParser/Utility/UtilityParser.cpp src/InputFileParser/Utility/UtilityParser.h src/InputFileParser/AuxDataParser.cpp src/InputFileParser/AuxDataParser.h)
+        src/InputFileParser/WaterSourceParsers/ReservoirExpansionParser.cpp
+        src/InputFileParser/WaterSourceParsers/ReservoirExpansionParser.h src/InputFileParser/UtilityParser/UtilityParser.cpp src/InputFileParser/UtilityParser/UtilityParser.h src/InputFileParser/AuxDataParser.cpp src/InputFileParser/AuxDataParser.h src/InputFileParser/DroughtMitigationPolicyParsers/RestrictionsParser.cpp src/InputFileParser/DroughtMitigationPolicyParsers/RestrictionsParser.h src/InputFileParser/Base/DroughtMitigationPolicyParser.cpp src/InputFileParser/Base/DroughtMitigationPolicyParser.h src/InputFileParser/AuxParserFunctions.cpp src/InputFileParser/AuxParserFunctions.h src/InputFileParser/DroughtMitigationPolicyParsers/TransfersParser.cpp src/InputFileParser/DroughtMitigationPolicyParsers/TransfersParser.h src/InputFileParser/DroughtMitigationPolicyParsers/DroughtInsuranceParser.cpp src/InputFileParser/DroughtMitigationPolicyParsers/DroughtInsuranceParser.h src/InputFileParser/Base/ReservoirControlRuleParser.cpp src/InputFileParser/Base/ReservoirControlRuleParser.h src/InputFileParser/ReservoirControlRuleParsers/FixedFlowReservoirControlParser.cpp src/InputFileParser/ReservoirControlRuleParsers/FixedFlowReservoirControlParser.h src/InputFileParser/ReservoirControlRuleParsers/InflowBasedReservoirControlParser.cpp src/InputFileParser/ReservoirControlRuleParsers/InflowBasedReservoirControlParser.h src/InputFileParser/ReservoirControlRuleParsers/SeasonalReservoirControlParser.cpp src/InputFileParser/ReservoirControlRuleParsers/SeasonalReservoirControlParser.h src/InputFileParser/ReservoirControlRuleParsers/StorageMinEnvFlowControlParser.cpp src/InputFileParser/ReservoirControlRuleParsers/StorageMinEnvFlowControlParser.h src/InputFileParser/ReservoirControlRuleParsers/LakeMichaelReservoirControlParser.cpp src/InputFileParser/ReservoirControlRuleParsers/LakeMichaelReservoirControlParser.h src/Problem/InputFileProblem.cpp src/Problem/InputFileProblem.h)
 
 set(TEST_SOURCE_FILES
         src/ContinuityModels/Base/ContinuityModel.cpp
@@ -251,34 +249,32 @@ set(TEST_SOURCE_FILES
         src/SystemComponents/Bonds/FloatingInterestBalloonPaymentBond.h
         Tests/Catch2/single_include/catch2/catch.hpp
         Tests/Tests.cpp
-        src/InputFileParser/Base/ElementParser.cpp
-        src/InputFileParser/Base/ElementParser.h
         src/InputFileParser/Base/WaterSourceParser.cpp
         src/InputFileParser/Base/WaterSourceParser.h
-        src/InputFileParser/WaterSources/ReuseParser.cpp
-        src/InputFileParser/WaterSources/ReuseParser.h
+        src/InputFileParser/WaterSourceParsers/ReuseParser.cpp
+        src/InputFileParser/WaterSourceParsers/ReuseParser.h
         src/InputFileParser/MasterSystemInputFileParser.cpp
         src/InputFileParser/MasterSystemInputFileParser.h
-        src/InputFileParser/Bonds/LevelDebtServiceBondParser.cpp
-        src/InputFileParser/Bonds/LevelDebtServiceBondParser.h
+        src/InputFileParser/BondParsers/LevelDebtServiceBondParser.cpp
+        src/InputFileParser/BondParsers/LevelDebtServiceBondParser.h
         src/InputFileParser/Base/BondParser.cpp
         src/InputFileParser/Base/BondParser.h
-        src/InputFileParser/Bonds/MasterBondParser.cpp
-        src/InputFileParser/Bonds/MasterBondParser.h
-        src/InputFileParser/WaterSources/ReservoirParser.cpp
-        src/InputFileParser/WaterSources/ReservoirParser.h
+        src/InputFileParser/BondParsers/MasterBondParser.cpp
+        src/InputFileParser/BondParsers/MasterBondParser.h
+        src/InputFileParser/WaterSourceParsers/ReservoirParser.cpp
+        src/InputFileParser/WaterSourceParsers/ReservoirParser.h
         src/InputFileParser/EvaporationSeriesParser.cpp
         src/InputFileParser/EvaporationSeriesParser.h
         src/InputFileParser/CatchmentParser.cpp
         src/InputFileParser/CatchmentParser.h
-        src/InputFileParser/WaterSources/AllocatedReservoirParser.cpp
-        src/InputFileParser/WaterSources/AllocatedReservoirParser.h
+        src/InputFileParser/WaterSourceParsers/AllocatedReservoirParser.cpp
+        src/InputFileParser/WaterSourceParsers/AllocatedReservoirParser.h
         src/InputFileParser/Exceptions/MissingParameter.cpp
         src/InputFileParser/Exceptions/MissingParameter.h
         src/InputFileParser/Exceptions/InconsistentMutuallyImplicativeParameters.cpp
         src/InputFileParser/Exceptions/InconsistentMutuallyImplicativeParameters.h
-        src/InputFileParser/WaterSources/ReservoirExpansionParser.cpp
-        src/InputFileParser/WaterSources/ReservoirExpansionParser.h src/InputFileParser/Utility/UtilityParser.cpp src/InputFileParser/Utility/UtilityParser.h src/InputFileParser/AuxDataParser.cpp src/InputFileParser/AuxDataParser.h)
+        src/InputFileParser/WaterSourceParsers/ReservoirExpansionParser.cpp
+        src/InputFileParser/WaterSourceParsers/ReservoirExpansionParser.h src/InputFileParser/UtilityParser/UtilityParser.cpp src/InputFileParser/UtilityParser/UtilityParser.h src/InputFileParser/AuxDataParser.cpp src/InputFileParser/AuxDataParser.h src/InputFileParser/DroughtMitigationPolicyParsers/RestrictionsParser.cpp src/InputFileParser/DroughtMitigationPolicyParsers/RestrictionsParser.h src/InputFileParser/Base/DroughtMitigationPolicyParser.cpp src/InputFileParser/Base/DroughtMitigationPolicyParser.h src/InputFileParser/AuxParserFunctions.cpp src/InputFileParser/AuxParserFunctions.h src/InputFileParser/DroughtMitigationPolicyParsers/TransfersParser.cpp src/InputFileParser/DroughtMitigationPolicyParsers/TransfersParser.h src/InputFileParser/DroughtMitigationPolicyParsers/DroughtInsuranceParser.cpp src/InputFileParser/DroughtMitigationPolicyParsers/DroughtInsuranceParser.h src/InputFileParser/Base/ReservoirControlRuleParser.cpp src/InputFileParser/Base/ReservoirControlRuleParser.h src/InputFileParser/ReservoirControlRuleParsers/FixedFlowReservoirControlParser.cpp src/InputFileParser/ReservoirControlRuleParsers/FixedFlowReservoirControlParser.h src/InputFileParser/ReservoirControlRuleParsers/InflowBasedReservoirControlParser.cpp src/InputFileParser/ReservoirControlRuleParsers/InflowBasedReservoirControlParser.h src/InputFileParser/ReservoirControlRuleParsers/SeasonalReservoirControlParser.cpp src/InputFileParser/ReservoirControlRuleParsers/SeasonalReservoirControlParser.h src/InputFileParser/ReservoirControlRuleParsers/StorageMinEnvFlowControlParser.cpp src/InputFileParser/ReservoirControlRuleParsers/StorageMinEnvFlowControlParser.h src/InputFileParser/ReservoirControlRuleParsers/LakeMichaelReservoirControlParser.cpp src/InputFileParser/ReservoirControlRuleParsers/LakeMichaelReservoirControlParser.h src/Problem/InputFileProblem.cpp src/Problem/InputFileProblem.h)
 
 add_executable(TriangleModel ${SOURCE_FILES})
 add_executable(TestTriangleModel ${TEST_SOURCE_FILES})

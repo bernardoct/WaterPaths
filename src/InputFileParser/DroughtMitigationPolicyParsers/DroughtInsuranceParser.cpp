@@ -18,11 +18,15 @@ void DroughtInsuranceParser::parseVariables(vector<vector<string>> &block,
                                             int n_realizations, int n_weeks,
                                             int line_no, Graph &utilities_graph,
                                             Graph &ws_graph,
-                                            const map<string, int> &utility_name_to_id) {
+                                            const map<string, int> &utility_name_to_id,
+                                            const map<string, int> &ws_name_to_id,
+                                            map<string, vector<vector<double>>> &pre_loaded_data) {
     DroughtMitigationPolicyParser::parseVariables(block, n_realizations,
                                                   n_weeks, line_no,
                                                   utilities_graph, ws_graph,
-                                                  utility_name_to_id);
+                                                  utility_name_to_id,
+                                                  ws_name_to_id,
+                                                  pre_loaded_data);
 
     vector<double> insurance_triggers_raw, fixed_payouts_raw;
     vector<unsigned long> rows_read(0);
@@ -54,9 +58,9 @@ void DroughtInsuranceParser::parseVariables(vector<vector<string>> &block,
     }
 
     insurance_triggers = vector<double>(
-            AuxParserFunctions::getMax(utility_name_to_id).second, 1.1);
+            AuxParserFunctions::getMax(utility_name_to_id).second + 1, 1.1);
     fixed_payouts = vector<double>(
-            AuxParserFunctions::getMax(utility_name_to_id).second, 1.1);
+            AuxParserFunctions::getMax(utility_name_to_id).second + 1, 0);
 
     for (unsigned long j = 0; j < apply_to_utilities.size(); ++j) {
         insurance_triggers[apply_to_utilities[j]] = insurance_triggers_raw[j];
@@ -89,9 +93,11 @@ DroughtInsuranceParser::generateSource(
         vector<MinEnvFlowControl *> min_env_flow_controls,
         vector<vector<double>> &utilities_rdm,
         vector<vector<double>> &water_sources_rdm,
-        vector<vector<double>> &policy_rdm) {
+        vector<vector<double>> &policy_rdm,
+        map<string, vector<vector<double>>> &pre_loaded_data) {
     parseVariables(block, n_realizations, n_weeks, line_no, utilities_graph,
-                   ws_graph, utility_name_to_id);
+                   ws_graph, utility_name_to_id, ws_name_to_id,
+                   pre_loaded_data);
     checkMissingOrExtraParams(line_no, block);
 
     return new InsuranceStorageToROF(id, water_sources, ws_graph,

@@ -9,13 +9,13 @@
 #include "../Controls/EvaporationSeries.h"
 
 class EvaporationSeriesParser {
-    vector<vector<vector<double>>> parsed_evaporation_series_data;
     vector<EvaporationSeries> parsed_evaporation_series;
 
 public:
     ~EvaporationSeriesParser();
 
-    EvaporationSeries &parseSeries(string path, int n_weeks, int n_realizations);
+    EvaporationSeries &parseSeries(vector<vector<double>> *series, int n_weeks,
+                                   int n_realizations);
 
 };
 

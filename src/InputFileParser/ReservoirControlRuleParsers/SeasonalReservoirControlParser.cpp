@@ -13,17 +13,19 @@ SeasonalReservoirControlParser::SeasonalReservoirControlParser()
         : ReservoirControlRuleParser("[SEASONAL RESERVOIR CONTROL RULE]") {}
 
 void SeasonalReservoirControlParser::parseVariables(
-        vector <vector<string>> &block, int n_realizations,
+        vector<vector<string>> &block, int n_realizations,
         int n_weeks, int line_no,
         const map<string, int> &ws_name_to_id,
-        const map<string, int> &utility_name_to_id) {
+        const map<string, int> &utility_name_to_id,
+        map<string, vector<vector<double>>> &pre_loaded_data) {
     ReservoirControlRuleParser::parseVariables(block, n_realizations,
                                                n_weeks, line_no, ws_name_to_id,
-                                               utility_name_to_id);
+                                               utility_name_to_id,
+                                               pre_loaded_data);
 
     vector<unsigned long> rows_read(0);
     for (unsigned long i = 0; i < block.size(); ++i) {
-        vector <string> line = block[i];
+        vector<string> line = block[i];
         if (line[0] == "week_thresholds") {
             Utils::tokenizeString(line[1], week_thresholds, ',');
             rows_read.push_back(i);
@@ -38,18 +40,20 @@ void SeasonalReservoirControlParser::parseVariables(
 
 MinEnvFlowControl *
 SeasonalReservoirControlParser::generateReservoirControlRule(
-        vector <vector<string>> &block, int line_no, int n_realizations,
+        vector<vector<string>> &block, int line_no, int n_realizations,
         int n_weeks, const map<string, int> &ws_name_to_id,
-        const map<string, int> &utility_name_to_id) {
+        const map<string, int> &utility_name_to_id,
+        map<string, vector<vector<double>>> &pre_loaded_data) {
     parseVariables(block, n_realizations, n_weeks, line_no, ws_name_to_id,
-                   utility_name_to_id);
+                   utility_name_to_id, pre_loaded_data);
     checkMissingOrExtraParams(line_no, block);
 
-    return new SeasonalMinEnvFlowControl(water_source_id, week_thresholds, releases);
+    return new SeasonalMinEnvFlowControl(water_source_id, week_thresholds,
+                                         releases);
 }
 
 void SeasonalReservoirControlParser::checkMissingOrExtraParams(
-        int line_no, vector <vector<string>> &block) {
+        int line_no, vector<vector<string>> &block) {
     ReservoirControlRuleParser::checkMissingOrExtraParams(line_no, block);
 
     if (week_thresholds.empty())

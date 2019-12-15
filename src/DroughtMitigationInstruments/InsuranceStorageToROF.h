@@ -49,8 +49,8 @@ public:
                                  vector<WaterSource *> water_sources,
                                  vector<MinEnvFlowControl *> min_env_flow_controls) override;
 
-    void setRealization(unsigned long realization_id, vector<double> &utilities_rdm,
-                        vector<double> &water_sources_rdm, vector<double> &policy_rdm) override;
+    void setRealization(unsigned long realization_id, const vector<double> &utilities_rdm,
+                        const vector<double> &water_sources_rdm, const vector<double> &policy_rdm) override;
 
     vector<double> calculateShortTermROFTable(int week, const vector<Utility *> &utilities, const int &n_utilities);
 

@@ -40,7 +40,7 @@ double EvaporationSeries::getEvaporation(int week) {
     return Catchment::getStreamflow(week);
 }
 
-void EvaporationSeries::setRealization(unsigned long r, vector<double> &rdm_factors) {
+void EvaporationSeries::setRealization(unsigned long r, const vector<double> &rdm_factors) {
     Catchment::setRealization(r, rdm_factors);
 
     for (unsigned long w = 0; w < streamflows_realization.size(); ++w) {

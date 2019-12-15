@@ -17,7 +17,8 @@ void AuxParserFunctions::checkForUnreadTags(int line_no,
             extra_params += line[0] + " ";
         }
         char error[5000];
-        sprintf(error, "Parameters %s do not belong to a %s (line %d)",
+        sprintf(error, "Parameter(s) %s do not belong to %s (line %d). This may"
+                       " also be a typo.",
                 extra_params.c_str(), tag_name.c_str(), line_no);
         throw invalid_argument(error);
     }
@@ -81,14 +82,14 @@ void AuxParserFunctions::replaceNameById(vector<vector<string>> &block,
 
             for (auto &name : names) {
                 try {
-                    name = to_string(name_to_id[name]) + ",";
+                    name = to_string(name_to_id.at(name)) + ",";
                     ids += name;
                 } catch (...) {
                     char error[256];
-                    sprintf(error, "Could not find %s of %s in line %d. "
-                                   "All %s must be added in the input file above "
-                                   "associated %ss.", name.c_str(),
-                            param_name.c_str(), line_no,
+                    sprintf(error, "Could not find %s in parameter %s of tag %s"
+                                   " line %d. All %s must be added in the input"
+                                   " file above associated %ss.", name.c_str(),
+                            param_name.c_str(), tag_name.c_str(), line_no,
                             param_name.c_str(), tag_name.c_str());
                     throw invalid_argument(error);
                 }
@@ -98,13 +99,3 @@ void AuxParserFunctions::replaceNameById(vector<vector<string>> &block,
         }
     }
 }
-
-//template<typename KeyType, typename ValueType>
-//std::pair<KeyType, ValueType>
-//AuxParserFunctions::getMax(const std::map<KeyType, ValueType> &x) {
-//    using pairtype=std::pair<KeyType, ValueType>;
-//    return *std::max_element(x.begin(), x.end(),
-//                             [](const pairtype &p1, const pairtype &p2) {
-//                                 return p1.second < p2.second;
-//                             });
-//}

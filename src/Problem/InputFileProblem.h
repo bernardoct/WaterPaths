@@ -9,11 +9,26 @@
 #include "Base/Problem.h"
 #include "../InputFileParser/MasterSystemInputFileParser.h"
 
-class InputFileProblem : Problem {
+class InputFileProblem : public Problem {
     MasterSystemInputFileParser parser;
+    string solutions_file;
+    vector<unsigned long> solutions_to_run;
+    vector<vector<double>> solutions_decvars;
+
 public:
-    InputFileProblem(unsigned long n_weeks,
-                     string &system_input_file);
+    explicit InputFileProblem(string &system_input_file);
+
+    int functionEvaluation(double *vars, double *objs, double *consts) override;
+
+    const vector<vector<double>> &getSolutionsDecvars() const;
+
+    void runSimulation() override;
+
+    void
+    printObjsInLineInFile(ofstream &objs_file,
+                          const vector<double> &objectives) const;
+
+    ofstream createOutputFile() const;
 };
 
 

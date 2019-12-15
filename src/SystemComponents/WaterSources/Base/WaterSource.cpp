@@ -532,10 +532,6 @@ void WaterSource::addTreatmentCapacity(const double added_treatment_capacity, in
     total_treatment_capacity += added_treatment_capacity;
 }
 
-bool WaterSource::skipConstruction(int utility_id) const {
-    return false;
-}
-
 /**
  * Set inflows, evaporation and rdm values for water source for a given utility r
  * @param r
@@ -543,7 +539,7 @@ bool WaterSource::skipConstruction(int utility_id) const {
  * is the evaporation multiplier, followed by pairs of values for each source representing
  * permitting time and construction cost.
  */
-void WaterSource::setRealization(unsigned long r, vector<double> &rdm_factors) {
+void WaterSource::setRealization(unsigned long r, const vector<double> &rdm_factors) {
     for (Catchment &c : catchments)
         c.setRealization(r, rdm_factors);
 
@@ -711,7 +707,7 @@ double WaterSource::getPermitting_period() const {
     return permitting_time;
 }
 
-const vector<int> &WaterSource::getBuilt_in_sequence() const {
+const vector<int> &WaterSource::getBuiltInSequence() const {
     return built_in_sequence;
 }
 

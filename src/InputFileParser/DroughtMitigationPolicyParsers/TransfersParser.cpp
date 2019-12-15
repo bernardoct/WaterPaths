@@ -17,12 +17,15 @@ void TransfersParser::parseVariables(vector<vector<string>> &block,
                                      int line_no,
                                      Graph &utilities_graph,
                                      Graph &ws_graph,
-                                     const map<string, int> &utility_name_to_id) {
-    preProcessBlock(block, tag_name, line_no, utility_name_to_id);
+                                     const map<string, int> &utility_name_to_id,
+                                     const map<string, int> &ws_name_to_id,
+                                     map<string, vector<vector<double>>> &pre_loaded_data) {
+    preProcessBlock(block, tag_name, line_no, utility_name_to_id, ws_name_to_id);
     DroughtMitigationPolicyParser::parseVariables(block, n_realizations,
                                                   n_weeks, line_no,
                                                   utilities_graph, ws_graph,
-                                                  utility_name_to_id);
+                                                  utility_name_to_id, ws_name_to_id,
+                                                  pre_loaded_data);
 
     vector<unsigned long> rows_read(0);
     for (unsigned long i = 0; i < block.size(); ++i) {
@@ -84,11 +87,13 @@ TransfersParser::generateSource(int id, vector<vector<string>> &block,
                                 vector<WaterSource *> &water_source,
                                 vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
                                 vector<MinEnvFlowControl *> min_env_flow_controls,
-                                vector<vector<double>>& utilities_rdm,
-                                vector<vector<double>>& water_sources_rdm,
-                                vector<vector<double>>& policy_rdm) {
+                                vector<vector<double>> &utilities_rdm,
+                                vector<vector<double>> &water_sources_rdm,
+                                vector<vector<double>> &policy_rdm,
+                                map<string, vector<vector<double>>> &pre_loaded_data) {
     parseVariables(block, n_realizations, n_weeks, line_no,
-                   utilities_graph, ws_graph, utility_name_to_id);
+                   utilities_graph, ws_graph, utility_name_to_id, ws_name_to_id,
+                   pre_loaded_data);
     checkMissingOrExtraParams(line_no, block);
 
     return new Transfers(id, source_utility_id, transfer_water_source_id,
@@ -99,11 +104,12 @@ TransfersParser::generateSource(int id, vector<vector<string>> &block,
 
 void TransfersParser::preProcessBlock(vector<vector<string>> &block,
                                       const string &tag_name, int line_no,
-                                      const map<string, int> &utility_name_to_id) {
+                                      const map<string, int> &utility_name_to_id,
+                                      const map<string, int> &ws_name_to_id) {
     AuxParserFunctions::replaceNameById(block, tag_name, line_no,
                                         "source_utility_id", 1,
                                         utility_name_to_id);
     AuxParserFunctions::replaceNameById(block, tag_name, line_no,
                                         "transfer_water_source_id", 1,
-                                        utility_name_to_id);
+                                        ws_name_to_id);
 }

@@ -7,14 +7,13 @@
 #include <cstring>
 #include <algorithm>
 #include "ContinuityModel.h"
-#include "../../SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
 
 ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Utility *> &utilities,
                                  vector<MinEnvFlowControl *> &min_env_flow_controls,
                                  const Graph &water_sources_graph,
                                  const vector<vector<int>> &water_sources_to_utilities,
-                                 vector<double> &utilities_rdm,
-                                 vector<double> &water_sources_rdm,
+                                 const vector<double> &utilities_rdm,
+                                 const vector<double> &water_sources_rdm,
                                  unsigned long realization_id) :
         continuity_water_sources(water_sources),
         continuity_utilities(utilities),
@@ -203,8 +202,8 @@ void ContinuityModel::continuityStep(
         }
 
         // Mass balance. The value of rof_realization for a a non-ROF continuity
-	// step is -1 (NON_INITIALIZED), so adding 1 brings it to delta_realization_weeks[0]
-	// which is 0, while delta_realization_weeks[1] is 52, and so on.
+	    // step is -1 (NON_INITIALIZED), so adding 1 brings it to delta_realization_weeks[0]
+	    // which is 0, while delta_realization_weeks[1] is 52, and so on.
         continuity_water_sources[i]->continuityWaterSource(
                 week - delta_realization_weeks[rof_realization + 1],
                 upstream_spillage[i], wastewater_discharges[i], demands[i]);
@@ -219,8 +218,8 @@ void ContinuityModel::continuityStep(
     delete[] wastewater_discharges;
 }
 
-void ContinuityModel::setRealization(unsigned long realization_id, vector<double> &utilities_rdm,
-                                     vector<double> &water_sources_rdm) {
+void ContinuityModel::setRealization(unsigned long realization_id, const vector<double> &utilities_rdm,
+                                     const vector<double> &water_sources_rdm) {
     if (realization_id != (unsigned) NON_INITIALIZED) {
         for (Utility *u : continuity_utilities)
             u->setRealization(realization_id, utilities_rdm);

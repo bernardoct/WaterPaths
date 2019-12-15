@@ -9,7 +9,6 @@
 #include "../SystemComponents/Catchment.h"
 
 class CatchmentParser {
-    vector<vector<vector<double>>> inflow_time_series;
     vector<Catchment *> parsed_catchments;
 
 public:
@@ -17,7 +16,8 @@ public:
 
     ~CatchmentParser();
 
-    void parseSeries(vector<string> paths, int n_weeks = NON_INITIALIZED,
+    void parseSeries(vector<vector<vector<double>> *> &series,
+                     int n_weeks = NON_INITIALIZED,
                      int n_realizations = NON_INITIALIZED);
 
     const vector<Catchment *> &getParsedCatchments() const;

@@ -1,4 +1,23 @@
-10 525
+[RUN PARAMETERS]
+n_realizations 4
+n_weeks 525
+rdm_utilities /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_utilities_test_problem_opt.csv
+rdm_water_sources /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_water_sources_test_problem_opt.csv
+rdm_dmps /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_dmp_test_problem_opt.csv
+rdm_no 0
+n_threads 4
+rof_tables_dir ../rof_tables_test_problem/
+use_rof_tables import
+print_time_series
+solutions_file /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/reference_final_filtered_paper3.reference
+solutions_to_run 0
+seed 0
+
+[DATA TO LOAD]
+durham_inflows ../TestFiles/inflows/durham_inflows.csv
+falls_lake_inflows ../TestFiles/inflows/falls_lake_inflows.csv
+durham_evap ../TestFiles/evaporation/durham_evap.csv
+
 [WATER REUSE]
 name My Reuse Station
 treatment_capacity 500
@@ -12,8 +31,8 @@ treatment_capacity 500
 capacity 2000
 ctime 4 6
 ptime 15
-streamflow_files ../TestFiles/inflows/durham_inflows.csv ../TestFiles/inflows/falls_lake_inflows.csv
-evaporation_file ../TestFiles/evaporation/durham_evap.csv
+streamflow_files durham_inflows falls_lake_inflows
+evaporation_file durham_evap
 storage_area_curve 0,50,100 0,500,2000
 
 [ALLOCATED RESERVOIR]
@@ -23,8 +42,8 @@ capacity 2000
 bond level 100 30 0.05 0 deferred
 ctime 4 6
 ptime 15
-streamflow_files ../TestFiles/inflows/durham_inflows.csv ../TestFiles/inflows/falls_lake_inflows.csv
-evaporation_file ../TestFiles/evaporation/durham_evap.csv
+streamflow_files durham_inflows falls_lake_inflows
+evaporation_file durham_evap
 storage_area_curve 0,50,100 0,500,2000
 utilities_with_allocations 0,1
 allocated_fractions 0.3,0.5

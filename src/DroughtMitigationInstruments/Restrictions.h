@@ -51,8 +51,8 @@ public:
             const vector<vector<double>> *typesMonthlyWaterPrice,
             const vector<vector<double>> *priceMultipliers);
 
-    void setRealization(unsigned long realization_id, vector<double> &utilities_rdm,
-                        vector<double> &water_sources_rdm, vector<double> &policy_rdm) override;
+    void setRealization(unsigned long realization_id, const vector<double> &utilities_rdm,
+                        const vector<double> &water_sources_rdm, const vector<double> &policy_rdm) override;
 };
 
 

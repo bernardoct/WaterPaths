@@ -91,7 +91,7 @@ void Intake::applyContinuity(int week, double upstream_source_inflow,
     this->wastewater_inflow = wastewater_inflow;
 }
 
-void Intake::setRealization(unsigned long r, vector<double> &rdm_factors) {
+void Intake::setRealization(unsigned long r, const vector<double> &rdm_factors) {
     WaterSource::setRealization(r, rdm_factors);
 
     total_demand = 0;

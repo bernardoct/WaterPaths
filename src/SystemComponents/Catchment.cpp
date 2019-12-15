@@ -43,6 +43,7 @@ Catchment::Catchment(const Catchment &catchment) :
  */
 Catchment &Catchment::operator=(const Catchment &catchment) {
     streamflows_all = catchment.streamflows_all;
+    series_length = catchment.series_length;
 }
 
 Catchment::Catchment() = default;
@@ -72,11 +73,13 @@ double Catchment::getStreamflow(int week) const {
  * data set.
  * @param r
  */
-void Catchment::setRealization(unsigned long r, vector<double> &rdm_factors) {
+void Catchment::setRealization(unsigned long r, const vector<double> &rdm_factors) {
     streamflows_realization = vector<double>(streamflows_all->at(r));
 }
 
 int Catchment::getSeriesLength() const {
     return series_length;
 }
+
+
 

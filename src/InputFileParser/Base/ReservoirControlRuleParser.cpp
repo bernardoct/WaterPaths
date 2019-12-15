@@ -9,11 +9,12 @@
 
 ReservoirControlRuleParser::ReservoirControlRuleParser(string tag) : tag(tag) {}
 
-void ReservoirControlRuleParser::parseVariables(vector <vector<string>> &block,
+void ReservoirControlRuleParser::parseVariables(vector<vector<string>> &block,
                                                 int n_realizations,
                                                 int n_weeks, int line_no,
                                                 const map<string, int> &ws_name_to_id,
-                                                const map<string, int> &utility_name_to_id) {
+                                                const map<string, int> &utility_name_to_id,
+                                                map<string, vector<vector<double>>> &pre_loaded_data) {
     AuxParserFunctions::replaceNameById(block, tag, line_no,
                                         "water_source_id", 1,
                                         ws_name_to_id);
@@ -26,7 +27,7 @@ void ReservoirControlRuleParser::parseVariables(vector <vector<string>> &block,
 
     vector<unsigned long> rows_read(0);
     for (unsigned long i = 0; i < block.size(); ++i) {
-        vector <string> line = block[i];
+        vector<string> line = block[i];
         if (line[0] == "water_source_id") {
             water_source_id = stoi(line[1]);
             rows_read.push_back(i);
@@ -43,7 +44,7 @@ void ReservoirControlRuleParser::parseVariables(vector <vector<string>> &block,
 }
 
 void ReservoirControlRuleParser::checkMissingOrExtraParams(int line_no,
-                                                           vector <vector<string>> &block) {
+                                                           vector<vector<string>> &block) {
 
     if (water_source_id == NON_INITIALIZED)
         throw MissingParameter("water_source_id", tag, line_no);

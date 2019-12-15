@@ -12,15 +12,16 @@
 
 WaterSourceParser::WaterSourceParser(string tag_name) : tag_name(tag_name) {}
 
-void WaterSourceParser::parseVariables(vector <vector<string>> &block,
+void WaterSourceParser::parseVariables(vector<vector<string>> &block,
                                        int n_realizations, int n_weeks,
                                        int line_no,
                                        const map<string, int> &ws_name_to_id,
-                                       const map<string, int> &utility_name_to_id) {
+                                       const map<string, int> &utility_name_to_id,
+                                       map<string, vector<vector<double>>> &pre_loaded_data) {
 
     vector<unsigned long> rows_read(0);
     for (unsigned long i = 0; i < block.size(); ++i) {
-        vector <string> line = block[i];
+        vector<string> line = block[i];
         if (line[0] == "name") {
             name = line[1];
             rows_read.push_back(i);
@@ -69,7 +70,7 @@ WaterSourceParser::~WaterSourceParser() {
 }
 
 void WaterSourceParser::checkMissingOrExtraParams(int line_no,
-                                                  vector <vector<string>> &block) {
+                                                  vector<vector<string>> &block) {
     if (name.empty()) {
         throw MissingParameter("name", tag_name, line_no);
     } else if (capacity == NON_INITIALIZED) {

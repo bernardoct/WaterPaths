@@ -12,7 +12,9 @@
 
 UtilityParser::UtilityParser() = default;
 
-UtilityParser::~UtilityParser() = default;
+UtilityParser::~UtilityParser() {
+    demands_all_realizations = nullptr;
+}
 
 void UtilityParser::preProcessBlock(vector<vector<string>> &block, int l,
                                     const map<string, int> &ws_name_to_id) {
@@ -29,7 +31,8 @@ void UtilityParser::preProcessBlock(vector<vector<string>> &block, int l,
 }
 
 void UtilityParser::parseVariables(vector<vector<string>> &block,
-                                   int n_realizations) {
+                                   int n_realizations,
+                                   map<string, vector<vector<double>>> &pre_loaded_data) {
 
     vector<unsigned long> rows_read(0);
     for (unsigned long i = 0; i < block.size(); ++i) {
@@ -66,21 +69,27 @@ void UtilityParser::parseVariables(vector<vector<string>> &block,
                 infra_if_built_remove.push_back(iifbr);
             }
             rows_read.push_back(i);
+        } else if (line[0] == "construction_pre_requisites") {
+            for (auto n = line.begin() + 1; n != line.end(); ++n) {
+                vector<int> cpp;
+                Utils::tokenizeString(*n, cpp, ',');
+                construction_pre_requisites.push_back(cpp);
+            }
+            rows_read.push_back(i);
         } else if (line[0] == "typesMonthlyDemandFraction") {
-            typesMonthlyDemandFraction = Utils::parse2DCsvFile(line[1]);
+            typesMonthlyDemandFraction = pre_loaded_data.at(line[1]);
             rows_read.push_back(i);
         } else if (line[0] == "typesMonthlyWaterPrice") {
-            typesMonthlyWaterPrice = Utils::parse2DCsvFile(line[1]);
+            typesMonthlyWaterPrice = pre_loaded_data.at(line[1]);
             rows_read.push_back(i);
         } else if (line[0] == "demands") {
-            demands_all_realizations = Utils::parse2DCsvFile(line[1],
-                                                             n_realizations);
+            demands_all_realizations = &pre_loaded_data.at(line[1]);
             rows_read.push_back(i);
         } else if (line[0] == "wwtp_discharge_rule") {
             vector<int> discharge_to_sources_ids;
             Utils::tokenizeString(line[2], discharge_to_sources_ids, ',');
             wwtp_discharge_rule = WwtpDischargeRule(
-                    Utils::parse2DCsvFile(line[1]),
+                    pre_loaded_data.at(line[1]),
                     discharge_to_sources_ids
             );
             rows_read.push_back(i);
@@ -93,15 +102,29 @@ void UtilityParser::parseVariables(vector<vector<string>> &block,
 Utility *
 UtilityParser::generateUtility(int id, vector<vector<string>> &block,
                                int line_no, int n_realizations,
-                               const map<string, int> &ws_name_to_id) {
+                               const map<string, int> &ws_name_to_id,
+                               map<string, vector<vector<double>>> &pre_loaded_data) {
     preProcessBlock(block, line_no, ws_name_to_id);
-    parseVariables(block, n_realizations);
+    parseVariables(block, n_realizations, pre_loaded_data);
+
     AuxParserFunctions::checkForUnreadTags(line_no, block, tag_name);
     checkMissingOrExtraParams(block, line_no);
 
+    if (rof_infra_construction_order.size() !=
+        infra_construction_triggers.size() &&
+        demand_infra_construction_order.size() !=
+        infra_construction_triggers.size()) {
+        char error[300];
+        sprintf(error,
+                "Mismatch between number of infrastructure trigger values and "
+                "infrastructure options in %s, line number %d.",
+                tag_name.c_str(), line_no);
+        throw invalid_argument(error);
+    }
+
     if (infra_construction_triggers.empty()) {
         return new Utility(
-                name, id, demands_all_realizations,
+                name, id, *demands_all_realizations,
                 number_of_week_demands,
                 percent_contingency_fund_contribution,
                 typesMonthlyDemandFraction,
@@ -109,30 +132,18 @@ UtilityParser::generateUtility(int id, vector<vector<string>> &block,
                 demand_buffer
         );
     } else {
-        if (infra_if_built_remove.empty()) {
-            return new Utility(
-                    name, id, demands_all_realizations,
-                    number_of_week_demands,
-                    percent_contingency_fund_contribution,
-                    typesMonthlyDemandFraction,
-                    typesMonthlyWaterPrice, wwtp_discharge_rule,
-                    demand_buffer, rof_infra_construction_order,
-                    demand_infra_construction_order,
-                    infra_construction_triggers, infra_discount_rate
-            );
-        } else {
-            return new Utility(
-                    name, id, demands_all_realizations,
-                    number_of_week_demands,
-                    percent_contingency_fund_contribution,
-                    typesMonthlyDemandFraction,
-                    typesMonthlyWaterPrice, wwtp_discharge_rule,
-                    demand_buffer, rof_infra_construction_order,
-                    demand_infra_construction_order,
-                    infra_construction_triggers, infra_discount_rate,
-                    infra_if_built_remove
-            );
-        }
+        return new Utility(
+                name, id, *demands_all_realizations,
+                number_of_week_demands,
+                percent_contingency_fund_contribution,
+                typesMonthlyDemandFraction,
+                typesMonthlyWaterPrice, wwtp_discharge_rule,
+                demand_buffer, rof_infra_construction_order,
+                demand_infra_construction_order,
+                infra_construction_triggers, infra_discount_rate,
+                infra_if_built_remove, construction_pre_requisites
+        );
+
     }
 }
 
@@ -142,7 +153,7 @@ void UtilityParser::checkMissingOrExtraParams(vector<vector<string>> &block,
     if (name.empty()) {
         throw MissingParameter("name", tag_name, line_no);
     }
-    if (demands_all_realizations.empty()) {
+    if (demands_all_realizations->empty()) {
         throw MissingParameter("demands_all_realizations", tag_name, line_no);
     }
     if (number_of_week_demands == NON_INITIALIZED) {
@@ -163,9 +174,9 @@ void UtilityParser::checkMissingOrExtraParams(vector<vector<string>> &block,
     }
 
     bool all_construction_vars_initialized = (
-            (infra_construction_triggers.size() > 0 ||
-             demand_infra_construction_order.size() > 0) &&
-            rof_infra_construction_order.size() > 0 &&
+            (!infra_construction_triggers.empty() ||
+             !demand_infra_construction_order.empty()) &&
+            !rof_infra_construction_order.empty() &&
             infra_discount_rate != NON_INITIALIZED);
     bool no_construction_var_initialized = (
             !infra_construction_triggers.empty() &&

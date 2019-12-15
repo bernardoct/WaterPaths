@@ -108,8 +108,6 @@ public:
 
     virtual void setOnline();
 
-    virtual bool skipConstruction(int utility_id) const;
-
     virtual double getAvailableAllocatedVolume(int utility_id);
 
     double getMin_environmental_outflow() const;
@@ -118,7 +116,7 @@ public:
 
     double getAvailableVolume() const;
 
-    const vector<int> &getBuilt_in_sequence() const;
+    const vector<int> &getBuiltInSequence() const;
 
     double getTotal_outflow() const;
 
@@ -138,7 +136,7 @@ public:
 
     static bool compare(WaterSource *lhs, WaterSource *rhs);
 
-    virtual void setRealization(unsigned long r, vector<double> &rdm_factors);
+    virtual void setRealization(unsigned long r, const vector<double> &rdm_factors);
 
     virtual double getAllocatedCapacity(int utility_id);
 

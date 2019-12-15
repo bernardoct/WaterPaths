@@ -6,7 +6,7 @@
 #include "RestrictionsDataCollector.h"
 
 RestrictionsDataCollector::RestrictionsDataCollector(Restrictions *restriction_policy, unsigned long realization)
-        : DataCollector(restriction_policy->id, nullptr, realization, RESTRICTIONS, NON_INITIALIZED),
+        : DataCollector(restriction_policy->id, "", realization, RESTRICTIONS, NON_INITIALIZED),
           restriction_policy(restriction_policy) {
 }
 

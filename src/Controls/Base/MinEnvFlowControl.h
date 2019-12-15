@@ -34,7 +34,7 @@ public:
     void addComponents(
             vector<WaterSource *> water_sources, vector<Utility *> utilities);
 
-    virtual void setRealization(unsigned long r, vector<double> &rdm_factors);
+    virtual void setRealization(unsigned long r, const vector<double> &rdm_factors);
 };
 
 

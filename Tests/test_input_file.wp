@@ -1,28 +1,42 @@
-10 525 ../TestFiles/rdm_utilities_test_problem_opt.csv ../TestFiles/rdm_water_sources_test_problem_opt.csv ../TestFiles/rdm_dmp_test_problem_opt.csv
+[RUN PARAMETERS]
+n_realizations 4 
+n_weeks 525 
+rdm_utilities /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_utilities_test_problem_opt.csv 
+rdm_water_sources /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_water_sources_test_problem_opt.csv 
+rdm_dmps /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_dmp_test_problem_opt.csv
+rdm_no 0
+n_threads 4
+rof_tables_dir ../rof_tables_test_problem/
+use_rof_tables import
+print_time_series
+solutions_file /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/reference_final_filtered_paper3.reference
+solutions_to_run 0
+seed 0
+
 
 [DATA TO LOAD]
-caryDemandClassesFractions ../TestFiles/caryDemandClassesFractions.csv
-caryUserClassesWaterPrices ../TestFiles/caryUserClassesWaterPrices.csv
-demand_to_wastewater_fraction_owasa_raleigh ../TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv
-cary_demand ../TestFiles/demands/cary_demand.csv
-durham_demand ../TestFiles/demands/durham_demand.csv
-raleigh_demand ../TestFiles/demands/raleigh_demand.csv
-durhamDemandClassesFractions ../TestFiles/durhamDemandClassesFractions.csv
-durhamUserClassesWaterPrices ../TestFiles/durhamUserClassesWaterPrices.csv
-falls_lake_evap ../TestFiles/evaporation/falls_lake_evap.csv
-jordan_lake_evap ../TestFiles/evaporation/jordan_lake_evap.csv
-clayton_inflows ../TestFiles/inflows/clayton_inflows.csv
-crabtree_inflows ../TestFiles/inflows/crabtree_inflows.csv
-durham_inflows ../TestFiles/inflows/durham_inflows.csv
-falls_lake_inflows ../TestFiles/inflows/falls_lake_inflows.csv
-jordan_lake_inflows ../TestFiles/inflows/jordan_lake_inflows.csv
-lillington_inflows ../TestFiles/inflows/lillington_inflows.csv
-little_river_raleigh_inflows ../TestFiles/inflows/little_river_raleigh_inflows.csv
-stone_quarry_inflows ../TestFiles/inflows/stone_quarry_inflows.csv
-university_lake_inflows ../TestFiles/inflows/university_lake_inflows.csv
-raleighDemandClassesFractions ../TestFiles/raleighDemandClassesFractions.csv
-raleighUserClassesWaterPrices ../TestFiles/raleighUserClassesWaterPrices.csv
-
+# Files with "*" are always fully loaded instead of having on n_realizations lines loaded
+*caryDemandClassesFractions /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/caryDemandClassesFractions.csv
+*caryUserClassesWaterPrices /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/caryUserClassesWaterPrices.csv
+*demand_to_wastewater_fraction_owasa_raleigh /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv
+*raleighDemandClassesFractions /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/raleighDemandClassesFractions.csv
+*raleighUserClassesWaterPrices /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/raleighUserClassesWaterPrices.csv
+*durhamDemandClassesFractions /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/durhamDemandClassesFractions.csv
+*durhamUserClassesWaterPrices /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/durhamUserClassesWaterPrices.csv
+cary_demand /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/demands/cary_demand.csv
+durham_demand /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/demands/durham_demand.csv
+raleigh_demand /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/demands/raleigh_demand.csv
+falls_lake_evap /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/evaporation/falls_lake_evap.csv
+jordan_lake_evap /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/evaporation/jordan_lake_evap.csv
+clayton_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/clayton_inflows.csv
+crabtree_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/crabtree_inflows.csv
+durham_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/durham_inflows.csv
+falls_lake_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/falls_lake_inflows.csv
+jordan_lake_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/jordan_lake_inflows.csv
+lillington_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/lillington_inflows.csv
+little_river_raleigh_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/little_river_raleigh_inflows.csv
+stone_quarry_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/stone_quarry_inflows.csv
+university_lake_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/university_lake_inflows.csv
 
 [RESERVOIR]
 name College_Rock_Reservoir
@@ -72,7 +86,6 @@ streamflow_files jordan_lake_inflows
 bond level 150 25 0.05 0 deferred
 ctime 3 5
 ptime 17
-
 
 [RESERVOIR]
 name New_River_Reservoir
@@ -143,6 +156,8 @@ bond level 50 30 0.05 0 immediate
 ctime 3 5
 ptime 5
 
+
+
 [UTILITY]
 name Watertown
 demands cary_demand
@@ -164,8 +179,8 @@ typesMonthlyDemandFraction durhamDemandClassesFractions
 typesMonthlyWaterPrice durhamUserClassesWaterPrices
 wwtp_discharge_rule demand_to_wastewater_fraction_owasa_raleigh New_River_Reservoir
 demand_buffer 0.35
-rof_infra_construction_order Sugar_Creek_Reservoir,Granite_Quarry,Dryfille_Reuse
-infra_construction_triggers 0.2,0.1
+rof_infra_construction_order Sugar_Creek_Reservoir,Granite_Quarry,Dryville_Reuse
+infra_construction_triggers 0.2,0.1,0.3
 infra_discount_rate 0.07
 
 [UTILITY]
@@ -193,7 +208,7 @@ New_River_Reservoir,dummy_node
 
 [WS TO UTILITY MATRIX]
 Watertown College_Rock_Reservoir,Lake_Michael,New_River_Reservoir,College_Rock_Expansion_Low,College_Rock_Expansion_High,Watertown_Reuse_I,Watertown_Reuse_II
-Dryville Autumn_Lake,Sugar_Creek_Reservoir,Granite_Quarry,Dryfille_Reuse
+Dryville Autumn_Lake,Sugar_Creek_Reservoir,Granite_Quarry,Dryville_Reuse
 Fallsland Autumn_Lake,New_River_Reservoir,Fallsland_Reuse
 
 [UTILITIES GRAPH]
@@ -208,7 +223,6 @@ Watertown Watertown_Reuse_I 1000
 Watertown Watertown_Reuse_II 600
 Dryville Dryville_Reuse 600
 Fallsland Fallsland_Reuse 1000
-
 
 
 [RESTRICTIONS POLICY]
@@ -272,22 +286,23 @@ lake_michael_supply_capacity 9100.0
 lake_michael_wq_capacity 10825.0
 
 
-# 0 College Rock Reservoir (7) small expansion (8) large expansion
-#  \
-#   \                          (1) Granite Quarry
-#    \                         /
-#     \                      (6) Sugar Creek Reservoir
-#      2 Lake Michael        /
-#       \                   /
-#        \                 3 Autumn Lake
-#         \               /
-#   Lillington           /
-#           \           /
-#            \         /
-#             \       /
-#              \    (5) New River Reservoir
-#               \   /
-#                \ /    (9, 10, 11, 12) Watertown I, Watertown II,
-#				  |						Dryville, Fallsland reuse
-#                 |
-#                (4) Dummy Endpoint 
+#   @ College Rock Reservoir, small expansion, large expansion
+#    \
+#     \                           @ Granite Quarry
+#      \                         /
+#       \                       @ Sugar Creek Reservoir
+#        @ Lake Michael        /
+#         \                   /
+#          \                 @ Autumn Lake
+#           \               /
+# Lillington @             /
+#             \           /
+#              \         /
+#               \       /
+#                \     @ New River Reservoir
+#                 \   /
+#                  \ /    Watertown I, Watertown II,
+#                   V     Dryville, Fallsland reuse
+#	                |	  
+#                   |
+#                   @ Dummy Endpoint 

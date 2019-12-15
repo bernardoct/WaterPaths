@@ -13,9 +13,9 @@ ContinuityModelRealization::ContinuityModelRealization(
         vector<Utility *> &utilities,
         const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
         vector<MinEnvFlowControl *> &min_env_flow_control,
-        vector<double>& utilities_rdm,
-        vector<double>& water_sources_rdm,
-        vector<double>& policy_rdm,
+        const vector<double>& utilities_rdm,
+        const vector<double>& water_sources_rdm,
+        const vector<double>& policy_rdm,
         const unsigned int realization_id)
         : ContinuityModel(water_sources, utilities, min_env_flow_control, water_sources_graph,
                           water_sources_to_utilities, utilities_rdm, water_sources_rdm,

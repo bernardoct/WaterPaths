@@ -127,8 +127,8 @@ void Restrictions::calculateWeeklyAverageWaterPrices(
     }
 }
 
-void Restrictions::setRealization(unsigned long realization_id, vector<double> &utilities_rdm,
-                                  vector<double> &water_sources_rdm, vector<double> &policy_rdm) {
+void Restrictions::setRealization(unsigned long realization_id, const vector<double> &utilities_rdm,
+                                  const vector<double> &water_sources_rdm, const vector<double> &policy_rdm) {
     for (double& sm : stage_multipliers) {
         sm *= policy_rdm.at((unsigned long) id);
     }

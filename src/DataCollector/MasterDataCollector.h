@@ -30,7 +30,8 @@ private:
 
 public:
 
-    MasterDataCollector(vector<unsigned long> &realizations_to_run);
+    explicit MasterDataCollector(
+            const vector<unsigned long> &realizations_to_run);
 
 
     int printNETCDFUtilities(string file_name);
@@ -69,28 +70,37 @@ public:
 
     void collectData(unsigned long r);
 
-    void performBootstrapAnalysis(int sol_id, int n_sets, int n_samples, int n_threads,
-            vector<vector<int>> bootstrap_samples = vector<vector<int>>());
+    void performBootstrapAnalysis(int sol_id, int n_sets, int n_samples,
+                                  int n_threads,
+                                  vector<vector<unsigned long>> bootstrap_samples = vector<vector<unsigned long>>());
 
-    DataCollector* createPolicyDataCollector(DroughtMitigationPolicy* dmp, unsigned long r);
+    DataCollector *
+    createPolicyDataCollector(DroughtMitigationPolicy *dmp, unsigned long r);
 
-    DataCollector* createWaterSourceDataCollector(WaterSource* ws, unsigned long r);
+    DataCollector *
+    createWaterSourceDataCollector(WaterSource *ws, unsigned long r);
 
-    void printUtilityObjectivesToRowOutStream(vector<UtilitiesDataCollector *> &u, std::ofstream &outStream,
-            vector<double> &objectives);
+    void
+    printUtilityObjectivesToRowOutStream(vector<UtilitiesDataCollector *> &u,
+                                         std::ofstream &outStream,
+                                         vector<double> &objectives);
 
-    void readOrCreateBSSamples(int sol_id, int n_sets, int n_samples, const vector<vector<int>> &bootstrap_samples,
-                               vector<vector<int>> &bootstrap_sample_sets) const;
+    void readOrCreateBSSamples(int sol_id, int n_sets, int n_samples,
+                               const vector<vector<unsigned long>> &bootstrap_samples,
+                               vector<vector<unsigned long>> &bootstrap_sample_sets) const;
 
-    void printObjsBSSamples(int sol_id, int n_sets, int n_samples, vector<vector<double>> &objectives);
+    void printObjsBSSamples(int sol_id, int n_sets, int n_samples,
+                            vector<vector<double>> &objectives);
 
-    void printObjectivesOfAllRealizationsForBSAnalysis(int sol_id, int n_sets, int n_samples);
+    void printObjectivesOfAllRealizationsForBSAnalysis(int sol_id, int n_sets,
+                                                       int n_samples);
 
     static void setSeed(int seed);
 
     static void unsetSeed();
 
-    void printBSSamples(int sol_id, int n_sets, int n_samples, const vector<vector<int>> &bootstrap_sample_sets) const;
+    void printBSSamples(int sol_id, int n_sets, int n_samples,
+                        const vector<vector<unsigned long>> &bootstrap_sample_sets) const;
 
     void isolateRestrictionDataCollectors(vector<UtilitiesDataCollector *> &u,
                                           vector<RestrictionsDataCollector *> &utility_restrictions) const;

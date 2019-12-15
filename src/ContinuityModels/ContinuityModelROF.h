@@ -35,8 +35,8 @@ protected:
 public:
     ContinuityModelROF(vector<WaterSource *> water_sources, const Graph &water_sources_graph,
                        const vector<vector<int>> &water_sources_to_utilities, vector<Utility *> utilities,
-                       vector<MinEnvFlowControl *> min_env_flow_controls, vector<double>& utilities_rdm,
-                       vector<double>& water_sources_rdm, unsigned long total_weeks_simulation,
+                       vector<MinEnvFlowControl *> min_env_flow_controls, const vector<double> &utilities_rdm,
+                       const vector<double> &water_sources_rdm, unsigned long total_weeks_simulation,
                        const int use_precomputed_rof_tables, const unsigned long realization_id);
 
 //    ContinuityModelROF(ContinuityModelROF &continuity_model_rof);

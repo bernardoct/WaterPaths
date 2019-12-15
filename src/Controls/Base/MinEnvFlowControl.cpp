@@ -38,7 +38,7 @@ void MinEnvFlowControl::addComponents(
     }
 }
 
-void MinEnvFlowControl::setRealization(unsigned long r, vector<double> &rdm_factors) {
+void MinEnvFlowControl::setRealization(unsigned long r, const vector<double> &rdm_factors) {
 
 }
 

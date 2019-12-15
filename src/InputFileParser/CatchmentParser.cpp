@@ -14,18 +14,17 @@ CatchmentParser::~CatchmentParser() {
     }
 }
 
-void CatchmentParser::parseSeries(vector<string> paths, int n_weeks, int n_realizations) {
+void CatchmentParser::parseSeries(vector<vector<vector<double>> *> &series,
+                                  int n_weeks, int n_realizations) {
     if (n_weeks == NON_INITIALIZED) {
-        throw invalid_argument("Number of weeks to be parsed must be provided to catchment parser.");
-    }
-    for (string &path : paths) {
-        inflow_time_series.push_back(Utils::parse2DCsvFile(path, n_realizations));
+        throw invalid_argument(
+                "Number of weeks to be parsed must be provided to catchment parser.");
     }
 
-    for (auto &series : inflow_time_series) {
-        parsed_catchments.push_back(new Catchment(series,
-                (int) (Constants::WEEKS_ROF_LONG_TERM *
-                Constants::WEEKS_IN_YEAR) + n_weeks));
+    for (auto s : series) {
+        parsed_catchments.push_back(new Catchment(
+                *s, (int) (Constants::WEEKS_ROF_LONG_TERM *
+                           Constants::WEEKS_IN_YEAR) + n_weeks));
     }
 }
 

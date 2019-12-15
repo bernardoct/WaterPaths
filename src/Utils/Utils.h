@@ -14,6 +14,28 @@
 #include "../DroughtMitigationInstruments/Restrictions.h"
 #include "../Controls/Base/MinEnvFlowControl.h"
 
+struct infraRank {
+    int id = NON_INITIALIZED;
+    double xreal = NON_INITIALIZED;
+    string name;
+
+    infraRank(int id, double xreal) {
+        this->id = id;
+        this->xreal = xreal;
+    }
+
+    infraRank(string name, double xreal) {
+        this->name = name;
+        this->xreal = xreal;
+    }
+};
+
+struct by_xreal {
+    bool operator()(const infraRank &ir1, const infraRank &ir2) {
+        return ir1.xreal < ir2.xreal;
+    }
+};
+
 class Utils {
 
 public:
@@ -54,6 +76,7 @@ private:
 
     static double convert_token(string &s, the_type<double>) { return stod(s); };
     static int convert_token(string &s, the_type<int>) { return stoi(s); };
+    static unsigned long convert_token(string &s, the_type<unsigned  long>) { return stoul(s); };
     static string convert_token(string &s, the_type<string>) { return s; };
 public:
     template <class T>

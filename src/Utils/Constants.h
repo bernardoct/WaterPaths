@@ -76,9 +76,10 @@ namespace Constants {
     const int RESERVOIR = 100;
     const int QUARRY = 101;
     const int ALLOCATED_RESERVOIR = 102;
-    const int NEW_WATER_TREATMENT_PLANT = 200;
+    const int NEW_SEQUENTIAL_WATER_TREATMENT_PLANT = 200;
     const int SOURCE_RELOCATION = 201;
     const int RESERVOIR_EXPANSION = 203;
+    const int NEW_JOINT_WATER_TREATMENT_PLANT = 204;
 
     // Use 0 - 99 for supply instruments and 100 - 199
     // for financial instruments.

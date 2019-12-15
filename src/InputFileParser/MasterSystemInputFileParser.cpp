@@ -4,6 +4,7 @@
 
 #include <cstring>
 #include <algorithm>
+#include <numeric>
 #include "MasterSystemInputFileParser.h"
 #include "WaterSourceParsers/ReuseParser.h"
 #include "../Utils/Utils.h"
@@ -20,19 +21,29 @@
 #include "ReservoirControlRuleParsers/LakeMichaelReservoirControlParser.h"
 #include "ReservoirControlRuleParsers/SeasonalReservoirControlParser.h"
 #include "DroughtMitigationPolicyParsers/DroughtInsuranceParser.h"
+#include "Exceptions/InconsistentMutuallyImplicativeParameters.h"
+#include "../DataCollector/MasterDataCollector.h"
 
-MasterSystemInputFileParser::MasterSystemInputFileParser() {}
+MasterSystemInputFileParser::MasterSystemInputFileParser() = default;
+
+MasterSystemInputFileParser::~MasterSystemInputFileParser() {
+    clearParsers();
+}
 
 void MasterSystemInputFileParser::preloadAndCheckInputFile(string &input_file) {
+
     // read first line, blocks, tags, and tags' line numbers.
     parseFile(input_file);
 
     // Preload heady data so that it's not reloaded for every function
     // evaluation during and optimization exercise.
     auto it = find(tags.begin(), tags.end(), "[DATA TO LOAD]");
-    int ix = distance(tags.begin(), it);
-    parsePreloadedData(line_nos[ix], blocks[ix], tags[ix],
-                       true, n_realizations);
+    if (it == tags.end()) {
+        char error[500];
+        sprintf(error, "Input file %s is missing tag [DATA TO LOAD]",
+                input_file.c_str());
+        throw invalid_argument(error);
+    }
 
     // loop through blocks to map of names utilities and water sources to their
     // to ids. Also checks for undefined tags and other errors.
@@ -41,17 +52,13 @@ void MasterSystemInputFileParser::preloadAndCheckInputFile(string &input_file) {
 }
 
 void MasterSystemInputFileParser::createSystemObjects(double *vars) {
-
     if (!blocks.empty()) {
-        vector<vector<vector<string>>> blocks_populated;
         if (vars != nullptr) {
-            blocks_populated = replacePlaceHoldersByDVs(vars, blocks);
-        } else {
-            blocks_populated = blocks;
+            replacePlaceHoldersByDVs(vars, blocks);
         }
 
         // loop through blocks again but now to create all objects.
-        loopThroughTags(blocks_populated, true);
+        loopThroughTags(blocks, true);
 
         // initialize standard RDM factors if they have not been loaded yet.
         if (rdm_dmp.empty()) {
@@ -63,27 +70,19 @@ void MasterSystemInputFileParser::createSystemObjects(double *vars) {
     }
 }
 
-/**
- * Fill in the gaps in the blocks left by the %%% and @ in the input file.
- * @param vars decision variables.
- * @param blocks data parsed from input file.
- * @return
- */
-vector<vector<vector<string>>>
+void
 MasterSystemInputFileParser::replacePlaceHoldersByDVs(
         double *vars, vector<vector<vector<string>>> &blocks) {
     int count_var = 0;
     for (auto &block : blocks) {
         for (auto &line : block) {
-            for (string &data : line)
-            {
+            for (string &data : line) {
                 // look for %%% and replaces them by next values in vars.
-                unsigned long it;
-                replaceNumericVarsIntoPlaceHolders(vars, count_var,data);
+                replaceNumericVarsIntoPlaceHolders(vars, count_var, data);
 
                 // look for names beginning with @, reorder the names according
                 // to values in vars, and removes all @s.
-                it = data.find('@');
+                unsigned long it = data.find('@');
                 if (it != string::npos) {
                     reorderCSVDataInBlockLine(vars, count_var, data);
                 }
@@ -92,35 +91,19 @@ MasterSystemInputFileParser::replacePlaceHoldersByDVs(
     }
 }
 
-/**
- * look for %%% and replaces them by next values in vars.
- * @param vars array with numeric values
- * @param count_var index of vars to be replace into line.
- * @param data piece of line
- * @return updated index of vars to be replace into line
- */
 void MasterSystemInputFileParser::replaceNumericVarsIntoPlaceHolders(
-        const double *vars, int &count_var, string &data) const {
+        const double *vars, int &count_var, string &data) {
     auto it = data.find("%%%");
-    while (it != string::npos)
-    {
+    while (it != string::npos) {
         data.replace(it, 3, to_string(vars[count_var]));
         it = data.find("%%%");
         count_var++;
     }
 }
 
-/**
- * Checks with of the elements separated by commas in string data are preceded
- * by a @ and sorts them according to the values in vars. Any element in data
- * that is not preceded by @ will be left in the same position.
- * @param vars array with numeric values to be translated into positions
- * @param count_var index of vars to be used to sort data.
- * @param data piece of line
- */
 void MasterSystemInputFileParser::reorderCSVDataInBlockLine(const double *vars,
                                                             int &count_var,
-                                                            string &data) const {
+                                                            string &data) {
     vector<string> to_be_ordered;
     vector<infraRank> order;
     Utils::tokenizeString(data, to_be_ordered, ',');
@@ -135,8 +118,7 @@ void MasterSystemInputFileParser::reorderCSVDataInBlockLine(const double *vars,
         }
     }
     sort(order.begin(), order.end(), by_xreal());
-    for (unsigned long k = 0; k < has_at.size(); k++)
-    {
+    for (unsigned long k = 0; k < has_at.size(); k++) {
         to_be_ordered[has_at[k]] = order[k].name;
     }
 
@@ -161,10 +143,6 @@ void MasterSystemInputFileParser::initializeStandardRDMFactors() {
     rdm_water_sources = vector<vector<double>>(n_realizations,
                                                vector<double>(n_rdms_ws,
                                                               1.));
-}
-
-MasterSystemInputFileParser::~MasterSystemInputFileParser() {
-    clearParsers();
 }
 
 void MasterSystemInputFileParser::loopThroughTags(
@@ -206,7 +184,14 @@ void MasterSystemInputFileParser::loopThroughTags(
                 // preloaded data parser included here just to check the tag so
                 // that exception below is not triggered.
                 parsePreloadedData(line_nos[t], blocks[t], tags[t],
-                                   true, n_realizations
+                                   !create_objects, n_realizations
+                ) ? true : tag_read
+        );
+        tag_read = (
+                // preloaded data parser included here just to check the tag so
+                // that exception below is not triggered.
+                parseRunParams(line_nos[t], blocks[t], tags[t],
+                               !create_objects
                 ) ? true : tag_read
         );
 
@@ -219,40 +204,158 @@ void MasterSystemInputFileParser::loopThroughTags(
     }
 }
 
-void MasterSystemInputFileParser::parseFirstLine(const string &line) {
-    vector<string> tok_line;
-    Utils::tokenizeString(line, tok_line);
+bool MasterSystemInputFileParser::parseRunParams(int line_no,
+                                                 vector<vector<string>> &block,
+                                                 const string &tag,
+                                                 bool read_data) {
+    if (tag == "[RUN PARAMETERS]") {
+        if (read_data) {
+            vector<unsigned long> rows_read(0);
+            for (unsigned long i = 0; i < block.size(); ++i) {
+                vector<string> line = block[i];
+                if (line[0] == "n_realizations") {
+                    n_realizations = stoi(line[1]);
+                    realizations_to_run = vector<unsigned long>(n_realizations);
+                    iota(realizations_to_run.begin(), realizations_to_run.end(),
+                         0);
+                    rows_read.push_back(i);
+                } else if (line[0] == "n_weeks") {
+                    n_weeks = stoi(line[1]);
+                    rows_read.push_back(i);
+                } else if (line[0] == "rdm_utilities") {
+                    rdm_utilities = Utils::parse2DCsvFile(line[1]);
+                    rows_read.push_back(i);
+                } else if (line[0] == "rdm_water_sources") {
+                    rdm_water_sources = Utils::parse2DCsvFile(line[1]);
+                    rows_read.push_back(i);
+                } else if (line[0] == "rdm_dmps") {
+                    rdm_dmp = Utils::parse2DCsvFile(line[1]);
+                    rows_read.push_back(i);
+                } else if (line[0] == "rdm_no") {
+                    rdm_no = stoi(line[1]);
+                    rows_read.push_back(i);
+                } else if (line[0] == "n_threads") {
+                    n_threads = stoi(line[1]);
+                    rows_read.push_back(i);
+                } else if (line[0] == "rof_tables_dir") {
+                    rof_tables_dir = line[1];
+                    rows_read.push_back(i);
+                } else if (line[0] == "use_rof_tables") {
+                    if (line[1] == "generate")
+                        use_rof_tables = EXPORT_ROF_TABLES;
+                    else if (line[1] == "import")
+                        use_rof_tables = IMPORT_ROF_TABLES;
+                    else if (line[1] == "no")
+                        use_rof_tables = DO_NOT_EXPORT_OR_IMPORT_ROF_TABLES;
+                    else {
+                        char error[500];
+                        sprintf(error,
+                                "Parameter \"use_rof_tables\" in tag %s, "
+                                "line %d can only take the values of "
+                                "\"generate\", \"import\", or \"no\".",
+                                tag.c_str(), line_no);
+                        throw invalid_argument(error);
+                    }
+                    rows_read.push_back(i);
+                } else if (line[0] == "print_time_series") {
+                    print_time_series = true;
+                    rows_read.push_back(i);
+                } else if (line[0] == "realizations_to_run") {
+                    rof_tables_dir = line[1];
+                    rows_read.push_back(i);
+                } else if (line[0] == "realizations_to_run") {
+                    Utils::tokenizeString(line[1], realizations_to_run, ',');
+                    n_realizations = *max_element(realizations_to_run.begin(),
+                                                  realizations_to_run.end());
+                    rows_read.push_back(i);
+                } else if (line[0] == "solutions_file") {
+                    solutions_file = line[1];
+                    rows_read.push_back(i);
+                } else if (line[0] == "n_bootstrap_samples") {
+                    n_bootstrap_samples = stoi(line[1]);
+                    rows_read.push_back(i);
+                } else if (line[0] == "bootstrap_sample_size") {
+                    bootstrap_sample_size = stoi(line[1]);
+                    rows_read.push_back(i);
+                } else if (line[0] == "solutions_to_run") {
+                    if (!solutions_to_run.empty()) {
+                        throw invalid_argument(
+                                "Parameters solutions_to_run and "
+                                "solutions_to_run_range cannot be passed "
+                                "together.");
+                    }
+                    Utils::tokenizeString(line[1], solutions_to_run, ',');
+                    rows_read.push_back(i);
+                } else if (line[0] == "solutions_to_run_range") {
+                    if (!solutions_to_run.empty()) {
+                        throw invalid_argument(
+                                "Parameters solutions_to_run and "
+                                "solutions_to_run_range cannot be passed "
+                                "together.");
+                    }
+                    vector<unsigned long> range;
+                    Utils::tokenizeString(line[1], range, ',');
+                    if (range[0] > range[1]) {
+                        throw invalid_argument(
+                                "First number in solutions_to_run_range needs "
+                                "to be smaller than the second.");
+                    }
+                    solutions_to_run = vector<unsigned long>(range[1]);
+                    iota(solutions_to_run.begin(), solutions_to_run.end(),
+                         0);
+                    rows_read.push_back(i);
+                } else if (line[0] == "seed") {
+                    int seed = stoi(line[1]);
+                    WaterSource::setSeed(seed);
+                    MasterDataCollector::setSeed(seed);
+                    rows_read.push_back(i);
+                }
+            }
 
-    if (tok_line.size() < 2) {
-        throw invalid_argument("First line must contain at least the "
-                               "numbers of realizations and weeks.");
-    } else {
-        try {
-            n_realizations = stoi(tok_line[0]);
-            n_weeks = stoi(tok_line[1]);
-        } catch (...) {
-            throw invalid_argument(
-                    "First two items of the first line of input "
-                    "file must contain only the numbers of "
-                    "realizations and weeks.");
+            if (!solutions_file.empty()) {
+                if (solutions_to_run.empty()) {
+                    throw invalid_argument("If solutions file was passed, "
+                                           "either solutions_to_run_range or "
+                                           "solutions_to_run need to be passed "
+                                           "too.");
+                } else {
+                    solutions_decvars = Utils::parse2DCsvFile(solutions_file,
+                                                              NON_INITIALIZED,
+                                                              solutions_to_run);
+                }
+            }
+
+            bool empty_rdm = (rdm_dmp.empty() && rdm_water_sources.empty() &&
+                              rdm_utilities.empty());
+            bool full_rdm = (!rdm_dmp.empty() && !rdm_water_sources.empty() &&
+                             !rdm_utilities.empty());
+            if (!(empty_rdm || full_rdm)) {
+                throw InconsistentMutuallyImplicativeParameters(
+                        "rdm_dmp, rdm_water_sources, and rdm_utilities", tag,
+                        line_no);
+            }
+            if ((n_bootstrap_samples == NON_INITIALIZED &&
+                 bootstrap_sample_size != NON_INITIALIZED) ||
+                (n_bootstrap_samples != NON_INITIALIZED &&
+                 bootstrap_sample_size == NON_INITIALIZED)) {
+                throw InconsistentMutuallyImplicativeParameters(
+                        "n_bootstrap_samples and bootstrap_sample_size", tag,
+                        line_no);
+            }
+            AuxParserFunctions::cleanBlock(block, rows_read);
+            AuxParserFunctions::checkForUnreadTags(line_no, block, tag);
         }
+        return true;
     }
-
-    if (tok_line.size() > 4) {
-        rdm_utilities = Utils::parse2DCsvFile(tok_line[2],
-                                              n_realizations);
-        rdm_water_sources = Utils::parse2DCsvFile(tok_line[3],
-                                                  n_realizations);
-        rdm_dmp = Utils::parse2DCsvFile(tok_line[4], n_realizations);
-    }
-
-    if (tok_line.size() != 2 and tok_line.size() != 5)
-        throw invalid_argument("First line must contain either just the number "
-                               "of realizations and weeks, of both plus the "
-                               "paths to utilities, water sources, and drought "
-                               "mitigation policies rdm files.");
+    return false;
 }
 
+const vector<vector<double>> &
+MasterSystemInputFileParser::getSolutionsDecvars() const {
+    return solutions_decvars;
+}
+
+//TODO WRITE TEST FOR FUNCTION BELOW.
 bool MasterSystemInputFileParser::parsePreloadedData(int line_no,
                                                      vector<vector<string>> &block,
                                                      const string &tag,
@@ -261,9 +364,28 @@ bool MasterSystemInputFileParser::parsePreloadedData(int line_no,
     if (tag == "[DATA TO LOAD]") {
         if (read_data) {
             for (auto line : block) {
-                pre_loaded_data.insert(
-                        {line[0],
-                         Utils::parse2DCsvFile(line[1], n_realizations)});
+                try {
+                    string alias = line.at(0);
+                    if (alias[0] == '*') {
+                        alias.erase(0, 1);
+                        pre_loaded_data.insert(
+                                {alias,
+                                 Utils::parse2DCsvFile(line.at(1))});
+                    } else {
+                        pre_loaded_data.insert(
+                                {alias,
+                                 Utils::parse2DCsvFile(line.at(1),
+                                                       n_realizations)});
+                    }
+                } catch (out_of_range &e) {
+                    e.what();
+                    throw invalid_argument("Data to be loaded must be specified"
+                                           " as a alias followed by the file "
+                                           "path. Add a * before the alias of "
+                                           "files that are not ensembles of "
+                                           "time series of demand, inflows or "
+                                           "evaporation rates.");
+                }
             }
         }
         return true;
@@ -282,15 +404,25 @@ void MasterSystemInputFileParser::parseFile(string file_path) {
             throw invalid_argument("Empty input file.");
         line_no++;
 
-        parseFirstLine(line);
-
         // Looks for first tag
-        while (!getline(inputFile, line)) {
-            line_no++;
-            if (line[0] == '[') break;
+        if (line[0] != '[') {
+            while (!getline(inputFile, line)) {
+                line_no++;
+                if (line[0] == '[') break;
+            }
         }
 
         parseBlocks(inputFile, line_no, line, blocks, line_nos, tags);
+
+        // Move "[RUN PARAMETERS]" tag to the top.
+        for (int i = 0; i < blocks.size(); ++i) {
+            if (tags[i] == "[RUN PARAMETERS]" && i > 0) {
+                iter_swap(blocks.begin() + i, blocks.begin());
+                iter_swap(tags.begin() + i, tags.begin());
+                iter_swap(line_nos.begin() + i, line_nos.begin());
+                break;
+            }
+        }
     } else {
         string error = "File " + file_path + " not found.";
         char error_char[error.size() + 1];
@@ -348,7 +480,7 @@ bool MasterSystemInputFileParser::parseUtility(int line_no,
         if (create_objects) {
             utilities.push_back(utility_parsers.back()->generateUtility(
                     utility_id, block, line_no, n_realizations,
-                    ws_name_to_id));
+                    ws_name_to_id, pre_loaded_data));
         } else {
             string name = findName(block, tag, line_no);
             utility_name_to_id.insert(pair<string, int>(name, utility_id));
@@ -370,10 +502,11 @@ bool MasterSystemInputFileParser::parseWaterSource(int line_no,
         water_source_parsers.push_back(new ReuseParser());
     } else if (tag == "[RESERVOIR]") {
         water_source_parsers.push_back(
-                new ReservoirParser(generate_rof_tables));
+                new ReservoirParser(use_rof_tables == EXPORT_ROF_TABLES));
     } else if (tag == "[ALLOCATED RESERVOIR]") {
         water_source_parsers.push_back(
-                new AllocatedReservoirParser(generate_rof_tables));
+                new AllocatedReservoirParser(
+                        use_rof_tables == EXPORT_ROF_TABLES));
     } else if (tag == "[RESERVOIR EXPANSION]") {
         water_source_parsers.push_back(new ReservoirExpansionParser());
     }
@@ -385,7 +518,8 @@ bool MasterSystemInputFileParser::parseWaterSource(int line_no,
             water_sources.push_back(
                     water_source_parsers.back()->generateSource(
                             water_source_id, block, line_no, n_realizations,
-                            n_weeks, ws_name_to_id, utility_name_to_id
+                            n_weeks, ws_name_to_id, utility_name_to_id,
+                            pre_loaded_data
                     )
             );
         } else {
@@ -425,7 +559,7 @@ bool MasterSystemInputFileParser::parseReservoirControlRules(int line_no,
                     reservoir_control_rule_parse.back()->generateReservoirControlRule(
                             block, line_no, n_realizations,
                             n_weeks, ws_name_to_id,
-                            utility_name_to_id));
+                            utility_name_to_id, pre_loaded_data));
             return true;
         }
 
@@ -461,7 +595,7 @@ bool MasterSystemInputFileParser::parseDroughtMitigationPolicies(int line_no,
                             reservoir_utility_connectivity_matrix, utilities,
                             water_sources, drought_mitigation_policy,
                             reservoir_control_rules, rdm_utilities,
-                            rdm_water_sources, rdm_dmp)
+                            rdm_water_sources, rdm_dmp, pre_loaded_data)
             );
         }
 
@@ -582,3 +716,68 @@ const vector<vector<double>> &
 MasterSystemInputFileParser::getTableStorageShift() const {
     return table_storage_shift;
 }
+
+int MasterSystemInputFileParser::getRdmNo() const {
+    return rdm_no;
+}
+
+int MasterSystemInputFileParser::getNThreads() const {
+    return n_threads;
+}
+
+const string &MasterSystemInputFileParser::getRofTablesDir() const {
+    return rof_tables_dir;
+}
+
+int MasterSystemInputFileParser::getUseRofTables() const {
+    return use_rof_tables;
+}
+
+bool MasterSystemInputFileParser::isPrintTimeSeries() const {
+    return print_time_series;
+}
+
+const vector<unsigned long> &
+MasterSystemInputFileParser::getRealizationsToRun() const {
+    return realizations_to_run;
+}
+
+int MasterSystemInputFileParser::getNWeeks() const {
+    return n_weeks;
+}
+
+const vector<vector<double>> &
+MasterSystemInputFileParser::getRdmUtilities() const {
+    return rdm_utilities;
+}
+
+const vector<vector<double>> &
+MasterSystemInputFileParser::getRdmWaterSources() const {
+    return rdm_water_sources;
+}
+
+const vector<vector<double>> &MasterSystemInputFileParser::getRdmDmp() const {
+    return rdm_dmp;
+}
+
+int MasterSystemInputFileParser::getNRealizations() const {
+    return n_realizations;
+}
+
+int MasterSystemInputFileParser::getNBootstrapSamples() const {
+    return n_bootstrap_samples;
+}
+
+int MasterSystemInputFileParser::getBootstrapSampleSize() const {
+    return bootstrap_sample_size;
+}
+
+const string &MasterSystemInputFileParser::getSolutionsFile() const {
+    return solutions_file;
+}
+
+const vector<unsigned long> &
+MasterSystemInputFileParser::getSolutionsToRun() const {
+    return solutions_to_run;
+}
+

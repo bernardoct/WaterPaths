@@ -20,10 +20,11 @@ protected:
     vector<int> demand_infra_construction_order;
     vector<int> rof_infra_construction_order;
     vector<vector<int>> infra_if_built_remove;
+    vector<vector<int>> construction_pre_requisites;
     vector<double> infra_construction_triggers;
     vector<vector<double>> typesMonthlyDemandFraction;
     vector<vector<double>> typesMonthlyWaterPrice;
-    vector<vector<double>> demands_all_realizations;
+    vector<vector<double>> *demands_all_realizations = nullptr;
     string name;
     WwtpDischargeRule wwtp_discharge_rule;
 
@@ -35,12 +36,12 @@ public:
 
     ~UtilityParser();
 
-    void parseVariables(vector<vector<string>> &block, int n_realizations);
+    void parseVariables(vector<vector<string>> &block, int n_realizations, map<string, vector<vector<double>>> &pre_loaded_data);
 
     Utility *
     generateUtility(int id, vector<vector<string>> &block,
                     int line_no, int n_realizations,
-                    const map<string, int> &ws_name_to_id);
+                    const map<string, int> &ws_name_to_id, map<string, vector<vector<double>>> &pre_loaded_data);
 
     void checkMissingOrExtraParams(vector<vector<string>> &block, int line_no);
 

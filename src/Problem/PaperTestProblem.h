@@ -8,13 +8,15 @@
 #ifdef  PARALLEL
 #include "../../Borg/borgms.h"
 #endif
+
 #include "Base/Problem.h"
 #include "../Simulation/Simulation.h"
+#include "Base/HardCodedProblem.h"
 
 using namespace std;
 
 
-class PaperTestProblem : public Problem {
+class PaperTestProblem : public HardCodedProblem {
 private:
     const int n_utilities = 3;
 
@@ -47,8 +49,21 @@ private:
     vector<vector<double>> dryvilleUserClassesWaterPrices;
     vector<vector<double>> fallslandUserClassesWaterPrices;
 
+    void readInputData() override;
+
 public:
-    PaperTestProblem(unsigned long n_weeks, int import_export_rof_table);
+    PaperTestProblem(unsigned long n_weeks, int n_realizations,
+                     int import_export_rof_table,
+                     string system_io, string &rof_tables_directory, int seed,
+                     unsigned long n_threads,
+                     string bootstrap_file,
+                     string &utilities_rdm_file,
+                     string &policies_rdm_file,
+                     string &water_sources_rdm_file,
+                     int n_sets, int n_bs_samples,
+                     string &solutions_file,
+                     vector<int> &solutions_to_run_range, bool plotting,
+                     bool print_obj_row);
 
     ~PaperTestProblem() override;
 
@@ -58,7 +73,6 @@ public:
 
     int functionEvaluation(double *vars, double *objs, double *consts) override;
 
-    void readInputData();
 };
 
 

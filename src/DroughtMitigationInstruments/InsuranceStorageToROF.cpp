@@ -198,8 +198,8 @@ void InsuranceStorageToROF::priceInsurance(int week) {
     }
 }
 
-void InsuranceStorageToROF::setRealization(unsigned long realization_id, vector<double> &utilities_rdm,
-                                           vector<double> &water_sources_rdm, vector<double> &policy_rdm) {
+void InsuranceStorageToROF::setRealization(unsigned long realization_id, const vector<double> &utilities_rdm,
+                                           const vector<double> &water_sources_rdm, const vector<double> &policy_rdm) {
     ContinuityModel::setRealization(realization_id, utilities_rdm, water_sources_rdm);
 
     // Pass corresponding utilities to drought mitigation instruments.

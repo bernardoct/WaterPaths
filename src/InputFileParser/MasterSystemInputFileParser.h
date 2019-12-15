@@ -22,22 +22,6 @@
 
 using namespace std;
 
-struct infraRank {
-    string name;
-    double xreal;
-
-    infraRank(string name, double xreal) {
-        this->name = name;
-        this->xreal = xreal;
-    }
-};
-
-struct by_xreal {
-    bool operator()(const infraRank &ir1, const infraRank &ir2) {
-        return ir1.xreal < ir2.xreal;
-    }
-};
-
 class MasterSystemInputFileParser {
 
     vector<WaterSourceParser *> water_source_parsers;
@@ -49,27 +33,38 @@ class MasterSystemInputFileParser {
     vector<ReservoirControlRuleParser *> reservoir_control_rule_parse;
     vector<MinEnvFlowControl *> reservoir_control_rules;
 
+
     vector<vector<double>> rdm_utilities, rdm_water_sources, rdm_dmp;
 
     vector<vector<int>> reservoir_utility_connectivity_matrix;
     vector<vector<double>> table_storage_shift;
-
-    vector<vector<vector<string>>> blocks;
-    vector<int> line_nos;
-    vector<string> tags;
 
     Graph water_sources_graph;
     Graph utilities_graph;
 
     int n_realizations = NON_INITIALIZED;
     int n_weeks = NON_INITIALIZED;
-    bool generate_rof_tables;
+    bool generate_rof_tables = false;
+    map<string, vector<vector<double>>> pre_loaded_data;
+
+    int rdm_no = NON_INITIALIZED;
+    int n_threads = NON_INITIALIZED;
+    int n_bootstrap_samples = NON_INITIALIZED;
+    int bootstrap_sample_size = NON_INITIALIZED;
+    string rof_tables_dir;
+    string solutions_file;
+    int use_rof_tables = DO_NOT_EXPORT_OR_IMPORT_ROF_TABLES; /// can be "no," "export," and "import."
+    bool print_time_series = false;
+    vector<unsigned long> realizations_to_run;
+    vector<unsigned long> solutions_to_run;
+    vector<vector<double>> solutions_decvars;
+
+    vector<vector<vector<string>>> blocks;
+    vector<int> line_nos;
+    vector<string> tags;
 
     map<string, int> ws_name_to_id;
     map<string, int> utility_name_to_id;
-    map<string, vector<vector<double>>> pre_loaded_data;
-
-    void parseFirstLine(const string &line);
 
     bool parseUtility(int line_no,
                       vector<vector<string>> &block,
@@ -102,14 +97,13 @@ class MasterSystemInputFileParser {
                             const string &tag, bool read_data,
                             int n_realizations);
 
-    void loopThroughTags(vector<vector<vector<string>>> blocks, bool create_objects = true);
-
-    void clearParsers();
+    void loopThroughTags(vector<vector<vector<string>>> blocks,
+                         bool create_objects = true);
 
     static string findName(vector<vector<string>> &block,
-                    const string &tag, int line_no);
+                           const string &tag, int line_no);
 
-    vector<vector<vector<string>>> replacePlaceHoldersByDVs(double *vars, vector<vector<vector<string>>> &blocks);
+    void parseFile(string file_path);
 
 public:
 
@@ -117,9 +111,10 @@ public:
 
     ~MasterSystemInputFileParser();
 
-    void parseFile(string file_path);
+    void clearParsers();
 
-    static vector<vector<string>> readBlock(ifstream &inputFile, int &l, string &line);
+    static vector<vector<string>>
+    readBlock(ifstream &inputFile, int &l, string &line);
 
     int
     parseBlocks(ifstream &inputFile, int l, string &line,
@@ -127,6 +122,41 @@ public:
                 vector<string> &tags);
 
     void createSystemObjects(double *vars);
+
+    void initializeStandardRDMFactors();
+
+/**
+ * Checks with of the elements separated by commas in string data are preceded
+ * by a @ and sorts them according to the values in vars. Any element in data
+ * that is not preceded by @ will be left in the same position.
+ * @param vars array with numeric values to be translated into positions
+ * @param count_var index of vars to be used to sort data.
+ * @param data piece of line
+ */
+    static void
+    reorderCSVDataInBlockLine(const double *vars, int &count_var,
+                              string &data);
+
+/**
+ * look for %%% and replaces them by next values in vars.
+ * @param vars array with numeric values
+ * @param count_var index of vars to be replace into line.
+ * @param data piece of line
+ * @return updated index of vars to be replace into line
+ */
+    static void replaceNumericVarsIntoPlaceHolders(const double *vars,
+            int &count_var, string &data);
+
+/**
+ * Fill in the gaps in the blocks left by the %%% and @ in the input file.
+ * @param vars decision variables.
+ * @param blocks data parsed from input file.
+ * @return
+ */
+    static void replacePlaceHoldersByDVs(double *vars,
+                                         vector<vector<vector<string>>> &blocks);
+
+    void preloadAndCheckInputFile(string &input_file);
 
     const vector<WaterSource *> &getWaterSources() const;
 
@@ -142,16 +172,41 @@ public:
 
     const vector<vector<double>> &getTableStorageShift() const;
 
-    void initializeStandardRDMFactors();
+    bool
+    parseRunParams(int line_no, vector<vector<string>> &block,
+                   const string &tag, bool read_data);
 
-    void
-    reorderCSVDataInBlockLine(const double *vars, int &count_var,
-                              string &data) const;
+    const string &getRofTablesDir() const;
 
-    void replaceNumericVarsIntoPlaceHolders(const double *vars, int &count_var,
-                                            string &data) const;
+    int getUseRofTables() const;
 
-    void preloadAndCheckInputFile(string &input_file);
+    int getNThreads() const;
+
+    int getRdmNo() const;
+
+    bool isPrintTimeSeries() const;
+
+    const vector<unsigned long> &getRealizationsToRun() const;
+
+    int getNWeeks() const;
+
+    const vector<vector<double>> &getRdmUtilities() const;
+
+    const vector<vector<double>> &getRdmWaterSources() const;
+
+    const vector<vector<double>> &getRdmDmp() const;
+
+    int getNRealizations() const;
+
+    int getNBootstrapSamples() const;
+
+    int getBootstrapSampleSize() const;
+
+    const string &getSolutionsFile() const;
+
+    const vector<unsigned long> &getSolutionsToRun() const;
+
+    const vector<vector<double>> &getSolutionsDecvars() const;
 };
 
 

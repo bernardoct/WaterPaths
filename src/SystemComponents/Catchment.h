@@ -35,7 +35,7 @@ public:
 
     double getStreamflow(int week) const;
 
-    virtual void setRealization(unsigned long r, vector<double> &rdm_factors);
+    virtual void setRealization(unsigned long r, const vector<double> &rdm_factors);
 
     int getSeriesLength() const;
 };

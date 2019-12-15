@@ -198,6 +198,9 @@ double ObjectivesCalculator::calculatePeakFinancialCostsObjective(
                              year_financial_costs.end());
         if (realization_financial_costs[r] > 1e10) {
             printf("Absurdly high financial cost in realization %lu.\n", r);
+        } else if (realization_financial_costs[r] < -1e-3) {
+            printf("Negative financial cost in realization %lu. "
+                   "Utilities don't make money from droughts.\n", r);
         }
     }
 

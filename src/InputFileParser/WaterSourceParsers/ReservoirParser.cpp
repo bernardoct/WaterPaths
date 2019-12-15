@@ -18,9 +18,11 @@ void ReservoirParser::parseVariables(vector<vector<string>> &block,
                                      int n_realizations, int n_weeks,
                                      int line_no,
                                      const map<string, int> &ws_name_to_id,
-                                     const map<string, int> &utility_name_to_id) {
+                                     const map<string, int> &utility_name_to_id,
+                                     map<string, vector<vector<double>>> &pre_loaded_data) {
     WaterSourceParser::parseVariables(block, n_realizations, n_weeks, line_no,
-                                      ws_name_to_id, utility_name_to_id);
+                                      ws_name_to_id, utility_name_to_id,
+                                      pre_loaded_data);
 
     // capacity multiplier for pre-computed rof-tables generation.
     if (generate_tables) capacity *= Constants::BASE_STORAGE_CAPACITY_MULTIPLIER;
@@ -29,10 +31,13 @@ void ReservoirParser::parseVariables(vector<vector<string>> &block,
     for (unsigned long i = 0; i < block.size(); ++i) {
         vector<string> &line = block[i];
         if (line[0] == "streamflow_files") {
-            catchment_parser.parseSeries(
-                    vector<string>(line.begin() + 1, line.end()),
-                    n_weeks, n_realizations
-            );
+            vector<vector<vector<double>> *> inflow_series;
+            vector<string> paths = vector<string>(line.begin() + 1, line.end());
+            for (string l : paths) {
+                inflow_series.push_back(&pre_loaded_data[l]);
+            }
+            catchment_parser.parseSeries(inflow_series, n_weeks,
+                                         n_realizations);
             catchments = catchment_parser.getParsedCatchments();
             rows_read.push_back(i);
         } else if (line[0] == "treatment_capacity") {
@@ -42,9 +47,8 @@ void ReservoirParser::parseVariables(vector<vector<string>> &block,
             if (line.size() > 2)
                 throw invalid_argument(
                         "Only one evaporation series matrix allowed per reservoir.");
-            evaporation_series = evaporation_series_parser.parseSeries(line[1],
-                                                                       n_weeks,
-                                                                       n_realizations);
+            evaporation_series = evaporation_series_parser.parseSeries(
+                    &pre_loaded_data[line[1]], n_weeks, n_realizations);
             rows_read.push_back(i);
         } else if (line[0] == "storage_area_curve") {
             vector<double> storage_curve;
@@ -74,10 +78,11 @@ ReservoirParser::generateSource(int id, vector<vector<string>> &block,
                                 int line_no, int n_realizations,
                                 int n_weeks,
                                 const map<string, int> &ws_name_to_id,
-                                const map<string, int> &utility_name_to_id) {
+                                const map<string, int> &utility_name_to_id,
+                                map<string, vector<vector<double>>> &pre_loaded_data) {
 
     parseVariables(block, n_realizations, n_weeks, line_no,
-                   ws_name_to_id, utility_name_to_id);
+                   ws_name_to_id, utility_name_to_id, pre_loaded_data);
     checkMissingOrExtraParams(line_no, block);
 
     if (existing_infrastructure && variable_area) {

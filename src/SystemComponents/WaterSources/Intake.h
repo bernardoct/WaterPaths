@@ -32,7 +32,7 @@ public:
     void applyContinuity(int week, double upstream_source_min_env_flow,
                              double wastewater_inflow, vector<double> &demand) override;
 
-    void setRealization(unsigned long r, vector<double> &rdm_factors) override;
+    void setRealization(unsigned long r, const vector<double> &rdm_factors) override;
 
 };
 

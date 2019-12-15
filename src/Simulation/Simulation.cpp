@@ -19,16 +19,16 @@
 
 
 Simulation::Simulation(
-        vector<WaterSource *> &water_sources, Graph &water_sources_graph,
+        vector<WaterSource *> water_sources, const Graph &water_sources_graph,
         const vector<vector<int>> &water_sources_to_utilities,
-        vector<Utility *> &utilities,
-        const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
-        vector<MinEnvFlowControl *> &min_env_flow_controls,
-        vector<vector<double>>& utilities_rdm,
-        vector<vector<double>>& water_sources_rdm,
-        vector<vector<double>>& policies_rdm,
+        vector<Utility *> utilities,
+        vector<DroughtMitigationPolicy *> drought_mitigation_policies,
+        vector<MinEnvFlowControl *> min_env_flow_controls,
+        const vector<vector<double>> &utilities_rdm,
+        const vector<vector<double>> &water_sources_rdm,
+        const vector<vector<double>> &policies_rdm,
         const unsigned long total_simulation_time,
-        vector<unsigned long> &realizations_to_run) :
+        const vector<unsigned long> &realizations_to_run) :
         total_simulation_time(total_simulation_time),
         realizations_to_run(realizations_to_run),
         import_export_rof_tables(DO_NOT_EXPORT_OR_IMPORT_ROF_TABLES),
@@ -52,19 +52,19 @@ Simulation::Simulation(
 }
 
 Simulation::Simulation(
-        vector<WaterSource *> &water_sources, Graph &water_sources_graph,
+        vector<WaterSource *> water_sources, const Graph &water_sources_graph,
         const vector<vector<int>> &water_sources_to_utilities,
-        vector<Utility *> &utilities,
-        const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
-        vector<MinEnvFlowControl *> &min_env_flow_controls,
-        vector<vector<double>>& utilities_rdm,
-        vector<vector<double>>& water_sources_rdm,
-        vector<vector<double>>& policies_rdm,
+        vector<Utility *> utilities,
+        vector<DroughtMitigationPolicy *> drought_mitigation_policies,
+        vector<MinEnvFlowControl *> min_env_flow_controls,
+        const vector<vector<double>> &utilities_rdm,
+        const vector<vector<double>> &water_sources_rdm,
+        const vector<vector<double>> &policies_rdm,
         const unsigned long total_simulation_time,
-        vector<unsigned long> &realizations_to_run,
-        vector<vector<Matrix2D<double>>> &precomputed_rof_tables,
-        vector<vector<double>> &table_storage_shift,
-        string &rof_tables_folder) :
+        const vector<unsigned long> &realizations_to_run,
+        const vector<vector<Matrix2D<double>>> &precomputed_rof_tables,
+        const vector<vector<double>> &table_storage_shift,
+        const string &rof_tables_folder) :
         total_simulation_time(total_simulation_time),
         realizations_to_run(realizations_to_run),
         import_export_rof_tables(IMPORT_ROF_TABLES),
@@ -92,18 +92,17 @@ Simulation::Simulation(
 }
 
 Simulation::Simulation(
-        vector<WaterSource *> &water_sources,
-	Graph &water_sources_graph,
+        vector<WaterSource *> water_sources, const Graph &water_sources_graph,
         const vector<vector<int>> &water_sources_to_utilities,
-        vector<Utility *> &utilities,
-        const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
-        vector<MinEnvFlowControl *> &min_env_flow_controls,
-        vector<vector<double>>& utilities_rdm,
-        vector<vector<double>>& water_sources_rdm,
-        vector<vector<double>>& policies_rdm,
+        vector<Utility *> utilities,
+        vector<DroughtMitigationPolicy *> drought_mitigation_policies,
+        vector<MinEnvFlowControl *> min_env_flow_controls,
+        const vector<vector<double>> &utilities_rdm,
+        const vector<vector<double>> &water_sources_rdm,
+        const vector<vector<double>> &policies_rdm,
         const unsigned long total_simulation_time,
-        vector<unsigned long> &realizations_to_run,
-        string &rof_tables_folder) :
+        const vector<unsigned long> &realizations_to_run,
+        const string &rof_tables_folder) :
         total_simulation_time(total_simulation_time),
         realizations_to_run(realizations_to_run),
         import_export_rof_tables(EXPORT_ROF_TABLES),
@@ -120,24 +119,28 @@ Simulation::Simulation(
     setRof_tables_folder(rof_tables_folder);
 
     setupSimulation(
-            water_sources,
-            water_sources_graph,
-            water_sources_to_utilities,
-            utilities,
-            drought_mitigation_policies,
-            min_env_flow_controls,
-            utilities_rdm,
-            water_sources_rdm,
-            policies_rdm,
-            realizations_to_run);
+            this->water_sources,
+            this->water_sources_graph,
+            this->water_sources_to_utilities,
+            this->utilities,
+            this->drought_mitigation_policies,
+            this->min_env_flow_controls,
+            this->utilities_rdm,
+            this->water_sources_rdm,
+            this->policies_rdm,
+            this->realizations_to_run);
 }
 
-void Simulation::setupSimulation(vector<WaterSource *> &water_sources, Graph &water_sources_graph,
-                                 const vector<vector<int>> &water_sources_to_utilities, vector<Utility *> &utilities,
+void Simulation::setupSimulation(vector<WaterSource *> &water_sources,
+                                 const Graph &water_sources_graph,
+                                 const vector<vector<int>> &water_sources_to_utilities,
+                                 vector<Utility *> &utilities,
                                  const vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
                                  vector<MinEnvFlowControl *> &min_env_flow_controls,
-                                 vector<vector<double>> &utilities_rdm, vector<vector<double>> &water_sources_rdm,
-                                 vector<vector<double>> &policies_rdm, vector<unsigned long> &realizations_to_run) {
+                                 const vector<vector<double>> &utilities_rdm,
+                                 const vector<vector<double>> &water_sources_rdm,
+                                 const vector<vector<double>> &policies_rdm,
+                                 const vector<unsigned long> &realizations_to_run) {
     // Sort water sources and utilities by their IDs.
     //FIXME: THERE IS A STUPID MISTAKE HERE IN THE SORT FUNCTION THAT IS PREVENTING IT FROM WORKING UNDER WINDOWS AND LINUX.
     std::sort(water_sources.begin(), water_sources.end(), WaterSource::compare);
@@ -147,18 +150,22 @@ void Simulation::setupSimulation(vector<WaterSource *> &water_sources, Graph &wa
     for (int ws = 1; ws < (int) water_sources.size(); ++ws) {
         if (water_sources[ws]->id != water_sources[ws - 1]->id + 1) {
             cout << "The IDs of water sources " << water_sources[ws]->id << " "
-                    "and " << water_sources[ws - 1]->id << " do not follow a "
-                         "unit progression." << endl;
-            throw_with_nested(invalid_argument("Improper water source ID sequencing"));
+                                                                            "and "
+                 << water_sources[ws - 1]->id << " do not follow a "
+                                                 "unit progression." << endl;
+            throw_with_nested(
+                    invalid_argument("Improper water source ID sequencing"));
         }
     }
 
     for (int u = 1; u < (int) utilities.size(); ++u) {
         if (utilities[u]->id != utilities[u - 1]->id + 1) {
             cout << "The IDs of utilities " << utilities[u]->id << " "
-                    "and " << utilities[u - 1]->id << " do not follow a "
-                         "unit progression." << endl;
-            throw_with_nested(invalid_argument("Improper utility ID sequencing"));
+                                                                   "and "
+                 << utilities[u - 1]->id << " do not follow a "
+                                            "unit progression." << endl;
+            throw_with_nested(
+                    invalid_argument("Improper utility ID sequencing"));
         }
     }
 
@@ -183,12 +190,13 @@ void Simulation::setupSimulation(vector<WaterSource *> &water_sources, Graph &wa
                           ws)
                 == water_sources_to_utilities[u].end()) {
                 cout << "Water source #" << ws << " is listed in the "
-                        "construction order for utility " << utilities[u]->id
+                                                  "construction order for utility "
+                     << utilities[u]->id
                      << " (" << utilities[u]->name << ")  but is  not  "
-                             "present in  utility's list of water sources."
+                                                      "present in  utility's list of water sources."
                      << endl;
                 throw invalid_argument("UtilityParser's construction order and "
-                                                    "owned sources mismatch.");
+                                       "owned sources mismatch.");
             }
 
         for (int ws : water_sources_to_utilities[u])
@@ -199,10 +207,11 @@ void Simulation::setupSimulation(vector<WaterSource *> &water_sources, Graph &wa
                                 obj) { return obj->id == ws; }) ==
                 water_sources.end()) {
                 cout << "Water source #" << ws << " not present in "
-                        "comprehensive water sources vector." << endl;
+                                                  "comprehensive water sources vector."
+                     << endl;
                 throw invalid_argument("Water sources declared to belong to"
-                                                 " a utility is not present "
-                                                 "in vector of water sources.");
+                                       " a utility is not present "
+                                       "in vector of water sources.");
             }
     }
 
@@ -276,26 +285,28 @@ void Simulation::createContinuityModels(unsigned long realization,
 
     // Pass ROF tables to continuity model
     if (import_export_rof_tables == IMPORT_ROF_TABLES) {
-        rof_model->setROFTablesAndShifts(precomputed_rof_tables->at(realization), *table_storage_shift);
+        rof_model->setROFTablesAndShifts(
+                precomputed_rof_tables->at(realization), *table_storage_shift);
     }
 
     // Link storage-rof tables of policies and rof models.
     for (DroughtMitigationPolicy *dmp :
             realization_model->getDrought_mitigation_policies())
         dmp->setStorage_to_rof_table_(
-                rof_model->getUt_storage_to_rof_table(), import_export_rof_tables);
+                rof_model->getUt_storage_to_rof_table(),
+                import_export_rof_tables);
 }
 
-void printProgress (double percentage)
-{
+void printProgress(double percentage) {
     int val = (int) (percentage * 100);
     int lpad = (int) (percentage * PBWIDTH);
     int rpad = PBWIDTH - lpad;
-    printf ("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
-    fflush (stdout);
+    printf("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
+    fflush(stdout);
 }
 
-MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, double *vars) {
+MasterDataCollector *
+Simulation::runFullSimulation(unsigned long n_threads, double *vars) {
     if (rof_tables_folder.length() == 0) {
         rof_tables_folder = "rof_tables";
     }
@@ -303,22 +314,26 @@ MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, dou
     // Check if number of imported tables corresponds to model.
     if (import_export_rof_tables == IMPORT_ROF_TABLES) {
         if (precomputed_rof_tables->at(0).size() != utilities.size()) {
-            throw invalid_argument("Different number of utilities in model and imported ROF tables.");
+            throw invalid_argument(
+                    "Different number of utilities in model and imported ROF tables.");
         }
 
-        auto max_realization = *max_element(realizations_to_run.begin(), realizations_to_run.end()) + 1;
+        auto max_realization = *max_element(realizations_to_run.begin(),
+                                            realizations_to_run.end()) + 1;
         auto n_precomputed_tables = precomputed_rof_tables->size();
         if (n_precomputed_tables != max_realization) {
             char error[256];
-            sprintf(error, "There are at least %lu potential realizations but %lu imported ROF tables.",
+            sprintf(error,
+                    "There are at least %lu potential realizations but %lu imported ROF tables.",
                     max_realization, n_precomputed_tables);
             throw invalid_argument(error);
         }
     }
 
-    set<unsigned long> s( realizations_to_run.begin(), realizations_to_run.end() );
+    set<unsigned long> s(realizations_to_run.begin(),
+                         realizations_to_run.end());
     vector<unsigned long> realizations_to_run_unique;
-    realizations_to_run_unique.assign( s.begin(), s.end() );
+    realizations_to_run_unique.assign(s.begin(), s.end());
 
     // Prepare error output.
     int had_catch = 0;
@@ -327,10 +342,10 @@ MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, dou
     string error_file_content = "#";
 
     // Run realizations.
-#pragma omp parallel for ordered num_threads(n_threads) shared(had_catch)
+#pragma omp parallel for ordered num_threads(n_threads) shared(had_catch, realizations_to_run_unique, error_m, error_file_name, error_file_content) default(none)
     for (unsigned long r = 0; r < realizations_to_run_unique.size(); ++r) {
         unsigned long realization = realizations_to_run_unique[r];
-	//printf("Realization %lu\n", r);
+        //printf("Realization %lu\n", r);
 
         // Create continuity models.
         ContinuityModelRealization *realization_model = nullptr;
@@ -344,7 +359,7 @@ MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, dou
                 realization_model->getContinuity_utilities(),
                 realization);
 
-        try {
+//        try {
             //double start = omp_get_wtime();
             for (int w = 0; w < (int) total_simulation_time; ++w) {
                 // DO NOT change the order of the steps. This would mess up
@@ -355,11 +370,12 @@ MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, dou
                             rof_model->calculateLongTermROF(w), w);
                 // Calculate short-term risk-of-failure
                 realization_model->setShortTermROFs(
-                            rof_model->calculateShortTermROF(w, import_export_rof_tables));
+                        rof_model->calculateShortTermROF(w,
+                                                         import_export_rof_tables));
                 // Apply drought mitigation policies
                 if (import_export_rof_tables != EXPORT_ROF_TABLES) {
                     realization_model->applyDroughtMitigationPolicies(w);
-		        }
+                }
                 // Continuity calculations for current week
                 realization_model->continuityStep(w);
                 // Collect system data for output printing and objective calculations.
@@ -374,16 +390,18 @@ MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, dou
             // printf("Realization %lu took %f seconds.\n", r, omp_get_wtime() - start);
 
 #pragma omp critical
-	    printProgress((double) master_data_collector->getRealizations_created() / (double) realizations_to_run_unique.size());
+            printProgress(
+                    (double) master_data_collector->getRealizations_created() /
+                    (double) realizations_to_run_unique.size());
 
-        } catch (...) {
-#pragma omp atomic
-            ++had_catch;
-            error_m += to_string(realization) + " ";
-            error_file_name += "_" + to_string(realization);
-            error_file_content += to_string(realization) + ",";
-            master_data_collector->removeRealization(realization);
-        }
+//        } catch (...) {
+//#pragma omp atomic
+//            ++had_catch;
+//            error_m += to_string(realization) + " ";
+//            error_file_name += "_" + to_string(realization);
+//            error_file_content += to_string(realization) + ",";
+//            master_data_collector->removeRealization(realization);
+//        }
 
         delete realization_model;
         delete rof_model;
@@ -391,34 +409,34 @@ MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, dou
     // Handle exception from the OpenMP region and pass it up to the
     // problem class.
     if (had_catch) {
-	int world_rank;
+        int world_rank;
 #ifdef  PARALLEL
-	int mpi_initialized;
-	MPI_Initialized(&mpi_initialized);
-	if (mpi_initialized)
-             MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-	else
-	    world_rank = 0;
+        int mpi_initialized;
+        MPI_Initialized(&mpi_initialized);
+        if (mpi_initialized)
+                 MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+        else
+            world_rank = 0;
 #else
         world_rank = 0;
 #endif
 
-    // Create error file
-	error_file_name += ".csv";
-	error_m += ". Error data in " + error_file_name;
-	ofstream error_file;
-	error_file.open(error_file_name);
+        // Create error file
+        error_file_name += ".csv";
+        error_m += ". Error data in " + error_file_name;
+        ofstream error_file;
+        error_file.open(error_file_name);
 
-	// Write error rile
-	error_file << error_file_content << endl;
-    for (int i = 0; i < NUM_DEC_VAR - 1; ++i) {
-        error_file << vars[i] << ",";
-    }
-    error_file << vars[NUM_DEC_VAR - 1];
+        // Write error rile
+        error_file << error_file_content << endl;
+        for (int i = 0; i < NUM_DEC_VAR - 1; ++i) {
+            error_file << vars[i] << ",";
+        }
+        error_file << vars[NUM_DEC_VAR - 1];
 
-    // Finalize error reporting
-    error_file.close();
-	printf("%s", error_m.c_str());
+        // Finalize error reporting
+        error_file.close();
+        printf("%s", error_m.c_str());
 
 //	master_data_collector->cleanCollectorsOfDeletedRealizations();
 //        throw_with_nested(runtime_error(error_m.c_str()));

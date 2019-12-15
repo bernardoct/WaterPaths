@@ -13,11 +13,16 @@ DroughtMitigationPolicyParser::DroughtMitigationPolicyParser(string tag_name)
 
 void
 DroughtMitigationPolicyParser::parseVariables(vector<vector<string>> &block,
-                                              int n_realizations, int n_weeks, int line_no,
+                                              int n_realizations, int n_weeks,
+                                              int line_no,
                                               Graph &utilities_graph,
                                               Graph &ws_graph,
-                                              const map<string, int> &utility_name_to_id) {
-    AuxParserFunctions::replaceNameById(block, tag_name, line_no, "apply_to_utilities", 1, utility_name_to_id);
+                                              const map<string, int> &utility_name_to_id,
+                                              const map<string, int> &ws_name_to_id,
+                                              map<string, vector<vector<double>>> &pre_loaded_data) {
+    AuxParserFunctions::replaceNameById(block, tag_name, line_no,
+                                        "apply_to_utilities", 1,
+                                        utility_name_to_id);
 
     vector<unsigned long> rows_read(0);
     for (unsigned long i = 0; i < block.size(); ++i) {

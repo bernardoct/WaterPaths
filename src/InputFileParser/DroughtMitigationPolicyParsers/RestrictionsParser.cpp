@@ -12,13 +12,18 @@ RestrictionsParser::RestrictionsParser()
         : DroughtMitigationPolicyParser("[RESTRICTIONS POLICY]") {}
 
 void RestrictionsParser::parseVariables(vector<vector<string>> &block,
-                                        int n_realizations, int n_weeks, int line_no,
+                                        int n_realizations, int n_weeks,
+                                        int line_no,
                                         Graph &utilities_graph,
                                         Graph &ws_graph,
-                                        const map<string, int> &utility_name_to_id) {
+                                        const map<string, int> &utility_name_to_id,
+                                        const map<string, int> &ws_name_to_id,
+                                        map<string, vector<vector<double>>> &pre_loaded_data) {
     DroughtMitigationPolicyParser::parseVariables(block, n_realizations,
                                                   n_weeks, line_no,
-                                                  utilities_graph, ws_graph, utility_name_to_id);
+                                                  utilities_graph, ws_graph,
+                                                  utility_name_to_id, ws_name_to_id,
+                                                  pre_loaded_data);
 
     vector<unsigned long> rows_read(0);
     for (unsigned long i = 0; i < block.size(); ++i) {
@@ -45,7 +50,8 @@ void RestrictionsParser::parseVariables(vector<vector<string>> &block,
 }
 
 DroughtMitigationPolicy *
-RestrictionsParser::generateSource(int id, vector<vector<string>> &block, int line_no,
+RestrictionsParser::generateSource(int id, vector<vector<string>> &block,
+                                   int line_no,
                                    int n_realizations, int n_weeks,
                                    const map<string, int> &ws_name_to_id,
                                    const map<string, int> &utility_name_to_id,
@@ -55,11 +61,13 @@ RestrictionsParser::generateSource(int id, vector<vector<string>> &block, int li
                                    vector<WaterSource *> &water_source,
                                    vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
                                    vector<MinEnvFlowControl *> min_env_flow_controls,
-                                   vector<vector<double>>& utilities_rdm,
-                                   vector<vector<double>>& water_sources_rdm,
-                                   vector<vector<double>>& policy_rdm) {
+                                   vector<vector<double>> &utilities_rdm,
+                                   vector<vector<double>> &water_sources_rdm,
+                                   vector<vector<double>> &policy_rdm,
+                                   map<string, vector<vector<double>>> &pre_loaded_data) {
     parseVariables(block, n_realizations, n_weeks, line_no,
-                   utilities_graph, ws_graph, utility_name_to_id);
+                   utilities_graph, ws_graph, utility_name_to_id, ws_name_to_id,
+                   pre_loaded_data);
     checkMissingOrExtraParams(line_no, block);
 
     if (priceMultipliers.empty()) {

@@ -86,6 +86,10 @@ public:
     mass_balance_without_wq_pool(double net_inflow, vector<double> &demand_outflow);
 
     void setOnline() override;
+
+    void distributeStoredVolume(vector<double> &demand_outflow,
+                                double total_upstream_inflow,
+                                double available_volume_new);
 };
 
 

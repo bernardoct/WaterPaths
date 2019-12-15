@@ -42,7 +42,9 @@ public:
                         int n_realizations, int n_weeks, int line_no,
                         Graph &utilities_graph,
                         Graph &ws_graph,
-                        const map<string, int> &utility_name_to_id) override;
+                        const map<string, int> &utility_name_to_id,
+                        const map<string, int> &ws_name_to_id,
+                        map<string, vector<vector<double>>> &pre_loaded_data) override;
 
     void checkMissingOrExtraParams(int line_no,
                                    vector<vector<string>> &block) override;
@@ -58,9 +60,10 @@ public:
                    vector<WaterSource *> &water_source,
                    vector<DroughtMitigationPolicy *> &drought_mitigation_policies,
                    vector<MinEnvFlowControl *> min_env_flow_controls,
-                   vector<vector<double>>& utilities_rdm,
-                   vector<vector<double>>& water_sources_rdm,
-                   vector<vector<double>>& policy_rdm) override;
+                   vector<vector<double>> &utilities_rdm,
+                   vector<vector<double>> &water_sources_rdm,
+                   vector<vector<double>> &policy_rdm,
+                   map<string, vector<vector<double>>> &pre_loaded_data) override;
 
 };
 

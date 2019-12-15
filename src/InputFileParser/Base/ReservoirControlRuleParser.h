@@ -21,20 +21,22 @@ public:
 
     ReservoirControlRuleParser(string tag);
 
-    virtual void parseVariables(vector <vector<string>> &block,
+    virtual void parseVariables(vector<vector<string>> &block,
                                 int n_realizations, int n_weeks, int line_no,
                                 const map<string, int> &ws_name_to_id,
-                                const map<string, int> &utility_name_to_id);
+                                const map<string, int> &utility_name_to_id,
+                                map<string, vector<vector<double>>> &pre_loaded_data);
 
     virtual MinEnvFlowControl *
-    generateReservoirControlRule(vector <vector<string>> &block,
+    generateReservoirControlRule(vector<vector<string>> &block,
                                  int line_no,
                                  int n_realizations, int n_weeks,
                                  const map<string, int> &ws_name_to_id,
-                                 const map<string, int> &utility_name_to_id) = 0;
+                                 const map<string, int> &utility_name_to_id,
+                                 map<string, vector<vector<double>>> &pre_loaded_data) = 0;
 
     virtual void checkMissingOrExtraParams(int line_no,
-                                           vector <vector<string>> &block);
+                                           vector<vector<string>> &block);
 
 };
 

@@ -31,8 +31,8 @@ protected:
     vector<double> water_sources_capacities;
     vector<double> utilities_capacities;
     vector<vector<double>> demands;
-    vector<double> utilities_rdm;
-    vector<double> water_sources_rdm;
+    const vector<double> utilities_rdm;
+    const vector<double> water_sources_rdm;
     const int n_utilities;
     const int n_sources;
     int delta_realization_weeks[NUMBER_REALIZATIONS_ROF + 1];
@@ -45,8 +45,8 @@ public:
                     vector<MinEnvFlowControl *> &min_env_flow_controls,
                     const Graph &water_sources_graph,
                     const vector<vector<int>> &water_sources_to_utilities,
-                    vector<double> &utilities_rdm,
-                    vector<double> &water_sources_rdm,
+                    const vector<double> &utilities_rdm,
+                    const vector<double> &water_sources_rdm,
                     unsigned long realization_id);
 
     ContinuityModel(ContinuityModel &continuity_model);
@@ -57,8 +57,8 @@ public:
 
     virtual ~ContinuityModel();
 
-    void setRealization(unsigned long realization_id, vector<double> &utilities_rdm,
-                        vector<double> &water_sources_rdm);
+    void setRealization(unsigned long realization_id, const vector<double> &utilities_rdm,
+                        const vector<double> &water_sources_rdm);
 
     vector<int> getOnlineDownstreamSources();
 

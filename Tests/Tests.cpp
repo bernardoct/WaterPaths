@@ -11,7 +11,6 @@
 #include "../src/SystemComponents/Bonds/LevelDebtServiceBond.h"
 #include "../src/SystemComponents/Utility/Utility.h"
 #include "../src/Utils/Utils.h"
-#include "../src/SystemComponents/WaterSources/SequentialJointTreatmentExpansion.h"
 #include "../src/SystemComponents/WaterSources/ReservoirExpansion.h"
 #include "../src/ContinuityModels/ContinuityModelRealization.h"
 #include "../src/InputFileParser/MasterSystemInputFileParser.h"
@@ -22,6 +21,7 @@
 #include "../src/Controls/FixedMinEnvFlowControl.h"
 #include "../src/Controls/SeasonalMinEnvFlowControl.h"
 #include "../src/Controls/InflowMinEnvFlowControl.h"
+#include "../src/SystemComponents/WaterSources/JointTreatmentCapacityExpansion.h"
 
 using namespace Catch::literals;
 
@@ -212,8 +212,8 @@ TEST_CASE("Mass balance Allocated reservoir",
 
 }
 
-TEST_CASE("UtilityParser and infrastructure basic functionalities",
-          "[Infrastructure][UtilityParser][BondParsers]") {
+TEST_CASE("Utility and infrastructure basic functionalities",
+          "[Infrastructure][Utility][Bond]") {
     // Reservoir data
     int streamflow_n_weeks = 52 * (70 + 50);
     vector<vector<double>> streamflows =
@@ -228,12 +228,22 @@ TEST_CASE("UtilityParser and infrastructure basic functionalities",
     EvaporationSeries evaporation_series(evaporation, streamflow_n_weeks);
 
     LevelDebtServiceBond bond(0, 100.0, 25, 0.05, vector<int>(1, 0));
+    LevelDebtServiceBond bond1(1, 200.0, 25, 0.05, vector<int>(1, 0));
+    LevelDebtServiceBond bond2(2, 400.0, 25, 0.05, vector<int>(1, 0));
 
     // Reservoir
+    Reservoir existing_reservoir("Existing Reservoir", 0,
+                                 vector<Catchment *>(), 1000.0,
+                                 ILLIMITED_TREATMENT_CAPACITY,
+                                 evaporation_series, 1.);
     Reservoir reservoir("Little River Reservoir (Raleigh)", 7,
                         vector<Catchment *>(), 3700.0,
                         ILLIMITED_TREATMENT_CAPACITY, evaporation_series, 1.,
                         {4.5, 4.50001}, 17 * WEEKS_IN_YEAR, bond);
+    ReservoirExpansion expansion1("Existing Res Expansion First Phase", 8, 0, 500.,
+                                  {3, 3.0001}, 0, bond1);
+    ReservoirExpansion expansion2("Existing Res Expansion First Phase", 9, 0, 1000.,
+                                  {4, 4.0001}, 0, bond2);
 
     // UtilityParser data
     vector<vector<double>> demands =
@@ -269,259 +279,327 @@ TEST_CASE("UtilityParser and infrastructure basic functionalities",
                                                   {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7},
                                                   {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7},
                                                   {2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 2299.3, 3462.3, 3796.5, 4959.5, 7432.6, 4384.7}};
+    double total_storage_capacity;
+    double total_treatment_capacity;
+    double total_available_volume;
+    double total_stored_volume;
 
-    // Setup Infrastructure construction manager holding reservoir
-    vector<double> rof_triggers = vector<double>(1, 0.);
-    auto infra_built_remove = vector<vector<int>>();
-    vector<int> construction_order = {7};
-    vector<int> construction_order_empty;
+    vector<WaterSource *> water_sources(10);
+    vector<int> priority_draw_water_source;
+    vector<int> non_priority_draw_water_source;
+    vector<vector<double>> debt_payment_streams;
 
-    Utility utility("U1", 0, demands, streamflow_n_weeks, 0.03,
-                    demand_class_fractions, user_classes_prices,
-                    wwtp_discharge_durham, 0., construction_order,
-                    construction_order_empty, rof_triggers, 0.07, 25,
-                    0.05);
-
-    utility.addWaterSource(&reservoir);
-
-    SECTION("Construction time within bounds.",
+    SECTION("Single infrastructure option.",
             "[WaterSource][Infrastructure]") {
-        for (int i = 0; i < 10; ++i) {
-            vector<double> construction_time_interval = {3., 5.};
-            WaterReuse reuse("Test", 18, 5., construction_time_interval,
-                             7 * WEEKS_IN_YEAR, bond);
-            CHECK(reuse.getConstruction_time() > WEEKS_IN_YEAR * 3 - 1);
-            CHECK(reuse.getConstruction_time() < WEEKS_IN_YEAR * 5 + 1);
+
+        // Setup Infrastructure construction manager holding reservoir
+        vector<double> rof_triggers = vector<double>(1, 0.);
+        auto infra_built_remove = vector<vector<int>>();
+        vector<int> construction_order = {7};
+        vector<int> construction_order_empty;
+
+        Utility utility("U1", 0, demands, streamflow_n_weeks, 0.03,
+                        demand_class_fractions, user_classes_prices,
+                        wwtp_discharge_durham, 0., construction_order,
+                        construction_order_empty, rof_triggers, 0.07,
+                        vector<vector<int>>(), vector<vector<int>>());
+
+        utility.addWaterSource(&reservoir);
+
+        SECTION("Construction time within bounds.",
+                "[WaterSource][Infrastructure]") {
+            for (int i = 0; i < 10; ++i) {
+                vector<double> construction_time_interval = {3., 5.};
+                WaterReuse reuse("Test", 18, 5., construction_time_interval,
+                                 7 * WEEKS_IN_YEAR, bond);
+                CHECK(reuse.getConstruction_time() > WEEKS_IN_YEAR * 3 - 1);
+                CHECK(reuse.getConstruction_time() < WEEKS_IN_YEAR * 5 + 1);
+            }
+        }
+
+        SECTION("Infrastructure manager", "[InfrastructureManager]") {
+            InfrastructureManager infrastructure_construction_manager(0,
+                                                                      rof_triggers,
+                                                                      infra_built_remove,
+                                                                      vector<vector<int>>(),
+                                                                      0.06,
+                                                                      construction_order,
+                                                                      vector<int>());
+            infrastructure_construction_manager.connectWaterSourcesVectorsToUtilitys(
+                    water_sources, priority_draw_water_source,
+                    non_priority_draw_water_source);
+            water_sources[7] = &reservoir;
+            infrastructure_construction_manager.addWaterSource(&reservoir);
+
+            SECTION("Begin building infrastructure", "[Infrastructure]") {
+                infrastructure_construction_manager.beginConstruction(55, 7);
+                CHECK(infrastructure_construction_manager.getUnder_construction()[7]);
+            }
+
+            SECTION("Set watersource online", "[Infrastructure]") {
+                infrastructure_construction_manager.setWaterSourceOnline(
+                        (unsigned int) 7, 0, total_storage_capacity,
+                        total_treatment_capacity, total_available_volume,
+                        total_stored_volume);
+
+                CHECK(water_sources[7]->isOnline());
+            }
+
+            SECTION("Infrastruture handler high LT-ROF but week < permitting period",
+                    "[Infrastructure]") {
+                infrastructure_construction_manager.infrastructureConstructionHandler(
+                        1., 53, 0, total_storage_capacity,
+                        total_treatment_capacity,
+                        total_available_volume,
+                        total_stored_volume);
+                CHECK(!infrastructure_construction_manager.getUnder_construction()[7]);
+            }
+
+            SECTION("Infrastruture handler high LT-ROF but week > permitting period",
+                    "[Infrastructure]") {
+                infrastructure_construction_manager.infrastructureConstructionHandler(
+                        1., 1000, 0, total_storage_capacity,
+                        total_treatment_capacity,
+                        total_available_volume,
+                        total_stored_volume);
+                CHECK(infrastructure_construction_manager.getUnder_construction()[7]);
+            }
+        }
+
+
+        SECTION("Utility infrastructure construction",
+                "[Utility][Infrastructure]") {
+
+            vector<double> utility_rdm(4, 1.);
+            utility.setRealization(0, utility_rdm);
+
+            SECTION("Infrastruture handler high LT-ROF but week < permitting period") {
+                utility.infrastructureConstructionHandler(1., 0);
+                CHECK(!utility.getInfrastructure_construction_manager().getUnder_construction()[7]);
+            }
+
+            SECTION("Infrastruture handler high LT-ROF but week > permitting period") {
+                utility.infrastructureConstructionHandler(1., 1461);
+                CHECK(utility.getInfrastructure_construction_manager().getUnder_construction()[7]);
+            }
+
+            SECTION("Infrastructure beginning and finishing") {
+                utility.infrastructureConstructionHandler(1., 1461);
+                utility.infrastructureConstructionHandler(1., 1461 +
+                                                              (int) reservoir.construction_time +
+                                                              1);
+                CHECK(!utility.getInfrastructure_construction_manager().getUnder_construction()[7]);
+            }
+        }
+
+
+        SECTION("Joint infrastructure",
+                "[Infrastructure][Joint infrastructure]") {
+            vector<double> rof_triggers_non_zero = vector<double>(10, 0.1);
+            vector<int> construction_order_seq = {0};
+            Utility utility1("U1", 0, demands, streamflow_n_weeks, 0.03,
+                             demand_class_fractions, user_classes_prices,
+                             wwtp_discharge_durham, 0., construction_order_seq,
+                             construction_order_empty, rof_triggers,
+                             0.07, vector<vector<int>>(),
+                             vector<vector<int>>());
+            Utility utility2("U2", 1, demands, streamflow_n_weeks, 0.03,
+                             demand_class_fractions, user_classes_prices,
+                             wwtp_discharge_durham, 0., construction_order_seq,
+                             construction_order_empty, rof_triggers,
+                             0.07, vector<vector<int>>(),
+                             vector<vector<int>>());
+            LevelDebtServiceBond bond1(0, 200.0, 25, 0.05, vector<int>(1, 0));
+            LevelDebtServiceBond bond2(1, 300.0, 25, 0.05, vector<int>(1, 0));
+
+            // Allocated Reservoir
+            vector<int> utilities_with_allocations = {0, 1};
+            vector<double> capacity_to_be_added = {10, 20};
+            map<int, double> added_treatment_capacities = {{0, 10}, {1, 20}};
+            vector<double> allocated_fractions = {0.2, 0.4};
+            vector<double> allocated_treatment_fractions = {0.3, 0.5};
+
+            AllocatedReservoir allocated_reservoir("My allocated reservoir", 1,
+                                                   vector<Catchment *>(),
+                                                   1000.0,
+                                                   100, evaporation_series, 1.,
+                                                   utilities_with_allocations,
+                                                   allocated_fractions,
+                                                   allocated_treatment_fractions);
+
+            vector<Bond *> bonds = Utils::copyBonds({&bond1, &bond2});
+            // Sequential joint wtp expansion to be added to allocated reservoir ID 1.
+            JointTreatmentCapacityExpansion wtp("WTP expansion", 0, 1, added_treatment_capacities, bonds,
+                                                  {3.000, 3.001}, 0.);
+
+            vector<WaterSource *> water_sources =
+                    Utils::copyWaterSourceVector({&allocated_reservoir, &wtp});
+            vector<Utility *> utilities =
+                    Utils::copyUtilityVector({&utility1, &utility2});
+
+            vector<vector<int>> water_sources_to_utilities = {{0, 1},
+                                                              {0, 1}};
+            vector<DroughtMitigationPolicy *> dmps;
+            vector<MinEnvFlowControl *> mev;
+            auto rdm = vector<vector<double>>(2, vector<double>(50, 1.));
+
+            ContinuityModelRealization model(water_sources, Graph(1),
+                                             water_sources_to_utilities,
+                                             utilities, dmps, mev, rdm[0],
+                                             rdm[0], rdm[0], 0);
+
+            vector<double> lt_rofs = {1., 0.};
+
+            SECTION("Test triggering and forced construction for joint infrastructure.") {
+                // Begin construction
+                model.setLongTermROFs(lt_rofs, 100);
+
+                // Check triggering
+                CHECK(model.getContinuity_utilities()[0]->
+                        getInfrastructure_construction_manager().getUnder_construction()[0]);
+                CHECK(model.getContinuity_utilities()[1]->
+                        getInfrastructure_construction_manager().getUnder_construction()[0]);
+                CHECK(!model.getContinuity_water_sources()[0]->isOnline());
+
+                // Check financial
+                CHECK(model.getContinuity_utilities()[0]->
+                        getInfrastructure_net_present_cost() == Approx(134.99));
+                CHECK(model.getContinuity_utilities()[1]->
+                        getInfrastructure_net_present_cost() ==
+                      Approx(202.49).epsilon(0.005));
+            }
+
+            SECTION("Test setting joint infrastructure online after construction "
+                    "period.") {
+                // Begin construction
+                model.setLongTermROFs(lt_rofs, 100);
+                // Finish construction and set source online
+                model.setLongTermROFs(lt_rofs, 362);
+                CHECK(!model.getContinuity_utilities()[0]->
+                                getInfrastructure_construction_manager()
+                        .getUnder_construction()[0]);
+                CHECK(!model.getContinuity_utilities()[1]->
+                                getInfrastructure_construction_manager()
+                        .getUnder_construction()[0]);
+                CHECK(model.getContinuity_water_sources()[1]->
+                        getAllocatedTreatmentCapacity(0) == 40);
+                CHECK(model.getContinuity_water_sources()[1]->
+                        getAllocatedTreatmentCapacity(1) == 70);
+            }
+        }
+
+
+        SECTION("UtilityParser other functions", "[Utility]") {
+
+            vector<double> utility_rdm(4, 1.);
+            utility.setRealization(0, utility_rdm);
+
+            SECTION("UtilityParser split demands", "[splitDemands]") {
+                Reservoir reservoir2("R2", 0, vector<Catchment *>(), 3700. * 3,
+                                     ILLIMITED_TREATMENT_CAPACITY,
+                                     evaporation_series, 1.);
+
+                vector<double> rdm_reservoir(20, 1.);
+                reservoir.setRealization(0, rdm_reservoir);
+                reservoir2.setRealization(0, rdm_reservoir);
+
+                utility.addWaterSource(&reservoir2);
+                vector<vector<double>> split_demands(8, vector<double>(1));
+
+                SECTION("One source online and other offline") {
+                    utility.splitDemands(0, split_demands);
+
+                    CHECK(split_demands[0][0] == 100.);
+                    CHECK(split_demands[7][0] == 0.);
+                }
+
+                SECTION("Two sources online") {
+                    utility.setWaterSourceOnline(7, 0);
+                    reservoir.applyContinuity(0, 10000, 0,
+                                              split_demands[0]); // Fill reservoir
+                    utility.updateTotalAvailableVolume();
+                    utility.splitDemands(0, split_demands);
+
+                    CHECK(split_demands[0][0] == 75.);
+                    CHECK(split_demands[7][0] == 25.);
+                }
+
+                SECTION("Two sources online, unfulfilled demand") {
+                    utility.setWaterSourceOnline(7, 0);
+                    reservoir.applyContinuity(0, 260, 0,
+                                              split_demands[0]); // Fill reservoir
+                    vector<double> demand_reservoir2(1, 3700. * 3 - 270.);
+                    reservoir2.applyContinuity(0, 0, 0,
+                                               demand_reservoir2); // Fill reservoir
+                    utility.updateTotalAvailableVolume();
+                    utility.splitDemands(0, split_demands);
+
+                    CHECK(split_demands[0][0] == 20.);
+                    CHECK(split_demands[7][0] == 10.);
+                    CHECK(utility.getUnfulfilled_demand() == 70.);
+                }
+            }
         }
     }
 
-    SECTION("Infrastructure manager", "[InfrastructureManager]") {
-        InfrastructureManager infrastructure_construction_manager(0,
-                                                                  rof_triggers,
-                                                                  infra_built_remove,
-                                                                  0.06, 25,
-                                                                  0.05,
-                                                                  construction_order,
-                                                                  vector<int>());
+    SECTION("Multiple connected infrastructure options") {
+        // Setup Infrastructure construction manager holding reservoir
+        vector<double> rof_triggers = vector<double>(3, 0.1);
+        auto infra_built_remove = vector<vector<int>>();
+        vector<int> construction_order = {7, 9, 8};
+        vector<vector<int>> construction_pre_requisites = {{8, 9}};
+        vector<int> construction_order_empty;
+        int new_infra;
+        total_storage_capacity = 0;
+        priority_draw_water_source = {0};
 
-        vector<WaterSource *> water_sources(8);
-        vector<int> priority_draw_water_source;
-        vector<int> non_priority_draw_water_source;
-        vector<vector<double>> debt_payment_streams;
-        double total_storage_capacity;
-        double total_treatment_capacity;
-        double total_available_volume;
-        double total_stored_volume;
-        infrastructure_construction_manager.connectWaterSourcesVectorsToUtilitys(
+        water_sources[0] = &existing_reservoir;
+        water_sources[7] = &reservoir;
+        water_sources[8] = &expansion1;
+        water_sources[9] = &expansion2;
+
+        InfrastructureManager manager(0, rof_triggers, {{}},
+                                      construction_pre_requisites, 0.05,
+                                      construction_order,
+                                      construction_order_empty);
+
+        manager.connectWaterSourcesVectorsToUtilitys(
                 water_sources, priority_draw_water_source,
                 non_priority_draw_water_source);
-        water_sources[7] = &reservoir;
-        infrastructure_construction_manager.addWaterSource(&reservoir);
+        manager.addWaterSource(&existing_reservoir);
+        manager.addWaterSource(&reservoir);
+        manager.addWaterSource(&expansion1);
+        manager.addWaterSource(&expansion2);
 
-        SECTION("Begin building infrastructure", "[Infrastructure]") {
-            infrastructure_construction_manager.beginConstruction(55, 7);
-            CHECK(infrastructure_construction_manager.getUnder_construction()[7]);
-        }
+        new_infra = manager.infrastructureConstructionHandler(
+                1., 1, 0., total_storage_capacity, total_treatment_capacity,
+                total_available_volume, total_stored_volume);
+        CHECK(new_infra == 8);
+        CHECK(total_storage_capacity == 0);
 
-        SECTION("Set watersource online", "[Infrastructure]") {
-            infrastructure_construction_manager.setWaterSourceOnline(
-                    (unsigned int) 7, 0, total_storage_capacity,
-                    total_treatment_capacity, total_available_volume,
-                    total_stored_volume);
+        new_infra = manager.infrastructureConstructionHandler(
+                0., 499, 0., total_storage_capacity, total_treatment_capacity,
+                total_available_volume, total_stored_volume);
+        new_infra = manager.infrastructureConstructionHandler(
+                0., 540, 0., total_storage_capacity, total_treatment_capacity,
+                total_available_volume, total_stored_volume);
+        CHECK(new_infra == 9);
+        CHECK(total_storage_capacity == 1500);
 
-            CHECK(water_sources[7]->isOnline());
-        }
+        new_infra = manager.infrastructureConstructionHandler(
+                0., 1000, 0., total_storage_capacity, total_treatment_capacity,
+                total_available_volume, total_stored_volume);
+        new_infra = manager.infrastructureConstructionHandler(
+                0., 999, 0., total_storage_capacity, total_treatment_capacity,
+                total_available_volume, total_stored_volume);
+        CHECK(new_infra == NON_INITIALIZED);
+        CHECK(total_storage_capacity == 2500);
 
-        SECTION("Infrastruture handler high LT-ROF but week < permitting period",
-                "[Infrastructure]") {
-            infrastructure_construction_manager.infrastructureConstructionHandler(
-                    1., 53, 0, total_storage_capacity,
-                    total_treatment_capacity,
-                    total_available_volume,
-                    total_stored_volume);
-            CHECK(!infrastructure_construction_manager.getUnder_construction()[7]);
-        }
-
-        SECTION("Infrastruture handler high LT-ROF but week > permitting period",
-                "[Infrastructure]") {
-            infrastructure_construction_manager.infrastructureConstructionHandler(
-                    1., 1000, 0, total_storage_capacity,
-                    total_treatment_capacity,
-                    total_available_volume,
-                    total_stored_volume);
-            CHECK(infrastructure_construction_manager.getUnder_construction()[7]);
-        }
-    }
-
-    SECTION("UtilityParser infrastructure construction",
-            "[UtilityParser][Infrastructure]") {
-
-        vector<double> utility_rdm(4, 1.);
-        utility.setRealization(0, utility_rdm);
-
-        SECTION("Infrastruture handler high LT-ROF but week < permitting period") {
-            utility.infrastructureConstructionHandler(1., 0);
-            CHECK(!utility.getInfrastructure_construction_manager().getUnder_construction()[7]);
-        }
-
-        SECTION("Infrastruture handler high LT-ROF but week > permitting period") {
-            utility.infrastructureConstructionHandler(1., 1461);
-            CHECK(utility.getInfrastructure_construction_manager().getUnder_construction()[7]);
-        }
-
-        SECTION("Infrastructure beginning and finishing") {
-            utility.infrastructureConstructionHandler(1., 1461);
-            utility.infrastructureConstructionHandler(1., 1461 +
-                                                          (int) reservoir.construction_time +
-                                                          1);
-            CHECK(!utility.getInfrastructure_construction_manager().getUnder_construction()[7]);
-        }
-    }
-
-
-    SECTION("Joint infrastructure", "[Infrastructure][Joint infrastructure]") {
-        vector<double> rof_triggers_non_zero = vector<double>(10, 0.1);
-        vector<int> construction_order_seq = {0};
-        Utility utility1("U1", 0, demands, streamflow_n_weeks, 0.03,
-                         demand_class_fractions, user_classes_prices,
-                         wwtp_discharge_durham, 0., construction_order_seq,
-                         construction_order_empty, rof_triggers,
-                         0.07, 25, 0.05);
-        Utility utility2("U2", 1, demands, streamflow_n_weeks, 0.03,
-                         demand_class_fractions, user_classes_prices,
-                         wwtp_discharge_durham, 0., construction_order_seq,
-                         construction_order_empty, rof_triggers,
-                         0.07, 25, 0.05);
-        LevelDebtServiceBond bond1(0, 200.0, 25, 0.05, vector<int>(1, 0));
-        LevelDebtServiceBond bond2(1, 300.0, 25, 0.05, vector<int>(1, 0));
-
-        // Allocated Reservoir
-        vector<int> utilities_with_allocations = {0, 1};
-        vector<double> allocated_fractions = {0.2, 0.4};
-        vector<double> allocated_treatment_fractions = {0.3, 0.5};
-
-        AllocatedReservoir allocated_reservoir("My allocated reservoir", 1,
-                                               vector<Catchment *>(), 1000.0,
-                                               100, evaporation_series, 1.,
-                                               utilities_with_allocations,
-                                               allocated_fractions,
-                                               allocated_treatment_fractions);
-
-        vector<double> capacity_to_be_added = {10, 20};
-        vector<Bond *> bonds = Utils::copyBonds({&bond1, &bond2});
-        // Sequential joint wtp expansion to be added to allocated reservoir ID 1.
-        SequentialJointTreatmentExpansion wtp("WTP expansion", 0, 1, 0,
-                                              vector<int>(2),
-                                              capacity_to_be_added, bonds,
-                                              {3.000, 3.001}, 0.);
-
-        vector<WaterSource *> water_sources =
-                Utils::copyWaterSourceVector({&allocated_reservoir, &wtp});
-        vector<Utility *> utilities =
-                Utils::copyUtilityVector({&utility1, &utility2});
-
-        vector<vector<int>> water_sources_to_utilities = {{0, 1},
-                                                          {0, 1}};
-        vector<DroughtMitigationPolicy *> dmps;
-        vector<MinEnvFlowControl *> mev;
-        auto rdm = vector<vector<double>>(2, vector<double>(50, 1.));
-
-        ContinuityModelRealization model(water_sources, Graph(1),
-                                         water_sources_to_utilities,
-                                         utilities, dmps, mev, rdm[0],
-                                         rdm[0], rdm[0], 0);
-
-        vector<double> lt_rofs = {1., 0.};
-
-        SECTION("Test triggering and forced construction for joint infrastructure.") {
-            // Begin construction
-            model.setLongTermROFs(lt_rofs, 100);
-
-            // Check triggering
-            CHECK(model.getContinuity_utilities()[0]->
-                    getInfrastructure_construction_manager().getUnder_construction()[0]);
-            CHECK(model.getContinuity_utilities()[1]->
-                    getInfrastructure_construction_manager().getUnder_construction()[0]);
-            CHECK(!model.getContinuity_water_sources()[0]->isOnline());
-
-            // Check financial
-            CHECK(model.getContinuity_utilities()[0]->
-                    getInfrastructure_net_present_cost() == Approx(134.99));
-            CHECK(model.getContinuity_utilities()[1]->
-                    getInfrastructure_net_present_cost() ==
-                  Approx(202.49).epsilon(0.005));
-        }
-
-        SECTION("Test setting joint infrastructure online after construction "
-                "period.") {
-            // Begin construction
-            model.setLongTermROFs(lt_rofs, 100);
-            // Finish construction and set source online
-            model.setLongTermROFs(lt_rofs, 362);
-            CHECK(!model.getContinuity_utilities()[0]->
-                            getInfrastructure_construction_manager()
-                    .getUnder_construction()[0]);
-            CHECK(!model.getContinuity_utilities()[1]->
-                            getInfrastructure_construction_manager()
-                    .getUnder_construction()[0]);
-            CHECK(model.getContinuity_water_sources()[1]->
-                    getAllocatedTreatmentCapacity(0) == 40);
-            CHECK(model.getContinuity_water_sources()[1]->
-                    getAllocatedTreatmentCapacity(1) == 70);
-        }
-    }
-
-
-    SECTION("UtilityParser other functions", "[UtilityParser]") {
-
-        vector<double> utility_rdm(4, 1.);
-        utility.setRealization(0, utility_rdm);
-
-        SECTION("UtilityParser split demands", "[splitDemands]") {
-            Reservoir reservoir2("R2", 0, vector<Catchment *>(), 3700. * 3,
-                                 ILLIMITED_TREATMENT_CAPACITY,
-                                 evaporation_series, 1.);
-
-            vector<double> rdm_reservoir(20, 1.);
-            reservoir.setRealization(0, rdm_reservoir);
-            reservoir2.setRealization(0, rdm_reservoir);
-
-            utility.addWaterSource(&reservoir2);
-            vector<vector<double>> split_demands(8, vector<double>(1));
-
-            SECTION("One source online and other offline") {
-                utility.splitDemands(0, split_demands);
-
-                CHECK(split_demands[0][0] == 100.);
-                CHECK(split_demands[7][0] == 0.);
-            }
-
-            SECTION("Two sources online") {
-                utility.setWaterSourceOnline(7, 0);
-                reservoir.applyContinuity(0, 10000, 0,
-                                          split_demands[0]); // Fill reservoir
-                utility.updateTotalAvailableVolume();
-                utility.splitDemands(0, split_demands);
-
-                CHECK(split_demands[0][0] == 75.);
-                CHECK(split_demands[7][0] == 25.);
-            }
-
-            SECTION("Two sources online, unfulfilled demand") {
-                utility.setWaterSourceOnline(7, 0);
-                reservoir.applyContinuity(0, 260, 0,
-                                          split_demands[0]); // Fill reservoir
-                vector<double> demand_reservoir2(1, 3700. * 3 - 270.);
-                reservoir2.applyContinuity(0, 0, 0,
-                                           demand_reservoir2); // Fill reservoir
-                utility.updateTotalAvailableVolume();
-                utility.splitDemands(0, split_demands);
-
-                CHECK(split_demands[0][0] == 20.);
-                CHECK(split_demands[7][0] == 10.);
-                CHECK(utility.getUnfulfilled_demand() == 70.);
-            }
-        }
+        new_infra = manager.infrastructureConstructionHandler(
+                1., 1500, 0., total_storage_capacity, total_treatment_capacity,
+                total_available_volume, total_stored_volume);
+        CHECK(new_infra == 7);
+        CHECK(total_storage_capacity == 2500);
     }
 }
 
@@ -666,19 +744,19 @@ TEST_CASE("Test Joint Triggering of Allocated Reservoir",
     vector<int> construction_order_seq = {2};
 
 
-    Utility utility1((char *) "U1", 0, demands, streamflow_n_weeks, 0.03,
+    Utility utility1("U1", 0, demands, streamflow_n_weeks, 0.03,
                      demand_class_fractions, user_classes_prices,
                      wwtp_discharge, 0.,
                      construction_order_seq, construction_order_empty,
-                     rof_triggers,
-                     0.07, 25, 0.05);
+                     rof_triggers, 0.07, vector<vector<int>>(),
+                     vector<vector<int>>());
 
-    Utility utility2((char *) "U2", 1, demands, streamflow_n_weeks, 0.03,
+    Utility utility2("U2", 1, demands, streamflow_n_weeks, 0.03,
                      demand_class_fractions, user_classes_prices,
                      wwtp_discharge, 0.,
                      construction_order_seq, construction_order_empty,
-                     rof_triggers,
-                     0.07, 25, 0.05);
+                     rof_triggers, 0.07, vector<vector<int>>(),
+                     vector<vector<int>>());
 
     vector<Utility *> utilities;
     utilities.push_back(&utility1);
@@ -752,21 +830,23 @@ TEST_CASE("Create a utility", "[UtilityParser]") {
     vector<vector<double>> watertownUserClassesWaterPrices = Utils::parse2DCsvFile(
             "../TestFiles/caryUserClassesWaterPrices.csv");
 
-    Utility watertown((char *) "Watertown", 0, demand_watertown, demand_n_weeks,
+    Utility watertown("Watertown", 0, demand_watertown, demand_n_weeks,
                       .1,
                       watertownDemandClassesFractions,
                       watertownUserClassesWaterPrices, wwtp_discharge_watertown,
-                      0,
-                      construction_order_seq, vector<int>(), rof_triggers,
-                      .05, 30, .05);
+                      0, construction_order_seq, vector<int>(), rof_triggers,
+                      .05, vector<vector<int>>(), vector<vector<int>>());
 };
 
 TEST_CASE("Read time series.", "[Time series parsing]") {
     SECTION("Read time series.", "[Time series parsing]") {
-        vector<string> paths = {"../TestFiles/inflows/durham_inflows.csv",
-                                "../TestFiles/inflows/falls_lake_inflows.csv"};
+        auto series1 = Utils::parse2DCsvFile(
+                "../TestFiles/inflows/durham_inflows.csv");
+        auto series2 = Utils::parse2DCsvFile(
+                "../TestFiles/inflows/falls_lake_inflows.csv");
+        vector<vector<vector<double>> *> series = {&series1, &series2};
         CatchmentParser catchment_parser;
-        catchment_parser.parseSeries(paths, 3000, 1000);
+        catchment_parser.parseSeries(series, 3000, 1000);
 
         auto catchments = catchment_parser.getParsedCatchments();
         vector<double> rdms(50, 1.);
@@ -779,37 +859,38 @@ TEST_CASE("Read time series.", "[Time series parsing]") {
 }
 
 TEST_CASE("Read input file.",
-          "[Input File Parser][Reservoir][Allocated Reservoir][Input File Parser][Reservoir Expansion][Water Reuse][BondParsers][Time series parsing][Exceptions][Water Sources Graph]") {
+          "[Input File Parser][Aux input functions][Read input file block][Exceptions]") {
 
     auto rdm_vec = vector<double>(50, 1.);
 
     SECTION("Check missing parameter exception handling for input parser",
             "[Input File Parser][Exceptions]") {
-        MasterSystemInputFileParser parser(<#initializer#>);
         string input_test_file = "../Tests/test_input_file_missing_name.wp";
-        CHECK_THROWS_AS(parser.parseFile(input_test_file), MissingParameter);
+        MasterSystemInputFileParser parser;
+        CHECK_THROWS_AS(parser.preloadAndCheckInputFile(input_test_file),
+                        MissingParameter);
     }
 
     SECTION("Check mutually implicative exception handling for input parser",
             "[Input File Parser][Exceptions]") {
-        MasterSystemInputFileParser parser(<#initializer#>);
+        MasterSystemInputFileParser parser;
         string input_test_file = "../Tests/test_input_file_incomplete_non_existing_ws.wp";
-        CHECK_THROWS_AS(parser.parseFile(input_test_file),
+        parser.preloadAndCheckInputFile(input_test_file);
+        CHECK_THROWS_AS(parser.createSystemObjects(nullptr),
                         InconsistentMutuallyImplicativeParameters);
     }
 
     string input_test_file = "../Tests/test_input_file.wp";
 
     SECTION("Check if block is read appropriately.",
-            "[Input File Parser][Read input file block][Water Reuse][BondParsers]") {
-        MasterSystemInputFileParser parser(<#initializer#>);
+            "[Input File Parser][Read input file block]") {
+        MasterSystemInputFileParser parser;
         int l;
         ifstream inputFile(input_test_file);
         string line;
-        getline(inputFile, line);
-        getline(inputFile, line);
-        getline(inputFile, line);
-        auto block = parser.readBlock(inputFile, l, line);
+        while (line != "[RESERVOIR]")
+            getline(inputFile, line);
+        auto block = MasterSystemInputFileParser::readBlock(inputFile, l, line);
 
         CHECK(block.size() == 6);
         CHECK(block[0][0] == "name");
@@ -818,6 +899,29 @@ TEST_CASE("Read input file.",
         CHECK(block[5][1] == "222");
     }
 
+    SECTION("Check if decision variables are properly inserted in a line.",
+            "[Input File Parser][Read input file block]") {
+        MasterSystemInputFileParser parser;
+        string data = "0.1,%%%,%%%,%%%";
+        vector<double> vars = {0.13, 0.24, 24, 0.2, 0.1};
+        int count_var = 0;
+        parser.replaceNumericVarsIntoPlaceHolders(vars.data(), count_var, data);
+        CHECK(data == "0.1,0.130000,0.240000,24.000000");
+
+        data = "@ccccc,aaa,@bb";
+        parser.reorderCSVDataInBlockLine(vars.data(), count_var, data);
+        CHECK(data == "bb,aaa,ccccc");
+
+        vars = {0.9, 0.8, 0.13, 0.24, 24, 0.2, 0.1};
+        vector<string> v1 = {"param1", "%%%,0.1", "0.75,%%%"};
+        vector<string> v2 = {"param2", "0.1,%%%,%%%,%%%", "@ccccc,aaa,@bb"};
+        vector<vector<vector<string>>> block = {{v1, v2}};
+        parser.replacePlaceHoldersByDVs(vars.data(), block);
+        v1 = {"param1", "0.900000,0.1", "0.75,0.800000"};
+        v2 = {"param2", "0.1,0.130000,0.240000,24.000000", "bb,aaa,ccccc"};
+        CHECK(block[0][0] == v1);
+        CHECK(block[0][1] == v2);
+    }
 }
 
 int zero_week = -(int) (WEEKS_IN_YEAR * WEEKS_ROF_SHORT_TERM) + 104;
@@ -827,8 +931,9 @@ string input_test_file = "../Tests/test_input_file.wp";
 TEST_CASE(
         "Checking if water sources numeric and text data was parsed correctly.",
         "[Input File Parser][Water Sources][BondParsers]") {
-    MasterSystemInputFileParser parser(<#initializer#>);
-    parser.parseFile(input_test_file);
+    MasterSystemInputFileParser parser;
+    parser.preloadAndCheckInputFile(input_test_file);
+    parser.createSystemObjects(nullptr);
     auto water_sources = parser.getWaterSources();
 
     SECTION("Checking if built reservoir numeric and text data was parsed correctly.",
@@ -916,8 +1021,9 @@ TEST_CASE(
 
 TEST_CASE("Checking if utility numeric and text data was parsed correctly.",
           "[Input File Parser][UtilityParser][BondParsers]") {
-    MasterSystemInputFileParser parser(<#initializer#>);
-    parser.parseFile(input_test_file);
+    MasterSystemInputFileParser parser;
+    parser.preloadAndCheckInputFile(input_test_file);
+    parser.createSystemObjects(new double);
     auto utilities = parser.getUtilities();
     CHECK(utilities[0]->id == 0);
     CHECK(utilities[0]->name == "Watertown");
@@ -936,20 +1042,19 @@ TEST_CASE("Checking if utility numeric and text data was parsed correctly.",
 
 TEST_CASE("Check parsers of auxiliary data.",
           "[Input File Parser][Water Sources Graph][source to utility matrix]") {
-    MasterSystemInputFileParser parser(<#initializer#>);
-    parser.parseFile(input_test_file);
+    MasterSystemInputFileParser parser;
+    parser.preloadAndCheckInputFile(input_test_file);
+    parser.createSystemObjects(nullptr);
     SECTION("Checking if graph was imported properly.") {
         const auto &water_sources_graph = parser.getWaterSourcesGraph();
         vector<int> top_order = {0, 1, 2, 6, 3, 5, 4};
         CHECK(water_sources_graph.getTopological_order() == top_order);
-    }
-    SECTION("Checking if connectivity matrix was imported properly.") {
+    }SECTION("Checking if connectivity matrix was imported properly.") {
         auto matrix = parser.getReservoirUtilityConnectivityMatrix();
         CHECK(matrix[0][0] == 0);
         CHECK(matrix[0][6] == 10);
-        CHECK(matrix[2][1] == 12);
-    }
-    SECTION("Checking if storage shift table was imported properly.") {
+        CHECK(matrix[2][2] == 12);
+    }SECTION("Checking if storage shift table was imported properly.") {
         auto matrix = parser.getTableStorageShift();
         CHECK(matrix[0][0] == 0);
         CHECK(matrix[2][5] == 1500);
@@ -960,8 +1065,9 @@ TEST_CASE("Check parsers of auxiliary data.",
 
 TEST_CASE("Checking if drought mitigation instruments are imported properly.",
           "[Input File Parser][Restrictions][Transfers][Drought Mitigation Policies]") {
-    MasterSystemInputFileParser parser(<#initializer#>);
-    parser.parseFile(input_test_file);
+    MasterSystemInputFileParser parser;
+    parser.preloadAndCheckInputFile(input_test_file);
+    parser.createSystemObjects(new double);
     const auto &drought_mitigation_policies = parser.getDroughtMitigationPolicy();
     SECTION("Checking if restrictions are imported properly",
             "[Input File Parser][Restrictions][Drought Mitigation Policies]") {
@@ -1001,8 +1107,9 @@ TEST_CASE("Checking if drought mitigation instruments are imported properly.",
 
 TEST_CASE("Checking if reservoir control rules are imported properly.",
           "[Input File Parser][Reservoir Control Rules]") {
-    MasterSystemInputFileParser parser(<#initializer#>);
-    parser.parseFile(input_test_file);
+    MasterSystemInputFileParser parser;
+    parser.preloadAndCheckInputFile(input_test_file);
+    parser.createSystemObjects(new double);
     const auto &reservoir_control_rules = parser.getReservoirControlRules();
     auto nrr_control = dynamic_cast<FixedMinEnvFlowControl *>(reservoir_control_rules[0]);
     CHECK(nrr_control->water_source_id == 5);

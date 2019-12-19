@@ -227,6 +227,9 @@ int main(int argc, char *argv[]) {
 
     if (!system_input_file.empty()) {
         problem_ptr = new InputFileProblem(system_input_file);
+        run_optimization = dynamic_cast<InputFileProblem *>(problem_ptr)->isOptimize();
+        nfe = dynamic_cast<InputFileProblem *>(problem_ptr)->getNFunctionEvals();
+        output_frequency = dynamic_cast<InputFileProblem *>(problem_ptr)->getRuntimeOutputInterval();
     } else {
         vector<int> solutions_to_run_range;
         if (last_solution != NON_INITIALIZED) {

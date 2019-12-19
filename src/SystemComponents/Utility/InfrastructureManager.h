@@ -17,7 +17,6 @@ private:
     vector<int> *priority_draw_water_source;
     vector<int> *non_priority_draw_water_source;
     vector<vector<int>> infra_if_built_remove;
-    vector<vector<int>> construction_pre_requisites;
     vector<WaterSource *> *water_sources;
     int id;
     double infra_discount_rate;
@@ -34,7 +33,6 @@ public:
     InfrastructureManager(int id,
                           const vector<double> &infra_construction_triggers,
                           const vector<vector<int>> &infra_if_built_remove,
-                          const vector<vector<int>> &infra_if_built_also_build,
                           double infra_discount_rate,
                           vector<int> rof_infra_construction_order,
                           vector<int> demand_infra_construction_order);

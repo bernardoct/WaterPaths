@@ -24,13 +24,15 @@ int WaterSource::seed = NON_INITIALIZED;
  * @param treatment_capacity
  * @param source_type
  */
-WaterSource::WaterSource(string name, const int id, const vector<Catchment *> &catchments,
-                         const double capacity, vector<int> connected_sources, double treatment_capacity,
+WaterSource::WaterSource(string name, const int id,
+                         const vector<Catchment *> &catchments,
+                         const double capacity,
+                         double treatment_capacity,
                          const int source_type)
         : available_volume(capacity),
           permitting_time(NON_INITIALIZED),
           capacity(capacity),
-          built_in_sequence(connected_sources),
+          construction_prerequisites({}),
           online(ONLINE),
           total_treatment_capacity(treatment_capacity),
           highest_alloc_id(NOT_ALLOCATED),
@@ -56,22 +58,26 @@ WaterSource::WaterSource(string name, const int id, const vector<Catchment *> &c
  * @param construction_time_range
  * @param construction_cost_of_capital
  */
-WaterSource::WaterSource(string name, const int id, const vector<Catchment *> &catchments,
-                         const double capacity, double treatment_capacity, vector<int> connected_sources,
-                         const int source_type, const vector<double> construction_time_range,
+WaterSource::WaterSource(string name, const int id,
+                         const vector<Catchment *> &catchments,
+                         const double capacity, double treatment_capacity,
+                         vector<int> built_in_sequence,
+                         const int source_type,
+                         const vector<double> construction_time_range,
                          double permitting_period, Bond &bond)
         : available_volume(capacity),
           permitting_time(permitting_period),
           bonds(Utils::copyBonds(vector<Bond *>(1, &bond))),
           capacity(capacity),
-          built_in_sequence(connected_sources),
+          construction_prerequisites(built_in_sequence),
           online(OFFLINE),
           total_treatment_capacity(treatment_capacity),
           highest_alloc_id(NOT_ALLOCATED),
           id(id),
           name(name),
           source_type(source_type),
-          construction_time(randomConstructionTime(construction_time_range[0], construction_time_range[1])) {
+          construction_time(randomConstructionTime(construction_time_range[0],
+                                                   construction_time_range[1])) {
     for (Catchment *c : catchments) {
         this->catchments.emplace_back(*c);
     }
@@ -91,22 +97,26 @@ WaterSource::WaterSource(string name, const int id, const vector<Catchment *> &c
  * @param permitting_period
  * @param bonds
  */
-WaterSource::WaterSource(string name, const int id, const vector<Catchment *> &catchments,
-                         const double capacity, double treatment_capacity, vector<int> connected_sources,
-                         const int source_type, const vector<double> construction_time_range,
+WaterSource::WaterSource(string name, const int id,
+                         const vector<Catchment *> &catchments,
+                         const double capacity, double treatment_capacity,
+                         vector<int> built_in_sequence,
+                         const int source_type,
+                         const vector<double> construction_time_range,
                          double permitting_period, vector<Bond *> bonds)
         : available_volume(capacity),
           permitting_time(permitting_period),
           bonds(bonds),
           capacity(capacity),
-          built_in_sequence(connected_sources),
+          construction_prerequisites(built_in_sequence),
           online(OFFLINE),
           total_treatment_capacity(treatment_capacity),
           highest_alloc_id(NOT_ALLOCATED),
           id(id),
           name(name),
           source_type(source_type),
-          construction_time(randomConstructionTime(construction_time_range[0], construction_time_range[1])) {
+          construction_time(randomConstructionTime(construction_time_range[0],
+                                                   construction_time_range[1])) {
     for (Catchment *c : catchments) {
         this->catchments.emplace_back(*c);
     }
@@ -124,14 +134,18 @@ WaterSource::WaterSource(string name, const int id, const vector<Catchment *> &c
  * @param treatment_capacity
  * @param source_type
  */
-WaterSource::WaterSource(string name, const int id, const vector<Catchment *> &catchments,
-                         const double capacity, double treatment_capacity, vector<int> connected_sources,
-                         const int source_type, vector<double> allocated_treatment_fractions,
-                         vector<double> allocated_fractions, vector<int> utilities_with_allocations)
+WaterSource::WaterSource(string name, const int id,
+                         const vector<Catchment *> &catchments,
+                         const double capacity, double treatment_capacity,
+                         vector<int> built_in_sequence,
+                         const int source_type,
+                         vector<double> allocated_treatment_fractions,
+                         vector<double> allocated_fractions,
+                         vector<int> utilities_with_allocations)
         : available_volume(capacity),
           permitting_time(NON_INITIALIZED),
           capacity(capacity),
-          built_in_sequence(connected_sources),
+          construction_prerequisites(built_in_sequence),
           utilities_with_allocations(utilities_with_allocations),
           wq_pool_id(NON_INITIALIZED),
           online(ONLINE),
@@ -163,16 +177,21 @@ WaterSource::WaterSource(string name, const int id, const vector<Catchment *> &c
  * @param construction_time_range
  * @param construction_cost_of_capital
  */
-WaterSource::WaterSource(string name, const int id, const vector<Catchment *> &catchments,
-                         const double capacity, double treatment_capacity, vector<int> built_in_sequence,
-                         const int source_type, vector<double> allocated_treatment_fractions,
-                         vector<double> allocated_fractions, vector<int> utilities_with_allocations,
-                         const vector<double> construction_time_range, double permitting_period, Bond &bond)
+WaterSource::WaterSource(string name, const int id,
+                         const vector<Catchment *> &catchments,
+                         const double capacity, double treatment_capacity,
+                         vector<int> built_in_sequence,
+                         const int source_type,
+                         vector<double> allocated_treatment_fractions,
+                         vector<double> allocated_fractions,
+                         vector<int> utilities_with_allocations,
+                         const vector<double> construction_time_range,
+                         double permitting_period, Bond &bond)
         : available_volume(capacity),
           permitting_time(permitting_period),
           bonds(Utils::copyBonds(vector<Bond *>(1, &bond))),
           capacity(capacity),
-          built_in_sequence(built_in_sequence),
+          construction_prerequisites(built_in_sequence),
           utilities_with_allocations(utilities_with_allocations),
           wq_pool_id(NON_INITIALIZED),
           online(OFFLINE),
@@ -181,7 +200,8 @@ WaterSource::WaterSource(string name, const int id, const vector<Catchment *> &c
           id(id),
           name(name),
           source_type(source_type),
-          construction_time(randomConstructionTime(construction_time_range[0], construction_time_range[1])) {
+          construction_time(randomConstructionTime(construction_time_range[0],
+                                                   construction_time_range[1])) {
     setAllocations(utilities_with_allocations,
                    allocated_fractions,
                    allocated_treatment_fractions);
@@ -195,12 +215,14 @@ WaterSource::WaterSource(string name, const int id, const vector<Catchment *> &c
 
 void WaterSource::checkForInputErrorsConstruction() {
     if (std::isnan(permitting_time) || permitting_time < 0) {
-        string error = "Invalid permitting period for water source " + to_string(id);
+        string error =
+                "Invalid permitting period for water source " + to_string(id);
         throw invalid_argument(error.c_str());
     }
 
     if (std::isnan(construction_time) || construction_time < 0) {
-        string error = "Invalid construction time for water source " + to_string(id);
+        string error =
+                "Invalid construction time for water source " + to_string(id);
         throw invalid_argument(error.c_str());
     }
 }
@@ -217,12 +239,14 @@ WaterSource::WaterSource(const WaterSource &water_source) :
         permitting_time(water_source.permitting_time),
         bonds(Utils::copyBonds(water_source.bonds)),
         upstream_min_env_inflow(water_source.upstream_min_env_inflow),
-        capacity(water_source.capacity), 
-        built_in_sequence(water_source.built_in_sequence),
+        capacity(water_source.capacity),
+        construction_prerequisites(water_source.construction_prerequisites),
         available_allocated_volumes(water_source.available_allocated_volumes),
         allocated_capacities(water_source.allocated_capacities),
-        allocated_treatment_capacities(water_source.allocated_treatment_capacities),
-        allocated_treatment_fractions(water_source.allocated_treatment_fractions),
+        allocated_treatment_capacities(
+                water_source.allocated_treatment_capacities),
+        allocated_treatment_fractions(
+                water_source.allocated_treatment_fractions),
         allocated_fractions(water_source.allocated_fractions),
         supply_allocated_fractions(water_source.supply_allocated_fractions),
         utilities_with_allocations(water_source.utilities_with_allocations),
@@ -287,7 +311,7 @@ WaterSource &WaterSource::operator=(const WaterSource &water_source) {
         available_allocated_volumes = water_source.available_allocated_volumes;
         allocated_capacities = water_source.allocated_capacities;
         allocated_treatment_capacities = water_source.allocated_treatment_capacities;
-    } 
+    }
 
     catchments.clear();
     for (Catchment &c : catchments) {
@@ -329,7 +353,6 @@ bool WaterSource::compare(WaterSource *lhs, WaterSource *rhs) {
 }
 
 
-
 /**
  * Initial set up of allocations with full reservoir in the beginning of the
  * simulations. To be used in constructors only.
@@ -342,44 +365,25 @@ void WaterSource::setAllocations(
         vector<double> &allocated_treatment_fractions) {
     if (utilities_with_allocations.size() != allocated_fractions.size())
         throw invalid_argument("There must be one allocation fraction in "
-                                         "utilities_with_allocations for "
-                                         "each utility id in "
-                                         "allocated_fractions.");
+                               "utilities_with_allocations for "
+                               "each utility id in "
+                               "allocated_fractions.");
 
     total_allocated_fraction = accumulate(allocated_fractions.begin(),
                                           allocated_fractions.end(),
                                           0.0);
 
-    if (total_allocated_fraction < 1.0) {
-        for (int i = 0; i < (int) utilities_with_allocations.size(); ++i)
-            if (utilities_with_allocations[i] == WATER_QUALITY_ALLOCATION) {
-                allocated_fractions[i] += 1. - total_allocated_fraction;
-            }
-    } else if (total_allocated_fraction > 1.) {
-//        printf("Water Source %d has allocation fractions whose sum are"
-//                               " more than 1: ", id);
-//	for (int i = 0; i < allocated_fractions.size(); ++i) {
-//		printf("Alloc %d:  %f\n", utilities_with_allocations[i], allocated_fractions[i]);
-//	}
-        string error = "Water Source " + to_string(id) + 
-		" has allocation fractions whose sum are more than 1:\n ";
-	for (int i = 0; i < allocated_fractions.size(); ++i) {
-		error += "UtilityParser " + to_string(utilities_with_allocations[i])
-			+ ": " + to_string(allocated_fractions[i]) + "\n";
-	}
-
-	char error_carray[error.size() + 1];
-	strcpy(error_carray, error.c_str());
-
-        throw invalid_argument(error_carray);
-    }
+    checkAllocations(
+            total_allocated_fraction, utilities_with_allocations,
+            allocated_fractions);
 
     // Check if treatment capacity was allocated to water quality pool
     auto it = std::find(utilities_with_allocations.begin(),
-            utilities_with_allocations.end(), WATER_QUALITY_ALLOCATION);
+                        utilities_with_allocations.end(),
+                        WATER_QUALITY_ALLOCATION);
     if (it != utilities_with_allocations.end() &&
-            utilities_with_allocations.size() ==
-            allocated_treatment_fractions.size()) {
+        utilities_with_allocations.size() ==
+        allocated_treatment_fractions.size()) {
         string error = "Water Source ";
         error += to_string(id) + " has treatment capacity allocated to water "
                                  "quality pool.";
@@ -389,38 +393,44 @@ void WaterSource::setAllocations(
     if (it == utilities_with_allocations.end()) {
         if (utilities_with_allocations.size() != allocated_fractions.size()) {
             string error = "Water Source ";
-            error += to_string(id) + " either has capacity fractions allocated to "
-                                     "no utilities or utilities with no allocated "
-                                     "capacities.";
+            error += to_string(id) +
+                     " either has capacity fractions allocated to "
+                     "no utilities or utilities with no allocated "
+                     "capacities.";
             throw invalid_argument(error.c_str());
         }
-        if (utilities_with_allocations.size() != allocated_treatment_fractions.size()) {
+        if (utilities_with_allocations.size() !=
+            allocated_treatment_fractions.size()) {
             string error = "Water Source ";
-            error += to_string(id) + " either has treatment fractions allocated to "
-                                     "no utilities or utilities with no allocated "
-                                     "treatment fractions.";
+            error += to_string(id) +
+                     " either has treatment fractions allocated to "
+                     "no utilities or utilities with no allocated "
+                     "treatment fractions.";
             throw invalid_argument(error.c_str());
         }
     } else {
         if (utilities_with_allocations.size() != allocated_fractions.size()) {
             string error = "Water Source ";
-            error += to_string(id) + " either has capacity fractions allocated to "
-                                     "no utilities or utilities with no allocated "
-                                     "capacities.";
+            error += to_string(id) +
+                     " either has capacity fractions allocated to "
+                     "no utilities or utilities with no allocated "
+                     "capacities.";
             throw invalid_argument(error.c_str());
         }
-        if (utilities_with_allocations.size() != allocated_treatment_fractions.size() + 1) {
+        if (utilities_with_allocations.size() !=
+            allocated_treatment_fractions.size() + 1) {
             string error = "Water Source ";
-            error += to_string(id) + " either has treatment fractions allocated to "
-                                     "no utilities or utilities with no allocated "
-                                     "treatment fractions.";
+            error += to_string(id) +
+                     " either has treatment fractions allocated to "
+                     "no utilities or utilities with no allocated "
+                     "treatment fractions.";
             throw invalid_argument(error.c_str());
         }
     }
 
     // Have water quality pool as a reservoir with ID next to highest ID
     // allocation.
-    wq_pool_id = static_cast<unsigned int>(
+    wq_pool_id = static_cast<int>(
             *std::max_element(utilities_with_allocations.begin(),
                               utilities_with_allocations.end()) + 1);
     highest_alloc_id = wq_pool_id;
@@ -468,7 +478,51 @@ void WaterSource::setAllocations(
 
     for (int i = 0; i < wq_pool_id; ++i) {
         supply_allocated_fractions[i] = this->allocated_fractions[i] /
-                (1. - this->allocated_fractions[wq_pool_id]);
+                                        (1. -
+                                         this->allocated_fractions[wq_pool_id]);
+    }
+}
+
+void WaterSource::checkAllocations(double total_allocated_fraction,
+                                   vector<int> &utilities_with_allocations,
+                                   vector<double> &allocated_fractions) const {
+    if (total_allocated_fraction < 1.0) {
+        // add any unallocated capacity to water quality pool.
+        for (int i = 0; i < (int) utilities_with_allocations.size(); ++i)
+            if (utilities_with_allocations[i] == WATER_QUALITY_ALLOCATION) {
+                allocated_fractions[i] += 1. - total_allocated_fraction;
+            }
+    } else if (total_allocated_fraction > 1.) {
+#ifdef PARALLEL
+#else
+        // otherwise return a warning message saying excess allocation will be normalized across utilities.
+        string warning = "Water Source " + to_string(id) +
+                         " has allocation fractions whose sum are more than 1:\n ";
+        for (int i = 0; i < allocated_fractions.size(); ++i) {
+            warning +=
+                    "UtilityParser " + to_string(utilities_with_allocations[i])
+                    + ": " + to_string(allocated_fractions[i]) + "\n";
+        }
+        warning += "Renormalizing non-water-quality allocations.";
+
+        printf("%s", warning.c_str());
+#endif
+
+        double sum_supply_allocs = 0.;
+        double wq_alloc = 0;
+        for (int i = 0; i < (int) utilities_with_allocations.size(); ++i) {
+            if (utilities_with_allocations[i] != WATER_QUALITY_ALLOCATION) {
+                sum_supply_allocs += allocated_fractions[i];
+            } else {
+                wq_alloc = allocated_fractions[i];
+            }
+        }
+        for (int i = 0; i < (int) utilities_with_allocations.size(); ++i) {
+            if (utilities_with_allocations[i] != WATER_QUALITY_ALLOCATION) {
+                sum_supply_allocs = allocated_fractions[i] / sum_supply_allocs *
+                                    (1. - wq_alloc);
+            }
+        }
     }
 }
 
@@ -479,9 +533,10 @@ void WaterSource::setAllocations(
  * water source, excluding water for the catchment between both water sources.
  * @param demand_outflow demand from utility.
  */
-void WaterSource::continuityWaterSource(int week, double &upstream_source_inflow,
-                                        double &wastewater_inflow,
-                                        vector<double> &demand_outflow) {
+void
+WaterSource::continuityWaterSource(int week, double &upstream_source_inflow,
+                                   double &wastewater_inflow,
+                                   vector<double> &demand_outflow) {
     if (online)
         applyContinuity(week, upstream_source_inflow, wastewater_inflow,
                         demand_outflow);
@@ -528,7 +583,8 @@ void WaterSource::addCapacity(double capacity) {
     WaterSource::capacity += capacity;
 }
 
-void WaterSource::addTreatmentCapacity(const double added_treatment_capacity, int utility_id) {
+void WaterSource::addTreatmentCapacity(const double added_treatment_capacity,
+                                       int utility_id) {
     total_treatment_capacity += added_treatment_capacity;
 }
 
@@ -539,7 +595,8 @@ void WaterSource::addTreatmentCapacity(const double added_treatment_capacity, in
  * is the evaporation multiplier, followed by pairs of values for each source representing
  * permitting time and construction cost.
  */
-void WaterSource::setRealization(unsigned long r, const vector<double> &rdm_factors) {
+void WaterSource::setRealization(unsigned long r,
+                                 const vector<double> &rdm_factors) {
     for (Catchment &c : catchments)
         c.setRealization(r, rdm_factors);
 
@@ -554,8 +611,10 @@ void WaterSource::setRealization(unsigned long r, const vector<double> &rdm_fact
     permitting_time *= rdm_factors.at((unsigned int) 1 + 2 * id);
 
     // Set construction cost overruns according to corresponding rdm factors.
-    double construction_cost_multiplier = rdm_factors.at((unsigned int) 1 + 2 * id + 1);
-    vector<double> construction_cost_multiplier_vec = vector<double>(1, construction_cost_multiplier);
+    double construction_cost_multiplier = rdm_factors.at(
+            (unsigned int) 1 + 2 * id + 1);
+    vector<double> construction_cost_multiplier_vec = vector<double>(1,
+                                                                     construction_cost_multiplier);
     for (Bond *bond : bonds) {
         bond->setRealizationWaterSource(r, construction_cost_multiplier_vec);
     }
@@ -687,7 +746,7 @@ void WaterSource::resetAllocations(
 void WaterSource::setAvailableAllocatedVolumes(
         vector<double> available_allocated_volumes, double available_volume) {
     if (!utilities_with_allocations.empty())
-      this->available_allocated_volumes = available_allocated_volumes;
+        this->available_allocated_volumes = available_allocated_volumes;
     this->available_volume = available_volume;
 }
 
@@ -707,8 +766,8 @@ double WaterSource::getPermitting_period() const {
     return permitting_time;
 }
 
-const vector<int> &WaterSource::getBuiltInSequence() const {
-    return built_in_sequence;
+const vector<int> &WaterSource::getConstructionPrerequisites() const {
+    return construction_prerequisites;
 }
 
 Bond &WaterSource::getBond(int utility_id) {

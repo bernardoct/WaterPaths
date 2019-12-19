@@ -10,12 +10,9 @@
 #include "../WaterSources/JointTreatmentCapacityExpansion.h"
 
 InfrastructureManager::InfrastructureManager(
-        int id,
-        const vector<double> &infra_construction_triggers,
+        int id, const vector<double> &infra_construction_triggers,
         const vector<vector<int>> &infra_if_built_remove,
-        const vector<vector<int>> &construction_pre_requisites,
-        double infra_discount_rate,
-        vector<int> rof_infra_construction_order,
+        double infra_discount_rate, vector<int> rof_infra_construction_order,
         vector<int> demand_infra_construction_order)
         :
         id(id),
@@ -36,8 +33,6 @@ InfrastructureManager::InfrastructureManager(
 
     restructureVectorOfRelatedInfrastructure(this->infra_if_built_remove,
                                              infra_if_built_remove, size);
-    restructureVectorOfRelatedInfrastructure(this->construction_pre_requisites,
-                                             construction_pre_requisites, size);
 }
 
 void InfrastructureManager::restructureVectorOfRelatedInfrastructure(
@@ -63,9 +58,7 @@ InfrastructureManager::InfrastructureManager(
         rof_infra_construction_order(
                 infrastructure_manager.rof_infra_construction_order),
         demand_infra_construction_order(
-                infrastructure_manager.demand_infra_construction_order),
-        construction_pre_requisites(
-                infrastructure_manager.construction_pre_requisites) {}
+                infrastructure_manager.demand_infra_construction_order) {}
 
 InfrastructureManager::InfrastructureManager() = default;
 
@@ -77,7 +70,6 @@ InfrastructureManager &InfrastructureManager::operator=(
     infra_discount_rate = infrastructure_manager.infra_discount_rate;
     rof_infra_construction_order = infrastructure_manager.rof_infra_construction_order;
     demand_infra_construction_order = infrastructure_manager.demand_infra_construction_order;
-    construction_pre_requisites = infrastructure_manager.construction_pre_requisites;
 
     return *this;
 }
@@ -409,6 +401,7 @@ InfrastructureManager::getIdOfNewTriggeredInfra(double trigger_var, int week,
     if (!construction_order.empty() && !under_construction_any &&
         triggered_queue.empty()) {
 
+        vector<int> construction_prerequisites;
         // Selects next water source whose permitting period is passed.
         int next_construction = NON_INITIALIZED;
         for (int id : construction_order) {
@@ -418,8 +411,10 @@ InfrastructureManager::getIdOfNewTriggeredInfra(double trigger_var, int week,
             // if option requiring other to be built together (e.g. second stage
             // of a project normally requires first stage complete) is triggered,
             // use the maximum permitting period between all dependent projects.
+            construction_prerequisites = water_sources->at(
+                    id)->getConstructionPrerequisites();
             try {
-                for (int id_also : construction_pre_requisites.at(id)) {
+                for (int id_also : construction_prerequisites) {
                     pp = max(pp,
                              water_sources->at(
                                      id_also)->getPermitting_period());
@@ -437,9 +432,9 @@ InfrastructureManager::getIdOfNewTriggeredInfra(double trigger_var, int week,
         // been reached and if there is already infrastructure being built.
         if (next_construction != NON_INITIALIZED &&
             trigger_var > infra_construction_triggers.at(next_construction)) {
-            if (!construction_pre_requisites.empty() &&
-                !construction_pre_requisites[next_construction].empty()) {
-                triggered_queue = construction_pre_requisites[next_construction];
+            if (!construction_prerequisites.empty() &&
+                !construction_prerequisites.empty()) {
+                triggered_queue = construction_prerequisites;
             }
             triggered_queue.push_back(next_construction);
 

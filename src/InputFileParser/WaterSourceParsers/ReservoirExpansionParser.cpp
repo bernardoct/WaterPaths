@@ -18,7 +18,8 @@ void ReservoirExpansionParser::parseVariables(vector<vector<string>> &block,
                                               const map<string, int> &utility_name_to_id,
                                               map<string, vector<vector<double>>> &pre_loaded_data) {
     WaterSourceParser::parseVariables(block, n_realizations, n_weeks, line_no,
-                                      ws_name_to_id, utility_name_to_id, pre_loaded_data);
+                                      ws_name_to_id, utility_name_to_id,
+                                      pre_loaded_data);
 
     vector<unsigned long> rows_read(0);
     for (unsigned long i = 0; i < block.size(); ++i) {
@@ -52,6 +53,7 @@ ReservoirExpansionParser::generateSource(int id, vector<vector<string>> &block,
     checkMissingOrExtraParams(line_no, block);
 
     return new ReservoirExpansion(name, id, parent_reservoir_ID, capacity,
+                                  construction_prerequisites,
                                   construction_time, permitting_time,
                                   *bonds[0]);
 }

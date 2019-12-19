@@ -85,8 +85,7 @@ Utility::Utility(string name, int id,
                  const vector<int> &demand_infra_construction_order,
                  const vector<double> &infra_construction_triggers,
                  double infra_discount_rate,
-                 const vector<vector<int>> &infra_if_built_remove,
-                 const vector<vector<int>> &construction_pre_requisites) :
+                 const vector<vector<int>> &infra_if_built_remove) :
         total_storage_capacity(NONE),
         total_available_volume(NONE),
         wwtp_discharge_rule(wwtp_discharge_rule),
@@ -98,10 +97,31 @@ Utility::Utility(string name, int id,
         percent_contingency_fund_contribution(
                 percent_contingency_fund_contribution),
         demand_buffer(demand_buffer) {
+
+    // Check if sources were passed to be triggered by both rof and demand, and
+    // if so throw an error. If only one rof/demand trigger value was passed,
+    // assign it to all infrastructure options.
+    auto expanded_infra_construction_triggers = infra_construction_triggers;
+    unsigned long size = max(rof_infra_construction_order.size(),
+                             demand_infra_construction_order.size());
+    if (infra_construction_triggers.size() == 1 && size > 1) {
+        unsigned long size = max(rof_infra_construction_order.size(),
+                                 demand_infra_construction_order.size());
+        expanded_infra_construction_triggers.resize(
+                size, expanded_infra_construction_triggers[0]);
+    } else if (infra_construction_triggers.size() == 1 &&
+               !rof_infra_construction_order.empty() &&
+               !demand_infra_construction_order.empty()) {
+        char error[500];
+        sprintf(error, "Utility %s has infrastructure options to be "
+                       "triggered by both ROF and demand but only one trigger "
+                       "value was passed, which can be either. Please stick to "
+                       "either ROF or demand.", name.c_str());
+    }
+
     infrastructure_construction_manager =
-            InfrastructureManager(id, infra_construction_triggers,
+            InfrastructureManager(id, expanded_infra_construction_triggers,
                                   infra_if_built_remove,
-                                  construction_pre_requisites,
                                   infra_discount_rate,
                                   rof_infra_construction_order,
                                   demand_infra_construction_order);
@@ -587,7 +607,7 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
                     total_treatment_capacity,
                     total_available_volume,
                     total_stored_volume
-                    );
+            );
 
     // Issue and add bond of triggered water source to list of outstanding bonds, and update total new
     // infrastructure NPV.

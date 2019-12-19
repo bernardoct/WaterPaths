@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include "Restrictions.h"
 #include "../Utils/Utils.h"
 
@@ -15,12 +16,15 @@
  * @todo set lower ROF threshold for utilities to lift restrictions.
  * @todo implement drought surcharges.
  */
-Restrictions::Restrictions(const int id, const vector<double> &stage_multipliers,
+Restrictions::Restrictions(const int id,
+                           const vector<double> &stage_multipliers,
                            const vector<double> &stage_triggers)
         : DroughtMitigationPolicy(id, RESTRICTIONS),
           stage_multipliers(stage_multipliers),
           stage_triggers(stage_triggers) {
     utilities_ids = vector<int>(1, id);
+
+    setupTriggers(stage_multipliers, stage_triggers);
 }
 
 Restrictions::Restrictions(
@@ -36,6 +40,21 @@ Restrictions::Restrictions(
                                       typesMonthlyWaterPrice,
                                       priceMultipliers);
     utilities_ids = vector<int>(1, id);
+
+    setupTriggers(stage_multipliers, stage_triggers);
+}
+
+void Restrictions::setupTriggers(const vector<double> &stage_multipliers,
+                                 const vector<double> &stage_triggers) {
+    if (stage_triggers.size() == 1 && stage_multipliers.size() > 1) {
+        this->stage_triggers.resize(stage_multipliers.size(),
+                                            stage_triggers[0]);
+        for (unsigned long i = 1; i < stage_multipliers.size(); ++i) {
+            this->stage_triggers[i] = stage_triggers[0] + 0.2;
+        }
+    } else {
+        sort(Restrictions::stage_triggers.begin(), Restrictions::stage_triggers.end());
+    }
 }
 
 Restrictions::Restrictions(const Restrictions &restrictions) :
@@ -55,7 +74,8 @@ void Restrictions::applyPolicy(int week) {
     unsigned long stage = 0;
     /// Loop through restriction stage rof triggers to see which stage should be applied, if any.
     for (unsigned long i = 0; i < stage_triggers.size(); ++i) {
-        if (realization_utilities[0]->getRisk_of_failure() > stage_triggers[i]) {
+        if (realization_utilities[0]->getRisk_of_failure() >
+            stage_triggers[i]) {
             /// Demand multiplier to be applied, based on the rofs.
             current_multiplier = stage_multipliers[i];
             stage = i + 1;
@@ -81,13 +101,15 @@ void Restrictions::addSystemComponents(vector<Utility *> systems_utilities,
     for (Utility *u : systems_utilities) {
         if (u->id == id) {
             if (!realization_utilities.empty())
-                throw std::logic_error("This restriction policy already has a systems_utilities assigned to it.");
+                throw std::logic_error(
+                        "This restriction policy already has a systems_utilities assigned to it.");
             /// Link utility to policy.
             this->realization_utilities.push_back(u);
         }
     }
     if (systems_utilities.empty())
-        throw std::invalid_argument("Restriction policy ID must match systems_utilities's ID.");
+        throw std::invalid_argument(
+                "Restriction policy ID must match systems_utilities's ID.");
 }
 
 /**
@@ -105,7 +127,8 @@ void Restrictions::calculateWeeklyAverageWaterPrices(
         restricted_weekly_average_volumetric_price =
                 std::vector<std::vector<double>>();
 
-        for (unsigned long s = 0; s < priceMultipliers->size(); ++s) { // stages loop
+        for (unsigned long s = 0;
+             s < priceMultipliers->size(); ++s) { // stages loop
 //            restricted_weekly_average_volumetric_price[s] =
 //                    new double[(int) WEEKS_IN_YEAR + 1]();
             restricted_weekly_average_volumetric_price.emplace_back(
@@ -127,9 +150,11 @@ void Restrictions::calculateWeeklyAverageWaterPrices(
     }
 }
 
-void Restrictions::setRealization(unsigned long realization_id, const vector<double> &utilities_rdm,
-                                  const vector<double> &water_sources_rdm, const vector<double> &policy_rdm) {
-    for (double& sm : stage_multipliers) {
+void Restrictions::setRealization(unsigned long realization_id,
+                                  const vector<double> &utilities_rdm,
+                                  const vector<double> &water_sources_rdm,
+                                  const vector<double> &policy_rdm) {
+    for (double &sm : stage_multipliers) {
         sm *= policy_rdm.at((unsigned long) id);
     }
 }

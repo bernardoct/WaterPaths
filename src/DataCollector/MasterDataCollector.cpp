@@ -375,38 +375,38 @@ void MasterDataCollector::printUtilityObjectivesToRowOutStream(
     // Reliability
     double reliability = ObjectivesCalculator::calculateReliabilityObjective(u,
                                                                              realizations_ran);
-    /// Restriction Frequency
+    // Restriction Frequency
     double restriction_freq = ObjectivesCalculator::
     calculateRestrictionFrequencyObjective(utility_restrictions,
                                            realizations_ran);
-    /// Infrastructure NPC
+    // Infrastructure NPC
     double inf_npc = ObjectivesCalculator::
     calculateNetPresentCostInfrastructureObjective(u, realizations_ran);
-    /// Peak Financial Cost
+    // Peak Financial Cost
     double financial_cost = ObjectivesCalculator::
     calculatePeakFinancialCostsObjective(u, realizations_ran);
-    /// Worse Case Costs
+    // Worse Case Costs
     double worse_cost = ObjectivesCalculator::calculateWorseCaseCostsObjective(
             u, realizations_ran);
 
     outStream << setw(COLUMN_WIDTH) << u[realizations_ran[0]]->name
-              /// Reliability
+              // Reliability
               << setw(COLUMN_WIDTH * 2)
               << setprecision(COLUMN_PRECISION)
               << reliability
-              /// Restriction Frequency
+              // Restriction Frequency
               << setw(COLUMN_WIDTH * 2)
               << setprecision(COLUMN_PRECISION)
               << restriction_freq
-              /// Infrastructure NPC
+              // Infrastructure NPC
               << setw(COLUMN_WIDTH * 2)
               << setprecision(COLUMN_PRECISION)
               << inf_npc
-              /// Peak Financial Cost
+              // Peak Financial Cost
               << setw(COLUMN_WIDTH * 2)
               << setprecision(COLUMN_PRECISION)
               << financial_cost
-              /// Worse Case Costs
+              // Worse Case Costs
               << setw(COLUMN_WIDTH * 2)
               << setprecision(COLUMN_PRECISION)
               << worse_cost

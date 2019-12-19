@@ -29,6 +29,12 @@ public:
                           const vector<double> &objectives) const;
 
     ofstream createOutputFile() const;
+
+    bool isOptimize() const;
+
+    int getNFunctionEvals() const;
+
+    int getRuntimeOutputInterval() const;
 };
 
 

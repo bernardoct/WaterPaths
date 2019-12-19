@@ -12,6 +12,29 @@
 #include "InputFileProblem.h"
 #include "../Simulation/Simulation.h"
 
+#ifdef PARALLEL
+#include <mpi.h>
+
+void InputFileProblem::setProblemDefinition(BORG_Problem &problem)
+{
+    // The parameter bounds are the same for all formulations
+    auto dec_vars_bounds = parser.getDecVarsBounds();
+    auto objs_epsilons = parser.getObjsEpsilons();
+    if (dec_vars_bounds.empty() || objs_epsilons.empty()) {
+        throw invalid_argument("To perform an optimization run, the bounds for "
+                               "the decision variables and objectives epsilons "
+                               "must be specified in the input file.");
+    }
+
+    for (int i = 0; i < dec_vars_bounds.size(); ++i) {
+        BORG_Problem_set_bounds(problem, i, dec_vars_bounds[i][0], dec_vars_bounds[i][1]);
+    }
+    for (int j = 0; j < objs_epsilons.size(); ++j) {
+        BORG_Problem_set_epsilon(problem, j, objs_epsilons[j]);
+    }
+}
+#endif
+
 InputFileProblem::InputFileProblem(string &system_input_file) : Problem() {
     parser.preloadAndCheckInputFile(system_input_file);
 }
@@ -19,6 +42,8 @@ InputFileProblem::InputFileProblem(string &system_input_file) : Problem() {
 
 int InputFileProblem::functionEvaluation(double *vars, double *objs,
                                          double *consts) {
+
+    Simulation *s;
 
     parser.createSystemObjects(vars);
     realizations_to_run = parser.getRealizationsToRun();
@@ -37,7 +62,7 @@ int InputFileProblem::functionEvaluation(double *vars, double *objs,
     printf("Starting Simulation\n");
     double start_time = omp_get_wtime();
     if (import_export_rof_tables == EXPORT_ROF_TABLES) {
-        auto s = Simulation(parser.getWaterSources(),
+        s = new Simulation(parser.getWaterSources(),
                             parser.getWaterSourcesGraph(),
                             parser.getReservoirUtilityConnectivityMatrix(),
                             parser.getUtilities(),
@@ -49,9 +74,9 @@ int InputFileProblem::functionEvaluation(double *vars, double *objs,
                             parser.getNWeeks(),
                             parser.getRealizationsToRun(),
                             parser.getRofTablesDir());
-        this->master_data_collector = s.runFullSimulation(n_threads, vars);
+        this->master_data_collector = s->runFullSimulation(n_threads, vars);
     } else if (import_export_rof_tables == IMPORT_ROF_TABLES) {
-        auto s = Simulation(parser.getWaterSources(),
+        s = new Simulation(parser.getWaterSources(),
                             parser.getWaterSourcesGraph(),
                             parser.getReservoirUtilityConnectivityMatrix(),
                             parser.getUtilities(),
@@ -65,9 +90,9 @@ int InputFileProblem::functionEvaluation(double *vars, double *objs,
                             rof_tables,
                             parser.getTableStorageShift(),
                             rof_tables_directory);
-        this->master_data_collector = s.runFullSimulation(n_threads, vars);
+        this->master_data_collector = s->runFullSimulation(n_threads, vars);
     } else {
-        auto s = Simulation(parser.getWaterSources(),
+        s = new Simulation(parser.getWaterSources(),
                             parser.getWaterSourcesGraph(),
                             parser.getReservoirUtilityConnectivityMatrix(),
                             parser.getUtilities(),
@@ -78,7 +103,7 @@ int InputFileProblem::functionEvaluation(double *vars, double *objs,
                             parser.getRdmDmp(),
                             parser.getNWeeks(),
                             parser.getRealizationsToRun());
-        this->master_data_collector = s.runFullSimulation(n_threads, vars);
+        this->master_data_collector = s->runFullSimulation(n_threads, vars);
     }
     double end_time = omp_get_wtime();
     printf("Function evaluation time: %f\n", end_time - start_time);
@@ -192,4 +217,16 @@ void InputFileProblem::printObjsInLineInFile(ofstream &objs_file,
     }
     line.pop_back();
     objs_file << line << endl;
+}
+
+bool InputFileProblem::isOptimize() const {
+    return parser.isOptimize();
+}
+
+int InputFileProblem::getNFunctionEvals() const {
+    return parser.getNFunctionEvals();
+}
+
+int InputFileProblem::getRuntimeOutputInterval() const {
+    return parser.getRuntimeOutputInterval();
 }

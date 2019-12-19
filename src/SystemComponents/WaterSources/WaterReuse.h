@@ -14,7 +14,7 @@ private:
 public:
     WaterReuse(string name, const int id, const double capacity);
 
-    WaterReuse(string name, const int id, const double treatment_capacity,
+    WaterReuse(string name, const int id, const double treatment_capacity, vector<int> construction_prerequisites,
                    const vector<double> &construction_time_range, double permitting_period,
                    Bond &bond);
     WaterReuse(const WaterReuse &reuse);

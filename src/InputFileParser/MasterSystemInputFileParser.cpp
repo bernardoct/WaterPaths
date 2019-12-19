@@ -194,6 +194,11 @@ void MasterSystemInputFileParser::loopThroughTags(
                                !create_objects
                 ) ? true : tag_read
         );
+        tag_read = (
+                parseDecVarsBoundsAndObjEpsilons(line_nos[t], blocks[t],
+                                                 tags[t], !create_objects
+                ) ? true : tag_read
+        );
 
         if (!tag_read) {
             char error[128];
@@ -309,6 +314,10 @@ bool MasterSystemInputFileParser::parseRunParams(int line_no,
                     WaterSource::setSeed(seed);
                     MasterDataCollector::setSeed(seed);
                     rows_read.push_back(i);
+                } else if (line[0] == "optimize") {
+                    optimize = true;
+                    n_function_evals = stoi(line[1]);
+                    runtime_output_interval = stoi(line[2]);
                 }
             }
 
@@ -509,6 +518,15 @@ bool MasterSystemInputFileParser::parseWaterSource(int line_no,
                         use_rof_tables == EXPORT_ROF_TABLES));
     } else if (tag == "[RESERVOIR EXPANSION]") {
         water_source_parsers.push_back(new ReservoirExpansionParser());
+    } else if (tag == "[INTAKE]") {
+        throw invalid_argument("Intake parser, tag [INTAKE], not yet "
+                               "implemented.");
+    } else if (tag == "[QUARRY]") {
+        throw invalid_argument("Quarry parser, tag [QUARRY], not yet "
+                               "implemented.");
+    } else if (tag == "[REALLOCATION]") {
+        throw invalid_argument("Reallocation parser, tag [REALLOCATION], not "
+                               "yet implemented.");
     }
 
     // Only create water source if a parser has been created, indicating the
@@ -529,6 +547,54 @@ bool MasterSystemInputFileParser::parseWaterSource(int line_no,
 
         return true;
     }
+
+    return false;
+}
+
+bool MasterSystemInputFileParser::parseDecVarsBoundsAndObjEpsilons(
+        int line_no, vector<vector<string>> &block, const string &tag,
+        bool create_objects) {
+#ifdef PARALLEL
+    if (!create_objects) {
+        if (tag == "[DECISION VARIABLE BOUNDS]") {
+            dec_vars_bounds.resize(block.size());
+            for (auto &line : block) {
+                if (line.size() != 3 || stod(line[1]) > stod(line[2])) {
+                    char error[300];
+                    sprintf(error, "Decision variable bounds in line %d, tag %s"
+                                   " is not comprised of variable id, lower, and"
+                                   " upper bound.", line_no, tag.c_str());
+                    throw invalid_argument(error);
+                }
+                try {
+                    vector<double> bounds;
+                    Utils::tokenizeString(line[1], bounds, ',');
+                    dec_vars_bounds[stod(line[0])] = bounds;
+                } catch (out_of_range &e) {
+                    char error[500];
+                    sprintf(error, "It looks like you skipped a decision "
+                                   "variable in tag %s, line %d. Did you skip "
+                                   "decision variable number 0?", tag.c_str(),
+                            line_no);
+                    throw invalid_argument(error);
+                }
+            }
+            return true;
+        } else if (tag == "[OBJECTIVES EPSILONS]") {
+            Utils::tokenizeString(block[0][0], objs_epsilons, ',');
+            return true;
+        }
+
+        return false;
+    }
+#else
+    if (tag == "[DECISION VARIABLE BOUNDS]" && tag == "[OBJECTIVES EPSILONS]") {
+        string error = "Tags \"[DECISION VARIABLE BOUNDS]\" and \"[OBJECTIVES "
+                       "EPSILONS]\" can only be passed to a version of "
+                       "WaterPaths compiled with a multiobjective algorithm.";
+        throw invalid_argument(error.c_str());
+    }
+#endif
 
     return false;
 }
@@ -779,5 +845,26 @@ const string &MasterSystemInputFileParser::getSolutionsFile() const {
 const vector<unsigned long> &
 MasterSystemInputFileParser::getSolutionsToRun() const {
     return solutions_to_run;
+}
+
+bool MasterSystemInputFileParser::isOptimize() const {
+    return optimize;
+}
+
+int MasterSystemInputFileParser::getNFunctionEvals() const {
+    return n_function_evals;
+}
+
+int MasterSystemInputFileParser::getRuntimeOutputInterval() const {
+    return runtime_output_interval;
+}
+
+const vector<vector<double>> &
+MasterSystemInputFileParser::getDecVarsBounds() const {
+    return dec_vars_bounds;
+}
+
+const vector<double> &MasterSystemInputFileParser::getObjsEpsilons() const {
+    return objs_epsilons;
 }
 

@@ -11,12 +11,16 @@
 Intake::Intake(
         string name, const int id, const vector<Catchment *> &catchments,
         const double max_treatment_capacity)
-        : WaterSource(name, id, catchments, NONE, vector<int>(), max_treatment_capacity, INTAKE) {}
+        : WaterSource(name, id, catchments, NONE, max_treatment_capacity,
+                      INTAKE) {}
 
 Intake::Intake(string name, const int id, const vector<Catchment *> &catchments,
-               const double raw_water_main_capacity, const vector<double> construction_time_range,
+               const double raw_water_main_capacity,
+               vector<int> construction_prerequisites,
+               const vector<double> construction_time_range,
                double permitting_period, Bond &bond) :
-        WaterSource(name, id, catchments, NONE, raw_water_main_capacity, vector<int>(), INTAKE, construction_time_range,
+        WaterSource(name, id, catchments, NONE, raw_water_main_capacity,
+                    construction_prerequisites, INTAKE, construction_time_range,
                     permitting_period, bond) {}
 
 /**
@@ -91,7 +95,8 @@ void Intake::applyContinuity(int week, double upstream_source_inflow,
     this->wastewater_inflow = wastewater_inflow;
 }
 
-void Intake::setRealization(unsigned long r, const vector<double> &rdm_factors) {
+void
+Intake::setRealization(unsigned long r, const vector<double> &rdm_factors) {
     WaterSource::setRealization(r, rdm_factors);
 
     total_demand = 0;

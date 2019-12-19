@@ -427,7 +427,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs,
 
     LevelDebtServiceBond dummy_bond(3, 1., 1, 1., vector<int>(1, 0));
     Reservoir dummy_endpoint("Dummy Node", 3, vector<Catchment *>(), 1., 0,
-                             evaporation_durham, 1,
+                             evaporation_durham, 1, {},
                              construction_time_interval, 0, dummy_bond);
 
     //FIXME check bond, this one is from little river raliegh
@@ -442,7 +442,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs,
                                            new_river_res_storage[1],
                                            ILLIMITED_TREATMENT_CAPACITY,
                                            evaporation_falls_lake,
-                                           new_river_storage_area,
+                                           new_river_storage_area, {},
                                            construction_time_interval,
                                            17 * WEEKS_IN_YEAR,
                                            new_river_bond,
@@ -457,7 +457,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs,
                                     sugar_creek_res_storage[1],
                                     ILLIMITED_TREATMENT_CAPACITY,
                                     evaporation_jordan_lake,
-                                    sugar_creek_storage_area,
+                                    sugar_creek_storage_area, {},
                                     construction_time_interval,
                                     17 * WEEKS_IN_YEAR,
                                     sugar_bond);
@@ -476,7 +476,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs,
                                                          vector<int>(1, 0));
     ReservoirExpansion college_rock_expansion_low(
             (char *) "College Rock Expansion Low", 7, 0,
-            added_storage_college_rock_expansion_low,
+            added_storage_college_rock_expansion_low, {},
             college_rock_expansion_low_construction_time, 5 * WEEKS_IN_YEAR,
             college_rock_expansion_low_bond);
 
@@ -485,35 +485,35 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs,
                                                           vector<int>(1, 0));
     ReservoirExpansion college_rock_expansion_high(
             (char *) "College Rock Expansion High", 8, 0,
-            added_storage_college_rock_expansion_high,
+            added_storage_college_rock_expansion_high, {},
             college_rock_expansion_high_construction_time, 5 * WEEKS_IN_YEAR,
             college_rock_expansion_high_bond);
 
     vector<double> watertown_reuse_construction_time = {3, 5};
     LevelDebtServiceBond watertown_reuse_bond_i(9, 50, 30, .05,
                                                 vector<int>(1, 0));
-    WaterReuse watertown_reuse_i((char *) "Watertown Reuse I", 9, 35,
+    WaterReuse watertown_reuse_i((char *) "Watertown Reuse I", 9, 35, {},
                                  watertown_reuse_construction_time,
                                  5 * WEEKS_IN_YEAR,
                                  watertown_reuse_bond_i);
 
     LevelDebtServiceBond watertown_reuse_bond_ii(10, 30, 30, .05,
                                                  vector<int>(1, 0));
-    WaterReuse watertown_reuse_ii((char *) "Watertown Reuse II", 10, 35,
+    WaterReuse watertown_reuse_ii((char *) "Watertown Reuse II", 10, 35, {},
                                   watertown_reuse_construction_time,
                                   5 * WEEKS_IN_YEAR,
                                   watertown_reuse_bond_ii);
 
     LevelDebtServiceBond dryville_reuse_bond(11, 30, 30, .05,
                                              vector<int>(1, 0));
-    WaterReuse dryville_reuse((char *) "Dryfille Reuse", 11, 35,
+    WaterReuse dryville_reuse((char *) "Dryfille Reuse", 11, 35, {},
                               watertown_reuse_construction_time,
                               5 * WEEKS_IN_YEAR,
                               dryville_reuse_bond);
 
     LevelDebtServiceBond fallsland_reuse_bond(12, 50, 30, .05,
                                               vector<int>(1, 0));
-    WaterReuse fallsland_reuse((char *) "Fallsland Reuse", 12, 35,
+    WaterReuse fallsland_reuse((char *) "Fallsland Reuse", 12, 35, {},
                                watertown_reuse_construction_time,
                                5 * WEEKS_IN_YEAR,
                                fallsland_reuse_bond);
@@ -599,8 +599,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs,
                       watertown_demand_buffer,
                       rof_triggered_infra_order_watertown, vector<int>(),
                       rofs_infra_watertown, discount_rate,
-                      vector<vector<int>>(),
-                      vector<vector<int>>(1, watertown_res_expansion_order));
+                      vector<vector<int>>());
 
     //FIXME: bond etc need to be updated, should chat about demand buffer
     Utility dryville("Dryville", 1, demand_dryville, demand_n_weeks,
@@ -609,8 +608,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs,
                      dryvilleUserClassesWaterPrices,
                      wwtp_discharge_dryville, dryville_demand_buffer,
                      rof_triggered_infra_order_dryville, vector<int>(),
-                     rofs_infra_dryville, discount_rate, vector<vector<int>>(),
-                     vector<vector<int>>());
+                     rofs_infra_dryville, discount_rate, vector<vector<int>>());
 
     Utility fallsland("Fallsland", 2, demand_fallsland, demand_n_weeks,
                       fallsland_annual_payment,
@@ -619,7 +617,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs,
                       wwtp_discharge_fallsland, fallsland_demand_buffer,
                       rof_triggered_infra_order_fallsland,
                       vector<int>(), rofs_infra_fallsland, discount_rate,
-                      vector<vector<int>>(), vector<vector<int>>());
+                      vector<vector<int>>());
 
     vector<Utility *> utilities;
     utilities.push_back(&watertown);

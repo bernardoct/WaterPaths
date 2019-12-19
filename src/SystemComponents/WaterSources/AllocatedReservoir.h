@@ -24,11 +24,17 @@ public:
             vector<double> allocated_fractions, vector<double>
             allocated_treatment_fractions);
 
-    AllocatedReservoir(string name, const int id, const vector<Catchment *> &catchments,
-                       const double capacity, const double max_treatment_capacity,
-                       EvaporationSeries &evaporation_series, DataSeries &storage_area_curve,
-                       const vector<double> &construction_time_range, double permitting_period, Bond &bond,
-                       vector<int> utilities_with_allocations, vector<double> allocated_fractions,
+    AllocatedReservoir(string name, const int id,
+                       const vector<Catchment *> &catchments,
+                       const double capacity,
+                       const double max_treatment_capacity,
+                       EvaporationSeries &evaporation_series,
+                       DataSeries &storage_area_curve,
+                       vector<int> construction_prerequisites,
+                       const vector<double> &construction_time_range,
+                       double permitting_period, Bond &bond,
+                       vector<int> utilities_with_allocations,
+                       vector<double> allocated_fractions,
                        vector<double> allocated_treatment_fractions);
 
     AllocatedReservoir(
@@ -40,11 +46,17 @@ public:
             vector<double> allocated_fractions, vector<double>
             allocated_treatment_fractions);
 
-    AllocatedReservoir(string name, const int id, const vector<Catchment *> &catchments,
-                       const double capacity, const double max_treatment_capacity,
-                       EvaporationSeries &evaporation_series, double storage_area,
-                       const vector<double> &construction_time_range, double permitting_period, Bond &bond,
-                       vector<int> utilities_with_allocations, vector<double> allocated_fractions,
+    AllocatedReservoir(string name, const int id,
+                       const vector<Catchment *> &catchments,
+                       const double capacity,
+                       const double max_treatment_capacity,
+                       EvaporationSeries &evaporation_series,
+                       double storage_area,
+                       vector<int> construction_prerequisites,
+                       const vector<double> &construction_time_range,
+                       double permitting_period, Bond &bond,
+                       vector<int> utilities_with_allocations,
+                       vector<double> allocated_fractions,
                        vector<double> allocated_treatment_fractions);
 
     AllocatedReservoir &operator=(
@@ -56,8 +68,8 @@ public:
     ~AllocatedReservoir();
 
     void applyContinuity(int week, double upstream_source_inflow,
-                             double wastewater_inflow,
-                             vector<double> &demand_outflow) override;
+                         double wastewater_inflow,
+                         vector<double> &demand_outflow) override;
 
     void setFull() override;
 
@@ -71,7 +83,8 @@ public:
 
     void addCapacity(double capacity) override;
 
-    void addTreatmentCapacity(const double added_plant_treatment_capacity, int utility_id)
+    void addTreatmentCapacity(const double added_plant_treatment_capacity,
+                              int utility_id)
     override;
 
     double getAllocatedTreatmentCapacity(int utility_id) const override;
@@ -80,10 +93,12 @@ public:
 
 
     bool
-    mass_balance_with_wq_pool(double net_inflow, vector<double> &demand_outflow);
+    mass_balance_with_wq_pool(double net_inflow,
+                              vector<double> &demand_outflow);
 
     bool
-    mass_balance_without_wq_pool(double net_inflow, vector<double> &demand_outflow);
+    mass_balance_without_wq_pool(double net_inflow,
+                                 vector<double> &demand_outflow);
 
     void setOnline() override;
 

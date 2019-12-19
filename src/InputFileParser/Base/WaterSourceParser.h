@@ -23,6 +23,7 @@ protected:
     vector<double> allocated_treatment_fractions;
     vector<double> allocated_fractions;
     vector<int> utilities_with_allocations;
+    vector<int> construction_prerequisites;
     bool existing_infrastructure = true;
 
 public:

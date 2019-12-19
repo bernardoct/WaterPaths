@@ -17,7 +17,7 @@ public:
     const int parent_source_id;
 
     JointTreatmentCapacityExpansion(string name, const int id, int parent_source_id,
-                                    const map<int, double> &added_treatment_capacities,
+                                    const map<int, double> &added_treatment_capacities, vector<int> construction_prerequisites,
                                     vector<Bond *> &bonds,
                                     const vector<double> &construction_time_range,
                                     double permitting_period);

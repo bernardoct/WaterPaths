@@ -56,6 +56,9 @@ void WaterSourceParser::parseVariables(vector<vector<string>> &block,
         } else if (line[0] == "utilities_with_allocations") {
             Utils::tokenizeString(line[1], utilities_with_allocations, ',');
             rows_read.push_back(i);
+        } else if (line[0] == "construction_prerequisites") {
+            Utils::tokenizeString(line[1], construction_prerequisites, ',');
+            rows_read.push_back(i);
         }
     }
 

@@ -91,8 +91,7 @@ public:
             const vector<int> &demand_infra_construction_order,
             const vector<double> &infra_construction_triggers,
             double infra_discount_rate,
-            const vector<vector<int>> &infra_if_built_remove,
-            const vector<vector<int>> &construction_pre_requisites);
+            const vector<vector<int>> &infra_if_built_remove);
 
     Utility(Utility &utility);
 

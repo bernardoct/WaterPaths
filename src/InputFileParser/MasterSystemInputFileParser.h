@@ -33,8 +33,9 @@ class MasterSystemInputFileParser {
     vector<ReservoirControlRuleParser *> reservoir_control_rule_parse;
     vector<MinEnvFlowControl *> reservoir_control_rules;
 
-
     vector<vector<double>> rdm_utilities, rdm_water_sources, rdm_dmp;
+    vector<vector<double>> dec_vars_bounds;
+    vector<double> objs_epsilons;
 
     vector<vector<int>> reservoir_utility_connectivity_matrix;
     vector<vector<double>> table_storage_shift;
@@ -45,12 +46,16 @@ class MasterSystemInputFileParser {
     int n_realizations = NON_INITIALIZED;
     int n_weeks = NON_INITIALIZED;
     bool generate_rof_tables = false;
+    bool optimize = false;
     map<string, vector<vector<double>>> pre_loaded_data;
 
     int rdm_no = NON_INITIALIZED;
     int n_threads = NON_INITIALIZED;
     int n_bootstrap_samples = NON_INITIALIZED;
     int bootstrap_sample_size = NON_INITIALIZED;
+    int n_function_evals = NON_INITIALIZED;
+    int runtime_output_interval = NON_INITIALIZED;
+
     string rof_tables_dir;
     string solutions_file;
     int use_rof_tables = DO_NOT_EXPORT_OR_IMPORT_ROF_TABLES; /// can be "no," "export," and "import."
@@ -158,6 +163,14 @@ public:
 
     void preloadAndCheckInputFile(string &input_file);
 
+    bool
+    parseRunParams(int line_no, vector<vector<string>> &block,
+                   const string &tag, bool read_data);
+
+    bool
+    parseDecVarsBoundsAndObjEpsilons(int line_no, vector<vector<string>> &block,
+                                     const string &tag, bool create_objects);
+
     const vector<WaterSource *> &getWaterSources() const;
 
     const vector<Utility *> &getUtilities() const;
@@ -171,10 +184,6 @@ public:
     const vector<vector<int>> &getReservoirUtilityConnectivityMatrix() const;
 
     const vector<vector<double>> &getTableStorageShift() const;
-
-    bool
-    parseRunParams(int line_no, vector<vector<string>> &block,
-                   const string &tag, bool read_data);
 
     const string &getRofTablesDir() const;
 
@@ -207,6 +216,16 @@ public:
     const vector<unsigned long> &getSolutionsToRun() const;
 
     const vector<vector<double>> &getSolutionsDecvars() const;
+
+    bool isOptimize() const;
+
+    int getNFunctionEvals() const;
+
+    int getRuntimeOutputInterval() const;
+
+    const vector<vector<double>> &getDecVarsBounds() const;
+
+    const vector<double> &getObjsEpsilons() const;
 };
 
 

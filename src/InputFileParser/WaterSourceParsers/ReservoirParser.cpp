@@ -96,12 +96,14 @@ ReservoirParser::generateSource(int id, vector<vector<string>> &block,
     } else if (!existing_infrastructure && variable_area) {
         return new Reservoir(name, id, catchments, capacity,
                              treatment_capacity, evaporation_series,
-                             storage_vs_area_curves, construction_time,
+                             storage_vs_area_curves, construction_prerequisites,
+                             construction_time,
                              permitting_time, *bonds.back());
     } else if (!existing_infrastructure) {
         return new Reservoir(name, id, catchments, capacity,
                              treatment_capacity, evaporation_series,
-                             storage_area, construction_time,
+                             storage_area, construction_prerequisites,
+                             construction_time,
                              permitting_time, *bonds.back());
     } else {
         throw invalid_argument("Really weird error in ReservoirParser. Please "

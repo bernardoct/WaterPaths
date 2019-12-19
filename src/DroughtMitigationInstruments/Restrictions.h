@@ -53,6 +53,9 @@ public:
 
     void setRealization(unsigned long realization_id, const vector<double> &utilities_rdm,
                         const vector<double> &water_sources_rdm, const vector<double> &policy_rdm) override;
+
+    void setupTriggers(const vector<double> &stage_multipliers,
+                       const vector<double> &stage_triggers);
 };
 
 

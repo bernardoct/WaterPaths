@@ -32,7 +32,8 @@ ReuseParser::generateSource(int id, vector<vector<string>> &block, int line_no,
     if (existing_infrastructure) {
         return new WaterReuse(name, id, capacity);
     } else {
-        return new WaterReuse(name, id, treatment_capacity, construction_time,
+        return new WaterReuse(name, id, treatment_capacity,
+                              construction_prerequisites, construction_time,
                               permitting_time, *bonds[0]);
     }
 }

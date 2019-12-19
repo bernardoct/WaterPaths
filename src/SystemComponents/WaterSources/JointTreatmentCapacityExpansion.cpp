@@ -6,11 +6,11 @@
 
 JointTreatmentCapacityExpansion::JointTreatmentCapacityExpansion(
         string name, const int id, int parent_source_id,
-        const map<int, double> &added_treatment_capacities,
+        const map<int, double> &added_treatment_capacities, vector<int> construction_prerequisites,
         vector<Bond *> &bonds, const vector<double> &construction_time_range,
         double permitting_period)
         : WaterSource(name, id, vector<Catchment *>(), NONE, NON_INITIALIZED,
-                      {}, NEW_JOINT_WATER_TREATMENT_PLANT,
+                      construction_prerequisites, NEW_JOINT_WATER_TREATMENT_PLANT,
                       construction_time_range, permitting_period, bonds),
           added_treatment_capacities(added_treatment_capacities),
           parent_source_id(parent_source_id) {

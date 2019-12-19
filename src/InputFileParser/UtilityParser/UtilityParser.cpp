@@ -93,6 +93,8 @@ void UtilityParser::parseVariables(vector<vector<string>> &block,
                     discharge_to_sources_ids
             );
             rows_read.push_back(i);
+        } else if (line[0] == "construction_pre_requisites") {
+
         }
     }
 
@@ -141,7 +143,7 @@ UtilityParser::generateUtility(int id, vector<vector<string>> &block,
                 demand_buffer, rof_infra_construction_order,
                 demand_infra_construction_order,
                 infra_construction_triggers, infra_discount_rate,
-                infra_if_built_remove, construction_pre_requisites
+                infra_if_built_remove
         );
 
     }

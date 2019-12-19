@@ -13,8 +13,11 @@ public:
 
     const unsigned int parent_reservoir_ID;
 
-    ReservoirExpansion(string name, const int id, const unsigned int parent_reservoir_ID,
-                       const double capacity, const vector<double> &construction_time_range,
+    ReservoirExpansion(string name, const int id,
+                       const unsigned int parent_reservoir_ID,
+                       const double capacity,
+                       vector<int> construction_prerequisites,
+                       const vector<double> &construction_time_range,
                        double permitting_period, Bond &bond);
 
     ReservoirExpansion(const ReservoirExpansion &reservoir_expansion);
@@ -23,8 +26,8 @@ public:
             const ReservoirExpansion &reservoir_expansion);
 
     void applyContinuity(int week, double upstream_source_inflow,
-                             double wastewater_discharge,
-                             vector<double> &demand_outflow) override;
+                         double wastewater_discharge,
+                         vector<double> &demand_outflow) override;
 
 };
 

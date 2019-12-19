@@ -239,11 +239,11 @@ TEST_CASE("Utility and infrastructure basic functionalities",
     Reservoir reservoir("Little River Reservoir (Raleigh)", 7,
                         vector<Catchment *>(), 3700.0,
                         ILLIMITED_TREATMENT_CAPACITY, evaporation_series, 1.,
-                        {4.5, 4.50001}, 17 * WEEKS_IN_YEAR, bond);
+                        {}, {4.5, 4.50001}, 17 * WEEKS_IN_YEAR, bond);
     ReservoirExpansion expansion1("Existing Res Expansion First Phase", 8, 0, 500.,
-                                  {3, 3.0001}, 0, bond1);
+                                  {}, {3, 3.0001}, 0, bond1);
     ReservoirExpansion expansion2("Existing Res Expansion First Phase", 9, 0, 1000.,
-                                  {4, 4.0001}, 0, bond2);
+                                  {8}, {4, 4.0001}, 0, bond2);
 
     // UtilityParser data
     vector<vector<double>> demands =
@@ -302,7 +302,7 @@ TEST_CASE("Utility and infrastructure basic functionalities",
                         demand_class_fractions, user_classes_prices,
                         wwtp_discharge_durham, 0., construction_order,
                         construction_order_empty, rof_triggers, 0.07,
-                        vector<vector<int>>(), vector<vector<int>>());
+                        vector<vector<int>>());
 
         utility.addWaterSource(&reservoir);
 
@@ -310,7 +310,7 @@ TEST_CASE("Utility and infrastructure basic functionalities",
                 "[WaterSource][Infrastructure]") {
             for (int i = 0; i < 10; ++i) {
                 vector<double> construction_time_interval = {3., 5.};
-                WaterReuse reuse("Test", 18, 5., construction_time_interval,
+                WaterReuse reuse("Test", 18, 5., {}, construction_time_interval,
                                  7 * WEEKS_IN_YEAR, bond);
                 CHECK(reuse.getConstruction_time() > WEEKS_IN_YEAR * 3 - 1);
                 CHECK(reuse.getConstruction_time() < WEEKS_IN_YEAR * 5 + 1);
@@ -321,7 +321,6 @@ TEST_CASE("Utility and infrastructure basic functionalities",
             InfrastructureManager infrastructure_construction_manager(0,
                                                                       rof_triggers,
                                                                       infra_built_remove,
-                                                                      vector<vector<int>>(),
                                                                       0.06,
                                                                       construction_order,
                                                                       vector<int>());
@@ -401,14 +400,12 @@ TEST_CASE("Utility and infrastructure basic functionalities",
                              demand_class_fractions, user_classes_prices,
                              wwtp_discharge_durham, 0., construction_order_seq,
                              construction_order_empty, rof_triggers,
-                             0.07, vector<vector<int>>(),
-                             vector<vector<int>>());
+                             0.07, vector<vector<int>>());
             Utility utility2("U2", 1, demands, streamflow_n_weeks, 0.03,
                              demand_class_fractions, user_classes_prices,
                              wwtp_discharge_durham, 0., construction_order_seq,
                              construction_order_empty, rof_triggers,
-                             0.07, vector<vector<int>>(),
-                             vector<vector<int>>());
+                             0.07, vector<vector<int>>());
             LevelDebtServiceBond bond1(0, 200.0, 25, 0.05, vector<int>(1, 0));
             LevelDebtServiceBond bond2(1, 300.0, 25, 0.05, vector<int>(1, 0));
 
@@ -429,8 +426,8 @@ TEST_CASE("Utility and infrastructure basic functionalities",
 
             vector<Bond *> bonds = Utils::copyBonds({&bond1, &bond2});
             // Sequential joint wtp expansion to be added to allocated reservoir ID 1.
-            JointTreatmentCapacityExpansion wtp("WTP expansion", 0, 1, added_treatment_capacities, bonds,
-                                                  {3.000, 3.001}, 0.);
+            JointTreatmentCapacityExpansion wtp("WTP expansion", 0, 1, added_treatment_capacities, {}, bonds,
+                                                {3.000, 3.001}, 0.);
 
             vector<WaterSource *> water_sources =
                     Utils::copyWaterSourceVector({&allocated_reservoir, &wtp});
@@ -558,8 +555,7 @@ TEST_CASE("Utility and infrastructure basic functionalities",
         water_sources[8] = &expansion1;
         water_sources[9] = &expansion2;
 
-        InfrastructureManager manager(0, rof_triggers, {{}},
-                                      construction_pre_requisites, 0.05,
+        InfrastructureManager manager(0, rof_triggers, {{}}, 0.05,
                                       construction_order,
                                       construction_order_empty);
 
@@ -748,14 +744,13 @@ TEST_CASE("Test Joint Triggering of Allocated Reservoir",
                      demand_class_fractions, user_classes_prices,
                      wwtp_discharge, 0.,
                      construction_order_seq, construction_order_empty,
-                     rof_triggers, 0.07, vector<vector<int>>(),
-                     vector<vector<int>>());
+                     rof_triggers, 0.07, vector<vector<int>>());
 
     Utility utility2("U2", 1, demands, streamflow_n_weeks, 0.03,
                      demand_class_fractions, user_classes_prices,
                      wwtp_discharge, 0.,
                      construction_order_seq, construction_order_empty,
-                     rof_triggers, 0.07, vector<vector<int>>(),
+                     rof_triggers, 0.07,
                      vector<vector<int>>());
 
     vector<Utility *> utilities;
@@ -785,7 +780,7 @@ TEST_CASE("Test Joint Triggering of Allocated Reservoir",
                                            river_catchments, 1000.0,
                                            ILLIMITED_TREATMENT_CAPACITY,
                                            evaporation_series,
-                                           allocated_reservoir_storage_area,
+                                           allocated_reservoir_storage_area, {},
                                            construction_time_interval,
                                            17 * WEEKS_IN_YEAR,
                                            bond,
@@ -835,7 +830,7 @@ TEST_CASE("Create a utility", "[UtilityParser]") {
                       watertownDemandClassesFractions,
                       watertownUserClassesWaterPrices, wwtp_discharge_watertown,
                       0, construction_order_seq, vector<int>(), rof_triggers,
-                      .05, vector<vector<int>>(), vector<vector<int>>());
+                      .05, vector<vector<int>>());
 };
 
 TEST_CASE("Read time series.", "[Time series parsing]") {

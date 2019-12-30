@@ -57,6 +57,10 @@ int InputFileProblem::functionEvaluation(double *vars, double *objs,
     setImport_export_rof_tables(parser.getUseRofTables(),
                                 parser.getRofTablesDir());
 
+    for (int i = 0; i < parser.getNDecVars(); ++i) printf("%f ", vars[i]);
+    printf("\nn_dec_vars %lu\n", parser.getNDecVars());
+//    printf("\n");
+
 
     // Creates simulation object depending on use (or lack thereof) ROF tables
     printf("Starting Simulation\n");
@@ -105,41 +109,57 @@ int InputFileProblem::functionEvaluation(double *vars, double *objs,
                             parser.getRealizationsToRun());
         this->master_data_collector = s->runFullSimulation(n_threads, vars);
     }
+
     double end_time = omp_get_wtime();
-    printf("Function evaluation time: %f\n", end_time - start_time);
+    printf(" Function evaluation time: %f\n", end_time - start_time);
 
     // Calculate objectives and store them in Borg decision variables array.
+    if (parser.isOptimize()) {
 #ifdef  PARALLEL
+//    printf("Starting to calculate objectives.\n");
     if (import_export_rof_tables != EXPORT_ROF_TABLES) {
         objectives = calculateAndPrintObjectives(false);
 
-        int i = 0;
-        objs[i] = 1. - min(min(objectives[i], objectives[5 + i]),
-                   objectives[10 + i]);
-        for (i = 1; i < 5; ++i) {
-            objs[i] = max(max(objectives[i], objectives[5 + i]),
-                            objectives[10 + i]);
+	unsigned long n_utilities = parser.getUtilities().size();
+
+	memcpy(objs, objectives.data(), sizeof(double) * 5);
+	printf("here2\n");
+	for (int i = 1; i < n_utilities; ++i) {
+	    printf("%d\n", i);
+	    objs[0] = min(objs[0], 1. - objectives[0 + 5 * i]);
+            objs[1] = max(objs[1], objectives[1 + 5 * i]);
+            objs[2] = max(objs[2], objectives[2 + 5 * i]);
+            objs[3] = max(objs[3], objectives[3 + 5 * i]);
+            objs[4] = max(objs[4], objectives[4 + 5 * i]);
         }
 
-    for (int i = 0; i < NUM_OBJECTIVES; ++i) {
-         if (isnan(objs[i])) {
-        for (int j = 0; j < NUM_OBJECTIVES; ++j) {
-            objs[i] = 1e5;
+        for (int i = 0; i < parser.getNObjectives(); ++i) {
+            if (isnan(objs[i])) {
+                for (int j = 0; j < parser.getNObjectives(); ++j) {
+                    objs[i] = 1e5;
+                }
+                break;
+            }
         }
-        break;
-        }
-    }
+//        printf("Objectives calculated.\n");
     }
 
     if (s != nullptr) {
         delete s;
     }
+
     s = nullptr;
-#endif
+#else
+    throw runtime_error("This version of WaterPaths was not compiled with Borgi.\n");
 //    } catch (const std::exception& e) {
 //        simulationExceptionHander(e, s, objs, vars);
 //	return 1;
 //    }
+#endif
+    } else {
+        calculateAndPrintObjectives(true);
+    }
+    
 
     return 0;
 }
@@ -229,4 +249,16 @@ int InputFileProblem::getNFunctionEvals() const {
 
 int InputFileProblem::getRuntimeOutputInterval() const {
     return parser.getRuntimeOutputInterval();
+}
+
+unsigned long InputFileProblem::getNDecVars() const {
+    return parser.getNDecVars();
+}
+
+unsigned long InputFileProblem::getNObjectives() const {
+    return parser.getNObjectives();
+}
+
+int InputFileProblem::getSeed() const {
+    return parser.getSeed();
 }

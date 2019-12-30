@@ -38,6 +38,7 @@ public:
     void runSimulation() override;
 
     virtual void readInputData() override;
+
 };
 
 #endif //TRIANGLEMODEL_HARDCODEDPROBLEM_H

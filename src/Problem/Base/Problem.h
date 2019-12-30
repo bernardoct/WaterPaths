@@ -10,6 +10,9 @@
 #include "../../DataCollector/MasterDataCollector.h"
 #include "../../Utils/Utils.h"
 #include "../../SystemComponents/WaterSources/Reservoir.h"
+#ifdef  PARALLEL
+#include "../../../Borg/borgms.h"
+#endif
 
 class Problem {
 protected:
@@ -17,6 +20,8 @@ protected:
     unsigned long n_weeks;
     unsigned long solution_no;
     unsigned long n_threads;
+    unsigned long n_dec_vars = NON_INITIALIZED;
+    unsigned long n_objectives = 5; /// Number of objectives implemented in current version.
     int n_utilities = NON_INITIALIZED;
     string io_directory;
     string fname_sufix;
@@ -101,6 +106,14 @@ public:
                                          const vector<vector<unsigned long>> &bs_realizations);
 
     virtual void runSimulation() = 0;
+
+    virtual unsigned long getNDecVars() const;
+
+    virtual unsigned long getNObjectives() const;
+
+#ifdef PARALLEL
+    virtual void setProblemDefinition(BORG_Problem &problem) = 0;
+#endif
 };
 
 #endif //TRIANGLEMODEL_PROBLEM_H

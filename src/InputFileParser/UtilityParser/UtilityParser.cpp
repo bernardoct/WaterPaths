@@ -112,17 +112,17 @@ UtilityParser::generateUtility(int id, vector<vector<string>> &block,
     AuxParserFunctions::checkForUnreadTags(line_no, block, tag_name);
     checkMissingOrExtraParams(block, line_no);
 
-    if (rof_infra_construction_order.size() !=
-        infra_construction_triggers.size() &&
-        demand_infra_construction_order.size() !=
-        infra_construction_triggers.size()) {
-        char error[300];
-        sprintf(error,
-                "Mismatch between number of infrastructure trigger values and "
-                "infrastructure options in %s, line number %d.",
-                tag_name.c_str(), line_no);
-        throw invalid_argument(error);
-    }
+//    if (rof_infra_construction_order.size() !=
+//        infra_construction_triggers.size() &&
+//        demand_infra_construction_order.size() !=
+//        infra_construction_triggers.size()) {
+//        char error[300];
+//        sprintf(error,
+//                "Mismatch between number of infrastructure trigger values and "
+//                "infrastructure options in %s, line number %d.",
+//                tag_name.c_str(), line_no);
+//        throw invalid_argument(error);
+//    }
 
     if (infra_construction_triggers.empty()) {
         return new Utility(

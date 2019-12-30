@@ -44,6 +44,7 @@ Catchment::Catchment(const Catchment &catchment) :
 Catchment &Catchment::operator=(const Catchment &catchment) {
     streamflows_all = catchment.streamflows_all;
     series_length = catchment.series_length;
+    return *this;
 }
 
 Catchment::Catchment() = default;

@@ -68,7 +68,7 @@ public:
     ~PaperTestProblem() override;
 
 #ifdef PARALLEL
-    void setProblemDefinition(BORG_Problem &problem);
+    void setProblemDefinition(BORG_Problem &problem) override;
 #endif
 
     int functionEvaluation(double *vars, double *objs, double *consts) override;

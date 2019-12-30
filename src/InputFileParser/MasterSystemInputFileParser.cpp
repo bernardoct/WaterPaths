@@ -86,8 +86,11 @@ MasterSystemInputFileParser::replacePlaceHoldersByDVs(
                 if (it != string::npos) {
                     reorderCSVDataInBlockLine(vars, count_var, data);
                 }
+		printf("%s ", data.c_str());
             }
+	    printf("\n");
         }
+	printf("\n");
     }
 }
 
@@ -313,11 +316,13 @@ bool MasterSystemInputFileParser::parseRunParams(int line_no,
                     int seed = stoi(line[1]);
                     WaterSource::setSeed(seed);
                     MasterDataCollector::setSeed(seed);
+		    this->seed = seed;
                     rows_read.push_back(i);
                 } else if (line[0] == "optimize") {
                     optimize = true;
                     n_function_evals = stoi(line[1]);
                     runtime_output_interval = stoi(line[2]);
+		    rows_read.push_back(i);
                 }
             }
 
@@ -555,19 +560,13 @@ bool MasterSystemInputFileParser::parseDecVarsBoundsAndObjEpsilons(
         int line_no, vector<vector<string>> &block, const string &tag,
         bool create_objects) {
 #ifdef PARALLEL
-    if (!create_objects) {
+    if (create_objects) {
         if (tag == "[DECISION VARIABLE BOUNDS]") {
-            dec_vars_bounds.resize(block.size());
+	    n_dec_vars = block.size();
+            dec_vars_bounds.resize(n_dec_vars);
             for (auto &line : block) {
-                if (line.size() != 3 || stod(line[1]) > stod(line[2])) {
-                    char error[300];
-                    sprintf(error, "Decision variable bounds in line %d, tag %s"
-                                   " is not comprised of variable id, lower, and"
-                                   " upper bound.", line_no, tag.c_str());
-                    throw invalid_argument(error);
-                }
+                vector<double> bounds;
                 try {
-                    vector<double> bounds;
                     Utils::tokenizeString(line[1], bounds, ',');
                     dec_vars_bounds[stod(line[0])] = bounds;
                 } catch (out_of_range &e) {
@@ -576,6 +575,14 @@ bool MasterSystemInputFileParser::parseDecVarsBoundsAndObjEpsilons(
                                    "variable in tag %s, line %d. Did you skip "
                                    "decision variable number 0?", tag.c_str(),
                             line_no);
+                    throw invalid_argument(error);
+                } 
+
+                if (bounds.size() != 2 || bounds[0] > bounds[1]) {
+                    char error[300];
+                    sprintf(error, "Decision variable bounds in line %d, tag %s"
+                                   " is not comprised of variable id, lower, and"
+                                   " upper bound.", line_no, tag.c_str());
                     throw invalid_argument(error);
                 }
             }
@@ -586,6 +593,8 @@ bool MasterSystemInputFileParser::parseDecVarsBoundsAndObjEpsilons(
         }
 
         return false;
+    } else {
+        return true;
     }
 #else
     if (tag == "[DECISION VARIABLE BOUNDS]" && tag == "[OBJECTIVES EPSILONS]") {
@@ -868,3 +877,14 @@ const vector<double> &MasterSystemInputFileParser::getObjsEpsilons() const {
     return objs_epsilons;
 }
 
+unsigned long MasterSystemInputFileParser::getNDecVars() const {
+    return n_dec_vars;
+}
+
+unsigned long MasterSystemInputFileParser::getNObjectives() const {
+    return N_OBJECTIVES;
+}
+
+int MasterSystemInputFileParser::getSeed() const {
+    return seed;
+}

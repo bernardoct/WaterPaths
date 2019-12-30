@@ -26,6 +26,7 @@ DataSeries &DataSeries::operator=(const DataSeries &data_series) {
     length = data_series.length;
     series_x = data_series.series_x;
     series_y = data_series.series_y;
+    return *this;
 }
 
 /**

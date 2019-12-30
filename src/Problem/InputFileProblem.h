@@ -9,6 +9,10 @@
 #include "Base/Problem.h"
 #include "../InputFileParser/MasterSystemInputFileParser.h"
 
+#ifdef  PARALLEL
+#include "../../Borg/borgms.h"
+#endif
+
 class InputFileProblem : public Problem {
     MasterSystemInputFileParser parser;
     string solutions_file;
@@ -35,6 +39,16 @@ public:
     int getNFunctionEvals() const;
 
     int getRuntimeOutputInterval() const;
+
+    unsigned long getNDecVars() const override;
+
+    unsigned long getNObjectives() const override;
+
+    int getSeed() const;
+
+#ifdef PARALLEL
+    void setProblemDefinition(BORG_Problem &problem) override;
+#endif
 };
 
 

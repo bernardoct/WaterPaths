@@ -55,6 +55,9 @@ class MasterSystemInputFileParser {
     int bootstrap_sample_size = NON_INITIALIZED;
     int n_function_evals = NON_INITIALIZED;
     int runtime_output_interval = NON_INITIALIZED;
+    int seed = NON_INITIALIZED;
+    unsigned long n_dec_vars = NON_INITIALIZED;
+    const unsigned long N_OBJECTIVES = 5; //hard-coded objectives
 
     string rof_tables_dir;
     string solutions_file;
@@ -226,6 +229,12 @@ public:
     const vector<vector<double>> &getDecVarsBounds() const;
 
     const vector<double> &getObjsEpsilons() const;
+
+    unsigned long getNDecVars() const;
+    
+    unsigned long getNObjectives() const;
+
+    int getSeed() const;
 };
 
 

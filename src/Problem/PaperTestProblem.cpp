@@ -786,7 +786,7 @@ int PaperTestProblem::functionEvaluation(double *vars, double *objs,
         this->master_data_collector = s->runFullSimulation(n_threads, vars);
     }
     double end_time = omp_get_wtime();
-    printf("\nFunction evaluation time: %f\n", end_time - start_time);
+    printf(" Function evaluation time: %f\n", end_time - start_time);
 
     // Calculate objectives and store them in Borg decision variables array.
 #ifdef  PARALLEL

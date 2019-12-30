@@ -226,3 +226,11 @@ MasterDataCollector *Problem::getMaster_data_collector() {
 }
 
 void Problem::readInputData() {}
+
+unsigned long Problem::getNDecVars() const {
+    return n_dec_vars;
+}
+
+unsigned long Problem::getNObjectives() const {
+    return n_objectives;
+}

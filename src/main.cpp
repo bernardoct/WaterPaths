@@ -50,8 +50,8 @@ void eval(double *vars, double *objs, double *consts) {
 }
 
 int main(int argc, char *argv[]) {
-    const int c_num_dec = NUM_DEC_VAR;
-    const int c_num_obj = NUM_OBJECTIVES;
+    int c_num_dec = NON_INITIALIZED;
+    int c_num_obj = NON_INITIALIZED;
     int c_num_constr = 0;
     double c_obj[c_num_obj];
     double c_constr[0];
@@ -230,6 +230,10 @@ int main(int argc, char *argv[]) {
         run_optimization = dynamic_cast<InputFileProblem *>(problem_ptr)->isOptimize();
         nfe = dynamic_cast<InputFileProblem *>(problem_ptr)->getNFunctionEvals();
         output_frequency = dynamic_cast<InputFileProblem *>(problem_ptr)->getRuntimeOutputInterval();
+	c_num_dec = (int) dynamic_cast<InputFileProblem *>(problem_ptr)->getNDecVars();
+	c_num_obj = (int) dynamic_cast<InputFileProblem *>(problem_ptr)->getNObjectives();
+	seed = (int) dynamic_cast<InputFileProblem *>(problem_ptr)->getSeed();
+	c_num_constr = 0;
     } else {
         vector<int> solutions_to_run_range;
         if (last_solution != NON_INITIALIZED) {
@@ -252,6 +256,7 @@ int main(int argc, char *argv[]) {
 
     // If Borg is not called, run in simulation mode
     if (!run_optimization) {
+        printf("Running single simulation.\n");
         problem_ptr->runSimulation();
 
         return 0;
@@ -259,12 +264,11 @@ int main(int argc, char *argv[]) {
 #ifdef  PARALLEL
 
         printf("Running Borg with:\n"
-            "n_islands: %lu\n"
             "nfe: %lu\n"
             "output freq.: %lu\n"
             "n_weeks: %lu\n"
             "n_realizations: %lu\n\n",
-            n_islands, nfe, output_frequency, n_weeks, n_realizations);
+            nfe, output_frequency, n_weeks, n_realizations);
 
         // for debugging borg, creating file to print each ranks DVs which isdone in Eval function
 
@@ -275,6 +279,8 @@ int main(int argc, char *argv[]) {
         BORG_Algorithm_output_frequency((int) output_frequency);
 
         // Define the problem.
+	printf("\nNUMBER OF OBJECTIVES: %d\n", c_num_obj);
+	printf("\nNUMBER OF DEC VARS: %d\n", c_num_dec);
         BORG_Problem problem = BORG_Problem_create(c_num_dec, c_num_obj,
                                                    c_num_constr,
                                                    eval);
@@ -282,13 +288,14 @@ int main(int argc, char *argv[]) {
         cout << "setting up problem" << endl;
         problem_ptr->setProblemDefinition(problem);
 
-        if (seed > -1) {
+        if (seed != NON_INITIALIZED) {
+	    if (seed < 0) throw invalid_argument("See must be greater than 0.");
             srand(seed);
             WaterSource::setSeed(seed);
         BORG_Random_seed(seed);
         }
         char output_directory[256], output_file_name[256];
-    char io_directory[256];
+        char io_directory[256];
         char runtime[256];
         FILE* outputFile = nullptr;
 
@@ -309,8 +316,6 @@ int main(int argc, char *argv[]) {
 
         int rank; // different seed on each processor
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-        string rank_out_file = "diagnostic_output/DVs_rank_" + to_string(rank) + ".csv";
-        sol_out.open(rank_out_file.c_str());
 
         //int rank; // different seed on each processor
         //MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -328,7 +333,6 @@ int main(int argc, char *argv[]) {
             }
             BORG_Archive_print(result, outputFile);
             BORG_Archive_destroy(result);
-            sol_out.close();
             fclose(outputFile);
         }
 

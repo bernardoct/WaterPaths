@@ -519,8 +519,8 @@ void WaterSource::checkAllocations(double total_allocated_fraction,
         }
         for (int i = 0; i < (int) utilities_with_allocations.size(); ++i) {
             if (utilities_with_allocations[i] != WATER_QUALITY_ALLOCATION) {
-                sum_supply_allocs = allocated_fractions[i] / sum_supply_allocs *
-                                    (1. - wq_alloc);
+                allocated_fractions[i] = allocated_fractions[i] /
+                        sum_supply_allocs * (1. - wq_alloc);
             }
         }
     }

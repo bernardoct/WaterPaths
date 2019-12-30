@@ -6,13 +6,13 @@ rdm_water_sources /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_w
 rdm_dmps /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_dmp_test_problem_opt.csv
 rdm_no 0
 n_threads 4
-rof_tables_dir ../rof_tables_test_problem/
+rof_tables_dir /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/rof_tables_test_problem/
 use_rof_tables import
 print_time_series
 solutions_file /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/reference_final_filtered_paper3.reference
 solutions_to_run 0
 seed 0
-optimize 75000 2000
+#optimize 7 2000
 
 [DATA TO LOAD]
 # Files with "*" are always fully loaded instead of having on n_realizations lines loaded. Add "*" to any file that's not a demand, inflow or evaporation time series.
@@ -38,40 +38,40 @@ little_river_raleigh_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/Test
 stone_quarry_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/stone_quarry_inflows.csv
 university_lake_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/university_lake_inflows.csv
 
-[DECISION VARIABLE BOUNDS]
-0 0.334,0.9     # watertown LMA
-1 0.05,0.333    # dryville LMA
-2 0.05,0.333    # fallsland LMA
-3 0.001,1.0     # watertown restrictions
-4 0.001,1.0     # dryville restrictions
-5 0.001,1.0     # fallsland restrictions
-6 0.001,1.0     # dryville transfer
-7 0.001,1.0     # fallsland transfer
-8 0.0,0.1       # watertown annual payment
-9 0.0,1.0       # new river rank watertown
-10 0.0,1.0      # college rock expansion rank low
-11 0.0,1.0      # college rock expansion rank high
-12 0.0,1.0      # watertown reuse I rank
-13 0.0,1.0      # watertown reuse II rank
-14 0.001,1.0    # watertown inf trigger
-15 0.0,0.1      # dryville annual payment
-16 0.0,1.0      # sugar creek rank
-17 0.0,1.0      # granite quarry rank
-18 0.0,1.0      # dryville reuse rank
-19 0.001,1.0    # dryville inf trigger
-20 0.0,0.1      # fallsland annual payment
-21 0.0,1.0      # new river rank fallsland
-22 0.0,1.0      # fallsland reuse rank
-23 0.001,1.0    # fallsland inf trigger
-24 0.001,1.0    # watertown insurance use
-25 0.001,1.0    # dryville insurance use
-26 0.001,1.0    # fallsland insurance use
-27 0.0,0.02     # watertown insurance payment
-28 0.0,0.02     # dryville insurance payment
-29 0.0,0.02     # fallsland insurance payment
-
-[OBJECTIVES EPSILONS]
-0.001,0.02,10.0,0.025,0.01
+# [DECISION VARIABLE BOUNDS]
+# 0 0.334,0.9     # watertown LMA
+# 1 0.05,0.333    # dryville LMA
+# 2 0.05,0.333    # fallsland LMA
+# 3 0.0,0.1       # watertown annual payment
+# 4 0.0,1.0       # new river rank watertown
+# 5 0.0,1.0      # college rock expansion rank low
+# 6 0.0,1.0      # college rock expansion rank high
+# 7 0.0,1.0      # watertown reuse I rank
+# 8 0.0,1.0      # watertown reuse II rank
+# 9 0.001,1.0    # watertown inf trigger
+# 10 0.0,0.1      # dryville annual payment
+# 11 0.0,1.0      # sugar creek rank
+# 12 0.0,1.0      # granite quarry rank
+# 13 0.0,1.0      # dryville reuse rank
+# 14 0.001,1.0    # dryville inf trigger
+# 15 0.0,0.1      # fallsland annual payment
+# 16 0.0,1.0      # new river rank fallsland
+# 17 0.0,1.0      # fallsland reuse rank
+# 18 0.001,1.0    # fallsland inf trigger
+# 19 0.001,1.0     # watertown restrictions
+# 20 0.001,1.0     # dryville restrictions
+# 21 0.001,1.0     # fallsland restrictions
+# 22 0.001,1.0     # dryville transfer
+# 23 0.001,1.0     # fallsland transfer
+# 24 0.001,1.0    # watertown insurance use
+# 25 0.001,1.0    # dryville insurance use
+# 26 0.001,1.0    # fallsland insurance use
+# 27 0.0,0.02     # watertown insurance payment
+# 28 0.0,0.02     # dryville insurance payment
+# 29 0.0,0.02     # fallsland insurance payment
+# 
+# [OBJECTIVES EPSILONS]
+# 0.001,0.02,10.0,0.025,0.01
 
 [RESERVOIR]
 name College_Rock_Reservoir
@@ -97,7 +97,7 @@ streamflow_files jordan_lake_inflows
 evaporation_file jordan_lake_evap
 storage_area 13940
 utilities_with_allocations 0,1,2,-1
-allocated_fractions ###,###,###,0.6
+allocated_fractions %%%,%%%,%%%,0.6
 allocated_treatment_fractions 1,0,0
 
 [ALLOCATED RESERVOIR]
@@ -197,41 +197,41 @@ ptime 5
 name Watertown
 demands cary_demand
 number_of_week_demands 2400
-percent_contingency_fund_contribution ###
+percent_contingency_fund_contribution %%%
 typesMonthlyDemandFraction caryDemandClassesFractions
 typesMonthlyWaterPrice caryUserClassesWaterPrices
 demand_buffer 0.35
 rof_infra_construction_order @New_River_Reservoir,@College_Rock_Expansion_Low,@College_Rock_Expansion_High,@Watertown_Reuse_I,@Watertown_Reuse_II
 # infra_construction_triggers 0.1,0.1,0.1,0.1,0.1
-infra_construction_triggers ###
+infra_construction_triggers %%%
 infra_discount_rate 0.07
 
 [UTILITY]
 name Dryville
 demands durham_demand
 number_of_week_demands 2400
-percent_contingency_fund_contribution ###
+percent_contingency_fund_contribution %%%
 typesMonthlyDemandFraction durhamDemandClassesFractions
 typesMonthlyWaterPrice durhamUserClassesWaterPrices
 wwtp_discharge_rule demand_to_wastewater_fraction_owasa_raleigh New_River_Reservoir
 demand_buffer 0.35
 rof_infra_construction_order @Sugar_Creek_Reservoir,@Granite_Quarry,@Dryville_Reuse
 # infra_construction_triggers 0.2,0.1,0.3
-infra_construction_triggers ###
+infra_construction_triggers %%%
 infra_discount_rate 0.07
 
 [UTILITY]
 name Fallsland
 demands raleigh_demand
 number_of_week_demands 2400
-percent_contingency_fund_contribution ###
+percent_contingency_fund_contribution %%%
 typesMonthlyDemandFraction raleighDemandClassesFractions
 typesMonthlyWaterPrice raleighUserClassesWaterPrices
 wwtp_discharge_rule demand_to_wastewater_fraction_owasa_raleigh New_River_Reservoir
 demand_buffer 0.35
 rof_infra_construction_order @New_River_Reservoir,@Fallsland_Reuse
 # infra_construction_triggers 0.2,0.1
-infra_construction_triggers ###
+infra_construction_triggers %%%
 infra_discount_rate 0.07
 
 
@@ -266,17 +266,17 @@ Fallsland Fallsland_Reuse 1000
 [RESTRICTIONS POLICY]
 apply_to_utilities Watertown
 stage_multipliers 0.9,0.75,0.65,0.5
-stage_triggers ###
+stage_triggers %%%
 
 [RESTRICTIONS POLICY]
 apply_to_utilities Dryville
 stage_multipliers 0.9,0.75,0.65,0.5
-stage_triggers ###
+stage_triggers %%%
 
 [RESTRICTIONS POLICY]
 apply_to_utilities Fallsland
 stage_multipliers 0.9,0.75,0.65,0.5
-stage_triggers ###
+stage_triggers %%%
 
 [TRANSFERS POLICY]
 apply_to_utilities Dryville,Fallsland
@@ -284,13 +284,13 @@ source_utility_id Watertown
 transfer_water_source_id Lake_Michael
 source_treatment_buffer 0.35
 pipe_transfer_capacities 140,140,105
-buyers_transfer_triggers ###,###
+buyers_transfer_triggers %%%,%%%
 
 [INSURANCE POLICY]
 apply_to_utilities Watertown,Dryville,Fallsland
-insurance_triggers ###,###,###
+insurance_triggers %%%,%%%,%%%
 insurance_premium 1.2
-fixed_payouts ###,###,###
+fixed_payouts %%%,%%%,%%%
 
 
 [FIXED FLOW RESERVOIR CONTROL RULE]

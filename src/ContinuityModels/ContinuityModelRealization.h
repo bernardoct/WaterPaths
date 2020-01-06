@@ -28,7 +28,7 @@ public:
 
     ~ContinuityModelRealization() override;
 
-    void setShortTermROFs(const vector<double> &risks_of_failure);
+    void setShortTermROFs(const vector<vector<double>> &risks_of_failure);
 
     void applyDroughtMitigationPolicies(int week);
 

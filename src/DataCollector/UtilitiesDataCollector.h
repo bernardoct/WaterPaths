@@ -12,6 +12,8 @@
 class UtilitiesDataCollector : public DataCollector {
 private:
     vector<double> st_rof;
+    vector<double> st_stor_rof;
+    vector<double> st_trmt_rof;
     vector<double> lt_rof;
     vector<double> lt_stor_rof;
     vector<double> lt_trmt_rof;

@@ -893,8 +893,21 @@ double Utility::getRisk_of_failure() const {
     return short_term_risk_of_failure;
 }
 
+double Utility::getStorageRisk_of_failure() const {
+    return short_term_storage_risk_of_failure;
+}
+
+double Utility::getTreatmentRisk_of_failure() const {
+    return short_term_treatment_risk_of_failure;
+}
+
 void Utility::setRisk_of_failure(double risk_of_failure) {
     this->short_term_risk_of_failure = risk_of_failure;
+}
+
+void Utility::setRisk_of_failures(double storage_risk_of_failure, double treatment_risk_of_failure) {
+    this->short_term_storage_risk_of_failure = storage_risk_of_failure;
+    this->short_term_treatment_risk_of_failure = treatment_risk_of_failure;
 }
 
 void Utility::setLongTermRisk_of_failures(double storage_risk_of_failure, double treatment_risk_of_failure) {

@@ -43,11 +43,11 @@ public:
 
 //    ContinuityModelROF(ContinuityModelROF &continuity_model_rof);
 
-    vector<double> calculateShortTermROF(int week, int import_export_rof_tables);
+    vector<vector<double>> calculateShortTermROF(int week, int import_export_rof_tables);
 
-    vector<double> calculateShortTermROFFullCalcs(int week);
+    vector<vector<double>> calculateShortTermROFFullCalcs(int week);
 
-    vector<double> calculateShortTermROFTable(int week, vector<Utility *> utilities,
+    vector<vector<double>> calculateShortTermROFTable(int week, vector<Utility *> utilities,
                                               vector<double> utilities_base_storage_capacity,
                                               const vector<Matrix2D<double>> &ut_storage_to_rof_table,
                                               vector<double> current_storage_table_shift,

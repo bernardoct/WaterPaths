@@ -8,7 +8,7 @@
 
 
 UtilitiesDataCollector::UtilitiesDataCollector(const Utility *utility, unsigned long realization)
-        : DataCollector(utility->id, utility->name, realization, UTILITY, 18 * COLUMN_WIDTH),
+        : DataCollector(utility->id, utility->name, realization, UTILITY, 20 * COLUMN_WIDTH),
           utility(utility) {
 }
 
@@ -24,6 +24,10 @@ string UtilitiesDataCollector::printTabularString(int week) {
 	          << net_stream_inflow[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << st_rof[week]
+              << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+              << st_stor_rof[week]
+              << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+              << st_trmt_rof[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << lt_rof[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
@@ -74,6 +78,10 @@ string UtilitiesDataCollector::printCompactString(int week) {
               << ","
               << st_rof[week]
               << ","
+              << st_stor_rof[week]
+              << ","
+              << st_trmt_rof[week]
+              << ","
               << lt_rof[week]
               << ","
               << lt_stor_rof[week]
@@ -119,7 +127,9 @@ string UtilitiesDataCollector::printTabularStringHeaderLine1() {
     outStream << setw(2 * COLUMN_WIDTH) << "Stored"
               << setw(COLUMN_WIDTH) << " "
               << setw(COLUMN_WIDTH) << "Net"
-              << setw(COLUMN_WIDTH) << " "
+              << setw(COLUMN_WIDTH) << "Actl"
+              << setw(COLUMN_WIDTH) << "Stor"
+              << setw(COLUMN_WIDTH) << "Trmt"
               << setw(COLUMN_WIDTH) << "Actl"
               << setw(COLUMN_WIDTH) << "Stor"
               << setw(COLUMN_WIDTH) << "Trmt"
@@ -149,6 +159,8 @@ string UtilitiesDataCollector::printTabularStringHeaderLine2() {
               << setw(COLUMN_WIDTH) << "Capacity"
               << setw(COLUMN_WIDTH) << "Inflow"
               << setw(COLUMN_WIDTH) << "ST-ROF"
+              << setw(COLUMN_WIDTH) << "ST-ROF"
+              << setw(COLUMN_WIDTH) << "ST-ROF"
               << setw(COLUMN_WIDTH) << "LT-ROF"
               << setw(COLUMN_WIDTH) << "LT-ROF"
               << setw(COLUMN_WIDTH) << "LT-ROF"
@@ -177,6 +189,8 @@ string UtilitiesDataCollector::printCompactStringHeader() {
               << id << "capacity" << ","
               << id << "net_inf" << ","
               << id << "st_rof" << ","
+              << id << "st_stor_rof" << ","
+              << id << "st_trmt_rof" << ","
               << id << "lt_rof" << ","
               << id << "lt_stor_rof" << ","
               << id << "lt_trmt_rof" << ","
@@ -203,9 +217,11 @@ void UtilitiesDataCollector::collect_data() {
 
     combined_storage.push_back(utility->getTotal_available_volume());
     lt_rof.push_back(utility->getLong_term_risk_of_failure());
-    lt_trmt_rof.push_back(utility->getLong_term_treatment_risk_of_failure());
     lt_stor_rof.push_back(utility->getLong_term_storage_risk_of_failure());
+    lt_trmt_rof.push_back(utility->getLong_term_treatment_risk_of_failure());
     st_rof.push_back(utility->getRisk_of_failure());
+    st_stor_rof.push_back(utility->getStorageRisk_of_failure());
+    st_trmt_rof.push_back(utility->getTreatmentRisk_of_failure());
     unrestricted_demand.push_back(utility->getUnrestrictedDemand());
     restricted_demand.push_back(utility->getRestrictedDemand());
     contingency_fund_size.push_back(utility->getContingency_fund());
@@ -252,6 +268,10 @@ void UtilitiesDataCollector::checkForNans() const {
     if (std::isnan(lt_trmt_rof.back()))
         throw_with_nested(runtime_error(error.c_str()));
     if (std::isnan(st_rof.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(st_stor_rof.back()))
+        throw_with_nested(runtime_error(error.c_str()));
+    if (std::isnan(st_trmt_rof.back()))
         throw_with_nested(runtime_error(error.c_str()));
     if (std::isnan(contingency_fund_size.back()))
         throw_with_nested(runtime_error(error.c_str()));

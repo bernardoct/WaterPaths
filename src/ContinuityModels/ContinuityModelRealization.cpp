@@ -37,9 +37,15 @@ ContinuityModelRealization::~ContinuityModelRealization() {
     }
 }
 
-void ContinuityModelRealization::setShortTermROFs(const vector<double> &risks_of_failure) {
+void ContinuityModelRealization::setShortTermROFs(const vector<vector<double>> &risks_of_failure) {
+    int storage_row = 0;
+    int treatment_row = 1;
     for (unsigned long i = 0; i < continuity_utilities.size(); ++i) {
-        continuity_utilities.at(i)->setRisk_of_failure(risks_of_failure.at(i));
+        double high_rof_value = max(risks_of_failure[i][storage_row], risks_of_failure[i][treatment_row]);
+        continuity_utilities.at(i)->setRisk_of_failure(high_rof_value);
+        continuity_utilities.at(i)->setRisk_of_failures(
+                risks_of_failure[i][storage_row],
+                risks_of_failure[i][treatment_row]);
     }
 }
 
@@ -85,13 +91,17 @@ void ContinuityModelRealization::updateJointWTPTreatmentAllocations(int current_
 void ContinuityModelRealization::setLongTermROFs(const vector<vector<double>> &risks_of_failure, const int week) {
     vector<int> new_infra_triggered;
     int nit; // new infrastruction triggered - id.
+    int storage_row = 0;
+    int treatment_row = 1;
 
     // Loop over utilities to see if any of them will build new infrastructure.
     for (unsigned long u = 0; u < continuity_utilities.size(); ++u) {
         /// OCT 2019: TRIAGE ROFs; FROM EITHER STORAGE OR TREATMENT ROF, CHOOSE THE GREATEST
         /// VALUE TO PASS TO DECIDE WHETHER TO EXPAND INFRASTRUCTURE (0: storage ROF row, 1: treatment)
-        double high_rof_value = max(risks_of_failure[u][0], risks_of_failure[u][1]);
-        continuity_utilities[u]->setLongTermRisk_of_failures(risks_of_failure[u][0], risks_of_failure[u][1]);
+        double high_rof_value = max(risks_of_failure[u][storage_row], risks_of_failure[u][treatment_row]);
+        continuity_utilities[u]->setLongTermRisk_of_failures(
+                risks_of_failure[u][storage_row],
+                risks_of_failure[u][treatment_row]);
 
         // Runs utility's infrastructure construction handler and get the id
         // of new source built, if any.

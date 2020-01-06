@@ -21,6 +21,8 @@ private:
     vector<int> non_priority_draw_water_source;
     vector<double> weekly_peaking_factor;
     double short_term_risk_of_failure = 0;
+    double short_term_storage_risk_of_failure = 0;
+    double short_term_treatment_risk_of_failure = 0;
     double long_term_actual_risk_of_failure = 0;
     double long_term_treatment_risk_of_failure = 0;
     double long_term_storage_risk_of_failure = 0;
@@ -282,6 +284,12 @@ public:
     double updateCurrent_present_value_debt_payment(int week);
 
     double getCurrent_debt_payment_present_valued() const;
+
+    void setRisk_of_failures(double storage_risk_of_failure, double treatment_risk_of_failure);
+
+    double getStorageRisk_of_failure() const;
+
+    double getTreatmentRisk_of_failure() const;
 };
 
 

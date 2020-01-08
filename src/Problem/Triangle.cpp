@@ -285,14 +285,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
             chatham_inftrigger = 1.1;
         }
 
-        //FIXME: TESTS TO SET ROF
-        durham_inftrigger = 1.1;
-        owasa_inftrigger = 1.1;
-        raleigh_inftrigger = 1.1;
-        cary_inftrigger = 1.1;
-        pittsboro_inftrigger = 1.1;
-        chatham_inftrigger = 1.1;
-
         /// July 2019: Because of the way infrastructure connectivity needs to be IDd
         ///     this sub-section of ID variables helps keep things in order
         /// reminder that geographically-independent sources (built or potential)
@@ -1410,6 +1402,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         table_base_storage_shift[uid_pittsboro][haw_river_intake_expansion_low_id] = 1000.;
         table_base_storage_shift[uid_pittsboro][haw_river_intake_expansion_high_id] = 1000.;
 
+        auto treatment_demand_buffer_shift = vector<vector<double>>(6, vector<double>(29, 0.));
+
         vector<DroughtMitigationPolicy *> drought_mitigation_policies;
         /// Restriction policies
         vector<double> initial_restriction_triggers = {OWASA_restriction_trigger,
@@ -1601,6 +1595,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         	     rof_tables,
         	     table_storage_shift,
         	     table_base_storage_shift,
+        	     treatment_demand_buffer_shift,
         	     rof_tables_directory);
             //realization_start = omp_get_wtime();
             this->master_data_collector = s->runFullSimulation(n_threads, vars);

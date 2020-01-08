@@ -64,6 +64,8 @@ ContinuityModelROF::ContinuityModelROF(vector<WaterSource *> water_sources, cons
                 vector<double>((unsigned long) n_utilities);
         current_base_storage_table_shift =
                 vector<double>((unsigned long) n_utilities);
+        current_demand_ratio_buffer =
+                vector<double>((unsigned long) n_utilities);
     }
 }
 
@@ -140,7 +142,8 @@ vector<vector<double>> ContinuityModelROF::calculateShortTermROF(int week, int i
     if (import_export_rof_tables == IMPORT_ROF_TABLES) {
         return ContinuityModelROF::calculateShortTermROFTable(week, realization_utilities,
                 utility_base_storage_capacity, ut_storage_to_rof_table,
-                current_storage_table_shift, current_base_storage_table_shift);
+                current_storage_table_shift, current_base_storage_table_shift,
+                current_demand_ratio_buffer);
     } else {
         return ContinuityModelROF::calculateShortTermROFFullCalcs(week);
     }
@@ -153,10 +156,12 @@ vector<vector<double>> ContinuityModelROF::calculateShortTermROF(int week, int i
  */
 vector<vector<double>> ContinuityModelROF::calculateShortTermROFTable(int week, vector<Utility *> utilities,
         vector<double> utilities_base_storage_capacity, const vector<Matrix2D<double>> &ut_storage_to_rof_table,
-        vector<double> current_storage_table_shift, vector<double> current_base_storage_table_shift) {
+        vector<double> current_storage_table_shift, vector<double> current_base_storage_table_shift,
+        vector<double> current_demand_ratio_buffer) {
     // vector where risks of failure will be stored.
     auto n_utilities = utilities.size();
     int storage_row = 0;
+    int treatment_row = 1;
     vector<vector<double>> risk_of_failure((unsigned long) n_utilities, vector<double>(2, 0.0));
     double m;
 
@@ -170,7 +175,7 @@ vector<vector<double>> ContinuityModelROF::calculateShortTermROFTable(int week, 
                 utilities[u]->getTotal_stored_volume();
         // Ratio of current and status-quo utility storage capacities
         //        double m = current_and_base_storage_capacity_ratio[u];
-        //FIXME: THIS RATIO CAN BECOME ENORMOUS IF STORAGE IS GREATLY INCREASED BY INFRASTRUCTURE
+        // Note: THIS RATIO CAN BECOME ENORMOUS IF STORAGE IS GREATLY INCREASED BY INFRASTRUCTURE
         // OCT 2019: NOW INCLUDING BASE STORAGE SHIFT TO COUNTERACT THIS IN CERTAIN CASES
         // FILLED THE SAME WAY THE STORAGE TABLE SHIFT IS WITHIN THE PROBLEM/TRIANGLE.CPP FILE
         m = utilities[u]->getTotal_storage_capacity() /
@@ -194,6 +199,16 @@ vector<vector<double>> ContinuityModelROF::calculateShortTermROFTable(int week, 
 
 //        if (tier > NO_OF_INSURANCE_STORAGE_TIERS-1)
 //            cout << "VIOLATION OF TIER LIMITS" << endl;
+
+        // Jan 2020: check in on current demand and treatment capacity conditions
+        // THIS IS NOT AN EXACT VERSION OF FULL ROF CALCULATION BUT A ROUGH APPROXIMATION OF CONDITIONS
+        // BECAUSE STORAGE DOES NOT HAVE AN IMPACT ON TREATMENT CAPACITY OR UNRESTRICTED DEMAND
+        // WE ASSUME THAT WHEN DEMAND GROWS TO A CERTAIN THRESHOLD FAILURE IS GUARANTEED
+        // WITH RESPECT TO TREATMENT CAPACITY. This is meant to catch failures of un-met demand before
+        // infrastructure is made available or storage failures due to demand increases or hydrologic change appear.
+        double demand_to_treatment_capacity_ratio = utilities[u]->getUnrestrictedDemandToTreatmentCapacityRatio();
+        if (demand_to_treatment_capacity_ratio + current_demand_ratio_buffer[u] > TREATMENT_CAPACITY_RATIO_FAIL)
+            risk_of_failure[u][treatment_row] = 1;
 
         // Mean ROF between the two tiers of the ROF table where
         // current storage is located.
@@ -524,11 +539,14 @@ void ContinuityModelROF::updateOnlineInfrastructure(int week) {
                 // OCT 2019: ALSO TRACK CHANGES TO BASE STORAGE, THIS IS MOSTLY A GENERALIZED WORKAROUND
                 // TO PITTSBORO MOVING FROM VERY LITTLE/NO STORAGE TO RELATIVELY MASSIVE STORAGE LEVELS
                 // MIDWAY THROUGH REALIZATION
+                // Jan 2020: also track a buffer for demand-to-treatment capacity ratio that controls
+                // "table" shifting for treatment capacity failures
                 if (use_precomputed_rof_tables == IMPORT_ROF_TABLES) {
                     current_storage_table_shift.at(u) += table_storage_shift.at(u)
                             .at(ws);
                     current_base_storage_table_shift.at(u) += table_base_storage_shift.at(u)
                             .at(ws);
+                    current_demand_ratio_buffer.at(u) += treatment_demand_buffer_shift.at(u).at(ws);
                 }
             }
 
@@ -563,10 +581,12 @@ void ContinuityModelROF::updateOnlineInfrastructure(int week) {
 void ContinuityModelROF::setROFTablesAndShifts(
         const vector<Matrix2D<double>> &storage_to_rof_table,
         const vector<vector<double>> &table_storage_shift,
-        const vector<vector<double>> &table_base_storage_shift) {
+        const vector<vector<double>> &table_base_storage_shift,
+        const vector<vector<double>> &treatment_demand_buffer_shift) {
     this->ut_storage_to_rof_table = storage_to_rof_table;
     this->table_storage_shift = table_storage_shift;
     this->table_base_storage_shift = table_base_storage_shift;
+    this->treatment_demand_buffer_shift = treatment_demand_buffer_shift;
 }
 
 //FIXME: WHAT IS THE FUNCTIONAL DIFFERENCE BETWEEN WATER_SOURCES VECTORS HERE?
@@ -647,7 +667,8 @@ void ContinuityModelROF::setInitialTableTier(int week, const int &n_utilities,
  * @param week_of_the_year
  */
 void ContinuityModelROF::recordROFStorageTable(vector<Matrix2D<double>> &ut_storage_to_rof_rof_realization,
-                                               vector<Matrix2D<double>> &ut_storage_to_rof_table, const int &n_utilities, int &week, int &week_of_the_year) {
+                                               vector<Matrix2D<double>> &ut_storage_to_rof_table,
+                                               const int &n_utilities, int &week, int &week_of_the_year) {
     for (int u = 0; u < n_utilities; ++u) {
         double *rof_data = (ut_storage_to_rof_rof_realization[u] / NUMBER_REALIZATIONS_ROF).
                 getPointerToElement(week_of_the_year, 0);

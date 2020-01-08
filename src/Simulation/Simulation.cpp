@@ -65,6 +65,7 @@ Simulation::Simulation(
         vector<vector<Matrix2D<double>>> &precomputed_rof_tables,
         vector<vector<double>> &table_storage_shift,
         vector<vector<double>> &table_base_storage_shift,
+        vector<vector<double>> &treatment_demand_buffer_shift,
         string &rof_tables_folder) :
         total_simulation_time(total_simulation_time),
         realizations_to_run(realizations_to_run),
@@ -81,7 +82,8 @@ Simulation::Simulation(
         policies_rdm(policies_rdm),
         precomputed_rof_tables(&precomputed_rof_tables),
         table_storage_shift(&table_storage_shift),
-        table_base_storage_shift(&table_base_storage_shift) {
+        table_base_storage_shift(&table_base_storage_shift),
+        treatment_demand_buffer_shift(&treatment_demand_buffer_shift) {
     setRof_tables_folder(rof_tables_folder);
 
     setupSimulation(
@@ -279,7 +281,8 @@ void Simulation::createContinuityModels(unsigned long realization,
     // Pass ROF tables to continuity model
     if (import_export_rof_tables == IMPORT_ROF_TABLES) {
         rof_model->setROFTablesAndShifts(precomputed_rof_tables->at(realization),
-                                         *table_storage_shift, *table_base_storage_shift);
+                                         *table_storage_shift, *table_base_storage_shift,
+                                         *treatment_demand_buffer_shift);
     }
 
     // Link storage-rof tables of policies and rof models.

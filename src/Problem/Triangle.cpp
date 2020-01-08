@@ -1005,7 +1005,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         int uid_chatham = 4;
         int uid_pittsboro = 5;
 
-        vector<int> partner_utilities = {uid_owasa, uid_durham, uid_cary, uid_raleigh, uid_chatham, uid_pittsboro};
+        // Jan 2020: this may not need to have all six utilities represented?
+        vector<int> partner_utilities = {uid_owasa, uid_durham, uid_chatham, uid_pittsboro};
 
         /// July 2019: add Pittsboro and Chatham County considerations here...
         /// for the variable WTP case, these allocation fractions really only represent

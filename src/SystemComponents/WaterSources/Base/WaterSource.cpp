@@ -791,10 +791,16 @@ void WaterSource::resetTreatmentAllocations(
         // check for negativity issues
         if (allocated_treatment_capacities[u] < 0) {
             //FIXME: SOLVE WHY THIS IS HAPPENING IN CERTAIN REALIZATIONS OF VARIABLE ALLOCATION FORMULATION
-            cout << "Utility " << u << ", Alloc. Trmt Cap. = " << allocated_treatment_capacities[u] << endl;
+            cout << "Utility " << u << ", Alloc. Trmt Cap. = "
+                 << allocated_treatment_capacities[u] << ", Loop iteration i = " << i
+                 << ", new_treatment_allocation for u" << new_treatment_allocations[u]
+                 << ", new_treatment_allocation for i" << new_treatment_allocations[i]
+                 << ", current_treatment_allocation for u" << current_treatment_allocations[u]
+                 << ", current_treatment_allocation for i" << current_treatment_allocations[i]
+                 << endl;
             allocated_treatment_capacities[u] = 0;
-//            throw logic_error("Error in WaterSource::resetTreatmentAllocations, "
-//                              "allocated treatment capacity for a utility is negative.");
+            throw logic_error("Error in WaterSource::resetTreatmentAllocations, "
+                              "allocated treatment capacity for a utility is negative.");
         }
 
 
@@ -835,6 +841,10 @@ vector<int> *WaterSource::getUtilities_with_allocations() const {
 
 double WaterSource::getWastewater_inflow() const {
     return wastewater_inflow;
+}
+
+int WaterSource::getWaterQualityPoolID() const {
+    return wq_pool_id;
 }
 
 int WaterSource::getAgreementType() const {

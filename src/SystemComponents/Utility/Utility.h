@@ -143,7 +143,7 @@ public:
 
     void calculateWastewater_releases(int week, double *discharges);
 
-    double calculateCurrentToNextYearDemandRatio(int current_year);
+    double calculateCurrentToNextYearDemandDelta(int current_year);
 
     void addWaterSource(WaterSource *water_source);
 

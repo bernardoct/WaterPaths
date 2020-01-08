@@ -66,9 +66,10 @@ void ContinuityModelRealization::updateJointWTPTreatmentAllocations(int current_
         if (ws->isOnline())
             if (ws->source_type == NEW_JOINT_WATER_TREATMENT_PLANT)
                 if (ws->getAgreementType() == NEW_JOINT_WATER_TREATMENT_PLANT_VARIABLE_ALLOCATIONS) {
-                    vector<double> demand_ratios;
-                    for (int u : *ws->getUtilities_with_allocations())
-                        demand_ratios.push_back(continuity_utilities.at(u)->calculateCurrentToNextYearDemandRatio(year));
+                    vector<double> demand_deltas;
+                    for (int u : *continuity_water_sources.at(ws->getParentWaterSourceID())->getUtilities_with_allocations())
+                        if (u != continuity_water_sources.at(ws->getParentWaterSourceID())->getWaterQualityPoolID())
+                            demand_deltas.push_back(continuity_utilities.at(u)->calculateCurrentToNextYearDemandDelta(year));
 
                     // reset treatment capacity allocations based on demand ratios
                     // and then adjust levels in parent source to match
@@ -76,7 +77,7 @@ void ContinuityModelRealization::updateJointWTPTreatmentAllocations(int current_
                     // the elements of the one from the JointWTP or allocations will be adjusted incorrectly
                     // (this should be impossible to do when the objects are initialized, but you never know...)
                     vector<double> previous_year_treatment_capacities = ws->getAllocatedTreatmentCapacities();
-                    ws->resetAllocations(&demand_ratios); // should skip right to VariableJointWTP definition
+                    ws->resetAllocations(&demand_deltas); // should skip right to VariableJointWTP definition
                     continuity_water_sources.at(ws->getParentWaterSourceID())->resetTreatmentAllocations(
                             previous_year_treatment_capacities,
                             ws->getAllocatedTreatmentCapacities());

@@ -1040,9 +1040,9 @@ double Utility::getDemand_offset() const {
     return demand_offset;
 }
 
-double Utility::calculateCurrentToNextYearDemandRatio(int current_year) {
+double Utility::calculateCurrentToNextYearDemandDelta(int current_year) {
     // check one year ahead to update variable WTP allocations
-    return (annual_demand_projections[current_year+1]/current_year_recorded_demand);
+    return (annual_demand_projections[current_year+1] - current_year_recorded_demand);
 }
 
 void Utility::updateTreatmentCapacity(double capacity_adjustment) {

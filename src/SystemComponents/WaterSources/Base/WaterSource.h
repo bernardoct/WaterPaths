@@ -205,6 +205,8 @@ public:
     void setTreatmentAllocations(const vector<double> treatment_capacity_allocations);
 
     virtual double getAllocatedTreatmentFraction(int utility_id) const;
+
+    int getWaterQualityPoolID() const;
 };
 
 

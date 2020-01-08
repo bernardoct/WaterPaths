@@ -57,19 +57,27 @@ void ContinuityModelRealization::setLongTermROFDemandProjectionEstimate(const ve
 }
 
 void ContinuityModelRealization::updateJointWTPTreatmentAllocations(int current_week) {
-    // TODO: After year 0 of the joint WTP under variable allocations, when allocations are set based on
+    // Note: After year 0 of the joint WTP under variable allocations, when allocations are set based on
     // how much treatment might be used by each utility based on the storage they have in Jordan Lake
     // and should be determined based on a Utility::splitDemands-esque routine, then allocations are increased
     // based on the expected growth by each partner until capacity in the plant is maxed
+    // Jan 2020: demand_deltas now adjusted to track what fraction of supply capacity is held in parent water source
+    // of JointWTP to get rough measure of what fraction of demand growth/loss should be used for VariableJointWTP
+    // treatment capacity allocation adjustments
     int year = round(current_week/WEEKS_IN_YEAR_ROUND);
     for (WaterSource *ws : continuity_water_sources)
         if (ws->isOnline())
             if (ws->source_type == NEW_JOINT_WATER_TREATMENT_PLANT)
                 if (ws->getAgreementType() == NEW_JOINT_WATER_TREATMENT_PLANT_VARIABLE_ALLOCATIONS) {
                     vector<double> demand_deltas;
-                    for (int u : *continuity_water_sources.at(ws->getParentWaterSourceID())->getUtilities_with_allocations())
-                        if (u != continuity_water_sources.at(ws->getParentWaterSourceID())->getWaterQualityPoolID())
-                            demand_deltas.push_back(continuity_utilities.at(u)->calculateCurrentToNextYearDemandDelta(year));
+                    for (int u : *continuity_water_sources.at(
+                            ws->getParentWaterSourceID())->getUtilities_with_allocations())
+                        if (u != continuity_water_sources.at(ws->getParentWaterSourceID())->getWaterQualityPoolID()) {
+                            demand_deltas.push_back(
+                                    continuity_utilities.at(u)->calculateCurrentToNextYearDemandDelta(year) *
+                                    (continuity_water_sources.at(ws->getParentWaterSourceID())->getAllocatedCapacity(u) /
+                                    continuity_utilities.at(u)->getTotal_storage_capacity()));
+                        }
 
                     // reset treatment capacity allocations based on demand ratios
                     // and then adjust levels in parent source to match

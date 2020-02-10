@@ -1792,27 +1792,27 @@ void Triangle::readInputData() {
 #pragma omp single
         demand_cary = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
-                BAR + "cary_demands_scenario_" + demand_path_suffix + "_MGW.csv", n_realizations);
+                BAR + "cary_synthetic_demands_" + demand_path_suffix + ".csv", n_realizations);
 #pragma omp single
         demand_durham = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
-                BAR + "durham_demands_scenario_" + demand_path_suffix + "_MGW.csv", n_realizations);
+                BAR + "durham_synthetic_demands_" + demand_path_suffix + ".csv", n_realizations);
 #pragma omp single
         demand_raleigh = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
-                BAR + "raleigh_demands_scenario_" + demand_path_suffix + "_MGW.csv", n_realizations);
+                BAR + "raleigh_synthetic_demands_" + demand_path_suffix + ".csv", n_realizations);
 #pragma omp single
         demand_owasa = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
-                BAR + "owasa_demands_scenario_" + demand_path_suffix + "_MGW.csv", n_realizations);
+                BAR + "owasa_synthetic_demands_" + demand_path_suffix + ".csv", n_realizations);
 #pragma omp single
         demand_pittsboro = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
-                BAR + "pittsboro_demands_scenario_" + demand_path_suffix + "_MGW.csv", n_realizations);
+                BAR + "pittsboro_synthetic_demands_" + demand_path_suffix + ".csv", n_realizations);
 #pragma omp single
         demand_chatham = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
-                BAR + "chatham_demands_scenario_" + demand_path_suffix + "_MGW.csv", n_realizations);
+                BAR + "chatham_synthetic_demands_" + demand_path_suffix + ".csv", n_realizations);
 
         //cout << "Reading demand projections." << endl;
         /// DEMAND PROJECTION FILES ARE 51 ELEMENTS LONG

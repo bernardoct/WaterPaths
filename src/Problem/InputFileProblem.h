@@ -22,6 +22,8 @@ class InputFileProblem : public Problem {
 public:
     explicit InputFileProblem(string &system_input_file);
 
+    void setRofTablesAndRunParams();
+
     int functionEvaluation(double *vars, double *objs, double *consts) override;
 
     const vector<vector<double>> &getSolutionsDecvars() const;
@@ -45,6 +47,7 @@ public:
     unsigned long getNObjectives() const override;
 
     int getSeed() const;
+
 
 #ifdef PARALLEL
     void setProblemDefinition(BORG_Problem &problem) override;

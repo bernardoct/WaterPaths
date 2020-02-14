@@ -36,7 +36,10 @@ void eval(double *vars, double *objs, double *consts) {
             }
         }
         failures += problem_ptr->functionEvaluation(vars, objs, consts);
+	printf("destroying data collector\n");
         problem_ptr->destroyDataCollector();
+	printf("data colletor destroyed!\n");
+	for (int i = 0; i < 5; ++i) printf("%d ", objs[i]); printf("\n");
     } catch (...) {
         ofstream sol_out; // for debugging borg
         sol_out << endl;
@@ -227,6 +230,8 @@ int main(int argc, char *argv[]) {
 
     if (!system_input_file.empty()) {
         problem_ptr = new InputFileProblem(system_input_file);
+
+        dynamic_cast<InputFileProblem *>(problem_ptr)->setRofTablesAndRunParams();
         run_optimization = dynamic_cast<InputFileProblem *>(problem_ptr)->isOptimize();
         nfe = dynamic_cast<InputFileProblem *>(problem_ptr)->getNFunctionEvals();
         output_frequency = dynamic_cast<InputFileProblem *>(problem_ptr)->getRuntimeOutputInterval();
@@ -234,6 +239,7 @@ int main(int argc, char *argv[]) {
 	c_num_obj = (int) dynamic_cast<InputFileProblem *>(problem_ptr)->getNObjectives();
 	seed = (int) dynamic_cast<InputFileProblem *>(problem_ptr)->getSeed();
 	c_num_constr = 0;
+
     } else {
         vector<int> solutions_to_run_range;
         if (last_solution != NON_INITIALIZED) {

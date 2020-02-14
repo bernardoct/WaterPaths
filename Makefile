@@ -17,7 +17,7 @@ borg: CC=mpicxx
 #borg: CC=g++ # for serial borg debugging
 borg: LIBS += -lborgms
 #borg: LIBS += -lborg # for serial borg debugging
-borg: CFLAGS += -DPARALLEL -fopenmp -march=native -O2
+borg: CFLAGS += -DPARALLEL -fopenmp -march=native -O0 -g
 borg: all
 
 gcc: CC=g++

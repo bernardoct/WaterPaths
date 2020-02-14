@@ -53,12 +53,23 @@ void MasterSystemInputFileParser::preloadAndCheckInputFile(string &input_file) {
 
 void MasterSystemInputFileParser::createSystemObjects(double *vars) {
     if (!blocks.empty()) {
+	auto blocks_sol = blocks;
         if (vars != nullptr) {
-            replacePlaceHoldersByDVs(vars, blocks);
+            replacePlaceHoldersByDVs(vars, blocks_sol);
         }
 
+//	for (auto &bb : blocks_sol) {
+//	    for (auto &b : bb) {
+//	        for (string s : b) {
+//		    printf("%s ", s.c_str());
+//		}
+//		printf("\n");
+//	    }
+//	    printf("\n");
+//	}
+
         // loop through blocks again but now to create all objects.
-        loopThroughTags(blocks, true);
+        loopThroughTags(blocks_sol, true);
 
         // initialize standard RDM factors if they have not been loaded yet.
         if (rdm_dmp.empty()) {
@@ -86,11 +97,11 @@ MasterSystemInputFileParser::replacePlaceHoldersByDVs(
                 if (it != string::npos) {
                     reorderCSVDataInBlockLine(vars, count_var, data);
                 }
-		printf("%s ", data.c_str());
+//		printf("%s ", data.c_str());
             }
-	    printf("\n");
+//	    printf("\n");
         }
-	printf("\n");
+//	printf("\n");
     }
 }
 

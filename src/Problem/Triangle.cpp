@@ -1496,6 +1496,9 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                                             raleigh_transfer_trigger,
                                                             chatham_transfer_trigger};
 
+        // Cary has no transfer trigger (never a buyer), so use restriction/short-term trigger in place
+        double seller_transfer_trigger_scheme_1 = cary_restriction_trigger;
+
         Graph ug(5);
         ug.addEdge(uid_cary, uid_durham);
         ug.addEdge(uid_cary, uid_raleigh);
@@ -1507,6 +1510,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                         buyers_ids_scheme_1,
                         buyers_transfers_capacities_scheme_1,
                         buyers_transfers_trigger_scheme_1,
+                        seller_transfer_trigger_scheme_1,
                         ug,
                         vector<double>(),
                         vector<int>());
@@ -1522,8 +1526,11 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         */
         vector<int> buyers_ids_scheme_2 = {0, 1, 2, 3, uid_pittsboro};
         //FIXME: CHECK IF TRANSFER CAPACITIES MATCH IDS IN BUYERS_IDS.
-        vector<double> buyers_transfers_capacities_scheme_2 = {0,0,0,0, 0.5 * 7}; // only one pipe, implies other connections are 0 capacity
+        vector<double> buyers_transfers_capacities_scheme_2 = {0,0,0,0, 0.5 * 7}; // only one real pipe, ROF triggers for other connections never hit
         vector<double> buyers_transfers_trigger_scheme_2 = {1.1,1.1,1.1,1.1, pittsboro_transfer_trigger};
+
+        // Chatham is seller in scheme 2
+        double seller_transfer_trigger_scheme_2 = chatham_transfer_trigger;
 
         Graph ug_two(6);
         ug_two.addEdge(0, 1);
@@ -1532,10 +1539,11 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         ug_two.addEdge(3, 4);
         ug_two.addEdge(uid_chatham, uid_pittsboro); // 4 to 5 or vice versa
 
-        Transfers t_two(7, uid_chatham, jordan_lake_id, 2.1, // SET SOURCE BUFFER SO THAT 10% OF TRMT CAP ALWAYS LEFT OPEN
+        Transfers t_two(7, uid_chatham, jordan_lake_id, 2.1, // SET SOURCE BUFFER SO THAT 10% OF TRMT CAP ALWAYS LEFT OPEN (2.1 of 21 MGW for Chatham)
                         buyers_ids_scheme_2,
                         buyers_transfers_capacities_scheme_2,
                         buyers_transfers_trigger_scheme_2,
+                        seller_transfer_trigger_scheme_2,
                         ug_two,
                         vector<double>(),
                         vector<int>());

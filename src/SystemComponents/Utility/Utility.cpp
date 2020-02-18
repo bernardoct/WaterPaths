@@ -751,8 +751,11 @@ void Utility::calculateWastewater_releases(int week, double *discharges) {
     double discharge;
     waste_water_discharge = 0;
 
+    // Feb 2020: demand_offset added back for calculating WW releases
+    // because transfers are not actually reducing demand, just doing so
+    // for the demand splitting calculations
     for (int &id : wwtp_discharge_rule.discharge_to_source_ids) {
-        discharge = restricted_demand * wwtp_discharge_rule
+        discharge = (restricted_demand + demand_offset) * wwtp_discharge_rule
                 .get_dependent_variable(id, Utils::weekOfTheYear(week));
         discharges[id] += discharge;
 
@@ -772,7 +775,7 @@ void Utility::purchaseInsurance(double insurance_price) {
 
 void
 Utility::setDemand_offset(double demand_offset, double offset_rate_per_volume) {
-    this->demand_offset = demand_offset;
+    this->demand_offset += demand_offset; // if a utility has >1 transfer agreement, make this additive
     this->offset_rate_per_volume = offset_rate_per_volume;
 }
 

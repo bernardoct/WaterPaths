@@ -37,6 +37,7 @@ Transfers::Transfers(
         const vector<int> &buyers_ids,
         const vector<double> &pipe_transfer_capacities,
         const vector<double> &buyers_transfer_triggers,
+        const double seller_transfer_trigger,
         const Graph utilities_graph, vector<double> conveyance_costs,
         vector<int> pipe_owner)
         : DroughtMitigationPolicy(id, TRANSFERS),
@@ -44,6 +45,7 @@ Transfers::Transfers(
           source_treatment_buffer(source_treatment_buffer),
           transfer_water_source_id(transfer_water_source_id),
           buyers_ids(buyers_ids),
+          seller_transfer_trigger(seller_transfer_trigger),
           buyers_transfer_triggers(buyers_transfer_triggers) {
 
     for (int i : buyers_ids)
@@ -132,6 +134,7 @@ Transfers::Transfers(const Transfers &transfers) :
 
     buyers_ids = transfers.buyers_ids;
     buyers_transfer_triggers = transfers.buyers_transfer_triggers;
+    seller_transfer_trigger = transfers.seller_transfer_trigger;
     flow_rates_and_allocations = transfers.flow_rates_and_allocations;
     transfer_water_source_id = transfers.transfer_water_source_id;
     H = transfers.H;
@@ -212,77 +215,86 @@ void Transfers::applyPolicy(int week) {
         }
     }
 
-    /// Check if transfers will be needed and, if so, perform the transfers.
-    if (sum_rofs > 0) {
-        vector<double> transfer_requests((unsigned long) n_allocations, 0);
+    /// FEB 2020: ONLY HAVE TRANSFERS IF SELLER ROF IS SUFFICIENTLY LOW
+    if (source_utility->getRisk_of_failure() < seller_transfer_trigger) {
+        /// Check if transfers will be needed and, if so, perform the transfers.
+        if (sum_rofs > 0) {
+            vector<double> transfer_requests((unsigned long) n_allocations, 0);
 
-        /// Total volume available for transfers in source utility.
-        double available_transfer_volume =
-                (source_utility->getTotal_treatment_capacity()
-                 - source_treatment_buffer) * PEAKING_FACTOR
-                - source_utility->getUnrestrictedDemand();
+            /// Total volume available for transfers in source utility.
+            double available_transfer_volume =
+                    (source_utility->getTotal_treatment_capacity()
+                     - source_treatment_buffer) * PEAKING_FACTOR
+                    - source_utility->getUnrestrictedDemand();
 
-        if (available_transfer_volume > 0) {
+            if (available_transfer_volume > 0) {
 
-            /// Minimum volume to be allocated to any utility.
-            double min_transfer_volume = available_transfer_volume
-                                         / (utilities_requesting_transfers + 1);
+                /// Minimum volume to be allocated to any utility.
+                double min_transfer_volume = available_transfer_volume
+                                             / (utilities_requesting_transfers + 1);
 
-            /// Split up total volume available among the utilities
-            /// proportionally to their ROFs.
-            //FIXME: FIGURE OUT SCALING FACTOR, MAYBE BASED ON TOTAL DEMAND TO PREVENT BIGGEST UTILITY WITH HIGH RISK FROM GETTING ALL WATER.
-            for (unsigned long i = 0; i < n_allocations; ++i) {
-                transfer_requests[i] =
-                        available_transfer_volume * requesting_utilities_rofs[i]
-                        / sum_rofs;
-            }
-            /// Calculate allocations and flow rates through inter-utility
-            /// connections.
-            flow_rates_and_allocations = solve_QP(transfer_requests,
-                                                  available_transfer_volume,
-                                                  min_transfer_volume,
-                                                  week);
-            conveyed_volumes = vector<double>(
-                    flow_rates_and_allocations.begin(),
-                    flow_rates_and_allocations.begin() + n_pipes);
-
-//            allocations.clear();
-//            for (int id : utilities_ids)
-//                allocations.push_back((double &&) flow_rates_and_allocations.at(
-//                        (unsigned long) (n_pipes + id)));
-            allocations = vector<double>(flow_rates_and_allocations.begin() +
-                                         n_pipes,
-                                         flow_rates_and_allocations.end());
-            allocations[source_utility_id] = -allocations[source_utility_id];
-
-            /// Mitigate demands.
-            double sum_allocations = 0;
-            int price_week = Utils::weekOfTheYear(week);
-
-//            for (auto &u : util_id_to_vertex_id) {
-//                int id = u.first;
-//                realization_utilities[u.second]->setDemand_offset
-//                        (allocations[id],
-//                         source_utility->waterPrice(price_week));
-//                sum_allocations += allocations[id];
-//                transfer_water_source->removeWater(id,
-//                                                   allocations[id]);
-//            }
-            for (unsigned long id = 0; id < util_id_to_vertex_id.size(); ++id) {
-                int bid = util_id_to_vertex_id[id];
-                if (bid != NON_INITIALIZED) {
-                    realization_utilities[bid]->setDemand_offset
-                            (allocations[id],
-                             source_utility->waterPrice(price_week));
-                    sum_allocations += allocations[id];
-                    transfer_water_source->removeWater(id,
-                                                       allocations[id]);
+                /// Split up total volume available among the utilities
+                /// proportionally to their ROFs.
+                //FIXME: FIGURE OUT SCALING FACTOR, MAYBE BASED ON TOTAL DEMAND TO PREVENT BIGGEST UTILITY WITH HIGH RISK FROM GETTING ALL WATER.
+                for (unsigned long i = 0; i < n_allocations; ++i) {
+                    transfer_requests[i] =
+                            available_transfer_volume * requesting_utilities_rofs[i]
+                            / sum_rofs;
                 }
-            }
+                /// Calculate allocations and flow rates through inter-utility
+                /// connections.
+                flow_rates_and_allocations = solve_QP(transfer_requests,
+                                                      available_transfer_volume,
+                                                      min_transfer_volume,
+                                                      week);
+                conveyed_volumes = vector<double>(
+                        flow_rates_and_allocations.begin(),
+                        flow_rates_and_allocations.begin() + n_pipes);
 
-            source_utility->setDemand_offset(allocations[source_utility_id],
-                                             2. * source_utility->waterPrice
-                                                     (price_week));
+                //            allocations.clear();
+                //            for (int id : utilities_ids)
+                //                allocations.push_back((double &&) flow_rates_and_allocations.at(
+                //                        (unsigned long) (n_pipes + id)));
+                allocations = vector<double>(flow_rates_and_allocations.begin() +
+                                             n_pipes,
+                                             flow_rates_and_allocations.end());
+                allocations[source_utility_id] = -allocations[source_utility_id];
+
+                /// Mitigate demands.
+                double sum_allocations = 0;
+                int price_week = Utils::weekOfTheYear(week);
+
+                //            for (auto &u : util_id_to_vertex_id) {
+                //                int id = u.first;
+                //                realization_utilities[u.second]->setDemand_offset
+                //                        (allocations[id],
+                //                         source_utility->waterPrice(price_week));
+                //                sum_allocations += allocations[id];
+                //                transfer_water_source->removeWater(id,
+                //                                                   allocations[id]);
+                //            }
+                for (unsigned long id = 0; id < util_id_to_vertex_id.size(); ++id) {
+                    int bid = util_id_to_vertex_id[id];
+                    if (bid != NON_INITIALIZED) {
+                        realization_utilities[bid]->setDemand_offset
+                                (allocations[id],
+                                 source_utility->waterPrice(price_week));
+                        sum_allocations += allocations[id];
+                        transfer_water_source->removeWater(id,
+                                                           allocations[id]);
+                    }
+                }
+
+                /// Check that selling utility allocation is reduced
+                if (sum_allocations > 0) // if transfers occur
+                    if (allocations[source_utility_id] >= 0) // if LP did not account for seller reduction
+                        allocations[source_utility_id] = -sum_allocations; // total sales subtracted from seller allocation
+
+
+                source_utility->setDemand_offset(allocations[source_utility_id],
+                                                 2. * source_utility->waterPrice
+                                                         (price_week));
+            }
         }
     }
 }

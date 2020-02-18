@@ -22,6 +22,7 @@ private:
     vector<double> allocations;
     vector<double> conveyed_volumes;
     vector<double> buyers_transfer_triggers;
+    double seller_transfer_trigger;
     vector<double> flow_rates_and_allocations;
     Utility *source_utility = nullptr;
     WaterSource *transfer_water_source = nullptr;
@@ -36,6 +37,7 @@ public:
             const vector<int> &buyers_ids,
             const vector<double> &pipe_transfer_capacities,
             const vector<double> &buyers_transfer_triggers,
+            const double seller_transfer_trigger,
             const Graph utilities_graph, vector<double> conveyance_costs,
             vector<int> pipe_owner);
 

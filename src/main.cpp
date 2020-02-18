@@ -6,7 +6,9 @@
 #include "Problem/InputFileProblem.h"
 
 #ifdef  PARALLEL
+
 #include <mpi.h>
+
 #endif
 
 #include <algorithm>
@@ -31,10 +33,11 @@ void eval(double *vars, double *objs, double *consts) {
             }
         }
         failures += problem_ptr->functionEvaluation(vars, objs, consts);
-	printf("destroying data collector\n");
+        printf("destroying data collector\n");
         problem_ptr->destroyDataCollector();
-	printf("data colletor destroyed!\n");
-	for (int i = 0; i < 5; ++i) printf("%d ", objs[i]); printf("\n");
+        printf("data colletor destroyed!\n");
+        for (int i = 0; i < 5; ++i) printf("%d ", objs[i]);
+        printf("\n");
     } catch (...) {
         ofstream sol_out; // for debugging borg
         sol_out << endl;
@@ -231,10 +234,10 @@ int main(int argc, char *argv[]) {
         nfe = dynamic_cast<InputFileProblem *>(problem_ptr)->getNFunctionEvals();
         output_frequency = dynamic_cast<InputFileProblem *>(problem_ptr)->getRuntimeOutputInterval();
         system_io = dynamic_cast<InputFileProblem *>(problem_ptr)->getOutputDir();
-	c_num_dec = (int) dynamic_cast<InputFileProblem *>(problem_ptr)->getNDecVars();
-	c_num_obj = (int) dynamic_cast<InputFileProblem *>(problem_ptr)->getNObjectives();
-	seed = (int) dynamic_cast<InputFileProblem *>(problem_ptr)->getSeed();
-	c_num_constr = 0;
+        c_num_dec = (int) dynamic_cast<InputFileProblem *>(problem_ptr)->getNDecVars();
+        c_num_obj = (int) dynamic_cast<InputFileProblem *>(problem_ptr)->getNObjectives();
+        seed = (int) dynamic_cast<InputFileProblem *>(problem_ptr)->getSeed();
+        c_num_constr = 0;
 
     } else {
         vector<int> solutions_to_run_range;
@@ -266,11 +269,11 @@ int main(int argc, char *argv[]) {
 #ifdef  PARALLEL
 
         printf("Running Borg with:\n"
-            "nfe: %lu\n"
-            "output freq.: %lu\n"
-            "n_weeks: %lu\n"
-            "n_realizations: %lu\n\n",
-            nfe, output_frequency, n_weeks, n_realizations);
+               "nfe: %lu\n"
+               "output freq.: %lu\n"
+               "n_weeks: %lu\n"
+               "n_realizations: %lu\n\n",
+               nfe, output_frequency, n_weeks, n_realizations);
 
         // for debugging borg, creating file to print each ranks DVs which isdone in Eval function
 
@@ -281,8 +284,8 @@ int main(int argc, char *argv[]) {
         BORG_Algorithm_output_frequency((int) output_frequency);
 
         // Define the problem.
-	    printf("\nNUMBER OF OBJECTIVES: %d\n", c_num_obj);
-	    printf("\nNUMBER OF DEC VARS: %d\n", c_num_dec);
+        printf("\nNUMBER OF OBJECTIVES: %d\n", c_num_obj);
+        printf("\nNUMBER OF DEC VARS: %d\n", c_num_dec);
         BORG_Problem problem = BORG_Problem_create(c_num_dec, c_num_obj,
                                                    c_num_constr,
                                                    eval);
@@ -291,21 +294,22 @@ int main(int argc, char *argv[]) {
         problem_ptr->setProblemDefinition(problem);
 
         if (seed != NON_INITIALIZED) {
-	    if (seed < 0) throw invalid_argument("See must be greater than 0.");
+            if (seed < 0) throw invalid_argument("See must be greater than 0.");
             srand(seed);
             WaterSource::setSeed(seed);
-        BORG_Random_seed(seed);
+            BORG_Random_seed(seed);
         }
         char output_directory[256], output_file_name[256];
         char io_directory[256];
         char runtime[256];
-        FILE* outputFile = nullptr;
+        FILE *outputFile = nullptr;
 
         sprintf(output_directory, "%s", system_io.c_str());
         //Utils::createDir(string(output_directory));
 
         // sprintf(output_file_name, "%sNC_output_MM_S%d_N%lu.set", output_directory, seed, nfe);
-        sprintf(output_file_name, "%sNC_output_MS_S%d_N%lu.set", output_directory, seed, nfe);
+        sprintf(output_file_name, "%sNC_output_MS_S%d_N%lu.set",
+                output_directory, seed, nfe);
         printf("Reference set will be in %s.\n", output_file_name);
         // output path (make sure this exists)
         // sprintf(runtime, "%sNC_runtime_MM_S%d_N%lu_M%%d.runtime", output_directory,
@@ -323,7 +327,8 @@ int main(int argc, char *argv[]) {
         //MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         //BORG_Random_seed(37*seed*(rank+1));
 
-        BORG_Archive result = BORG_Algorithm_ms_run(problem); // this actually runs the optimization
+        BORG_Archive result = BORG_Algorithm_ms_run(
+                problem); // this actually runs the optimization
         //BORG_Archive result = BORG_Algorithm_run(problem, nfe);
         // If this is the master node, print out the final archive
 

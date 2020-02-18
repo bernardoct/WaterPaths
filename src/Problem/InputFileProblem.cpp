@@ -170,6 +170,7 @@ void InputFileProblem::runSimulation() {
     n_sets = parser.getNBootstrapSamples();
     n_bs_samples = parser.getBootstrapSampleSize();
     plotting = parser.isPrintTimeSeries();
+    setIODirectory(parser.getOutputDir());
 
     if (solutions_dec_vars.size() > 1) {
         ofstream objs_file = createOutputFile();

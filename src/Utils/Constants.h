@@ -58,6 +58,8 @@ namespace Constants {
     const int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
     const int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
 
+    const int INITIAL_MASSIVE_VALUE = 99999;
+
     const bool USE_PRE_CALCULATED_ROF_TABLES = true;
     const bool DO_NOT_USE_PRE_CALCULATED_ROF_TABLES = false;
 

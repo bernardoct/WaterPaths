@@ -191,6 +191,7 @@ void Transfers::addSystemComponents(vector<Utility *> system_utilities,
 
 void Transfers::applyPolicy(int week) {
     vector<double> requesting_utilities_rofs(buyers_ids.size(), 0);
+    vector<double> requesting_utilities_deficit(buyers_ids.size(), INITIAL_MASSIVE_VALUE);
     std::fill(allocations.begin(), allocations.end(), 0);
 
     unsigned long n_vars = f.size();
@@ -212,6 +213,13 @@ void Transfers::applyPolicy(int week) {
             sum_rofs += u->getRisk_of_failure();
             requesting_utilities_rofs.at(vertex_id) = u->getRisk_of_failure();
             utilities_requesting_transfers++;
+
+            // FEB 2020: if treatment capacity limitations are triggering transfers,
+            // set cap on request. Record the expected "deficit" here (using last-week demands):
+            if (u->getTreatmentRisk_of_failure() > buyers_transfer_triggers.at(vertex_id) & week > 0)
+                requesting_utilities_deficit.at(vertex_id) =
+                        u->getUnrestrictedDemand(week-1) -
+                        u->getTotal_treatment_capacity() * TREATMENT_CAPACITY_RATIO_FAIL;
         }
     }
 
@@ -240,6 +248,10 @@ void Transfers::applyPolicy(int week) {
                     transfer_requests[i] =
                             available_transfer_volume * requesting_utilities_rofs[i]
                             / sum_rofs;
+
+                    // FEB 2020: include consideration of request caps if request is due to treatment capacity shortage
+                    if (transfer_requests[i] > requesting_utilities_deficit[i])
+                        transfer_requests[i] = requesting_utilities_deficit[i];
                 }
                 /// Calculate allocations and flow rates through inter-utility
                 /// connections.

@@ -48,6 +48,8 @@ public:
 
     int getSeed() const;
 
+    string getOutputDir() const;
+
 
 #ifdef PARALLEL
     void setProblemDefinition(BORG_Problem &problem) override;

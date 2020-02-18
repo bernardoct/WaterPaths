@@ -2,21 +2,16 @@
 #include "Utils/QPSolver/QuadProg++.h"
 #include "Utils/Solutions.h"
 #include "Problem/PaperTestProblem.h"
-//#include "Problem/Triangle.h"
-#include "Utils/Utils.h"
 #include "InputFileParser/MasterSystemInputFileParser.h"
 #include "Problem/InputFileProblem.h"
 
 #ifdef  PARALLEL
-#include "../Borg/borgms.h"
 #include <mpi.h>
 #endif
 
-#include <sys/stat.h>
 #include <algorithm>
 #include <getopt.h>
 #include <fstream>
-#include <omp.h>
 
 
 using namespace std;
@@ -235,6 +230,7 @@ int main(int argc, char *argv[]) {
         run_optimization = dynamic_cast<InputFileProblem *>(problem_ptr)->isOptimize();
         nfe = dynamic_cast<InputFileProblem *>(problem_ptr)->getNFunctionEvals();
         output_frequency = dynamic_cast<InputFileProblem *>(problem_ptr)->getRuntimeOutputInterval();
+        system_io = dynamic_cast<InputFileProblem *>(problem_ptr)->getOutputDir();
 	c_num_dec = (int) dynamic_cast<InputFileProblem *>(problem_ptr)->getNDecVars();
 	c_num_obj = (int) dynamic_cast<InputFileProblem *>(problem_ptr)->getNObjectives();
 	seed = (int) dynamic_cast<InputFileProblem *>(problem_ptr)->getSeed();
@@ -285,8 +281,8 @@ int main(int argc, char *argv[]) {
         BORG_Algorithm_output_frequency((int) output_frequency);
 
         // Define the problem.
-	printf("\nNUMBER OF OBJECTIVES: %d\n", c_num_obj);
-	printf("\nNUMBER OF DEC VARS: %d\n", c_num_dec);
+	    printf("\nNUMBER OF OBJECTIVES: %d\n", c_num_obj);
+	    printf("\nNUMBER OF DEC VARS: %d\n", c_num_dec);
         BORG_Problem problem = BORG_Problem_create(c_num_dec, c_num_obj,
                                                    c_num_constr,
                                                    eval);
@@ -305,7 +301,7 @@ int main(int argc, char *argv[]) {
         char runtime[256];
         FILE* outputFile = nullptr;
 
-        sprintf(output_directory, "%s%s", system_io.c_str(), DEFAULT_OUTPUT_DIR.c_str());
+        sprintf(output_directory, "%s", system_io.c_str());
         //Utils::createDir(string(output_directory));
 
         // sprintf(output_file_name, "%sNC_output_MM_S%d_N%lu.set", output_directory, seed, nfe);
@@ -334,6 +330,7 @@ int main(int argc, char *argv[]) {
         if (result != nullptr) {
             outputFile = fopen(output_file_name, "w");
             cout << "master node print, should see only once" << endl;
+            cout << output_file_name << endl;
             if (!outputFile) {
                 BORG_Debug("Unable to open final output file\n");
             }

@@ -53,7 +53,7 @@ void MasterSystemInputFileParser::preloadAndCheckInputFile(string &input_file) {
 
 void MasterSystemInputFileParser::createSystemObjects(double *vars) {
     if (!blocks.empty()) {
-	auto blocks_sol = blocks;
+        auto blocks_sol = blocks;
         if (vars != nullptr) {
             replacePlaceHoldersByDVs(vars, blocks_sol);
         }
@@ -327,13 +327,16 @@ bool MasterSystemInputFileParser::parseRunParams(int line_no,
                     int seed = stoi(line[1]);
                     WaterSource::setSeed(seed);
                     MasterDataCollector::setSeed(seed);
-		    this->seed = seed;
+                    this->seed = seed;
                     rows_read.push_back(i);
                 } else if (line[0] == "optimize") {
                     optimize = true;
                     n_function_evals = stoi(line[1]);
                     runtime_output_interval = stoi(line[2]);
-		    rows_read.push_back(i);
+                    rows_read.push_back(i);
+                } else if (line[0] == "output_dir") {
+                    output_dir = line[1];
+                    rows_read.push_back(i);
                 }
             }
 
@@ -573,7 +576,7 @@ bool MasterSystemInputFileParser::parseDecVarsBoundsAndObjEpsilons(
 #ifdef PARALLEL
     if (create_objects) {
         if (tag == "[DECISION VARIABLE BOUNDS]") {
-	    n_dec_vars = block.size();
+            n_dec_vars = block.size();
             dec_vars_bounds.resize(n_dec_vars);
             for (auto &line : block) {
                 vector<double> bounds;
@@ -587,7 +590,7 @@ bool MasterSystemInputFileParser::parseDecVarsBoundsAndObjEpsilons(
                                    "decision variable number 0?", tag.c_str(),
                             line_no);
                     throw invalid_argument(error);
-                } 
+                }
 
                 if (bounds.size() != 2 || bounds[0] > bounds[1]) {
                     char error[300];
@@ -735,6 +738,7 @@ void MasterSystemInputFileParser::clearParsers() {
         delete wsp;
     }
     water_source_parsers.clear();
+
     for (auto ws : water_sources) {
         delete ws;
     }
@@ -744,6 +748,7 @@ void MasterSystemInputFileParser::clearParsers() {
         delete up;
     }
     utility_parsers.clear();
+
     for (auto u : utilities) {
         delete u;
     }
@@ -753,10 +758,11 @@ void MasterSystemInputFileParser::clearParsers() {
         delete dmpp;
     }
     drought_mitigation_policy_parsers.clear();
+
     for (auto dmp : drought_mitigation_policy) {
         delete dmp;
     }
-    utilities.clear();
+    drought_mitigation_policy.clear();
 }
 
 string MasterSystemInputFileParser::findName(vector<vector<string>> &block,
@@ -898,4 +904,8 @@ unsigned long MasterSystemInputFileParser::getNObjectives() const {
 
 int MasterSystemInputFileParser::getSeed() const {
     return seed;
+}
+
+const string &MasterSystemInputFileParser::getOutputDir() const {
+    return output_dir;
 }

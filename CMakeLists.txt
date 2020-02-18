@@ -4,12 +4,16 @@ project(TriangleModel)
 set(CMAKE_CXX_STANDARD 14)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -march=native")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -Og -march=native")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -O0 -march=native")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DPARALLEL -fopenmp -O0 -march=native")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -O2 -march=native")
 #set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static -ldl -lpthread")
 #set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static -lpthread")
 
-include_directories(/usr/include/mpi/)
+find_package(MPI REQUIRED)
+
+include_directories(${MPI_INCLUDE_PATH})
+include_directories(SYSTEM ${MPI_INCLUDE_PATH})
+find_library(BORGMS borgms lib)
 
 set(SOURCE_FILES
         src/ContinuityModels/Base/ContinuityModel.cpp
@@ -276,3 +280,5 @@ set(TEST_SOURCE_FILES
 
 add_executable(TriangleModel ${SOURCE_FILES})
 add_executable(TestTriangleModel ${TEST_SOURCE_FILES})
+
+target_link_libraries(TriangleModel ${BORGMS} ${MPI_CXX_LIBRARIES})

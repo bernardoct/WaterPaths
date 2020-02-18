@@ -1,39 +1,40 @@
 [RUN PARAMETERS]
 n_realizations 4 
 n_weeks 525 
-rdm_utilities /scratch/bct52/TestFiles/rdm_utilities_test_problem_opt.csv 
-rdm_water_sources /scratch/bct52/TestFiles/rdm_water_sources_test_problem_opt.csv 
-rdm_dmps /scratch/bct52/TestFiles/rdm_dmp_test_problem_opt.csv
+rdm_utilities /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_utilities_test_problem_opt.csv 
+rdm_water_sources /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_water_sources_test_problem_opt.csv 
+rdm_dmps /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_dmp_test_problem_opt.csv
 rdm_no 0
 n_threads 4
-rof_tables_dir /scratch/bct52/rof_tables_test_problem/
+rof_tables_dir /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/rof_tables_test_problem/
+output_dir /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/output/
 use_rof_tables import
 seed 0
 optimize 7 2000
 
 [DATA TO LOAD]
 # Files with "*" are always fully loaded instead of having on n_realizations lines loaded. Add "*" to any file that's not a demand, inflow or evaporation time series.
-*caryDemandClassesFractions /scratch/bct52/TestFiles/caryDemandClassesFractions.csv
-*caryUserClassesWaterPrices /scratch/bct52/TestFiles/caryUserClassesWaterPrices.csv
-*demand_to_wastewater_fraction_owasa_raleigh /scratch/bct52/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv
-*raleighDemandClassesFractions /scratch/bct52/TestFiles/raleighDemandClassesFractions.csv
-*raleighUserClassesWaterPrices /scratch/bct52/TestFiles/raleighUserClassesWaterPrices.csv
-*durhamDemandClassesFractions /scratch/bct52/TestFiles/durhamDemandClassesFractions.csv
-*durhamUserClassesWaterPrices /scratch/bct52/TestFiles/durhamUserClassesWaterPrices.csv
-cary_demand /scratch/bct52/TestFiles/demands/cary_demand.csv
-durham_demand /scratch/bct52/TestFiles/demands/durham_demand.csv
-raleigh_demand /scratch/bct52/TestFiles/demands/raleigh_demand.csv
-falls_lake_evap /scratch/bct52/TestFiles/evaporation/falls_lake_evap.csv
-jordan_lake_evap /scratch/bct52/TestFiles/evaporation/jordan_lake_evap.csv
-clayton_inflows /scratch/bct52/TestFiles/inflows/clayton_inflows.csv
-crabtree_inflows /scratch/bct52/TestFiles/inflows/crabtree_inflows.csv
-durham_inflows /scratch/bct52/TestFiles/inflows/durham_inflows.csv
-falls_lake_inflows /scratch/bct52/TestFiles/inflows/falls_lake_inflows.csv
-jordan_lake_inflows /scratch/bct52/TestFiles/inflows/jordan_lake_inflows.csv
-lillington_inflows /scratch/bct52/TestFiles/inflows/lillington_inflows.csv
-little_river_raleigh_inflows /scratch/bct52/TestFiles/inflows/little_river_raleigh_inflows.csv
-stone_quarry_inflows /scratch/bct52/TestFiles/inflows/stone_quarry_inflows.csv
-university_lake_inflows /scratch/bct52/TestFiles/inflows/university_lake_inflows.csv
+*caryDemandClassesFractions /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/caryDemandClassesFractions.csv
+*caryUserClassesWaterPrices /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/caryUserClassesWaterPrices.csv
+*demand_to_wastewater_fraction_owasa_raleigh /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv
+*raleighDemandClassesFractions /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/raleighDemandClassesFractions.csv
+*raleighUserClassesWaterPrices /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/raleighUserClassesWaterPrices.csv
+*durhamDemandClassesFractions /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/durhamDemandClassesFractions.csv
+*durhamUserClassesWaterPrices /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/durhamUserClassesWaterPrices.csv
+cary_demand /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/demands/cary_demand.csv
+durham_demand /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/demands/durham_demand.csv
+raleigh_demand /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/demands/raleigh_demand.csv
+falls_lake_evap /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/evaporation/falls_lake_evap.csv
+jordan_lake_evap /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/evaporation/jordan_lake_evap.csv
+clayton_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/clayton_inflows.csv
+crabtree_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/crabtree_inflows.csv
+durham_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/durham_inflows.csv
+falls_lake_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/falls_lake_inflows.csv
+jordan_lake_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/jordan_lake_inflows.csv
+lillington_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/lillington_inflows.csv
+little_river_raleigh_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/little_river_raleigh_inflows.csv
+stone_quarry_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/stone_quarry_inflows.csv
+university_lake_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/university_lake_inflows.csv
 
 [DECISION VARIABLE BOUNDS]
 0 0.334,0.9     # watertown LMA

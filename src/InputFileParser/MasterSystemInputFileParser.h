@@ -45,7 +45,6 @@ class MasterSystemInputFileParser {
 
     int n_realizations = NON_INITIALIZED;
     int n_weeks = NON_INITIALIZED;
-    bool generate_rof_tables = false;
     bool optimize = false;
     map<string, vector<vector<double>>> pre_loaded_data;
 
@@ -61,6 +60,7 @@ class MasterSystemInputFileParser {
 
     string rof_tables_dir;
     string solutions_file;
+    string output_dir;
     int use_rof_tables = DO_NOT_EXPORT_OR_IMPORT_ROF_TABLES; /// can be "no," "export," and "import."
     bool print_time_series = false;
     vector<unsigned long> realizations_to_run;
@@ -235,6 +235,8 @@ public:
     unsigned long getNObjectives() const;
 
     int getSeed() const;
+
+    const string &getOutputDir() const;
 };
 
 

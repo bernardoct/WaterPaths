@@ -13,7 +13,6 @@
 #include "../SystemComponents/WaterSources/AllocatedReservoir.h"
 #include "../SystemComponents/WaterSources/ReservoirExpansion.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
-#include "../DroughtMitigationInstruments/InsuranceStorageToROF.h"
 #include "../SystemComponents/Bonds/LevelDebtServiceBond.h"
 #include "../Simulation/Simulation.h"
 #include "../SystemComponents/WaterSources/WaterReuse.h"

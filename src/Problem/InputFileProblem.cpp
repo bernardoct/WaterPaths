@@ -53,7 +53,7 @@ void InputFileProblem::setRofTablesAndRunParams() {
 int InputFileProblem::functionEvaluation(double *vars, double *objs,
                                          double *consts) {
 
-    Simulation *s;
+    Simulation *s = nullptr;
 
     parser.createSystemObjects(vars);
     solutions_decvars = parser.getSolutionsDecvars();
@@ -143,10 +143,7 @@ int InputFileProblem::functionEvaluation(double *vars, double *objs,
         printf("Objectives calculated.\n");
     }
 
-    if (s != nullptr) {
-        delete s;
-    }
-
+    delete s;
     s = nullptr;
 #else
     throw runtime_error("This version of WaterPaths was not compiled with Borg.\n");
@@ -158,7 +155,8 @@ int InputFileProblem::functionEvaluation(double *vars, double *objs,
     } else {
         calculateAndPrintObjectives(true);
     }
-    
+
+    parser.clearParsers();
     printf("Function evaluation complete\n");
     return 0;
 }
@@ -260,4 +258,8 @@ unsigned long InputFileProblem::getNObjectives() const {
 
 int InputFileProblem::getSeed() const {
     return parser.getSeed();
+}
+
+string InputFileProblem::getOutputDir() const {
+    return parser.getOutputDir();
 }

@@ -323,9 +323,188 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         int haw_river_intake_expansion_high_id = 24;
         int cary_wtp_upgrades_low_base_id = 25;
         int cary_wtp_upgrades_high_base_id = 26;
-        int wjlwtp_low_base_id = 27;
-        int wjlwtp_high_base_id = 28;
+        int wjlwtp_fixed_low_base_id = 27;
+        int wjlwtp_fixed_high_base_id = 28;
+        int wjlwtp_variable_low_base_id = 29;
+        int wjlwtp_variable_high_base_id = 30;
 
+
+    // select the correct ordering based on formulation
+    vector<infraRank> owasa_infra_order_raw;
+    vector<infraRank> durham_infra_order_raw;
+    vector<infraRank> raleigh_infra_order_raw;
+    vector<infraRank> pittsboro_infra_order_raw;
+    vector<infraRank> chatham_infra_order_raw;
+
+    // these variables will be used to assign true rank to the WJLWTP
+    // Depending on the formulation, they will either be set to the DV, or to the last ranks for each utility
+    // if formulation is 0, they are set to the last 4 ranks by default
+    // if formualtion is 1 fixed is set to DVs and variable set to the last 2 ranks
+    // if formulation is 2, variable is set to DVs and fixed set to the last 2 ranks
+
+    double pittsboro_fixed_WJLWTP_rank_low;
+    double pittsboro_fixed_WJLWTP_rank_high;
+    double pittsboro_variable_WJLWTP_rank_low;
+    double pittsboro_variable_WJLWTP_rank_high;
+
+    double chatham_fixed_WJLWTP_rank_low;
+    double chatham_fixed_WJLWTP_rank_high;
+    double chatham_variable_WJLWTP_rank_low;
+    double chatham_variable_WJLWTP_rank_high;
+
+    double durham_fixed_WJLWTP_rank_low;
+    double durham_fixed_WJLWTP_rank_high;
+    double durham_variable_WJLWTP_rank_low;
+    double durham_variable_WJLWTP_rank_high;
+
+    double owasa_fixed_WJLWTP_rank_low;
+    double owasa_fixed_WJLWTP_rank_high;
+    double owasa_variable_WJLWTP_rank_low;
+    double owasa_variable_WJLWTP_rank_high;
+
+    double raleigh_fixed_WJLWTP_rank_low;
+    double raleigh_fixed_WJLWTP_rank_high;
+    double raleigh_variable_WJLWTP_rank_low;
+    double raleigh_variable_WJLWTP_rank_high;
+
+
+    // if formulation is zero, send all WJLWTP ranks to end
+    if (formulation==0){
+        pittsboro_fixed_WJLWTP_rank_low = 2;
+        pittsboro_fixed_WJLWTP_rank_high = 3;
+        pittsboro_variable_WJLWTP_rank_low = 4;
+        pittsboro_variable_WJLWTP_rank_high = 5;
+
+        chatham_fixed_WJLWTP_rank_low = 2;
+        chatham_fixed_WJLWTP_rank_high = 3;
+        chatham_variable_WJLWTP_rank_low = 4;
+        chatham_variable_WJLWTP_rank_high = 5;
+
+        durham_fixed_WJLWTP_rank_low = 5;
+        durham_fixed_WJLWTP_rank_high = 6;
+        durham_variable_WJLWTP_rank_low = 7;
+        durham_variable_WJLWTP_rank_high = 8;
+
+        owasa_fixed_WJLWTP_rank_low = 4;
+        owasa_fixed_WJLWTP_rank_high = 5;
+        owasa_variable_WJLWTP_rank_low = 6;
+        owasa_variable_WJLWTP_rank_high = 7;
+
+        raleigh_fixed_WJLWTP_rank_low = 4;
+        raleigh_fixed_WJLWTP_rank_high = 5;
+        raleigh_variable_WJLWTP_rank_low = 6;
+        raleigh_variable_WJLWTP_rank_high = 7;
+
+
+        // if formualtion is 1, apply DV ranks to fixed, variable to end
+    } else if ( formulation == 1) {
+        pittsboro_fixed_WJLWTP_rank_low = western_wake_treatment_plant_rank_pittsboro_low;
+        pittsboro_fixed_WJLWTP_rank_high = western_wake_treatment_plant_rank_pittsboro_high;
+        pittsboro_variable_WJLWTP_rank_low = 4;
+        pittsboro_variable_WJLWTP_rank_high = 5;
+
+        chatham_fixed_WJLWTP_rank_low = western_wake_treatment_plant_rank_chatham_low;
+        chatham_fixed_WJLWTP_rank_high = western_wake_treatment_plant_rank_chatham_high;
+        chatham_variable_WJLWTP_rank_low = 4;
+        chatham_variable_WJLWTP_rank_high =5;
+
+        durham_fixed_WJLWTP_rank_low = western_wake_treatment_plant_rank_durham_low;
+        durham_fixed_WJLWTP_rank_high = western_wake_treatment_plant_rank_durham_high;
+        durham_variable_WJLWTP_rank_low = 7;
+        durham_variable_WJLWTP_rank_high = 8;
+
+        owasa_fixed_WJLWTP_rank_low = western_wake_treatment_plant_rank_OWASA_low;
+        owasa_fixed_WJLWTP_rank_high = western_wake_treatment_plant_rank_OWASA_high;
+        owasa_variable_WJLWTP_rank_low = 6;
+        owasa_variable_WJLWTP_rank_high = 7;
+
+        raleigh_fixed_WJLWTP_rank_low = western_wake_treatment_plant_rank_raleigh_low;
+        raleigh_fixed_WJLWTP_rank_high = western_wake_treatment_plant_rank_raleigh_high;
+        raleigh_variable_WJLWTP_rank_low = 6;
+        raleigh_variable_WJLWTP_rank_high = 7;
+
+
+        // if formulation is 2, apply DV ranks to variable, fixed to end
+    } else{
+        pittsboro_variable_WJLWTP_rank_low = western_wake_treatment_plant_rank_pittsboro_low;
+        pittsboro_variable_WJLWTP_rank_high = western_wake_treatment_plant_rank_pittsboro_high;
+        pittsboro_fixed_WJLWTP_rank_low = 4;
+        pittsboro_fixed_WJLWTP_rank_high =5;
+
+        chatham_variable_WJLWTP_rank_low = western_wake_treatment_plant_rank_chatham_low;
+        chatham_variable_WJLWTP_rank_high = western_wake_treatment_plant_rank_chatham_high;
+        chatham_fixed_WJLWTP_rank_low = 4;
+        chatham_fixed_WJLWTP_rank_high = 5;
+
+        durham_variable_WJLWTP_rank_low = western_wake_treatment_plant_rank_durham_low;
+        durham_variable_WJLWTP_rank_high = western_wake_treatment_plant_rank_durham_high;
+        durham_fixed_WJLWTP_rank_low = 7;
+        durham_fixed_WJLWTP_rank_high = 8;
+
+        owasa_variable_WJLWTP_rank_low = western_wake_treatment_plant_rank_OWASA_low;
+        owasa_variable_WJLWTP_rank_high = western_wake_treatment_plant_rank_OWASA_high;
+        owasa_fixed_WJLWTP_rank_low = 6;
+        owasa_fixed_WJLWTP_rank_high = 7;
+
+        raleigh_variable_WJLWTP_rank_low = western_wake_treatment_plant_rank_raleigh_low;
+        raleigh_variable_WJLWTP_rank_high = western_wake_treatment_plant_rank_raleigh_high;
+        raleigh_fixed_WJLWTP_rank_low = 6;
+        raleigh_fixed_WJLWTP_rank_high = 7;
+    }
+
+    pittsboro_infra_order_raw = {
+            infraRank(haw_river_intake_expansion_low_id, haw_river_intake_expansion_rank_low),
+            infraRank(haw_river_intake_expansion_high_id, haw_river_intake_expansion_rank_high),
+            infraRank(wjlwtp_fixed_low_base_id, pittsboro_fixed_WJLWTP_rank_low),
+            infraRank(wjlwtp_fixed_high_base_id, pittsboro_fixed_WJLWTP_rank_high),
+            infraRank(wjlwtp_variable_low_base_id, pittsboro_variable_WJLWTP_rank_low),
+            infraRank(wjlwtp_variable_high_base_id, pittsboro_variable_WJLWTP_rank_high)
+    };
+
+    chatham_infra_order_raw = {
+            infraRank(harnett_county_intake_id, cape_fear_river_intake_rank),
+            infraRank(wjlwtp_fixed_low_base_id, chatham_fixed_WJLWTP_rank_low),
+            infraRank(wjlwtp_fixed_high_base_id, chatham_fixed_WJLWTP_rank_high),
+            infraRank(wjlwtp_variable_low_base_id, chatham_variable_WJLWTP_rank_low),
+            infraRank(wjlwtp_variable_high_base_id, chatham_variable_WJLWTP_rank_high)
+
+    };
+
+    durham_infra_order_raw = {
+            infraRank(teer_quarry_id, Teer_quarry_expansion_ranking),
+            infraRank(michie_expansion_low_id, lake_michie_expansion_ranking_low),
+            infraRank(michie_expansion_high_id, lake_michie_expansion_ranking_high),
+            infraRank(reclaimed_water_low_id, reclaimed_water_ranking_low),
+            infraRank(reclaimed_water_high_id, reclaimed_water_high),
+            infraRank(wjlwtp_fixed_low_base_id, durham_fixed_WJLWTP_rank_low),
+            infraRank(wjlwtp_fixed_high_base_id, durham_fixed_WJLWTP_rank_high),
+            infraRank(wjlwtp_variable_low_base_id, durham_variable_WJLWTP_rank_low),
+            infraRank(wjlwtp_variable_high_base_id, durham_variable_WJLWTP_rank_high)
+    };
+
+    owasa_infra_order_raw = {
+            infraRank(stone_quarry_expansion_low_id, Stone_quarry_reservoir_expansion_shallow_ranking),
+            infraRank(stone_quarry_expansion_high_id, Stone_quarry_reservoir_expansion_deep_ranking),
+            infraRank(university_lake_expansion_id, university_lake_expansion_ranking),
+            infraRank(cane_creek_reservoir_expansion_id, Cane_creek_expansion_ranking),
+            infraRank(wjlwtp_fixed_low_base_id, owasa_fixed_WJLWTP_rank_low),
+            infraRank(wjlwtp_fixed_high_base_id, owasa_fixed_WJLWTP_rank_high),
+            infraRank(wjlwtp_variable_low_base_id, owasa_variable_WJLWTP_rank_low),
+            infraRank(wjlwtp_variable_high_base_id, owasa_variable_WJLWTP_rank_high)
+    };
+
+    raleigh_infra_order_raw = {
+            infraRank(little_river_raleigh_reservoir_id, little_river_reservoir_ranking),
+            infraRank(richland_creek_quarry_id, richland_creek_quarry_rank),
+            infraRank(neuse_river_intake_id, neuse_river_intake_rank),
+            infraRank(falls_lake_reallocation_id, reallocate_falls_lake_rank),
+            infraRank(wjlwtp_fixed_low_base_id, raleigh_fixed_WJLWTP_rank_low),
+            infraRank(wjlwtp_fixed_high_base_id, raleigh_fixed_WJLWTP_rank_high),
+            infraRank(wjlwtp_variable_low_base_id, raleigh_variable_WJLWTP_rank_low),
+            infraRank(wjlwtp_variable_high_base_id, raleigh_variable_WJLWTP_rank_high)
+    };
+
+        /*
         // if no cooperation is allowed, there is no Joint WTP on JL
         vector<infraRank> owasa_infra_order_raw;
         vector<infraRank> durham_infra_order_raw;
@@ -405,6 +584,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                     infraRank(wjlwtp_high_base_id, western_wake_treatment_plant_rank_raleigh_high)
             };
         }
+         */
 
         double added_storage_michie_expansion_low = 2500;
         double added_storage_michie_expansion_high = 5200;
@@ -532,7 +712,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
             utilities_rdm = std::vector<vector<double>>(
                     n_realizations, vector<double>(6, 1.));
             water_sources_rdm = std::vector<vector<double>>(
-                    n_realizations, vector<double>(60, 1.));
+                    n_realizations, vector<double>(70, 1.));
             policies_rdm = std::vector<vector<double>>(
                     n_realizations, vector<double>(8, 1.));
         }
@@ -1065,13 +1245,13 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         vector<Bond *> wjlwtp_bonds_capacity_1;
         int uid = 0;
         for (double &cost : cost_wjlwtp_upgrade_1) {
-            wjlwtp_bonds_capacity_1.emplace_back(new LevelDebtServiceBond(wjlwtp_low_base_id + uid, cost, 25, 0.05, vector<int>(1, 0)));
+            wjlwtp_bonds_capacity_1.emplace_back(new LevelDebtServiceBond(wjlwtp_fixed_low_base_id + uid, cost, 25, 0.05, vector<int>(1, 0)));
             uid++;
         }
         vector<Bond *> wjlwtp_bonds_capacity_2;
         uid = 0;
         for (double &cost : cost_wjlwtp_upgrade_2) {
-            wjlwtp_bonds_capacity_2.emplace_back(new LevelDebtServiceBond(wjlwtp_high_base_id + uid, cost, 25, 0.05, vector<int>(1, 0)));
+            wjlwtp_bonds_capacity_2.emplace_back(new LevelDebtServiceBond(wjlwtp_fixed_high_base_id + uid, cost, 25, 0.05, vector<int>(1, 0)));
             uid++;
         }
 
@@ -1082,25 +1262,46 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                                          western_wake_treatment_plant_chatham_frac,
                                                          western_wake_treatment_plant_pittsboro_frac};
 
+        //FIXME: CHECK THIS, MADE SEPARATE BONDS FOR EACH FORMULATION
+        vector<Bond *> wjlwtp_fixed_bonds_capacity_1;
+        vector<Bond *> wjlwtp_fixed_bonds_capacity_2;
         vector<Bond *> wjlwtp_variable_bonds_capacity_1;
         vector<Bond *> wjlwtp_variable_bonds_capacity_2;
+        vector<Bond *> wjlwtp_dummy_bonds_capacity_1;
+        vector<Bond *> wjlwtp_dummy_bonds_capacity_2;
+
         uid = 0;
         for (double alloc : initial_debt_service_fractions) {
-            if (formulation == 2) {
+          /*  if (formulation == 2) {
                 wjlwtp_variable_bonds_capacity_1.emplace_back(
-                        new VariableDebtServiceBond(wjlwtp_low_base_id + uid, wjlwtp_low_base_id,
+                        new VariableDebtServiceBond(wjlwtp_fixed_low_base_id + uid, wjlwtp_fixed_low_base_id,
                                                     243.3, alloc, 25, 0.05, vector<int>(1, 0)));
                 wjlwtp_variable_bonds_capacity_2.emplace_back(
                         new VariableDebtServiceBond(wjlwtp_high_base_id + uid, wjlwtp_high_base_id,
                                                     (316.8 - 243.3), alloc, 25, 0.05, vector<int>(1, 0)));
-            } else {
-                wjlwtp_variable_bonds_capacity_1.emplace_back(
-                        new LevelDebtServiceBond(wjlwtp_low_base_id + uid,
-                                                    243.3*alloc, 25, 0.05, vector<int>(1, 0)));
-                wjlwtp_variable_bonds_capacity_2.emplace_back(
-                        new LevelDebtServiceBond(wjlwtp_high_base_id + uid,
-                                                    (316.8 - 243.3)*alloc, 25, 0.05, vector<int>(1, 0)));
-            }
+            } else {*/
+
+            wjlwtp_variable_bonds_capacity_1.emplace_back(
+                    new VariableDebtServiceBond(wjlwtp_variable_low_base_id + uid, wjlwtp_fixed_low_base_id,
+                                                243.3, alloc, 25, 0.05, vector<int>(1, 0)));
+            wjlwtp_variable_bonds_capacity_2.emplace_back(
+                    new VariableDebtServiceBond(wjlwtp_variable_high_base_id + uid, wjlwtp_variable_high_base_id,
+                                                (316.8 - 243.3), alloc, 25, 0.05, vector<int>(1, 0)));
+
+            wjlwtp_fixed_bonds_capacity_1.emplace_back(
+                    new LevelDebtServiceBond(wjlwtp_fixed_low_base_id + uid,
+                                                243.3*alloc, 25, 0.05, vector<int>(1, 0)));
+            wjlwtp_fixed_bonds_capacity_2.emplace_back(
+                    new LevelDebtServiceBond(wjlwtp_fixed_high_base_id + uid,
+                                                (316.8 - 243.3)*alloc, 25, 0.05, vector<int>(1, 0)));
+
+            wjlwtp_dummy_bonds_capacity_1.emplace_back(
+                    new LevelDebtServiceBond(wjlwtp_fixed_low_base_id + uid,
+                                             0, 25, 0.05, vector<int>(1, 0)));
+            wjlwtp_dummy_bonds_capacity_2.emplace_back(
+                    new LevelDebtServiceBond(wjlwtp_fixed_high_base_id + uid,
+                                             0, 25, 0.05, vector<int>(1, 0)));
+            //}
             uid++;
         }
 
@@ -1168,36 +1369,78 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         water_sources.push_back(&caryWtpUpgrade1);
         water_sources.push_back(&caryWtpUpgrade2);
 
-        // fixed allocations cooperation on JL
-        if (formulation == 1) {
-            //        FixedJointWTP small_fixed_wjlwtp("Small Fixed WJLWTP", wjlwtp_low_base_id, jordan_lake_id, 0, 33 * 7,
-//                                   {wjlwtp_low_base_id, wjlwtp_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_1,
-//                                   wjlwtp_variable_bonds_capacity_1, construction_time_interval, 12 * WEEKS_IN_YEAR);
-//        FixedJointWTP large_fixed_wjlwtp("Large Fixed WJLWTP", wjlwtp_high_base_id, jordan_lake_id, 1, 54 * 7,
-//                                   {wjlwtp_low_base_id, wjlwtp_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_2,
-//                                   wjlwtp_variable_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR);
-            water_sources.push_back(new FixedJointWTP("Small Fixed WJLWTP", wjlwtp_low_base_id, jordan_lake_id, 0, 33 * 7,
-                    {wjlwtp_low_base_id, wjlwtp_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_1,
-                    wjlwtp_variable_bonds_capacity_1, construction_time_interval, 12 * WEEKS_IN_YEAR));
-            water_sources.push_back(new FixedJointWTP("Large Fixed WJLWTP", wjlwtp_high_base_id, jordan_lake_id, 1, 54 * 7,
-                    {wjlwtp_low_base_id, wjlwtp_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_2,
-                    wjlwtp_variable_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR));
+        // Memory leak fixes by D.Gold 02/2020
+        // to deal with WJLWTP that is different for each formulation, create three possible options:
+        //  1. a dummy WTP with 0 capacity for fomulation 0
+        //  2. a fixed joint WTP for formulation 1
+        //  3. a variable joint WTP for formulation 2
 
-        } else if (formulation == 2) {
-//        VariableJointWTP small_variable_wjlwtp("Small Variable WJLWTP", wjlwtp_low_base_id, jordan_lake_id, 0, 33 * 7,
-//                                      {wjlwtp_low_base_id, wjlwtp_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_1,
-//                                      wjlwtp_variable_bonds_capacity_1, construction_time_interval, 12 * WEEKS_IN_YEAR);
-//        VariableJointWTP large_variable_wjlwtp("Large Variable WJLWTP", wjlwtp_high_base_id, jordan_lake_id, 1, 54 * 7,
-//                                      {wjlwtp_low_base_id, wjlwtp_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_2,
-//                                      wjlwtp_variable_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR);
-            water_sources.push_back(new VariableJointWTP("Small Variable WJLWTP", wjlwtp_low_base_id, jordan_lake_id, 0, 33 * 7,
-                                                {wjlwtp_low_base_id, wjlwtp_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_1,
-                                                wjlwtp_variable_bonds_capacity_1, construction_time_interval, 12 * WEEKS_IN_YEAR));
-            water_sources.push_back(new VariableJointWTP("Large Variable WJLWTP", wjlwtp_high_base_id, jordan_lake_id, 1, 54 * 7,
-                                                {wjlwtp_low_base_id, wjlwtp_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_2,
-                                                wjlwtp_variable_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR));
+        // create dummy WJLWTPs
+        FixedJointWTP dummy_small_fixed_WJLWTP( "Dummy Fixed WJLWTP", wjlwtp_fixed_low_base_id, jordan_lake_id, 0, 0,
+                                                {wjlwtp_fixed_low_base_id, wjlwtp_fixed_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_1,
+                                                wjlwtp_dummy_bonds_capacity_1, construction_time_interval, 100 * WEEKS_IN_YEAR);
 
-        }
+        FixedJointWTP dummy_fixed_large_WJLWTP("Dummy Large Fixed WJLWTP", wjlwtp_fixed_high_base_id, jordan_lake_id, 1, 0,
+                                               {wjlwtp_fixed_low_base_id, wjlwtp_fixed_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_2,
+                                               wjlwtp_dummy_bonds_capacity_2, construction_time_interval, 100 * WEEKS_IN_YEAR);
+
+        VariableJointWTP dummy_small_variable_WJLWTP("Dummy Small Variable WJLWTP", wjlwtp_variable_low_base_id,
+                                                     jordan_lake_id, 0, 0,
+                                                     {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, &partner_utilities,
+                                                     &capacities_wjlwtp_upgrade_1,wjlwtp_dummy_bonds_capacity_1, construction_time_interval,
+                                                     100 * WEEKS_IN_YEAR);
+
+        VariableJointWTP dummy_large_variable_WJLWTP("Dummy Variable WJLWTP", wjlwtp_variable_high_base_id, jordan_lake_id,
+                                                     1, 0,
+                                                     {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_1,
+                                                     wjlwtp_dummy_bonds_capacity_1, construction_time_interval, 12 * WEEKS_IN_YEAR);
+
+
+        // create fixed WJLWTPs
+        FixedJointWTP small_fixed_WJLWTP( "Small Fixed WJLWTP", wjlwtp_fixed_low_base_id, jordan_lake_id,
+                                          0, 33 * 7,
+                                          {wjlwtp_fixed_low_base_id, wjlwtp_fixed_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_1,
+                                          wjlwtp_fixed_bonds_capacity_1, construction_time_interval, 12 * WEEKS_IN_YEAR);
+
+        FixedJointWTP large_fixed_WJLWTP("Large Fixed WJLWTP", wjlwtp_fixed_high_base_id, jordan_lake_id,
+                                         1, 54 * 7,
+                                         {wjlwtp_fixed_low_base_id, wjlwtp_fixed_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_2,
+                                         wjlwtp_fixed_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR);
+
+
+        // create variable WJLWTPs
+        VariableJointWTP small_variable_WJLWTP("Small Variable WJLWTP", wjlwtp_variable_low_base_id, jordan_lake_id, 0, 33*7,
+                                               {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, &partner_utilities,
+                                               &capacities_wjlwtp_upgrade_1, wjlwtp_variable_bonds_capacity_1,
+                                               construction_time_interval, 12 * WEEKS_IN_YEAR);
+
+        VariableJointWTP large_variable_WJLWTP("Large Variable WJLWTP", wjlwtp_variable_high_base_id, jordan_lake_id, 1, 54*7,
+                                               {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, &partner_utilities,
+                                               &capacities_wjlwtp_upgrade_1, wjlwtp_variable_bonds_capacity_1,
+                                               construction_time_interval, 12 * WEEKS_IN_YEAR);
+
+        // small fixed WJLWTP (formulation 0: dummy, formulation 1: actual plant, formulation 2: dummy)
+        vector<FixedJointWTP *> fixed_small_WJLWTP_options = {&dummy_small_fixed_WJLWTP, &small_fixed_WJLWTP,
+                                                              &dummy_small_fixed_WJLWTP};
+
+        // large fixed WJLWTP (formulation 0: dummy, formulation 1: actual plant, formulation 2: dummy)
+        vector<FixedJointWTP *> fixed_large_WJLWTP_options = {&dummy_fixed_large_WJLWTP, &large_fixed_WJLWTP,
+                                                              &dummy_fixed_large_WJLWTP};
+
+        // small variable WJLWTP (formulation 0: dummy, formulation 1: dummy, formulation 2: actual plant)
+        vector<VariableJointWTP *> variable_small_WJLWTP_options = {&dummy_small_variable_WJLWTP,
+                                                                    &dummy_small_variable_WJLWTP, &small_variable_WJLWTP};
+
+        vector<VariableJointWTP *> variable_large_WJWLWTP_options = {&dummy_large_variable_WJLWTP,
+                                                                     &dummy_large_variable_WJLWTP,
+                                                                     &large_variable_WJLWTP};
+
+        // add the sources to the water sources vector. all formulations will have these options added, but
+        // they will be dummies with treatment capacity 0 unless the proper formulation is called.
+        water_sources.push_back(fixed_small_WJLWTP_options[formulation]);
+        water_sources.push_back(fixed_large_WJLWTP_options[formulation]);
+        water_sources.push_back(variable_small_WJLWTP_options[formulation]);
+        water_sources.push_back(variable_large_WJWLWTP_options[formulation]);
 
         water_sources.push_back(&cape_fear_river_intake);
         water_sources.push_back(&haw_river_intake_expansion_low);
@@ -1309,82 +1552,58 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         /// sources IDs.
         // if there's a Joint WTP on JL
         vector<vector<int>> reservoir_utility_connectivity_matrix;
-        if (formulation > 0) {
-            reservoir_utility_connectivity_matrix = {
-                    {cane_creek_reservoir_id, stone_quarry_id,
-                     university_lake_id, jordan_lake_id,
-                     stone_quarry_expansion_low_id,
-                     stone_quarry_expansion_high_id,
-                     university_lake_expansion_id,
-                     cane_creek_reservoir_expansion_id,
-                     wjlwtp_low_base_id,
-                     wjlwtp_high_base_id}, //OWASA
-                    {durham_reservoirs_id,
-                     jordan_lake_id,
-                     teer_quarry_id,
-                     michie_expansion_low_id,
-                     michie_expansion_high_id,
-                     reclaimed_water_low_id,
-                     reclaimed_water_high_id,
-                     wjlwtp_low_base_id,
-                     wjlwtp_high_base_id}, //Durham
-                    {jordan_lake_id,
-                     cary_wtp_upgrades_low_base_id,
-                     cary_wtp_upgrades_high_base_id}, //Cary
-                    {falls_lake_id,
-                     wheeler_benson_id,
-                     jordan_lake_id,
-                     little_river_raleigh_reservoir_id,
-                     richland_creek_quarry_id,
-                     falls_lake_reallocation_id,
-                     neuse_river_intake_id,
-                     wjlwtp_low_base_id,
-                     wjlwtp_high_base_id},  //Raleigh
-                    {jordan_lake_id,
-                     harnett_county_intake_id,
-                     wjlwtp_low_base_id,
-                     wjlwtp_high_base_id}, //Chatham County
-                    {haw_river_intake_id, jordan_lake_id,
-                     haw_river_intake_expansion_low_id,
-                     haw_river_intake_expansion_high_id,
-                     wjlwtp_low_base_id,
-                     wjlwtp_high_base_id} //Pittsboro
+
+        reservoir_utility_connectivity_matrix = {
+                {cane_creek_reservoir_id, stone_quarry_id,
+                        university_lake_id, jordan_lake_id,
+                        stone_quarry_expansion_low_id,
+                        stone_quarry_expansion_high_id,
+                        university_lake_expansion_id,
+                        cane_creek_reservoir_expansion_id,
+                        wjlwtp_fixed_low_base_id,
+                        wjlwtp_fixed_high_base_id,
+                        wjlwtp_variable_low_base_id,
+                        wjlwtp_variable_high_base_id}, //OWASA
+                        {durham_reservoirs_id,
+                        jordan_lake_id,
+                        teer_quarry_id,
+                        michie_expansion_low_id,
+                        michie_expansion_high_id,
+                        reclaimed_water_low_id,
+                        reclaimed_water_high_id,
+                        wjlwtp_fixed_low_base_id,
+                        wjlwtp_fixed_high_base_id,
+                        wjlwtp_variable_low_base_id,
+                        wjlwtp_variable_high_base_id}, //Durham
+                        {jordan_lake_id,
+                        cary_wtp_upgrades_low_base_id,
+                        cary_wtp_upgrades_high_base_id}, //Cary
+                        {falls_lake_id,
+                        wheeler_benson_id,
+                        jordan_lake_id,
+                        little_river_raleigh_reservoir_id,
+                        richland_creek_quarry_id,
+                        falls_lake_reallocation_id,
+                        neuse_river_intake_id,
+                        wjlwtp_fixed_low_base_id,
+                        wjlwtp_fixed_high_base_id,
+                        wjlwtp_variable_low_base_id,
+                        wjlwtp_variable_high_base_id},  //Raleigh
+                        {jordan_lake_id,
+                        harnett_county_intake_id,
+                        wjlwtp_fixed_low_base_id,
+                        wjlwtp_fixed_high_base_id,
+                        wjlwtp_variable_low_base_id,
+                        wjlwtp_variable_high_base_id}, //Chatham County
+                        {haw_river_intake_id,
+                        jordan_lake_id,
+                        haw_river_intake_expansion_low_id,
+                        haw_river_intake_expansion_high_id,
+                        wjlwtp_fixed_low_base_id,
+                        wjlwtp_fixed_high_base_id,
+                        wjlwtp_variable_low_base_id,
+                        wjlwtp_variable_high_base_id} //Pittsboro
             };
-        } else {
-            reservoir_utility_connectivity_matrix = {
-                    {cane_creek_reservoir_id,
-                     stone_quarry_id,
-                     university_lake_id,
-                     jordan_lake_id,
-                     stone_quarry_expansion_low_id,
-                     stone_quarry_expansion_high_id,
-                     university_lake_expansion_id,
-                     cane_creek_reservoir_expansion_id}, //OWASA
-                    {durham_reservoirs_id,
-                     jordan_lake_id,
-                     teer_quarry_id,
-                     michie_expansion_low_id,
-                     michie_expansion_high_id,
-                     reclaimed_water_low_id,
-                     reclaimed_water_high_id}, //Durham
-                    {jordan_lake_id,
-                     cary_wtp_upgrades_low_base_id,
-                     cary_wtp_upgrades_high_base_id}, //Cary
-                    {falls_lake_id,
-                     wheeler_benson_id,
-                     jordan_lake_id,
-                     little_river_raleigh_reservoir_id,
-                     richland_creek_quarry_id,
-                     falls_lake_reallocation_id,
-                     neuse_river_intake_id},  //Raleigh
-                    {jordan_lake_id,
-                     harnett_county_intake_id}, //Chatham County
-                    {haw_river_intake_id,
-                     jordan_lake_id,
-                     haw_river_intake_expansion_low_id,
-                     haw_river_intake_expansion_high_id} //Pittsboro
-            };
-        }
 
 
         // NOTE: IF YOU ADD NEW SOURCES, THIS VECTOR NEEDS TO BE CHANGED IN SIZE ACCORDINGLY!!
@@ -1392,14 +1611,14 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         table_storage_shift[uid_raleigh][falls_lake_reallocation_id] = 2000.;
         table_storage_shift[uid_raleigh][richland_creek_quarry_id] = 5000.;
         table_storage_shift[uid_owasa][university_lake_expansion_id] = 100.;
-        table_storage_shift[uid_durham][wjlwtp_low_base_id] = 500.;
-        table_storage_shift[uid_durham][wjlwtp_high_base_id] = 500.;
+        table_storage_shift[uid_durham][wjlwtp_fixed_low_base_id] = 500.;
+        table_storage_shift[uid_durham][wjlwtp_fixed_high_base_id] = 500.;
         table_storage_shift[uid_durham][michie_expansion_low_id] = 700.;
         table_storage_shift[uid_durham][teer_quarry_id] = 700.;
 
         auto table_base_storage_shift = vector<vector<double>>(6, vector<double>(29, 0.));
-        table_base_storage_shift[uid_pittsboro][wjlwtp_low_base_id] = 5000.;
-        table_base_storage_shift[uid_pittsboro][wjlwtp_high_base_id] = 5000.;
+        table_base_storage_shift[uid_pittsboro][wjlwtp_fixed_low_base_id] = 5000.;
+        table_base_storage_shift[uid_pittsboro][wjlwtp_fixed_high_base_id] = 5000.;
         table_base_storage_shift[uid_pittsboro][haw_river_intake_expansion_low_id] = 1000.;
         table_base_storage_shift[uid_pittsboro][haw_river_intake_expansion_high_id] = 1000.;
 

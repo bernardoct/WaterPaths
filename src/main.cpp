@@ -24,7 +24,7 @@ Problem *problem_ptr;
 int failures = 0;
 
 void eval(double *vars, double *objs, double *consts) {
-    try {
+//    try {
         for (int i = 0; i < NUM_DEC_VAR; ++i) {
             if (isnan(vars[i])) {
                 char error[50];
@@ -36,18 +36,18 @@ void eval(double *vars, double *objs, double *consts) {
         printf("destroying data collector\n");
         problem_ptr->destroyDataCollector();
         printf("data colletor destroyed!\n");
-        for (int i = 0; i < 5; ++i) printf("%d ", objs[i]);
+        for (int i = 0; i < 5; ++i) printf("%f ", objs[i]);
         printf("\n");
-    } catch (...) {
-        ofstream sol_out; // for debugging borg
-        sol_out << endl;
-        sol_out << "Failure! Decision Variable values: " << endl;
-        cout << endl;
-        cout << "Failure! Decision variable values: " << endl;
-        for (int i = 0; i < NUM_DEC_VAR; ++i) sol_out << vars[i] << " ";
-        sol_out << endl;
-        for (int i = 0; i < NUM_OBJECTIVES; ++i) objs[i] = 1e5;
-    }
+//    } catch (...) {
+//        ofstream sol_out; // for debugging borg
+//        sol_out << endl;
+//        sol_out << "Failure! Decision Variable values: " << endl;
+//        cout << endl;
+//        cout << "Failure! Decision variable values: " << endl;
+//        for (int i = 0; i < NUM_DEC_VAR; ++i) sol_out << vars[i] << " ";
+//        sol_out << endl;
+//        for (int i = 0; i < NUM_OBJECTIVES; ++i) objs[i] = 1e5;
+//    }
 }
 
 int main(int argc, char *argv[]) {
@@ -267,7 +267,6 @@ int main(int argc, char *argv[]) {
         return 0;
     } else {
 #ifdef  PARALLEL
-
         printf("Running Borg with:\n"
                "nfe: %lu\n"
                "output freq.: %lu\n"

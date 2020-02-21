@@ -1,40 +1,40 @@
 [RUN PARAMETERS]
-n_realizations 4 
-n_weeks 525 
-rdm_utilities /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_utilities_test_problem_opt.csv 
-rdm_water_sources /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_water_sources_test_problem_opt.csv 
-rdm_dmps /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_dmp_test_problem_opt.csv
+n_realizations 4
+n_weeks 2344
+rdm_utilities /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/rdm_utilities_test_problem_opt.csv 
+rdm_water_sources /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/rdm_water_sources_test_problem_opt.csv 
+rdm_dmps /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/rdm_dmp_test_problem_opt.csv
 rdm_no 0
-n_threads 4
-rof_tables_dir /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/rof_tables_test_problem/
-output_dir /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/output/
+n_threads 2
+rof_tables_dir /home/bernardo/CLionProjects/RevampedTriangleModel/rof_tables_test_problem/
+output_dir /home/bernardo/CLionProjects/RevampedTriangleModel/output/
 use_rof_tables import
 seed 0
 optimize 7 2000
 
 [DATA TO LOAD]
 # Files with "*" are always fully loaded instead of having on n_realizations lines loaded. Add "*" to any file that's not a demand, inflow or evaporation time series.
-*caryDemandClassesFractions /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/caryDemandClassesFractions.csv
-*caryUserClassesWaterPrices /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/caryUserClassesWaterPrices.csv
-*demand_to_wastewater_fraction_owasa_raleigh /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv
-*raleighDemandClassesFractions /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/raleighDemandClassesFractions.csv
-*raleighUserClassesWaterPrices /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/raleighUserClassesWaterPrices.csv
-*durhamDemandClassesFractions /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/durhamDemandClassesFractions.csv
-*durhamUserClassesWaterPrices /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/durhamUserClassesWaterPrices.csv
-cary_demand /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/demands/cary_demand.csv
-durham_demand /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/demands/durham_demand.csv
-raleigh_demand /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/demands/raleigh_demand.csv
-falls_lake_evap /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/evaporation/falls_lake_evap.csv
-jordan_lake_evap /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/evaporation/jordan_lake_evap.csv
-clayton_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/clayton_inflows.csv
-crabtree_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/crabtree_inflows.csv
-durham_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/durham_inflows.csv
-falls_lake_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/falls_lake_inflows.csv
-jordan_lake_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/jordan_lake_inflows.csv
-lillington_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/lillington_inflows.csv
-little_river_raleigh_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/little_river_raleigh_inflows.csv
-stone_quarry_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/stone_quarry_inflows.csv
-university_lake_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/university_lake_inflows.csv
+*caryDemandClassesFractions /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/caryDemandClassesFractions.csv
+*caryUserClassesWaterPrices /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/caryUserClassesWaterPrices.csv
+*demand_to_wastewater_fraction_owasa_raleigh /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv
+*raleighDemandClassesFractions /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/raleighDemandClassesFractions.csv
+*raleighUserClassesWaterPrices /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/raleighUserClassesWaterPrices.csv
+*durhamDemandClassesFractions /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/durhamDemandClassesFractions.csv
+*durhamUserClassesWaterPrices /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/durhamUserClassesWaterPrices.csv
+cary_demand /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/demands/cary_demand.csv
+durham_demand /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/demands/durham_demand.csv
+raleigh_demand /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/demands/raleigh_demand.csv
+falls_lake_evap /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/falls_lake_evap.csv
+jordan_lake_evap /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/jordan_lake_evap.csv
+clayton_inflows /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/inflows/clayton_inflows.csv
+crabtree_inflows /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/inflows/crabtree_inflows.csv
+durham_inflows /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/inflows/durham_inflows.csv
+falls_lake_inflows /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/inflows/falls_lake_inflows.csv
+jordan_lake_inflows /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/inflows/jordan_lake_inflows.csv
+lillington_inflows /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/inflows/lillington_inflows.csv
+little_river_raleigh_inflows /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/inflows/little_river_raleigh_inflows.csv
+stone_quarry_inflows /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/inflows/stone_quarry_inflows.csv
+university_lake_inflows /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/inflows/university_lake_inflows.csv
 
 [DECISION VARIABLE BOUNDS]
 0 0.334,0.9     # watertown LMA
@@ -213,7 +213,7 @@ typesMonthlyDemandFraction durhamDemandClassesFractions
 typesMonthlyWaterPrice durhamUserClassesWaterPrices
 wwtp_discharge_rule demand_to_wastewater_fraction_owasa_raleigh New_River_Reservoir
 demand_buffer 0.35
-rof_infra_construction_order @Sugar_Creek_Reservoir,@Granite_Quarry,@Dryville_Reuse
+rof_infra_construction_order @Sugar_Creek_Reservoir,@Dryville_Reuse
 # infra_construction_triggers 0.2,0.1,0.3
 infra_construction_triggers %%%
 infra_discount_rate 0.07

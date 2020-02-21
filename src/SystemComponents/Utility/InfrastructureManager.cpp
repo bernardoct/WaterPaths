@@ -9,12 +9,12 @@
 #include "../../Utils/Utils.h"
 #include "../WaterSources/JointTreatmentCapacityExpansion.h"
 
-InfrastructureManager::InfrastructureManager(
+InfrastructureManager::InfrastructureManager(const string name,
         int id, const vector<double> &infra_construction_triggers,
         const vector<vector<int>> &infra_if_built_remove,
         double infra_discount_rate, vector<int> rof_infra_construction_order,
-        vector<int> demand_infra_construction_order)
-        :
+        vector<int> demand_infra_construction_order):
+        name(name),
         id(id),
         infra_construction_triggers(rearrangeInfraRofVector
                                             (infra_construction_triggers,
@@ -50,6 +50,7 @@ void InfrastructureManager::restructureVectorOfRelatedInfrastructure(
 
 InfrastructureManager::InfrastructureManager(
         InfrastructureManager &infrastructure_manager) :
+        name(infrastructure_manager.name),
         id(infrastructure_manager.id),
         infra_construction_triggers(
                 infrastructure_manager.infra_construction_triggers),
@@ -64,6 +65,7 @@ InfrastructureManager::InfrastructureManager() = default;
 
 InfrastructureManager &InfrastructureManager::operator=(
         const InfrastructureManager &infrastructure_manager) {
+    name = infrastructure_manager.name;
     id = infrastructure_manager.id;
     infra_construction_triggers = infrastructure_manager.infra_construction_triggers;
     infra_if_built_remove = infrastructure_manager.infra_if_built_remove;
@@ -85,6 +87,25 @@ void InfrastructureManager::addWaterSource(WaterSource *water_source) {
         under_construction.resize(water_sources->size(), false);
         construction_end_date.resize(water_sources->size(), NON_INITIALIZED);
     }
+
+    auto all_infra_options = rof_infra_construction_order;
+    all_infra_options.insert(all_infra_options.end(), demand_infra_construction_order.begin(), demand_infra_construction_order.end());
+    for (double ws_id : all_infra_options) {
+        if (ws_id == water_source->id) {
+            try {
+                water_source->getBond(id);
+            } catch(...) {
+                char error[256];
+                sprintf(error,
+                        "Utility %s does not seem to have a bond for water "
+                        "source %s. Is water source %s already built?",
+                        name.c_str(), water_source->name.c_str(),
+                        water_source->name.c_str());
+                throw invalid_argument(error);
+            }
+        }
+    }
+
 }
 
 /**

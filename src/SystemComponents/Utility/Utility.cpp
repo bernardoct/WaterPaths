@@ -120,7 +120,7 @@ Utility::Utility(string name, int id,
     }
 
     infrastructure_construction_manager =
-            InfrastructureManager(id, expanded_infra_construction_triggers,
+            InfrastructureManager(name, id, expanded_infra_construction_triggers,
                                   infra_if_built_remove,
                                   infra_discount_rate,
                                   rof_infra_construction_order,

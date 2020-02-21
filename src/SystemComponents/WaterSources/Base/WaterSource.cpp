@@ -774,6 +774,11 @@ Bond &WaterSource::getBond(int utility_id) {
     if (bonds.size() == 1) {
         return *bonds[0];
     } else {
+        if (bonds.size() <= utility_id || bonds[utility_id] == nullptr) {
+            char error[256];
+            sprintf(error, "Water source %s has no bond for utility %d.", name.c_str(), utility_id);
+            throw invalid_argument(error);
+        }
         return *bonds[utility_id];
     }
 }

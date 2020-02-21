@@ -58,11 +58,6 @@ int InputFileProblem::functionEvaluation(double *vars, double *objs,
     parser.createSystemObjects(vars);
     solutions_decvars = parser.getSolutionsDecvars();
 
-    for (int i = 0; i < parser.getNDecVars(); ++i) printf("%f ", vars[i]);
-    printf("\nn_dec_vars %lu\n", parser.getNDecVars());
-//    printf("\n");
-
-
     // Creates simulation object depending on use (or lack thereof) ROF tables
     printf("Starting Simulation\n");
     double start_time = omp_get_wtime();

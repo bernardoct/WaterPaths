@@ -20,6 +20,7 @@ private:
     vector<WaterSource *> *water_sources;
     int id;
     double infra_discount_rate;
+    string name;
     vector<int> rof_infra_construction_order;
     vector<int> demand_infra_construction_order;
 
@@ -27,10 +28,9 @@ private:
     vector<int> triggered_queue;
     vector<int> construction_end_date;
     vector<bool> under_construction;
-    double infra_net_present_cost = NONE;
 
 public:
-    InfrastructureManager(int id,
+    InfrastructureManager(string name, int id,
                           const vector<double> &infra_construction_triggers,
                           const vector<vector<int>> &infra_if_built_remove,
                           double infra_discount_rate,

@@ -1241,8 +1241,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                 (316.8 - 243.3) * western_wake_treatment_plant_pittsboro_frac
         };
 
-        /// Bonds West Jordan Lake treatment plant
-        vector<Bond *> wjlwtp_bonds_capacity_1;
+        /// Bonds West Jordan Lake treatment plant (outdated)
+        /*vector<Bond *> wjlwtp_bonds_capacity_1;
         int uid = 0;
         for (double &cost : cost_wjlwtp_upgrade_1) {
             wjlwtp_bonds_capacity_1.emplace_back(new LevelDebtServiceBond(wjlwtp_fixed_low_base_id + uid, cost, 25, 0.05, vector<int>(1, 0)));
@@ -1254,6 +1254,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
             wjlwtp_bonds_capacity_2.emplace_back(new LevelDebtServiceBond(wjlwtp_fixed_high_base_id + uid, cost, 25, 0.05, vector<int>(1, 0)));
             uid++;
         }
+         */
 
         /// Variable Bonds West Jordan Lake treatment plant
         vector<double> initial_debt_service_fractions = {western_wake_treatment_plant_owasa_frac,
@@ -1267,10 +1268,12 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         vector<Bond *> wjlwtp_fixed_bonds_capacity_2;
         vector<Bond *> wjlwtp_variable_bonds_capacity_1;
         vector<Bond *> wjlwtp_variable_bonds_capacity_2;
-        vector<Bond *> wjlwtp_dummy_bonds_capacity_1;
-        vector<Bond *> wjlwtp_dummy_bonds_capacity_2;
+        vector<Bond *> wjlwtp_dummy_fixed_bonds_capacity_1;
+        vector<Bond *> wjlwtp_dummy_fixed_bonds_capacity_2;
+        vector<Bond *> wjlwtp_dummy_variable_bonds_capacity_1;
+        vector<Bond *> wjlwtp_dummy_variable_bonds_capacity_2;
 
-        uid = 0;
+        int uid = 0;
         for (double alloc : initial_debt_service_fractions) {
           /*  if (formulation == 2) {
                 wjlwtp_variable_bonds_capacity_1.emplace_back(
@@ -1295,12 +1298,20 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                     new LevelDebtServiceBond(wjlwtp_fixed_high_base_id + uid,
                                                 (316.8 - 243.3)*alloc, 25, 0.05, vector<int>(1, 0)));
 
-            wjlwtp_dummy_bonds_capacity_1.emplace_back(
+            wjlwtp_dummy_fixed_bonds_capacity_1.emplace_back(
                     new LevelDebtServiceBond(wjlwtp_fixed_low_base_id + uid,
                                              0, 25, 0.05, vector<int>(1, 0)));
-            wjlwtp_dummy_bonds_capacity_2.emplace_back(
+            wjlwtp_dummy_fixed_bonds_capacity_2.emplace_back(
                     new LevelDebtServiceBond(wjlwtp_fixed_high_base_id + uid,
                                              0, 25, 0.05, vector<int>(1, 0)));
+
+            wjlwtp_dummy_variable_bonds_capacity_1.emplace_back(
+                    new VariableDebtServiceBond(wjlwtp_variable_high_base_id + uid, wjlwtp_variable_high_base_id,
+                                                0, alloc, 25, 0.05, vector<int>(1, 0)));
+            wjlwtp_dummy_variable_bonds_capacity_2.emplace_back(
+                    new VariableDebtServiceBond(wjlwtp_variable_high_base_id + uid, wjlwtp_variable_high_base_id,
+                                                0, alloc, 25, 0.05, vector<int>(1, 0)));
+
             //}
             uid++;
         }
@@ -1376,24 +1387,24 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         //  3. a variable joint WTP for formulation 2
 
         // create dummy WJLWTPs
-        FixedJointWTP dummy_small_fixed_WJLWTP( "Dummy Fixed WJLWTP", wjlwtp_fixed_low_base_id, jordan_lake_id, 0, 0,
+        FixedJointWTP dummy_small_fixed_WJLWTP( "Dummy Small Fixed WJLWTP", wjlwtp_fixed_low_base_id, jordan_lake_id, 0, 0,
                                                 {wjlwtp_fixed_low_base_id, wjlwtp_fixed_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_1,
-                                                wjlwtp_dummy_bonds_capacity_1, construction_time_interval, 100 * WEEKS_IN_YEAR);
+                                                wjlwtp_dummy_fixed_bonds_capacity_1, construction_time_interval, 100 * WEEKS_IN_YEAR);
 
         FixedJointWTP dummy_fixed_large_WJLWTP("Dummy Large Fixed WJLWTP", wjlwtp_fixed_high_base_id, jordan_lake_id, 1, 0,
                                                {wjlwtp_fixed_low_base_id, wjlwtp_fixed_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_2,
-                                               wjlwtp_dummy_bonds_capacity_2, construction_time_interval, 100 * WEEKS_IN_YEAR);
+                                               wjlwtp_dummy_fixed_bonds_capacity_2, construction_time_interval, 100 * WEEKS_IN_YEAR);
 
         VariableJointWTP dummy_small_variable_WJLWTP("Dummy Small Variable WJLWTP", wjlwtp_variable_low_base_id,
                                                      jordan_lake_id, 0, 0,
                                                      {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, &partner_utilities,
-                                                     &capacities_wjlwtp_upgrade_1,wjlwtp_dummy_bonds_capacity_1, construction_time_interval,
+                                                     &capacities_wjlwtp_upgrade_1,wjlwtp_dummy_variable_bonds_capacity_1, construction_time_interval,
                                                      100 * WEEKS_IN_YEAR);
 
         VariableJointWTP dummy_large_variable_WJLWTP("Dummy Variable WJLWTP", wjlwtp_variable_high_base_id, jordan_lake_id,
                                                      1, 0,
                                                      {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_1,
-                                                     wjlwtp_dummy_bonds_capacity_1, construction_time_interval, 12 * WEEKS_IN_YEAR);
+                                                     wjlwtp_dummy_variable_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR);
 
 
         // create fixed WJLWTPs
@@ -1416,7 +1427,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         VariableJointWTP large_variable_WJLWTP("Large Variable WJLWTP", wjlwtp_variable_high_base_id, jordan_lake_id, 1, 54*7,
                                                {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, &partner_utilities,
-                                               &capacities_wjlwtp_upgrade_1, wjlwtp_variable_bonds_capacity_1,
+                                               &capacities_wjlwtp_upgrade_1, wjlwtp_variable_bonds_capacity_2,
                                                construction_time_interval, 12 * WEEKS_IN_YEAR);
 
         // small fixed WJLWTP (formulation 0: dummy, formulation 1: actual plant, formulation 2: dummy)
@@ -1607,7 +1618,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
 
         // NOTE: IF YOU ADD NEW SOURCES, THIS VECTOR NEEDS TO BE CHANGED IN SIZE ACCORDINGLY!!
-        auto table_storage_shift = vector<vector<double>>(6, vector<double>(29, 0.));
+        auto table_storage_shift = vector<vector<double>>(6, vector<double>(31, 0.));
         table_storage_shift[uid_raleigh][falls_lake_reallocation_id] = 2000.;
         table_storage_shift[uid_raleigh][richland_creek_quarry_id] = 5000.;
         table_storage_shift[uid_owasa][university_lake_expansion_id] = 100.;
@@ -1616,13 +1627,13 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         table_storage_shift[uid_durham][michie_expansion_low_id] = 700.;
         table_storage_shift[uid_durham][teer_quarry_id] = 700.;
 
-        auto table_base_storage_shift = vector<vector<double>>(6, vector<double>(29, 0.));
+        auto table_base_storage_shift = vector<vector<double>>(6, vector<double>(31, 0.));
         table_base_storage_shift[uid_pittsboro][wjlwtp_fixed_low_base_id] = 5000.;
         table_base_storage_shift[uid_pittsboro][wjlwtp_fixed_high_base_id] = 5000.;
-        table_base_storage_shift[uid_pittsboro][haw_river_intake_expansion_low_id] = 1000.;
-        table_base_storage_shift[uid_pittsboro][haw_river_intake_expansion_high_id] = 1000.;
+        table_base_storage_shift[uid_pittsboro][haw_river_intake_expansion_low_id] = 10000.;
+        table_base_storage_shift[uid_pittsboro][haw_river_intake_expansion_high_id] = 10000.;
 
-        auto treatment_demand_buffer_shift = vector<vector<double>>(6, vector<double>(29, 0.));
+        auto treatment_demand_buffer_shift = vector<vector<double>>(6, vector<double>(31, 0.));
 
         vector<DroughtMitigationPolicy *> drought_mitigation_policies;
         /// Restriction policies

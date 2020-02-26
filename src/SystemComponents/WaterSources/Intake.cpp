@@ -70,12 +70,12 @@ void Intake::applyContinuity(int week, double upstream_source_inflow,
 
     /// Get all upstream catchment inflow.
     upstream_catchment_inflow = 0;
-    for (Catchment c : catchments)
+    for (Catchment &c : catchments)
         upstream_catchment_inflow += c.getStreamflow(week);
 
     /// Water availability for next ime step.
     next_upstream_catchment_inflow = 0;
-    for (Catchment c : catchments)
+    for (Catchment &c : catchments)
         next_upstream_catchment_inflow += c.getStreamflow(week + 1);
 
     /// The available volume for the following week will be next week's gain

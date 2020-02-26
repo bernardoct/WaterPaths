@@ -248,7 +248,7 @@ Utility::Utility(Utility &utility) :
         number_of_week_demands(utility.number_of_week_demands),
         name(utility.name),
         percent_contingency_fund_contribution(utility.percent_contingency_fund_contribution),
-        contingency_fund_cap(contingency_fund_cap),
+        contingency_fund_cap(utility.contingency_fund_cap),
         demand_buffer(utility.demand_buffer),
         infrastructure_construction_manager(utility.infrastructure_construction_manager) {
     infrastructure_construction_manager.connectWaterSourcesVectorsToUtilitys(water_sources,

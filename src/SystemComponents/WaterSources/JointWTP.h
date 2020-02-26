@@ -16,12 +16,12 @@ public:
     const int joint_agreement_type;
 
     JointWTP(const char *name, const int id, const int agreement_type,
-            const int parent_reservoir_ID,
+             const int parent_reservoir_ID,
              const int expansion_sequence_id,
              const double total_treatment_capacity,
              vector<int> connected_sources,
-             vector<int> *agreement_utility_ids,
-             vector<double> *agreement_utility_treatment_capacities,
+             vector<int> &agreement_utility_ids,
+             vector<double> &agreement_utility_treatment_capacities,
              vector<Bond *> &bonds,
              const vector<double> &construction_time_range,
              double permitting_period);

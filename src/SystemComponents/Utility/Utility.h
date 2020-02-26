@@ -45,7 +45,7 @@ private:
 
     /// Drought mitigation
     double fund_contribution = 0;
-    double contingency_fund_cap;
+    double contingency_fund_cap = 1;
     double demand_multiplier = 1;
     double demand_offset = 0;
     double restricted_price = NON_INITIALIZED;

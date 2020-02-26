@@ -8,16 +8,16 @@
 
 VariableJointWTP::VariableJointWTP(const char *name, const int id, const int parent_reservoir_ID,
                                    const int expansion_sequence_id, const double total_treatment_capacity,
-                                   vector<int> connected_sources, vector<int> *agreement_utility_ids,
-                                   vector<double> *initial_treatment_capacity_allocations, vector<Bond *> &bonds,
+                                   vector<int> connected_sources, vector<int> &agreement_utility_ids,
+                                   vector<double> &initial_treatment_capacity_allocations, vector<Bond *> &bonds,
                                    const vector<double> &construction_time_range, double permitting_period)
-                    : JointWTP(name, id, NEW_JOINT_WATER_TREATMENT_PLANT_VARIABLE_ALLOCATIONS,
-                               parent_reservoir_ID, expansion_sequence_id,
-                               total_treatment_capacity, connected_sources,
-                               agreement_utility_ids, initial_treatment_capacity_allocations,
-                               bonds,
-                               construction_time_range, permitting_period),
-                      initial_treatment_allocations(initial_treatment_capacity_allocations) {
+        : JointWTP(name, id, NEW_JOINT_WATER_TREATMENT_PLANT_VARIABLE_ALLOCATIONS,
+                   parent_reservoir_ID, expansion_sequence_id,
+                   total_treatment_capacity, connected_sources,
+                   agreement_utility_ids, initial_treatment_capacity_allocations,
+                   bonds,
+                   construction_time_range, permitting_period),
+          initial_treatment_allocations(initial_treatment_capacity_allocations) {
 }
 
 VariableJointWTP::VariableJointWTP(const VariableJointWTP &variable_joint_water_treatment_plant) :
@@ -38,7 +38,7 @@ void VariableJointWTP::applyContinuity(int week, double upstream_source_inflow, 
 }
 
 double VariableJointWTP::implementInitialTreatmentCapacity(int utility_id) {
-    return initial_treatment_allocations->at(utility_id);
+    return initial_treatment_allocations[utility_id];
 }
 
 void VariableJointWTP::resetAllocations(const vector<double> *demand_deltas) {

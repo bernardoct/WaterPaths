@@ -1388,46 +1388,46 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         // create dummy WJLWTPs
         FixedJointWTP dummy_small_fixed_WJLWTP( "Dummy Small Fixed WJLWTP", wjlwtp_fixed_low_base_id, jordan_lake_id, 0, 0,
-                                                {wjlwtp_fixed_low_base_id, wjlwtp_fixed_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_1,
+                                                {wjlwtp_fixed_low_base_id, wjlwtp_fixed_high_base_id}, partner_utilities, capacities_wjlwtp_upgrade_1,
                                                 wjlwtp_dummy_fixed_bonds_capacity_1, construction_time_interval, 100 * WEEKS_IN_YEAR);
 
         FixedJointWTP dummy_fixed_large_WJLWTP("Dummy Large Fixed WJLWTP", wjlwtp_fixed_high_base_id, jordan_lake_id, 1, 0,
-                                               {wjlwtp_fixed_low_base_id, wjlwtp_fixed_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_2,
+                                               {wjlwtp_fixed_low_base_id, wjlwtp_fixed_high_base_id}, partner_utilities, capacities_wjlwtp_upgrade_2,
                                                wjlwtp_dummy_fixed_bonds_capacity_2, construction_time_interval, 100 * WEEKS_IN_YEAR);
 
         VariableJointWTP dummy_small_variable_WJLWTP("Dummy Small Variable WJLWTP", wjlwtp_variable_low_base_id,
                                                      jordan_lake_id, 0, 0,
-                                                     {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, &partner_utilities,
-                                                     &capacities_wjlwtp_upgrade_1,wjlwtp_dummy_variable_bonds_capacity_1, construction_time_interval,
+                                                     {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, partner_utilities,
+                                                     capacities_wjlwtp_upgrade_1,wjlwtp_dummy_variable_bonds_capacity_1, construction_time_interval,
                                                      100 * WEEKS_IN_YEAR);
 
         VariableJointWTP dummy_large_variable_WJLWTP("Dummy Variable WJLWTP", wjlwtp_variable_high_base_id, jordan_lake_id,
                                                      1, 0,
-                                                     {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_1,
+                                                     {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, partner_utilities, capacities_wjlwtp_upgrade_1,
                                                      wjlwtp_dummy_variable_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR);
 
 
         // create fixed WJLWTPs
         FixedJointWTP small_fixed_WJLWTP( "Small Fixed WJLWTP", wjlwtp_fixed_low_base_id, jordan_lake_id,
                                           0, 33 * 7,
-                                          {wjlwtp_fixed_low_base_id, wjlwtp_fixed_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_1,
+                                          {wjlwtp_fixed_low_base_id, wjlwtp_fixed_high_base_id}, partner_utilities, capacities_wjlwtp_upgrade_1,
                                           wjlwtp_fixed_bonds_capacity_1, construction_time_interval, 12 * WEEKS_IN_YEAR);
 
         FixedJointWTP large_fixed_WJLWTP("Large Fixed WJLWTP", wjlwtp_fixed_high_base_id, jordan_lake_id,
                                          1, 54 * 7,
-                                         {wjlwtp_fixed_low_base_id, wjlwtp_fixed_high_base_id}, &partner_utilities, &capacities_wjlwtp_upgrade_2,
+                                         {wjlwtp_fixed_low_base_id, wjlwtp_fixed_high_base_id}, partner_utilities, capacities_wjlwtp_upgrade_2,
                                          wjlwtp_fixed_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR);
 
 
         // create variable WJLWTPs
         VariableJointWTP small_variable_WJLWTP("Small Variable WJLWTP", wjlwtp_variable_low_base_id, jordan_lake_id, 0, 33*7,
-                                               {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, &partner_utilities,
-                                               &capacities_wjlwtp_upgrade_1, wjlwtp_variable_bonds_capacity_1,
+                                               {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, partner_utilities,
+                                               capacities_wjlwtp_upgrade_1, wjlwtp_variable_bonds_capacity_1,
                                                construction_time_interval, 12 * WEEKS_IN_YEAR);
 
         VariableJointWTP large_variable_WJLWTP("Large Variable WJLWTP", wjlwtp_variable_high_base_id, jordan_lake_id, 1, 54*7,
-                                               {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, &partner_utilities,
-                                               &capacities_wjlwtp_upgrade_1, wjlwtp_variable_bonds_capacity_2,
+                                               {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, partner_utilities,
+                                               capacities_wjlwtp_upgrade_1, wjlwtp_variable_bonds_capacity_2,
                                                construction_time_interval, 12 * WEEKS_IN_YEAR);
 
         // small fixed WJLWTP (formulation 0: dummy, formulation 1: actual plant, formulation 2: dummy)

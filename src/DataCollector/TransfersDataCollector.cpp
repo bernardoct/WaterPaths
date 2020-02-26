@@ -58,8 +58,7 @@ string TransfersDataCollector::printCompactStringHeader() {
     stringstream outStream;
 
     for (int &a : utilities_ids)
-        outStream << to_string(transfer_policy->id) << "_" << a << "transf" << ",";
-        cout << to_string(transfer_policy->id);
+        outStream << a << "transf" << ",";
 
     return outStream.str();
 }

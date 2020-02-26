@@ -6,16 +6,16 @@
 
 FixedJointWTP::FixedJointWTP(const char *name, const int id, const int parent_reservoir_ID,
                              const int expansion_sequence_id, const double total_treatment_capacity,
-                             vector<int> connected_sources, vector<int> *agreement_utility_ids,
-                             vector<double> *fixed_treatment_capacity_allocations,
+                             vector<int> connected_sources, vector<int> &agreement_utility_ids,
+                             vector<double> &fixed_treatment_capacity_allocations,
                              vector<Bond *> &bonds, const vector<double> &construction_time_range,
                              double permitting_period)
-                 : JointWTP(name, id, NEW_JOINT_WATER_TREATMENT_PLANT_FIXED_ALLOCATIONS,
-                         parent_reservoir_ID, expansion_sequence_id,
-                         total_treatment_capacity, connected_sources,
-                         agreement_utility_ids, fixed_treatment_capacity_allocations, bonds,
-                         construction_time_range, permitting_period),
-                 permanent_treatment_allocations(fixed_treatment_capacity_allocations) {
+        : JointWTP(name, id, NEW_JOINT_WATER_TREATMENT_PLANT_FIXED_ALLOCATIONS,
+                   parent_reservoir_ID, expansion_sequence_id,
+                   total_treatment_capacity, connected_sources,
+                   agreement_utility_ids, fixed_treatment_capacity_allocations, bonds,
+                   construction_time_range, permitting_period),
+          permanent_treatment_allocations(&fixed_treatment_capacity_allocations) {
 }
 
 FixedJointWTP::FixedJointWTP(const FixedJointWTP &fixed_joint_water_treatment_plant) :

@@ -11,7 +11,7 @@
 class VariableJointWTP : public JointWTP {
 private:
 
-    vector<double> *initial_treatment_allocations;
+    vector<double> initial_treatment_allocations;
 
 public:
     VariableJointWTP(const char *name, const int id,
@@ -19,8 +19,8 @@ public:
                      const int expansion_sequence_id,
                      const double total_treatment_capacity,
                      vector<int> connected_sources,
-                     vector<int> *agreement_utility_ids,
-                     vector<double> *initial_treatment_capacity_allocations,
+                     vector<int> &agreement_utility_ids,
+                     vector<double> &initial_treatment_capacity_allocations,
                      vector<Bond *> &bonds,
                      const vector<double> &construction_time_range,
                      double permitting_period);

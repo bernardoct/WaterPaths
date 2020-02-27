@@ -240,6 +240,14 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         double western_wake_treatment_plant_rank_chatham_low = vars[77]; // 20
         double western_wake_treatment_plant_rank_chatham_high = vars[78]; // 21
 
+        /// Feb 2020: pittsboro and chatham infrastructure, expansion of sanford wtp modeled as intake expansions
+        //FIXME: ADJUST PARAMETER INPUT FILE TO ACCOUNT FOR NEW INFRASTRUCTURE RANKS
+        // PLACEHOLDER INDICES ARE USED FOR NOW
+        double sanford_wtp_pittsboro_intake_expansion_low_rank = vars[75];
+        double sanford_wtp_pittsboro_intake_expansion_high_rank = vars[76];
+        double sanford_wtp_chatham_intake_expansion_low_rank = vars[77];
+        double sanford_wtp_chatham_intake_expansion_high_rank = vars[78];
+
         /// potential independent Pittsboro project(s)
         double haw_river_intake_expansion_rank_low = vars[79]; //0.9;
         double haw_river_intake_expansion_rank_high = vars[80]; //0.9;
@@ -300,33 +308,39 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         int university_lake_id = 5;
         int jordan_lake_id = 6;
         int haw_river_intake_id = 7;
-        int dummy_node_id = 13;
+        int sanford_wtp_dummy_pittsboro_intake_id = 8;
+        int sanford_wtp_dummy_chatham_intake_id = 9;
+        int dummy_node_id = 15;
 
         // Potential sources (geographically separate from above)
-        int little_river_raleigh_reservoir_id = 8;
-        int richland_creek_quarry_id = 9;
-        int teer_quarry_id = 10;
-        int neuse_river_intake_id = 11;
-        int harnett_county_intake_id = 12;
+        int little_river_raleigh_reservoir_id = 10;
+        int richland_creek_quarry_id = 11;
+        int teer_quarry_id = 12;
+        int neuse_river_intake_id = 13;
+        int harnett_county_intake_id = 14;
 
         // Potential sources (expansions of above sources)
-        int stone_quarry_expansion_low_id = 14;
-        int stone_quarry_expansion_high_id = 15;
-        int university_lake_expansion_id = 16;
-        int michie_expansion_low_id = 17;
-        int michie_expansion_high_id = 18;
-        int falls_lake_reallocation_id = 19;
-        int reclaimed_water_low_id = 20;
-        int reclaimed_water_high_id = 21;
-        int cane_creek_reservoir_expansion_id = 22;
-        int haw_river_intake_expansion_low_id = 23;
-        int haw_river_intake_expansion_high_id = 24;
-        int cary_wtp_upgrades_low_base_id = 25;
-        int cary_wtp_upgrades_high_base_id = 26;
-        int wjlwtp_fixed_low_base_id = 27;
-        int wjlwtp_fixed_high_base_id = 28;
-        int wjlwtp_variable_low_base_id = 29;
-        int wjlwtp_variable_high_base_id = 30;
+        int stone_quarry_expansion_low_id = 16;
+        int stone_quarry_expansion_high_id = 17;
+        int university_lake_expansion_id = 18;
+        int michie_expansion_low_id = 19;
+        int michie_expansion_high_id = 20;
+        int falls_lake_reallocation_id = 21;
+        int reclaimed_water_low_id = 22;
+        int reclaimed_water_high_id = 23;
+        int cane_creek_reservoir_expansion_id = 24;
+        int haw_river_intake_expansion_low_id = 25;
+        int haw_river_intake_expansion_high_id = 26;
+        int cary_wtp_upgrades_low_base_id = 27;
+        int cary_wtp_upgrades_high_base_id = 28;
+        int sanford_wtp_pittsboro_intake_expansion_low_id = 29;
+        int sanford_wtp_pittsboro_intake_expansion_high_id = 30;
+        int sanford_wtp_chatham_intake_expansion_low_id = 31;
+        int sanford_wtp_chatham_intake_expansion_high_id = 32;
+        int wjlwtp_fixed_low_base_id = 33;
+        int wjlwtp_fixed_high_base_id = 34;
+        int wjlwtp_variable_low_base_id = 35;
+        int wjlwtp_variable_high_base_id = 36;
 
 
     // select the correct ordering based on formulation
@@ -455,6 +469,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
     pittsboro_infra_order_raw = {
             infraRank(haw_river_intake_expansion_low_id, haw_river_intake_expansion_rank_low),
             infraRank(haw_river_intake_expansion_high_id, haw_river_intake_expansion_rank_high),
+            infraRank(sanford_wtp_pittsboro_intake_expansion_low_id, sanford_wtp_pittsboro_intake_expansion_low_rank),
+            infraRank(sanford_wtp_pittsboro_intake_expansion_high_id, sanford_wtp_pittsboro_intake_expansion_high_rank),
             infraRank(wjlwtp_fixed_low_base_id, pittsboro_fixed_WJLWTP_rank_low),
             infraRank(wjlwtp_fixed_high_base_id, pittsboro_fixed_WJLWTP_rank_high),
             infraRank(wjlwtp_variable_low_base_id, pittsboro_variable_WJLWTP_rank_low),
@@ -463,6 +479,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
     chatham_infra_order_raw = {
             infraRank(harnett_county_intake_id, cape_fear_river_intake_rank),
+            infraRank(sanford_wtp_chatham_intake_expansion_low_id, sanford_wtp_chatham_intake_expansion_low_rank),
+            infraRank(sanford_wtp_chatham_intake_expansion_high_id, sanford_wtp_chatham_intake_expansion_high_rank),
             infraRank(wjlwtp_fixed_low_base_id, chatham_fixed_WJLWTP_rank_low),
             infraRank(wjlwtp_fixed_high_base_id, chatham_fixed_WJLWTP_rank_high),
             infraRank(wjlwtp_variable_low_base_id, chatham_variable_WJLWTP_rank_low),
@@ -668,6 +686,29 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                         added_capacity_haw_river_intake_expansion_low,
                         added_capacity_haw_river_intake_expansion_high);
 
+        /// Feb 2020: two levels of Sanford WTP expansion possible for both Pittsboro and Chatham
+        double added_capacity_sanford_wtp_intake_pittsboro_expansion_low = 3.0 * 7;
+        double added_capacity_sanford_wtp_intake_pittsboro_expansion_high = 6.0 * 7;
+        added_capacity_sanford_wtp_intake_pittsboro_expansion_high =
+                checkAndFixInfraExpansionHighLowOrder(
+                        &rof_triggered_infra_order_pittsboro,
+                        &rofs_infra_pittsboro,
+                        sanford_wtp_pittsboro_intake_expansion_low_id,
+                        sanford_wtp_pittsboro_intake_expansion_high_id,
+                        added_capacity_sanford_wtp_intake_pittsboro_expansion_low,
+                        added_capacity_sanford_wtp_intake_pittsboro_expansion_high);
+
+        double added_capacity_sanford_wtp_intake_chatham_expansion_low = 1.0 * 7;
+        double added_capacity_sanford_wtp_intake_chatham_expansion_high = 1.0 * 7;
+        added_capacity_sanford_wtp_intake_chatham_expansion_high =
+                checkAndFixInfraExpansionHighLowOrder(
+                        &rof_triggered_infra_order_chatham,
+                        &rofs_infra_chatham,
+                        sanford_wtp_chatham_intake_expansion_low_id,
+                        sanford_wtp_chatham_intake_expansion_high_id,
+                        added_capacity_sanford_wtp_intake_chatham_expansion_low,
+                        added_capacity_sanford_wtp_intake_chatham_expansion_high);
+
         /// Normalize Jordan Lake Allocations in case they exceed 1.
         double sum_jla_allocations = OWASA_JLA + Durham_JLA + Cary_JLA +
                                      Raleigh_JLA + Pittsboro_JLA + Chatham_JLA;
@@ -712,7 +753,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
             utilities_rdm = std::vector<vector<double>>(
                     n_realizations, vector<double>(6, 1.));
             water_sources_rdm = std::vector<vector<double>>(
-                    n_realizations, vector<double>(70, 1.));
+                    n_realizations, vector<double>(80, 1.));
             policies_rdm = std::vector<vector<double>>(
                     n_realizations, vector<double>(8, 1.));
         }
@@ -931,11 +972,15 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         /// July 2019: Pittsboro and Chatham County draw currently from the (X1) Haw River and (6) Jordan Lake
         ///             respectively. Pittsboro has the option to expand its Haw intake (X1a) or partner up on JL,
         ///             while Chatham can join the JL coalition and/or build another intake south of JL on Cape Fear River (X2)
+        /// Feb 2020: Added Sanford WTP "intakes" for Pittsboro and Chatham
+        ///             the physical graph order these dummy intakes are given is not totally true - should be equal
+        ///             but there should be no issues of scarcity here. even so, pittsboro given upstream 'priority'
+        ///             because it would have much greater allocation than chatham
         /// ALSO: CHANGED THE DIAGRAM TO REFLECT NAMES OF SOURCES RATHER THAN HARD-CODED ID NUMBERS
         ///         SEE THE ABOVE ASSIGNMENTS TO UNDERSTAND HOW THE SYSTEM CONNECTIVITY WORKS
         ///         OLD NUMBERS WERE KEPT FOR CONSISTENCY WITH PAST MODEL DEVELOPMENT AND TO DOUBLE-CHECK ASSIGNMENT ERRORS
 
-        Graph g(14); // number of geographically-separate sources (built or unbuilt) ignoring reclaimed water
+        Graph g(16); // number of geographically-separate sources (built or unbuilt) ignoring reclaimed water
 
         // Durham ---> Raleigh Flow
         g.addEdge(durham_reservoirs_id, teer_quarry_id);
@@ -956,13 +1001,16 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         // Pittsboro and Chatham County --> Cary Alternate Flow
         g.addEdge(haw_river_intake_id, jordan_lake_id);
         g.addEdge(jordan_lake_id, harnett_county_intake_id);
-        g.addEdge(harnett_county_intake_id, dummy_node_id);
+        g.addEdge(harnett_county_intake_id, sanford_wtp_dummy_pittsboro_intake_id);
+        g.addEdge(sanford_wtp_dummy_pittsboro_intake_id, sanford_wtp_dummy_chatham_intake_id);
+        g.addEdge(sanford_wtp_dummy_chatham_intake_id, dummy_node_id);
 
         /*
          * System connection diagram (water
          * flows from top to bottom)
          * Potential projects and expansions
          * of existing sources in parentheses
+         * UPDATE: THESE NUMBERS MAY NOT BE ACCURATE WITH NEW INFRA OPTIONS ADDED BUT SPATIAL ORDER HOLDS
          *
          *
          *      Haw River       Stone Quarry 3(12,13)
@@ -982,6 +1030,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
          *             6(20-25) Jordan Lake        Richland (8) Quarry        |    |
          *                |                                   \               |    |
          *       Harnett (X2) Intake                          |               |    |
+         *                |                                   |               |    |
+         *    Sanford WTP "Intakes" (X3abcd)                  |               |    |
          *                |                                    \              |    |
          *          Lillington Gage                Neuse River (10) Intake    |    |
          *                |                                      |            |    |
@@ -1003,21 +1053,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
          *                                  \ /
          *                                  11 Dummy Endpoint
          */
-
-
-//        Graph g(12);
-//        g.addEdge(0, 9);
-//        g.addEdge(9, 1);
-//        g.addEdge(1, 8);
-//        g.addEdge(8, 10);
-//        g.addEdge(10, 11);
-//        g.addEdge(2, 11);
-//        g.addEdge(7, 11);
-//
-//        g.addEdge(3, 6);
-//        g.addEdge(4, 6);
-//        g.addEdge(5, 6);
-//        g.addEdge(6, 11);
 
         // Existing Sources
         Reservoir durham_reservoirs("Lake Michie & Little River Res. (Durham)",
@@ -1079,7 +1114,16 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         // city can meet its daily demands with available treatment infrastructure
 
         /// Pittsboro Haw River Intake with 2.0 MGD capacity
-        Intake haw_river_intake("Haw River Intake", haw_river_intake_id, catchment_haw, 2.0*7, 2.0*7);
+        /// NO CATCHMENT TWO INTAKES BECAUSE THEY ARE BELOW JORDAN LAKE AND NOT ONLY SOURCE FOR EACH UTILITY
+        Intake haw_river_intake("Haw River Intake", haw_river_intake_id, vector<Catchment *>(), 2.0*7, 2.0*7);
+
+        /// Sanford WTP allocation for Pittsboro - dummy Cape Fear River "Intake" with zero capacity
+        Intake sanford_wtp_dummy_pittsboro_intake("Sanford WTP Dummy Pittsboro Intake",
+                sanford_wtp_dummy_pittsboro_intake_id, vector<Catchment *>(), 0, 0);
+
+        /// Sanford WTP allocation for Chatham - dummy Cape Fear River "Intake" with zero capacity
+        Intake sanford_wtp_dummy_chatham_intake("Sanford WTP Dummy Chatham Intake",
+                sanford_wtp_dummy_chatham_intake_id, vector<Catchment *>(), 0, 0);
 
         // Potential Sources
         // FIXME: THIS EXPLANATION IS NO LONGER CONSISTENT WITH THE CODE
@@ -1103,8 +1147,9 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                            evaporation_falls_lake, &teer_storage_area, construction_time_interval, 7 * WEEKS_IN_YEAR, tq_bond,
                            15 * 7);
 
+        // original catchment was flat river, remove catchment because it is below falls lake
         LevelDebtServiceBond neuse_bond(neuse_river_intake_id, 225.5, 25, 0.05, vector<int>(1, 0));
-        Intake neuse_river_intake("Neuse River Intake", neuse_river_intake_id, catchment_flat, 16 * 7, construction_time_interval,
+        Intake neuse_river_intake("Neuse River Intake", neuse_river_intake_id, vector<Catchment *>(), 16 * 7, construction_time_interval,
                                   17 * WEEKS_IN_YEAR, neuse_bond);
 
 //        auto it10 = std::find(rof_triggered_infra_order_raleigh.begin(),
@@ -1132,8 +1177,51 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                                         construction_time_interval, 7 * WEEKS_IN_YEAR, high_haw_river_intake_expansion_bond);
 
         LevelDebtServiceBond cape_fear_river_intake_bond(harnett_county_intake_id, 221.43, 25, 0.05, vector<int>(1, 0), 3);
-        Intake cape_fear_river_intake("Cape Fear River Intake", harnett_county_intake_id, catchment_haw, 12.2 * 7, construction_time_interval,
+        Intake cape_fear_river_intake("Cape Fear River Intake", harnett_county_intake_id, vector<Catchment *>(), 12.2 * 7, construction_time_interval,
                                   13 * WEEKS_IN_YEAR, cape_fear_river_intake_bond); // possible by 2031
+
+        /// Feb 2020: additional new Pittsboro and Chatham projects:
+        ///             (3abcd) staged buy-ins to Sanford WTP capacity
+        ///                       (we aren't modeling Sanford, so include these as potential intakes)
+        //FIXME: UNKNOWN COST AND PERMITTING PERIOD FOR NOW
+        LevelDebtServiceBond sanford_wtp_pittsboro_intake_expansion_low_bond(
+                sanford_wtp_pittsboro_intake_expansion_low_id, 100, 25, 0.05, vector<int>(1, 0), 3);
+        IntakeExpansion sanford_wtp_pittsboro_intake_expansion_low("Sanford WTP Pittsboro Low Intake",
+                                                                   sanford_wtp_pittsboro_intake_expansion_low_id,
+                                                                   sanford_wtp_dummy_pittsboro_intake_id,
+                                                                   added_capacity_sanford_wtp_intake_pittsboro_expansion_low,
+                                                                   added_capacity_sanford_wtp_intake_pittsboro_expansion_low,
+                                                                   construction_time_interval, 7 * WEEKS_IN_YEAR,
+                                                                   sanford_wtp_pittsboro_intake_expansion_low_bond);
+        LevelDebtServiceBond sanford_wtp_pittsboro_intake_expansion_high_bond(
+                sanford_wtp_pittsboro_intake_expansion_high_id, 200, 25, 0.05, vector<int>(1, 0), 3);
+        IntakeExpansion sanford_wtp_pittsboro_intake_expansion_high("Sanford WTP Pittsboro High Intake",
+                                                                   sanford_wtp_pittsboro_intake_expansion_high_id,
+                                                                   sanford_wtp_dummy_pittsboro_intake_id,
+                                                                   added_capacity_sanford_wtp_intake_pittsboro_expansion_high,
+                                                                   added_capacity_sanford_wtp_intake_pittsboro_expansion_high,
+                                                                   construction_time_interval, 7 * WEEKS_IN_YEAR,
+                                                                   sanford_wtp_pittsboro_intake_expansion_high_bond);
+
+        LevelDebtServiceBond sanford_wtp_chatham_intake_expansion_low_bond(
+                sanford_wtp_chatham_intake_expansion_low_id, 100, 25, 0.05, vector<int>(1, 0), 3);
+        IntakeExpansion sanford_wtp_chatham_intake_expansion_low("Sanford WTP Chatham Low Intake",
+                                                                   sanford_wtp_chatham_intake_expansion_low_id,
+                                                                   sanford_wtp_dummy_chatham_intake_id,
+                                                                   added_capacity_sanford_wtp_intake_chatham_expansion_low,
+                                                                   added_capacity_sanford_wtp_intake_chatham_expansion_low,
+                                                                   construction_time_interval, 7 * WEEKS_IN_YEAR,
+                                                                   sanford_wtp_chatham_intake_expansion_low_bond);
+        LevelDebtServiceBond sanford_wtp_chatham_intake_expansion_high_bond(
+                sanford_wtp_chatham_intake_expansion_high_id, 200, 25, 0.05, vector<int>(1, 0), 3);
+        IntakeExpansion sanford_wtp_chatham_intake_expansion_high("Sanford WTP Chatham High Intake",
+                                                                    sanford_wtp_chatham_intake_expansion_high_id,
+                                                                    sanford_wtp_dummy_chatham_intake_id,
+                                                                    added_capacity_sanford_wtp_intake_chatham_expansion_high,
+                                                                    added_capacity_sanford_wtp_intake_chatham_expansion_high,
+                                                                    construction_time_interval, 7 * WEEKS_IN_YEAR,
+                                                                    sanford_wtp_chatham_intake_expansion_high_bond);
+
 
         vector<double> fl_relocation_fractions = {
                 (fl_supply_capacity + falls_lake_reallocation) /
@@ -1362,6 +1450,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         water_sources.push_back(&jordan_lake);
 
         water_sources.push_back(&haw_river_intake);
+        water_sources.push_back(&sanford_wtp_dummy_pittsboro_intake);
+        water_sources.push_back(&sanford_wtp_dummy_chatham_intake);
 
         water_sources.push_back(&little_river_reservoir);
         water_sources.push_back(&richland_creek_quarry);
@@ -1379,6 +1469,11 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         water_sources.push_back(&caryWtpUpgrade1);
         water_sources.push_back(&caryWtpUpgrade2);
+
+        water_sources.push_back(&sanford_wtp_pittsboro_intake_expansion_low);
+        water_sources.push_back(&sanford_wtp_pittsboro_intake_expansion_high);
+        water_sources.push_back(&sanford_wtp_chatham_intake_expansion_low);
+        water_sources.push_back(&sanford_wtp_chatham_intake_expansion_high);
 
         // Memory leak fixes by D.Gold 02/2020
         // to deal with WJLWTP that is different for each formulation, create three possible options:
@@ -1602,6 +1697,9 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                         wjlwtp_variable_high_base_id},  //Raleigh
                         {jordan_lake_id,
                         harnett_county_intake_id,
+                        sanford_wtp_dummy_chatham_intake_id,
+                        sanford_wtp_chatham_intake_expansion_low_id,
+                        sanford_wtp_chatham_intake_expansion_high_id,
                         wjlwtp_fixed_low_base_id,
                         wjlwtp_fixed_high_base_id,
                         wjlwtp_variable_low_base_id,
@@ -1610,6 +1708,9 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                         jordan_lake_id,
                         haw_river_intake_expansion_low_id,
                         haw_river_intake_expansion_high_id,
+                        sanford_wtp_dummy_pittsboro_intake_id,
+                        sanford_wtp_pittsboro_intake_expansion_low_id,
+                        sanford_wtp_pittsboro_intake_expansion_high_id,
                         wjlwtp_fixed_low_base_id,
                         wjlwtp_fixed_high_base_id,
                         wjlwtp_variable_low_base_id,
@@ -1618,7 +1719,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
 
         // NOTE: IF YOU ADD NEW SOURCES, THIS VECTOR NEEDS TO BE CHANGED IN SIZE ACCORDINGLY!!
-        auto table_storage_shift = vector<vector<double>>(6, vector<double>(31, 0.));
+        auto table_storage_shift = vector<vector<double>>(6, vector<double>(35, 0.));
         table_storage_shift[uid_raleigh][falls_lake_reallocation_id] = 2000.;
         table_storage_shift[uid_raleigh][richland_creek_quarry_id] = 5000.;
         table_storage_shift[uid_owasa][university_lake_expansion_id] = 100.;
@@ -1627,13 +1728,13 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         table_storage_shift[uid_durham][michie_expansion_low_id] = 700.;
         table_storage_shift[uid_durham][teer_quarry_id] = 700.;
 
-        auto table_base_storage_shift = vector<vector<double>>(6, vector<double>(31, 0.));
+        auto table_base_storage_shift = vector<vector<double>>(6, vector<double>(35, 0.));
         table_base_storage_shift[uid_pittsboro][wjlwtp_fixed_low_base_id] = 5000.;
         table_base_storage_shift[uid_pittsboro][wjlwtp_fixed_high_base_id] = 5000.;
         table_base_storage_shift[uid_pittsboro][haw_river_intake_expansion_low_id] = 10000.;
         table_base_storage_shift[uid_pittsboro][haw_river_intake_expansion_high_id] = 10000.;
 
-        auto treatment_demand_buffer_shift = vector<vector<double>>(6, vector<double>(31, 0.));
+        auto treatment_demand_buffer_shift = vector<vector<double>>(6, vector<double>(35, 0.));
 
         vector<DroughtMitigationPolicy *> drought_mitigation_policies;
         /// Restriction policies

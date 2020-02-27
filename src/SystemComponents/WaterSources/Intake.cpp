@@ -82,8 +82,9 @@ void Intake::applyContinuity(int week, double upstream_source_inflow,
     /// - this week's minimum environmental outflow (assuming next week's
     /// will be more or less the same and this week's) as long as the intake
     /// capacity is not exceeded. This should work well for small intakes.
+    /// FEB 2020: now accounts for non-catchment inflows also (if downstream in catchment)
     available_volume = min(total_treatment_capacity,
-                           next_upstream_catchment_inflow -
+                           next_upstream_catchment_inflow + total_upstream_inflow -
                            min_environmental_outflow);
 
     /// Records for the sake of output.

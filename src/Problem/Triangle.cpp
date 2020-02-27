@@ -1404,7 +1404,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         VariableJointWTP dummy_large_variable_WJLWTP("Dummy Variable WJLWTP", wjlwtp_variable_high_base_id, jordan_lake_id,
                                                      1, 0,
                                                      {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, partner_utilities, capacities_wjlwtp_upgrade_1,
-                                                     wjlwtp_dummy_variable_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR);
+                                                     wjlwtp_dummy_variable_bonds_capacity_2, construction_time_interval, 100 * WEEKS_IN_YEAR);
 
 
         // create fixed WJLWTPs

@@ -14,7 +14,7 @@ public:
 
     IntakeExpansion(const char *name, const int id, const unsigned int parent_intake_ID,
                     const double capacity_added, const double treatment_capacity_added,
-                    const vector<double> &construction_time_range,
+                    const vector<double> &construction_time_range, vector<int> connected_sources,
                     double permitting_period, Bond &bond);
 
     IntakeExpansion(const IntakeExpansion &intake_expansion);

@@ -11,6 +11,7 @@
 #include "../../Utils/Utils.h"
 #include "../WaterSources/FixedJointWTP.h"
 #include "../WaterSources/VariableJointWTP.h"
+#include "../WaterSources/AllocatedIntakeExpansion.h"
 
 InfrastructureManager::InfrastructureManager(int id, const vector<double> &infra_construction_triggers,
                                              const vector<vector<int>> &infra_if_built_remove,
@@ -133,6 +134,8 @@ void InfrastructureManager::addWaterSourceToOnlineLists(int source_id, double &t
     /// Add source to the corresponding list of online water sources.
     if ((ws->source_type == INTAKE ||
          ws->source_type == INTAKE_EXPANSION ||
+         ws->source_type == ALLOCATED_INTAKE ||
+         ws->source_type == ALLOCATED_INTAKE_EXPANSION ||
          ws->source_type == WATER_REUSE)) {
         priority_draw_water_source->push_back(source_id);
     } else {
@@ -159,6 +162,8 @@ InfrastructureManager::setWaterSourceOnline(unsigned int source_id, int week, do
         sourceRelocationConstructionHandler(source_id);
     } else if (water_sources->at(source_id)->source_type == INTAKE_EXPANSION) {
         intakeExpansionConstructionHandler(source_id);
+    } else if (water_sources->at(source_id)->source_type == ALLOCATED_INTAKE_EXPANSION) {
+        allocatedIntakeExpansionConstructionHandler(source_id);
     } else {
         water_sources->at(source_id)->setOnline();
         addWaterSourceToOnlineLists(source_id, total_storage_capacity, total_treatment_capacity,
@@ -206,6 +211,8 @@ InfrastructureManager::waterTreatmentPlantConstructionHandler(unsigned int sourc
     bool is_priority_source =
             water_sources->at(wtp->parent_reservoir_ID)->source_type == INTAKE ||
             water_sources->at(wtp->parent_reservoir_ID)->source_type == INTAKE_EXPANSION ||
+            water_sources->at(wtp->parent_reservoir_ID)->source_type == ALLOCATED_INTAKE ||
+            water_sources->at(wtp->parent_reservoir_ID)->source_type == ALLOCATED_INTAKE_EXPANSION ||
             water_sources->at(wtp->parent_reservoir_ID)->source_type ==
             WATER_REUSE;
     bool is_not_in_priority_list =
@@ -277,7 +284,7 @@ void InfrastructureManager::reservoirExpansionConstructionHandler(unsigned int s
             *dynamic_cast<ReservoirExpansion *>(water_sources->at(source_id));
 
     water_sources->at(re.parent_reservoir_ID)->
-            addCapacity(re.getAllocatedCapacity(id));
+            addCapacity(re.getAllocatedCapacity(id), id);
     water_sources->at(source_id)->setOnline();
 }
 
@@ -297,7 +304,7 @@ void InfrastructureManager::intakeExpansionConstructionHandler(unsigned int sour
             *dynamic_cast<IntakeExpansion *>(water_sources->at(source_id));
 
     water_sources->at(re.parent_intake_ID)->
-            addCapacity(re.getAllocatedCapacity(id));
+            addCapacity(re.getAllocatedCapacity(id), id);
 
     /// July 2019: I think there may be an issue here if this were to be used for an allocated source
     ///             where it mattered what utility ID was associated with the increase in treatment capacity
@@ -305,6 +312,14 @@ void InfrastructureManager::intakeExpansionConstructionHandler(unsigned int sour
     ///             so it should be fine
     water_sources->at(re.parent_intake_ID)->
             addTreatmentCapacity(re.getAllocatedTreatmentCapacity(id), NON_INITIALIZED);
+    water_sources->at(source_id)->setOnline();
+}
+
+void InfrastructureManager::allocatedIntakeExpansionConstructionHandler(unsigned int source_id) {
+    AllocatedIntakeExpansion ie = *dynamic_cast<AllocatedIntakeExpansion *>(water_sources->at(source_id));
+
+    water_sources->at(ie.parent_intake_ID)->addCapacity(ie.getAllocatedCapacity(id), id);
+    water_sources->at(ie.parent_intake_ID)->addTreatmentCapacity(ie.getAllocatedTreatmentCapacity(id), id);
     water_sources->at(source_id)->setOnline();
 }
 
@@ -316,6 +331,7 @@ void InfrastructureManager::intakeExpansionConstructionHandler(unsigned int sour
  */
 void InfrastructureManager::forceInfrastructureConstruction(
         int week, vector<int> new_infra_triggered) {
+    //FIXME: ALSO TRIGGER RELATED INFRASTRUCTURE IN SEQUENCE
     for (int ws : new_infra_triggered) {
         /// Variable storing the position of an infrastructure option in the
         /// queue of infrastructure to be built.
@@ -418,17 +434,21 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
                 if (water_sources->at(ws)->getBuilt_in_sequence().empty()) {
                     set_online_now.push_back((int) ws);
                 } else {
-                    for (const int &id_build : water_sources->at(ws)->getBuilt_in_sequence()) {
+                    /// MAR 2020: To ensure all parts of a project are set online in a series of expansions,
+                    ///             check whether the ws being put online is not the first element id in the vector
+                    ///             of the building sequence. If it is not, then set the elements before it online...
+                    vector<int> build_sequence = water_sources->at(ws)->getBuilt_in_sequence();
+                    for (int i = 0; i < build_sequence.size(); ++i) {
                         /// Check if previous source/expansion is yet to be built.
                         bool yet_to_be_built = find(rof_infra_construction_order.begin(),
-                                                    rof_infra_construction_order.end(), id_build)
+                                                    rof_infra_construction_order.end(), build_sequence[i])
                                                != rof_infra_construction_order.end() ||
                                                find(demand_infra_construction_order.begin(),
-                                                    demand_infra_construction_order.end(), id_build)
+                                                    demand_infra_construction_order.end(), build_sequence[i])
                                                != demand_infra_construction_order.end();
                         if (yet_to_be_built)
-                            set_online_now.push_back(id_build);
-                        if (id_build == ws)
+                            set_online_now.push_back(build_sequence[i]);
+                        if (build_sequence[i] == ws)
                             break;
                     }
                 }
@@ -437,6 +457,7 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
                 for (const int &wss : set_online_now) {
                     setWaterSourceOnline((unsigned int) wss, week, total_storage_capacity, total_treatment_capacity,
                                          total_available_volume, total_stored_volume);
+                    cout << "Utility: " << id << ", set water source " << wss << " online." << endl;
 
                     /// Record ID of and when infrastructure option construction was
                     /// completed. (utility_id, week, new source id)
@@ -527,5 +548,32 @@ const vector<int> &InfrastructureManager::getInfra_built_last_week() const {
 
 const vector<bool> &InfrastructureManager::getUnder_construction() const {
     return under_construction;
+}
+
+void InfrastructureManager::checkForSequenceProjects(int original_build_id) {
+    /// Check if each water source is part of a sequence
+    if (!water_sources->at(original_build_id)->getBuilt_in_sequence().empty()) {
+        /// Check if previous part of the sequence has been built/put in construction phase yet
+        /// ASSUMES BUILT_IN_SEQUENCE VECTOR HAS PROJECTS IN SEQUENTIAL ORDER FROM LOW TO HIGH
+        for (int ws : water_sources->at(original_build_id)->getBuilt_in_sequence()) {
+            if (ws == original_build_id) // don't double-build current project in sequence
+                break;
+            bool yet_to_be_built = find(rof_infra_construction_order.begin(),
+                                        rof_infra_construction_order.end(), ws)
+                                   != rof_infra_construction_order.end() ||
+                                   find(demand_infra_construction_order.begin(),
+                                        demand_infra_construction_order.end(), ws)
+                                   != demand_infra_construction_order.end();
+            // if lower-project-in-sequence has already been built
+            // reduce current project's capital costs accordingly
+            if (!yet_to_be_built) {
+                water_sources->at(original_build_id)->getBond(id).adjustCostOfCapital(
+                        water_sources->at(ws)->getBond(id).getCostOfCapital());
+                cout << "Utility " << id << ": the capital cost for project " << original_build_id
+                     << " is reduced by the capital cost of earlier sequence project " << ws
+                     << " because it has already been built.";
+            }
+        }
+    }
 }
 

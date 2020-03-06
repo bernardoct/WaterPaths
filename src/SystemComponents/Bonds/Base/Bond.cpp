@@ -96,3 +96,13 @@ void Bond::setDebtService(double updated_allocated_fraction_of_annual_debt_servi
 int Bond::getWaterSourceID() {
     return id;
 }
+
+double Bond::getCostOfCapital() {
+    return cost_of_capital;
+}
+
+void Bond::adjustCostOfCapital(double reduction) {
+    cost_of_capital -= reduction;
+    if (cost_of_capital < 0)
+        __throw_logic_error("Error in Bond::adjustCostOfCapital, adjusted cost_of_capital is negative");
+}

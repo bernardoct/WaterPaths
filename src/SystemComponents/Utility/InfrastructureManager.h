@@ -86,6 +86,10 @@ public:
     void intakeExpansionConstructionHandler(unsigned int source_id);
 
     void waterTreatmentPlantJointConstructionHandler(unsigned int source_id, double &total_storage_capacity);
+
+    void allocatedIntakeExpansionConstructionHandler(unsigned int source_id);
+
+    void checkForSequenceProjects(int original_build_id);
 };
 
 

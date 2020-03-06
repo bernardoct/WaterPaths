@@ -69,7 +69,7 @@ public:
 
     double getAllocatedFraction(int utility_id) override;
 
-    void addCapacity(double capacity) override;
+    void addCapacity(double capacity, int utility_id) override;
 
     void addTreatmentCapacity(const double added_plant_treatment_capacity, int utility_id)
     override;

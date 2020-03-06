@@ -184,6 +184,78 @@ WaterSource::WaterSource(const char *name, const int id, const vector<Catchment 
 
 
 /**
+ * Constructor for when shared water source does not exist in the beginning of the simulation.
+ * NEW CONSTRUCTOR IS FOR ALLOCATEDINTAKE/EXPANSION CLASSES
+ * INDEXING TO ASSIGN ALLOCATIONS IS ADJUSTED FROM OTHER CONSTRUCTORS, BE CAREFUL
+ */
+WaterSource::WaterSource(const char *name, const int id, const vector<Catchment *> &catchments,
+                         const double capacity, double treatment_capacity, vector<int> connected_sources,
+                         vector<int> *utilities_with_allocations,
+                         vector<double> *utility_supply_allocations,
+                         vector<double> *utility_treatment_allocations,
+                         const int source_type, const vector<double> construction_time_range,
+                         double permitting_period, vector<Bond *> bonds)
+        : available_volume(capacity),
+          permitting_time(permitting_period),
+          bonds(bonds),
+          capacity(capacity),
+          built_in_sequence(connected_sources),
+          online(OFFLINE),
+          total_treatment_capacity(treatment_capacity),
+          utilities_with_allocations(utilities_with_allocations),
+          highest_alloc_id(NOT_ALLOCATED),
+          id(id),
+          name(name),
+          source_type(source_type),
+          construction_time(randomConstructionTime(construction_time_range[0], construction_time_range[1])) {
+    for (Catchment *c : catchments) {
+        this->catchments.emplace_back(*c);
+    }
+    checkForInputErrorsConstruction();
+
+    // Have water quality pool as a reservoir with ID next to highest ID
+    // allocation.
+    wq_pool_id = static_cast<unsigned int>(
+            *std::max_element(utilities_with_allocations->begin(),
+                              utilities_with_allocations->end()) + 1);
+    highest_alloc_id = wq_pool_id;
+    unsigned long length = (unsigned long) wq_pool_id + 1;
+
+    this->allocated_treatment_capacities.reserve(length);
+    this->allocated_treatment_capacities.assign(length, 0.0);
+
+    this->allocated_treatment_fractions.reserve(length);
+    this->allocated_treatment_fractions.assign(length, 0.0);
+
+    this->allocated_capacities.reserve(length);
+    this->allocated_capacities.assign(length, 0.0);
+
+    this->allocated_fractions.reserve(length);
+    this->allocated_fractions.assign(length, 0.0);
+
+    // Populate treatment vectors.
+    for (unsigned long i = 0; i < utilities_with_allocations->size(); ++i) {
+        auto u = (unsigned int) utilities_with_allocations->at(i);
+
+        // Replace the -1 in the utilities_with_allocations vector with the
+        // ID assigned to the water quality pool.
+        u = ((int) u == WATER_QUALITY_ALLOCATION ? wq_pool_id : u);
+
+        if ((int) u != wq_pool_id) {
+            this->allocated_treatment_capacities[u] = utility_treatment_allocations->at(i);
+            this->allocated_treatment_fractions[u] =
+                    allocated_treatment_capacities[u] / total_treatment_capacity;
+
+            this->allocated_capacities[u] = utility_supply_allocations->at(i);
+            this->allocated_fractions[u] =
+                    allocated_capacities[u] / capacity;
+        }
+
+        (*this->utilities_with_allocations)[i] = u;
+    }
+}
+
+/**
  * Constructor for when water source is built and operational.
  * @param name
  * @param id
@@ -593,7 +665,7 @@ void WaterSource::removeWater(int allocation_id, double volume) {
     policy_added_demand += volume;
 }
 
-void WaterSource::addCapacity(double capacity) {
+void WaterSource::addCapacity(double capacity, int utility_id) {
     WaterSource::capacity += capacity;
 }
 
@@ -749,6 +821,10 @@ double WaterSource::getAllocatedTreatmentFraction(int utility_id) const {
 
 vector<double> WaterSource::getAllocatedTreatmentCapacities() const {
     return allocated_treatment_capacities;
+}
+
+vector<double> WaterSource::getAllocatedSupplyCapacities() const {
+    return allocated_capacities;
 }
 
 void WaterSource::setTreatmentAllocations(const vector<double> treatment_capacity_allocations) {

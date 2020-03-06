@@ -332,8 +332,8 @@ void AllocatedReservoir::applyContinuity(int week, double upstream_source_inflow
     policy_added_demand = 0;
 }
 
-void AllocatedReservoir::addCapacity(double capacity) {
-    WaterSource::addCapacity(capacity);
+void AllocatedReservoir::addCapacity(double capacity, int utility_id) {
+    WaterSource::addCapacity(capacity, utility_id);
 
     for (int i : *utilities_with_allocations)
         allocated_capacities[i] += capacity * allocated_fractions[i];

@@ -83,7 +83,9 @@ namespace Constants {
     // storage sources, 200 - 299 for treatment and
     // capacity expansions.
     const int INTAKE = 0;
+    const int ALLOCATED_INTAKE = 10;
     const int INTAKE_EXPANSION = 2;
+    const int ALLOCATED_INTAKE_EXPANSION = 202;
     const int WATER_REUSE = 1;
     const int RESERVOIR = 100;
     const int QUARRY = 101;

@@ -37,6 +37,7 @@ static const int NC_ERR = 2;
 #include "EmptyDataCollector.h"
 #include "../SystemComponents/WaterSources/JointWTP.h"
 #include "JointWTPDataCollector.h"
+#include "AllocatedIntakeDataCollector.h"
 
 using namespace Constants;
 
@@ -682,6 +683,8 @@ DataCollector* MasterDataCollector::createWaterSourceDataCollector(WaterSource* 
         return new ReservoirDataCollector(dynamic_cast<Reservoir *> (ws), r);
     else if (ws->source_type == INTAKE)
         return new IntakeDataCollector(dynamic_cast<Intake *> (ws), r);
+    else if (ws->source_type == ALLOCATED_INTAKE)
+        return new AllocatedIntakeDataCollector(dynamic_cast<AllocatedIntake *> (ws), r);
     else if (ws->source_type == QUARRY)
         return new QuaryDataCollector(dynamic_cast<Quarry *> (ws), r);
     else if (ws->source_type == WATER_REUSE)
@@ -694,6 +697,8 @@ DataCollector* MasterDataCollector::createWaterSourceDataCollector(WaterSource* 
              RESERVOIR_EXPANSION ||
              ws->source_type ==
              INTAKE_EXPANSION ||
+             ws->source_type ==
+             ALLOCATED_INTAKE_EXPANSION ||
              ws->source_type ==
              NEW_WATER_TREATMENT_PLANT ||
              ws->source_type ==

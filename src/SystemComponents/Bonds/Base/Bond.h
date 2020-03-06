@@ -56,6 +56,9 @@ public:
 
     void setIssued();
 
+    double getCostOfCapital();
+
+    void adjustCostOfCapital(double reduction);
 };
 
 

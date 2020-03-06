@@ -390,8 +390,13 @@ void Utility::addWaterSource(WaterSource *water_source) {
 
     // If watersource is online and the utility owns some of its installed
     // treatment capacity, make it online.
-    if (water_source->isOnline() && water_source->
-            getAllocatedTreatmentCapacity(id) > 0) {
+    // MAR 2020: removed need to have positive allocated treatment capacity for a source
+    //           to be made online (now there are sources with variable capacities where
+    //           they can start at zero and change) IF THAT SOURCE IS AN INTAKE
+    if (water_source->isOnline() && (
+            water_source->getAllocatedTreatmentCapacity(id) > 0 ||
+            water_source->source_type == INTAKE ||
+            water_source->source_type == ALLOCATED_INTAKE)) {
         infrastructure_construction_manager.addWaterSourceToOnlineLists(
                 water_source->id, total_storage_capacity,
                 total_treatment_capacity, total_available_volume,
@@ -704,7 +709,15 @@ void Utility::forceInfrastructureConstruction(int week, vector<int> new_infra_tr
     auto under_construction = infrastructure_construction_manager.getUnder_construction();
     for (int ws : new_infra_triggered) {
         if (under_construction.size() > ws && under_construction.at((unsigned long) ws)) {
+            // Mar 2020: also check if project under construction is part of a sequence
+            // and make sure debt service is adjusted accordingly
+            // (if the previous project in the sequence has already started, reduce capital cost
+            //  of upcoming project by that amount)
+            infrastructure_construction_manager.checkForSequenceProjects(ws);
+
+            // issue the bond after capital cost adjustment
             issueBond(ws, week);
+            cout << "Utility " << id << ": Bond issued for " << ws << " in week " << week << endl;
         }
     }
 }
@@ -743,6 +756,7 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
     // Issue and add bond of triggered water source to list of outstanding bonds, and update total new
     // infrastructure NPV.
     issueBond(new_infra_triggered, week);
+    cout << "Utility " << id << ": Bond issued for " << new_infra_triggered << " in week " << week << endl;
 
     return new_infra_triggered;
 }

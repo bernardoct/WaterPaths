@@ -17,10 +17,10 @@ Intake::Intake(const char *name, const int id, const vector<Catchment *> &catchm
                const double max_treatment_capacity)
         : WaterSource(name, id, catchments, raw_water_capacity, vector<int>(), max_treatment_capacity, INTAKE) {}
 
-Intake::Intake(const char *name, const int id, const vector<Catchment *> &catchments,
+Intake::Intake(const char *name, const int id, const vector<Catchment *> &catchments, vector<int> connected_sources,
                const double raw_water_main_capacity, const vector<double> construction_time_range,
                double permitting_period, Bond &bond) :
-        WaterSource(name, id, catchments, NONE, raw_water_main_capacity, vector<int>(), INTAKE, construction_time_range,
+        WaterSource(name, id, catchments, NONE, raw_water_main_capacity, connected_sources, INTAKE, construction_time_range,
                     permitting_period, bond) {}
 
 /**

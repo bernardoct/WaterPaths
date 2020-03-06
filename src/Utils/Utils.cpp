@@ -24,6 +24,8 @@
 #include "../SystemComponents/WaterSources/FixedJointWTP.h"
 #include "../SystemComponents/WaterSources/VariableJointWTP.h"
 #include "../SystemComponents/Bonds/VariableDebtServiceBond.h"
+#include "../SystemComponents/WaterSources/AllocatedIntake.h"
+#include "../SystemComponents/WaterSources/AllocatedIntakeExpansion.h"
 #include <fstream>
 #include <algorithm>
 #include <climits>
@@ -188,6 +190,14 @@ vector<WaterSource *> Utils::copyWaterSourceVector(
             water_sources_new.push_back(
                     new IntakeExpansion(
                             *dynamic_cast<IntakeExpansion *>(ws)));
+        else if (ws->source_type == ALLOCATED_INTAKE)
+            water_sources_new.push_back(
+                    new AllocatedIntake(
+                            *dynamic_cast<AllocatedIntake *>(ws)));
+        else if (ws->source_type == ALLOCATED_INTAKE_EXPANSION)
+            water_sources_new.push_back(
+                    new AllocatedIntakeExpansion(
+                            *dynamic_cast<AllocatedIntakeExpansion *>(ws)));
         else if (ws->source_type == QUARRY)
             water_sources_new.push_back(
                     new Quarry(*dynamic_cast<Quarry *>(ws)));

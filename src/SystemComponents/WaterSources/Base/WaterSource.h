@@ -89,6 +89,12 @@ public:
                 vector<double> *utility_treatment_allocations, const int source_type,
                 const vector<double> construction_time_range, double permitting_period, vector<Bond *> bonds);
 
+    WaterSource(const char *name, const int id, const vector<Catchment *> &catchments, const double capacity,
+                double treatment_capacity, vector<int> connected_sources, vector<int> *utilities_with_allocations,
+                vector<double> *utility_supply_allocations, vector<double> *utility_treatment_allocations,
+                const int source_type, const vector<double> construction_time_range, double permitting_period,
+                vector<Bond *> bonds);
+
     WaterSource(const WaterSource &water_source);
 
     virtual ~WaterSource();
@@ -109,7 +115,7 @@ public:
 
     virtual void removeWater(int allocation_id, double volume);
 
-    virtual void addCapacity(double capacity);
+    virtual void addCapacity(double capacity, int utility_id);
 
     virtual void setOnline();
 
@@ -179,7 +185,7 @@ public:
 
     virtual double getSupplyAllocatedFraction(int utility_id);
 
-    Bond &getBond(int utility_id);
+    virtual Bond &getBond(int utility_id);
 
     void checkForInputErrorsConstruction();
 
@@ -207,6 +213,8 @@ public:
     virtual double getAllocatedTreatmentFraction(int utility_id) const;
 
     int getWaterQualityPoolID() const;
+
+    vector<double> getAllocatedSupplyCapacities() const;
 };
 
 

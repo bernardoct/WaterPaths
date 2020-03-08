@@ -204,7 +204,9 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         double western_wake_treatment_plant_owasa_frac = vars[49];
         double western_wake_treatment_frac_durham = vars[50];
         double western_wake_treatment_plant_raleigh_frac = vars[51];
-        double falls_lake_reallocation = vars[52];
+
+        //FIXME: FIX THIS DECISION VARIABLE BASED ON REPORTS
+        double falls_lake_reallocation = vars[52]; // 17,300 AF
 
         double durham_inf_buffer = vars[53];
         double owasa_inf_buffer = vars[54];
@@ -245,10 +247,10 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         /// Feb 2020: pittsboro and chatham infrastructure, expansion of sanford wtp modeled as intake expansions
         //FIXME: ADJUST PARAMETER INPUT FILE TO ACCOUNT FOR NEW INFRASTRUCTURE RANKS
         // PLACEHOLDER INDICES ARE USED FOR NOW
-        double sanford_wtp_pittsboro_intake_expansion_low_rank = 0.6;
-        double sanford_wtp_pittsboro_intake_expansion_high_rank = 0.7;
-        double sanford_wtp_chatham_intake_expansion_low_rank = 0.6;
-        double sanford_wtp_chatham_intake_expansion_high_rank = 0.7;
+        double sanford_wtp_pittsboro_intake_expansion_low_rank = vars[106];
+        double sanford_wtp_pittsboro_intake_expansion_high_rank = vars[107];
+        double sanford_wtp_chatham_intake_expansion_low_rank = vars[108];
+        double sanford_wtp_chatham_intake_expansion_high_rank = vars[109];
 
         /// potential independent Pittsboro project(s)
         double haw_river_intake_expansion_rank_low = vars[79]; //0.9;
@@ -1253,14 +1255,22 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
 
         //FIXME: CHECK THAT REALLOCATION IS FIXED TO ARMY CORPS APPROVED LEVEL
+        /// MAR 2020: REALLOCATION FROM USACE 2017 REPORT IS 17,300 AF (effectively flips fraction of conservation pool
+        /// allocated for water quality and quantity to 58 and 42 percent, respectively)
+        /// The expected costs (says economic analysis but I think this is total financial cost) are $142 MM (2016 dollars)
+        /// based on 30 years of an annual cost of storage about $23 MM per year
+        /// Because this has been approved as of 2017 (right?) assume a shorter permitting period, maybe possible
+        /// to "come online" by 2020
+        // one AF = 325851 gallons = 0.32585 MG; 17,300 AF = 5.637 BG
+        falls_lake_reallocation = 5637.0; // in MG
         vector<double> fl_relocation_fractions = {
                 (fl_supply_capacity + falls_lake_reallocation) /
                 fl_storage_capacity,
                 (fl_wq_capacity - falls_lake_reallocation) / fl_storage_capacity};
 
-        LevelDebtServiceBond fl_bond(falls_lake_reallocation_id, 68.2, 25, 0.05, vector<int>(1, 0));
+        LevelDebtServiceBond fl_bond(falls_lake_reallocation_id, 142.0, 25, 0.05, vector<int>(1, 0));
         Relocation fl_reallocation("Falls Lake Reallocation", falls_lake_reallocation_id, falls_lake_id, &fl_relocation_fractions, &fl_allocations_ids,
-                                   construction_time_interval, 12 * WEEKS_IN_YEAR, fl_bond);
+                                   construction_time_interval, 2 * WEEKS_IN_YEAR, fl_bond);
 
         LevelDebtServiceBond ccr_exp_bond(cane_creek_reservoir_expansion_id, 127.0, 25, 0.05, vector<int>(1, 0));
         ReservoirExpansion ccr_expansion("Cane Creek Reservoir Expansion", cane_creek_reservoir_expansion_id, cane_creek_reservoir_id, 3000.0, construction_time_interval,

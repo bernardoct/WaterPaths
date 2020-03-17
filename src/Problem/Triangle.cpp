@@ -135,49 +135,35 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         double OWASA_restriction_trigger = vars[1];
         double raleigh_restriction_trigger = vars[2];
         double cary_restriction_trigger = vars[3];
-//        double pittsboro_restriction_trigger = OWASA_restriction_trigger;
-//        double chatham_restriction_trigger = OWASA_restriction_trigger;
 
         double durham_transfer_trigger = vars[4];
         double owasa_transfer_trigger = vars[5];
         double raleigh_transfer_trigger = vars[6];
-//        double pittsboro_transfer_trigger = owasa_transfer_trigger;
-//        double chatham_transfer_trigger = owasa_transfer_trigger;
 
         double OWASA_JLA = vars[7];
-        double Raleigh_JLA = vars[8];
+        double Raleigh_JLA = vars[8]; //FIXME: HOLD AT 0
         double Durham_JLA = vars[9];
         double Cary_JLA = vars[10];
-//        double Pittsboro_JLA = OWASA_JLA;
-//        double Chatham_JLA = OWASA_JLA;
 
         double durham_annual_payment = vars[11]; // contingency fund
         double owasa_annual_payment = vars[12];
         double raleigh_annual_payment = vars[13];
         double cary_annual_payment = vars[14];
-//        double pittsboro_annual_payment = owasa_annual_payment;
-//        double chatham_annual_payment = owasa_annual_payment;
 
         double durham_insurance_use = vars[15]; // insurance st_rof
         double owasa_insurance_use = vars[16];
         double raleigh_insurance_use = vars[17];
         double cary_insurance_use = vars[18];
-//        double pittsboro_insurance_use = owasa_insurance_use;
-//        double chatham_insurance_use = owasa_insurance_use;
 
         double durham_insurance_payment = vars[19];
         double owasa_insurance_payment = vars[20];
         double raleigh_insurance_payment = vars[21];
         double cary_insurance_payment = vars[22];
-//        double pittsboro_insurance_payment = owasa_insurance_payment;
-//        double chatham_insurance_payment = owasa_insurance_payment;
 
         double durham_inftrigger = vars[23];
         double owasa_inftrigger = vars[24];
         double raleigh_inftrigger = vars[25];
         double cary_inftrigger = vars[26];
-//        double pittsboro_inftrigger = owasa_inftrigger;
-//        double chatham_inftrigger = owasa_inftrigger;
 
         double university_lake_expansion_ranking = vars[27]; // 14
         double Cane_creek_expansion_ranking = vars[28]; // 24
@@ -199,11 +185,11 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         double western_wake_treatment_plant_rank_raleigh_low = vars[44]; // 20
         double western_wake_treatment_plant_rank_raleigh_high = vars[45]; // 21
     //    double caryupgrades_1 = vars[46]; // not used: already built.
-        double caryupgrades_2 = vars[47];
-        double caryupgrades_3 = vars[48];
+        double caryupgrades_2 = vars[47]; //FIXME: SET AT FIXED VALUE
+        double caryupgrades_3 = vars[48]; //FIXME: SET AT FIXED VALUE
         double western_wake_treatment_plant_owasa_frac = vars[49];
         double western_wake_treatment_frac_durham = vars[50];
-        double western_wake_treatment_plant_raleigh_frac = vars[51];
+        double western_wake_treatment_plant_raleigh_frac = vars[51]; //FIXME: SET TO 0
 
         //FIXME: FIX THIS DECISION VARIABLE BASED ON REPORTS
         double falls_lake_reallocation = vars[52]; // 17,300 AF
@@ -212,8 +198,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         double owasa_inf_buffer = vars[54];
         double raleigh_inf_buffer = vars[55];
         double cary_inf_buffer = vars[56];
-//        double pittsboro_inf_buffer = 2;
-//        double chatham_inf_buffer = 2;
 
         /// Nov 2019: new parameter input file expands on existing 57 parameters to include pittsboro and chatham county
         /// utilities as well as demand projection parameters:

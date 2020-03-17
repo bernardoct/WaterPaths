@@ -377,5 +377,5 @@ const vector<double> &UtilitiesDataCollector::getRecorded_annual_demand() const 
 }
 
 const vector<double> &UtilitiesDataCollector::getPresent_value_debt_service_payments() const {
-    return recorded_annual_demand;
+    return present_valued_debt_service_payments;
 }

@@ -277,7 +277,7 @@ double ObjectivesCalculator::calculateWorseCaseCostsObjective(
     }
 }
 
-// meant to roughly be a ratio between all utility costs including drought mitigation and demands
+
 // USING CURRENT VALUES OF DEBT SERVICE, NOT TOTAL NPV, WILL NOT CAPTURE DEBT SERVICE PAST 2060
 double ObjectivesCalculator::calculateUnitTotalCostObjective(const vector<UtilitiesDataCollector *> &utility_data,
                                                              vector<unsigned long> realizations) {

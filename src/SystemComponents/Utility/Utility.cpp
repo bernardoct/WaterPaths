@@ -349,6 +349,9 @@ void Utility::updateTotalAvailableVolume() {
                     water_sources[ws]->getAvailableAllocatedVolume(id));
 	    net_stream_inflow += water_sources[ws]->getAllocatedInflow(id);
 
+//	    cout << name << " priority: " << water_sources[ws]->name << " contributed "
+//	         << water_sources[ws]->getAvailableAllocatedVolume(id) << endl;
+
 	    /// Oct 2019: this call operates the same as getAvailableAllocatedVolume except for Intakes and Reuse
 	    /// for Intakes it returns the volume after week's demands processed
 	    /// for Reuse it returns zero
@@ -362,6 +365,9 @@ void Utility::updateTotalAvailableVolume() {
         total_available_volume += stored_volume;
         total_stored_volume += stored_volume;
 	    net_stream_inflow += water_sources[ws]->getAllocatedInflow(id);
+
+//        cout << name << " non-priority (" << id << "): " << water_sources[ws]->name << " contributed "
+//             << water_sources[ws]->getAvailableAllocatedVolume(id) << endl;
     }
 }
 
@@ -474,6 +480,9 @@ void Utility::splitDemands(
     unfulfilled_demand = max(max(restricted_demand - total_available_volume,
                                  restricted_demand - total_treatment_capacity), 0.);
     restricted_demand -= unfulfilled_demand;
+
+    if (total_available_volume > total_storage_capacity * 1.01)
+        cout << "Continuity issue here" << endl;
 
     // Allocates demand to intakes and reuse based on allocated volume to
     // this utility.
@@ -717,7 +726,8 @@ void Utility::forceInfrastructureConstruction(int week, vector<int> new_infra_tr
 
             // issue the bond after capital cost adjustment
             issueBond(ws, week);
-            cout << "Utility " << id << ": Bond issued for " << ws << " in week " << week << endl;
+            if (ws != NON_INITIALIZED)
+                cout << "Utility " << id << ": Bond issued for " << ws << " in week " << week << endl;
         }
     }
 }
@@ -756,7 +766,8 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
     // Issue and add bond of triggered water source to list of outstanding bonds, and update total new
     // infrastructure NPV.
     issueBond(new_infra_triggered, week);
-    cout << "Utility " << id << ": Bond issued for " << new_infra_triggered << " in week " << week << endl;
+    if (new_infra_triggered != NON_INITIALIZED)
+        cout << "Utility " << id << ": Bond issued for " << new_infra_triggered << " in week " << week << endl;
 
     return new_infra_triggered;
 }
@@ -879,6 +890,8 @@ double Utility::getAvailableVolumeToCapacityRatio() const {
 }
 
 double Utility::getTotal_available_volume() const {
+//    if (total_available_volume > total_storage_capacity * 1.01)
+//        cout << "Volume exceeds utility capacity..." << endl;
     return total_available_volume;
 }
 

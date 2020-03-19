@@ -111,3 +111,7 @@ void AllocatedIntake::addTreatmentCapacity(const double added_treatment_capacity
     for (int u : *utilities_with_allocations)
         allocated_treatment_fractions[u] = allocated_treatment_capacities[u]/this->total_treatment_capacity;
 }
+
+double AllocatedIntake::getAvailableAllocatedVolume(int utility_id) {
+    return available_allocated_volumes[utility_id];
+}

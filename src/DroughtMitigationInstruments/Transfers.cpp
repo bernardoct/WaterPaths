@@ -232,7 +232,7 @@ void Transfers::applyPolicy(int week) {
             /// Total volume available for transfers in source utility.
             double available_transfer_volume =
                     (source_utility->getTotal_treatment_capacity()
-                     - source_treatment_buffer) * PEAKING_FACTOR
+                     - source_treatment_buffer) * TRANSFER_PEAKING_FACTOR
                     - source_utility->getUnrestrictedDemand();
 
             if (available_transfer_volume > 0) {

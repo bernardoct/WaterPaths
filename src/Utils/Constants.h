@@ -32,7 +32,8 @@ namespace Constants {
     const std::string DEFAULT_ROF_TABLES_DIR = "rof_tables" + BAR; // ALWAYS CREATES THIS FOLDER IF IT DOESN'T EXIST
     const std::string DEFAULT_RDM_TSERIES_DIR = "";
 
-    const double PEAKING_FACTOR = 0.85; ///Peaking factor used to move from daily capacity to average weekly capacity.
+    const double TRANSFER_PEAKING_FACTOR = 0.85; ///Peaking factor used to move from daily capacity to average weekly capacity.
+    const double DEMAND_PEAKING_FACTOR = 1.2; /// used just for joint wtp treatment re-allocation calculation
     const double WEEKS_IN_YEAR = 52.179;
     const int WEEKS_IN_YEAR_ROUND = 52;
     const int NUMBER_OF_MONTHS = 12;
@@ -57,6 +58,7 @@ namespace Constants {
     const int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
     const int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
     const int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+    const double PROPORTION_OF_UTILITY_CAPACITY_FLOOR = 0.1;
 
     const int INITIAL_MASSIVE_VALUE = 99999;
 

@@ -40,6 +40,8 @@ public:
     void addCapacity(double capacity, int utility_id);
 
     void addTreatmentCapacity(const double added_treatment_capacity, int utility_id);
+
+    double getAvailableAllocatedVolume(int utility_id) override;
 };
 
 

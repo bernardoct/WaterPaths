@@ -252,7 +252,14 @@ void InfrastructureManager::waterTreatmentPlantJointConstructionHandler(unsigned
             throw runtime_error("Could not add treatment capacity to reservoir.");
         }
 
-        non_priority_draw_water_source->push_back((int) wtp->parent_reservoir_ID);
+        // if the parent reservoir is not yet online (which happens if previously the utility was not allocated
+        // any treatment capacity), add it to the online sources vector
+        auto it = find(non_priority_draw_water_source->begin(),
+                       non_priority_draw_water_source->end(),
+                       (int) wtp->parent_reservoir_ID);
+        if (it == non_priority_draw_water_source->end())
+            non_priority_draw_water_source->push_back((int) wtp->parent_reservoir_ID);
+
     } else if (water_sources->at(source_id)->getAgreementType() == NEW_JOINT_WATER_TREATMENT_PLANT_VARIABLE_ALLOCATIONS) {
         auto wtp = dynamic_cast<VariableJointWTP *> (water_sources->at(source_id));
 
@@ -269,7 +276,14 @@ void InfrastructureManager::waterTreatmentPlantJointConstructionHandler(unsigned
             throw runtime_error("Could not add treatment capacity to reservoir.");
         }
 
-        non_priority_draw_water_source->push_back((int) wtp->parent_reservoir_ID);
+        // if the parent reservoir is not yet online (which happens if previously the utility was not allocated
+        // any treatment capacity), add it to the online sources vector
+        auto it = find(non_priority_draw_water_source->begin(),
+                       non_priority_draw_water_source->end(),
+                       (int) wtp->parent_reservoir_ID);
+        if (it == non_priority_draw_water_source->end())
+            non_priority_draw_water_source->push_back((int) wtp->parent_reservoir_ID);
+
     } else {
         throw logic_error("Error in InfrastructureManager::waterTreatmentPlantJointConstructionHandler, "
                           "WTP to be constructed is not of either fixed or variable treatment allocations.");

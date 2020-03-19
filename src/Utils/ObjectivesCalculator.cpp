@@ -317,8 +317,8 @@ double ObjectivesCalculator::calculateUnitTotalCostObjective(const vector<Utilit
 
     // take the average across all realizations for the objective value
     // in the future, this could be some other statistic
-    // THIS IS IN UNITS OF MILLIONS OF DOLLARS PER MILLION GALLONS
-    return accumulate(realization_unit_cost.begin(), realization_unit_cost.end(), 0.0) / n_realizations;
+    // THIS IS IN UNITS OF MILLIONS OF DOLLARS PER MILLION GALLONS (COMVERTED TO $/kgal)
+    return accumulate(realization_unit_cost.begin(), realization_unit_cost.end(), 0.0) / n_realizations * 1000;
 }
 
 double ObjectivesCalculator::calculateNetPresentCostInfrastructureObjectiveForVariableDebtService(

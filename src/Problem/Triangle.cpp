@@ -41,71 +41,84 @@
 void Triangle::setProblemDefinition(BORG_Problem &problem)
 {
     // The parameter bounds are the same for all formulations
-    BORG_Problem_set_bounds(problem, 0, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 1, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 2, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 3, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 4, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 5, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 6, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 7, 0.1, 0.47);
-    BORG_Problem_set_bounds(problem, 8, 0.0, 0.37);
-    BORG_Problem_set_bounds(problem, 9, 0.05, 0.42);
-    BORG_Problem_set_bounds(problem, 10, 0.355, 0.725);
-    BORG_Problem_set_bounds(problem, 11, 0.0, 0.1);
-    BORG_Problem_set_bounds(problem, 12, 0.0, 0.1);
-    BORG_Problem_set_bounds(problem, 13, 0.0, 0.1);
-    BORG_Problem_set_bounds(problem, 14, 0.0, 0.1);
-    BORG_Problem_set_bounds(problem, 15, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 16, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 17, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 18, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 19, 0.0, 0.02);
-    BORG_Problem_set_bounds(problem, 20, 0.0, 0.02);
-    BORG_Problem_set_bounds(problem, 21, 0.0, 0.02);
-    BORG_Problem_set_bounds(problem, 22, 0.0, 0.02);
-    BORG_Problem_set_bounds(problem, 23, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 24, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 25, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 26, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 27, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 28, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 29, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 30, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 31, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 32, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 33, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 34, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 35, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 36, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 37, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 38, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 39, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 40, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 41, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 42, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 43, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 44, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 45, 0.0, 1.0);
-    BORG_Problem_set_bounds(problem, 46, 0.0, 100.0);
-    BORG_Problem_set_bounds(problem, 47, 0.0, 100.0);
-    BORG_Problem_set_bounds(problem, 48, 0.0, 100.0);
-    BORG_Problem_set_bounds(problem, 49, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 50, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 51, 0.001, 1.0);
-    BORG_Problem_set_bounds(problem, 52, 0.0, 10000.0);
-    BORG_Problem_set_bounds(problem, 53, 0.0, 20.0);
-    BORG_Problem_set_bounds(problem, 54, 0.0, 20.0);
-    BORG_Problem_set_bounds(problem, 55, 0.0, 20.0);
-    BORG_Problem_set_bounds(problem, 56, 0.0, 20.0);
-
+    BORG_Problem_set_bounds(problem, 0, 0.001, 1.0); // Durham restrictions
+    BORG_Problem_set_bounds(problem, 1, 0.001, 1.0); // OWASA restrictions
+    BORG_Problem_set_bounds(problem, 2, 0.001, 1.0); // Raleigh restrictions
+    BORG_Problem_set_bounds(problem, 3, 0.001, 1.0); // Cary restrictions
+    BORG_Problem_set_bounds(problem, 4, 0.001, 1.0); // Durham Transfers
+    BORG_Problem_set_bounds(problem, 5, 0.001, 1.0); // OWASA Transfers
+    BORG_Problem_set_bounds(problem, 6, 0.001, 1.0); // Raleigh Transfers
+    BORG_Problem_set_bounds(problem, 7, 0.1, 0.47);  // OWASA JLA
+    BORG_Problem_set_bounds(problem, 8, 0.05, 0.42); // Durham JLA 
+    BORG_Problem_set_bounds(problem, 9, 0.355, 0.725); // Cary JLA
+    BORG_Problem_set_bounds(problem, 10, 0.0, 0.1);  // Durham reserver fund cont
+    BORG_Problem_set_bounds(problem, 11, 0.0, 0.1);  // OWASA reserve fund cont
+    BORG_Problem_set_bounds(problem, 12, 0.0, 0.1);  // Raleigh reserve fund cont
+    BORG_Problem_set_bounds(problem, 13, 0.0, 0.1);  // cary reserve fund cont
+    BORG_Problem_set_bounds(problem, 14, 0.001, 1.0);  // durham infrastructure trigger
+    BORG_Problem_set_bounds(problem, 15, 0.001, 1.0);  // OWASA infrastructure trigger
+    BORG_Problem_set_bounds(problem, 16, 0.001, 1.0);  // Raleigh infrastructure trigger
+    BORG_Problem_set_bounds(problem, 17, 0.001, 1.0);  // Cary infrastructure trigger
+    BORG_Problem_set_bounds(problem, 18, 0.0, 1.0);   // University Lake expansion ranking
+    BORG_Problem_set_bounds(problem, 19, 0.0, 1.0);  // Cane creek expansion ranking
+    BORG_Problem_set_bounds(problem, 20, 0.0, 1.0);  // Stone quarry shallow ranking
+    BORG_Problem_set_bounds(problem, 21, 0.0, 1.0);  // Stone quarry deep ranking
+    BORG_Problem_set_bounds(problem, 22, 0.0, 1.0);  // Teer quarry expansion
+    BORG_Problem_set_bounds(problem, 23, 0.0, 1.0);  // reclaimed water low ranking
+    BORG_Problem_set_bounds(problem, 24, 0.0, 1.0);  // reclaimed water high ranking
+    BORG_Problem_set_bounds(problem, 25, 0.0, 1.0);  // lake michie expansion low ranking
+    BORG_Problem_set_bounds(problem, 26, 0.0, 1.0);  // lake michie expansion high ranking
+    BORG_Problem_set_bounds(problem, 27, 0.0, 1.0);  // LRR ranking
+    BORG_Problem_set_bounds(problem, 28, 0.0, 1.0);  // Richland creek ranking 
+    BORG_Problem_set_bounds(problem, 29, 0.0, 1.0);  // Neuse river intake ranking
+    BORG_Problem_set_bounds(problem, 30, 0.0, 1.0);  // WJLWTP rank OWASA low
+    BORG_Problem_set_bounds(problem, 31, 0.0, 1.0);  // WJLWTP rank OWASA high
+    BORG_Problem_set_bounds(problem, 32, 0.0, 1.0);  // WJLWTP rank durham low
+    BORG_Problem_set_bounds(problem, 33, 0.0, 1.0);  // WJLWTP rank durham high
+    BORG_Problem_set_bounds(problem, 34, 0.001, 1.0);  // WJWLTP OWASA frac
+    BORG_Problem_set_bounds(problem, 35, 0.001, 1.0);  // WJLWTP Duram frac
+    BORG_Problem_set_bounds(problem, 36, 0.0, 20.0);  // Durham inf buffer
+    BORG_Problem_set_bounds(problem, 37, 0.0, 20.0);  // OWASA inf buffer
+    BORG_Problem_set_bounds(problem, 38, 0.0, 20.0);  // Raleigh inf buffer
+    BORG_Problem_set_bounds(problem, 39, 0.0, 20.0);  // Cary inf buffer
+    BORG_Problem_set_bounds(problem, 40, 0.001, 1.0); // pitt restriction trigger
+    BORG_Problem_set_bounds(problem, 41, 0.001, 1.0); // pitt transfer trigger
+    BORG_Problem_set_bounds(problem, 42, 0.01, 0.1); // pitt JLA
+    BORG_Problem_set_bounds(problem, 43, 0.0, 0.1); // pitt annual payment
+    BORG_Problem_set_bounds(problem, 44, 0.0, 1.0); // pitt insurance use
+    BORG_Problem_set_bounds(problem, 45, 0.0, 0.02); // pitt insurance payment
+    BORG_Problem_set_bounds(problem, 46, 0.0, 1.0); // pitt in trigger
+    BORG_Problem_set_bounds(problem, 47, 0.0, 20.0); // pittsboro inf buff
+    BORG_Problem_set_bounds(problem, 48, 0.001, 1.0); // chatham restriction trigger
+    BORG_Problem_set_bounds(problem, 49, 0.001, 1.0); // chatham transfer trigger
+    BORG_Problem_set_bounds(problem, 50, 0.01, 0.1); // chatham JLA
+    BORG_Problem_set_bounds(problem, 51, 0.0, 0.1); // chatham annual payment
+    BORG_Problem_set_bounds(problem, 52, 0.001, 1.0); // chatham insurance use
+    BORG_Problem_set_bounds(problem, 53, 0.0, 0.02); // chatham insurance payment
+    BORG_Problem_set_bounds(problem, 54, 0.001, 1.0); // chatham inf trigger
+    BORG_Problem_set_bounds(problem, 55, 0.0, 20.0); // chatham inf buff
+    BORG_Problem_set_bounds(problem, 56, 0.001, 1.0); // wjlwtp pitt frac
+    BORG_Problem_set_bounds(problem, 57, 0.001, 1.0); // wjlwtp chatham frac
+    BORG_Problem_set_bounds(problem, 58, 0.0, 1.0); // wjlwtp rank low pitt
+    BORG_Problem_set_bounds(problem, 59, 0.0, 1.0); // wjlwtp rank high pitt
+    BORG_Problem_set_bounds(problem, 60, 0.0, 1.0); // wjlwtp rank low chatham
+    BORG_Problem_set_bounds(problem, 61, 0.0, 1.0); // wjlwtp rank high chatham
+    BORG_Problem_set_bounds(problem, 62, 0.0, 1.0); // Sanford intake expansion pitt low rank
+    BORG_Problem_set_bounds(problem, 63, 0.0, 1.0); // Sanford intake expansion pitt high rank
+    BORG_Problem_set_bounds(problem, 64, 0.0, 1.0); // Sanford intake expansion chatham low rank	
+    BORG_Problem_set_bounds(problem, 65, 0.0, 1.0); // Sanford intake expansion chatham high rank
+    BORG_Problem_set_bounds(problem, 66, 0.0, 1.0); // haw intake expansion rank low
+    BORG_Problem_set_bounds(problem, 67, 0.0, 1.0); // haw intake expansion rank high
+    BORG_Problem_set_bounds(problem, 68, 0.0, 1.0); // cape fear intake rank
+	
+	
     // Set epsilons for objectives
     BORG_Problem_set_epsilon(problem, 0, 0.002);
     BORG_Problem_set_epsilon(problem, 1, 0.02);
     BORG_Problem_set_epsilon(problem, 2, 10.);
     BORG_Problem_set_epsilon(problem, 3, 0.02);
     BORG_Problem_set_epsilon(problem, 4, 0.01);
-    BORG_Problem_set_epsilon(problem, 5, 0.025);
+    BORG_Problem_set_epsilon(problem, 5, 0.01);
 }
 #endif
 
@@ -141,135 +154,135 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         double raleigh_transfer_trigger = vars[6];
 
         double OWASA_JLA = vars[7];
-        double Raleigh_JLA = vars[8]; //FIXME: HOLD AT 0
-        double Durham_JLA = vars[9];
-        double Cary_JLA = vars[10];
+        double Raleigh_JLA = 0; //FIXME: HOLD AT 0
+        double Durham_JLA = vars[8];
+        double Cary_JLA = vars[9];
 
-        double durham_annual_payment = vars[11]; // contingency fund
-        double owasa_annual_payment = vars[12];
-        double raleigh_annual_payment = vars[13];
-        double cary_annual_payment = vars[14];
+        double durham_annual_payment = vars[10]; // contingency fund
+        double owasa_annual_payment = vars[11];
+        double raleigh_annual_payment = vars[12];
+        double cary_annual_payment = vars[13];
 
-        double durham_insurance_use = vars[15]; // insurance st_rof
-        double owasa_insurance_use = vars[16];
-        double raleigh_insurance_use = vars[17];
-        double cary_insurance_use = vars[18];
+        double durham_insurance_use = 1.1; // insurance st_rof
+        double owasa_insurance_use = 1.1;
+        double raleigh_insurance_use = 1.1;
+        double cary_insurance_use = 1.1;
 
-        double durham_insurance_payment = vars[19];
-        double owasa_insurance_payment = vars[20];
-        double raleigh_insurance_payment = vars[21];
-        double cary_insurance_payment = vars[22];
+        double durham_insurance_payment = 0;
+        double owasa_insurance_payment = 0;
+        double raleigh_insurance_payment = 0];
+        double cary_insurance_payment = 0;
 
-        double durham_inftrigger = vars[23];
-        double owasa_inftrigger = vars[24];
-        double raleigh_inftrigger = vars[25];
-        double cary_inftrigger = vars[26];
+        double durham_inftrigger = vars[14];
+        double owasa_inftrigger = vars[15];
+        double raleigh_inftrigger = vars[16];
+        double cary_inftrigger = vars[17];
 
-        double university_lake_expansion_ranking = vars[27]; // 14
-        double Cane_creek_expansion_ranking = vars[28]; // 24
-        double Stone_quarry_reservoir_expansion_shallow_ranking = vars[29]; // 12
-        double Stone_quarry_reservoir_expansion_deep_ranking = vars[30]; // 13
-        double Teer_quarry_expansion_ranking = vars[31]; // 9
-        double reclaimed_water_ranking_low = vars[32]; // 18
-        double reclaimed_water_high = vars[33]; // 19
-        double lake_michie_expansion_ranking_low = vars[34]; // 15
-        double lake_michie_expansion_ranking_high = vars[35]; // 16
-        double little_river_reservoir_ranking = vars[36]; // 7
-        double richland_creek_quarry_rank = vars[37]; // 8
-        double neuse_river_intake_rank = vars[38]; // 10
-        double reallocate_falls_lake_rank = vars[39]; // 17
-        double western_wake_treatment_plant_rank_OWASA_low = vars[40]; // 20
-        double western_wake_treatment_plant_rank_OWASA_high = vars[41]; // 21
-        double western_wake_treatment_plant_rank_durham_low = vars[42]; // 20
-        double western_wake_treatment_plant_rank_durham_high = vars[43]; // 21
-        double western_wake_treatment_plant_rank_raleigh_low = vars[44]; // 20
-        double western_wake_treatment_plant_rank_raleigh_high = vars[45]; // 21
-    //    double caryupgrades_1 = vars[46]; // not used: already built.
-        double caryupgrades_2 = vars[47]; //FIXME: SET AT FIXED VALUE
-        double caryupgrades_3 = vars[48]; //FIXME: SET AT FIXED VALUE
-        double western_wake_treatment_plant_owasa_frac = vars[49];
-        double western_wake_treatment_frac_durham = vars[50];
-        double western_wake_treatment_plant_raleigh_frac = vars[51]; //FIXME: SET TO 0
+        double university_lake_expansion_ranking = vars[18]; // 14
+        double Cane_creek_expansion_ranking = vars[19]; // 24
+        double Stone_quarry_reservoir_expansion_shallow_ranking = vars[20]; // 12
+        double Stone_quarry_reservoir_expansion_deep_ranking = vars[21]; // 13
+        double Teer_quarry_expansion_ranking = vars[22]; // 9
+        double reclaimed_water_ranking_low = vars[23]; // 18
+        double reclaimed_water_high = vars[24]; // 19
+        double lake_michie_expansion_ranking_low = vars[25]; // 15
+        double lake_michie_expansion_ranking_high = vars[26]; // 16
+        double little_river_reservoir_ranking = vars[27]; // 7
+        double richland_creek_quarry_rank = vars[28]; // 8
+        double neuse_river_intake_rank = vars[29]; // 10
+        double reallocate_falls_lake_rank = 1.1; // 17
+        double western_wake_treatment_plant_rank_OWASA_low = vars[30]; // 20
+        double western_wake_treatment_plant_rank_OWASA_high = vars[31]; // 21
+        double western_wake_treatment_plant_rank_durham_low = vars[32]; // 20
+        double western_wake_treatment_plant_rank_durham_high = vars[33]; // 21
+        double western_wake_treatment_plant_rank_raleigh_low = 1.1; // 20
+        double western_wake_treatment_plant_rank_raleigh_high = 1.1; // 21
+    //    double caryupgrades_1 = 1.1; // not used: already built.
+        double caryupgrades_2 = 56;  //FIXME: SET AT FIXED VALUE
+        double caryupgrades_3 = 58; //FIXME: SET AT FIXED VALUE
+        double western_wake_treatment_plant_owasa_frac = vars[34];
+        double western_wake_treatment_frac_durham = vars[35];
+        double western_wake_treatment_plant_raleigh_frac = 0; //FIXME: SET TO 0
 
         //FIXME: FIX THIS DECISION VARIABLE BASED ON REPORTS
-        double falls_lake_reallocation = vars[52]; // 17,300 AF
+        double falls_lake_reallocation = 5637; // 17,300 AF
 
-        double durham_inf_buffer = vars[53];
-        double owasa_inf_buffer = vars[54];
-        double raleigh_inf_buffer = vars[55];
-        double cary_inf_buffer = vars[56];
+        double durham_inf_buffer = vars[36];
+        double owasa_inf_buffer = vars[37];
+        double raleigh_inf_buffer = vars[38];
+        double cary_inf_buffer = vars[39];
 
         /// Nov 2019: new parameter input file expands on existing 57 parameters to include pittsboro and chatham county
         /// utilities as well as demand projection parameters:
-        double pittsboro_restriction_trigger = vars[57];
-        double pittsboro_transfer_trigger = vars[58];
-        double Pittsboro_JLA = vars[59];
-        double pittsboro_annual_payment = vars[60];
-        double pittsboro_insurance_use = vars[61];
-        double pittsboro_insurance_payment = vars[62];
-        double pittsboro_inftrigger = vars[63];
-        double pittsboro_inf_buffer = vars[64];
+        double pittsboro_restriction_trigger = vars[40];
+        double pittsboro_transfer_trigger = vars[41];
+        double Pittsboro_JLA = vars[42];
+        double pittsboro_annual_payment = vars[43];
+        double pittsboro_insurance_use = vars[44];
+        double pittsboro_insurance_payment = vars[45];
+        double pittsboro_inftrigger = vars[46];
+        double pittsboro_inf_buffer = vars[47];
 
-        double chatham_restriction_trigger = vars[65];
-        double chatham_transfer_trigger = vars[66];
-        double Chatham_JLA = vars[67];
-        double chatham_annual_payment = vars[68];
-        double chatham_insurance_use = vars[69];
-        double chatham_insurance_payment = vars[70];
-        double chatham_inftrigger = vars[71];
-        double chatham_inf_buffer = vars[72];
+        double chatham_restriction_trigger = vars[48];
+        double chatham_transfer_trigger = vars[49];
+        double Chatham_JLA = vars[50];
+        double chatham_annual_payment = vars[51];
+        double chatham_insurance_use = vars[52];
+        double chatham_insurance_payment = vars[53];
+        double chatham_inftrigger = vars[54];
+        double chatham_inf_buffer = vars[55];
 
         /// July 2019: pittsboro and chatham county infrastructure projects
         ///             where there are references to input vars, owasa values are used as placeholders
-        double western_wake_treatment_plant_pittsboro_frac = vars[73]; //0.167; // 16.7% of ultimate 2060 capacity
-        double western_wake_treatment_plant_chatham_frac = vars[74]; //0.296; // 29.6% of ultimate 2060 capacity
-        double western_wake_treatment_plant_rank_pittsboro_low = vars[75]; // 20
-        double western_wake_treatment_plant_rank_pittsboro_high = vars[76]; // 21
-        double western_wake_treatment_plant_rank_chatham_low = vars[77]; // 20
-        double western_wake_treatment_plant_rank_chatham_high = vars[78]; // 21
+        double western_wake_treatment_plant_pittsboro_frac = vars[56]; //0.167; // 16.7% of ultimate 2060 capacity
+        double western_wake_treatment_plant_chatham_frac = vars[57]; //0.296; // 29.6% of ultimate 2060 capacity
+        double western_wake_treatment_plant_rank_pittsboro_low = vars[58]; // 20
+        double western_wake_treatment_plant_rank_pittsboro_high = vars[59]; // 21
+        double western_wake_treatment_plant_rank_chatham_low = vars[60]; // 20
+        double western_wake_treatment_plant_rank_chatham_high = vars[61]; // 21
 
         /// Feb 2020: pittsboro and chatham infrastructure, expansion of sanford wtp modeled as intake expansions
         //FIXME: ADJUST PARAMETER INPUT FILE TO ACCOUNT FOR NEW INFRASTRUCTURE RANKS
         // PLACEHOLDER INDICES ARE USED FOR NOW
-        double sanford_wtp_pittsboro_intake_expansion_low_rank = vars[106];
-        double sanford_wtp_pittsboro_intake_expansion_high_rank = vars[107];
-        double sanford_wtp_chatham_intake_expansion_low_rank = vars[108];
-        double sanford_wtp_chatham_intake_expansion_high_rank = vars[109];
+        double sanford_wtp_pittsboro_intake_expansion_low_rank = vars[62];
+        double sanford_wtp_pittsboro_intake_expansion_high_rank = vars[63];
+        double sanford_wtp_chatham_intake_expansion_low_rank = vars[64];
+        double sanford_wtp_chatham_intake_expansion_high_rank = vars[65];
 
         /// potential independent Pittsboro project(s)
-        double haw_river_intake_expansion_rank_low = vars[79]; //0.9;
-        double haw_river_intake_expansion_rank_high = vars[80]; //0.9;
+        double haw_river_intake_expansion_rank_low = vars[66]; //0.9;
+        double haw_river_intake_expansion_rank_high = vars[67]; //0.9;
 
         /// potential independent Chatham County project(s)
-        double cape_fear_river_intake_rank = vars[81]; //0.8;
+        double cape_fear_river_intake_rank = vars[68]; //0.8;
 
         /// Nov 2019: parameters to cap contingency funds
-        double cary_fund_cap = vars[82];
-        double durham_fund_cap = vars[83];
-        double owasa_fund_cap = vars[84];
-        double raleigh_fund_cap = vars[85];
-        double chatham_fund_cap = vars[86];
-        double pittsboro_fund_cap = vars[87];
+        double cary_fund_cap = 100000000;
+        double durham_fund_cap = 100000000;
+        double owasa_fund_cap = 100000000;
+        double raleigh_fund_cap = 100000000;
+        double chatham_fund_cap = 100000000;
+        double pittsboro_fund_cap = 100000000;
 
         /// Nov 2019: demand projection parameters for each utility
-        int cary_demand_projection_forecast_length_years = vars[88]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
-        int cary_demand_projection_historical_years_to_use = vars[89]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int cary_demand_projection_frequency_of_reprojection_years = vars[90]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-        int durham_demand_projection_forecast_length_years = vars[91]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
-        int durham_demand_projection_historical_years_to_use = vars[92]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int durham_demand_projection_frequency_of_reprojection_years = vars[93]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-        int owasa_demand_projection_forecast_length_years = vars[94]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
-        int owasa_demand_projection_historical_years_to_use = vars[95]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int owasa_demand_projection_frequency_of_reprojection_years = vars[96]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-        int raleigh_demand_projection_forecast_length_years = vars[97]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
-        int raleigh_demand_projection_historical_years_to_use = vars[98]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int raleigh_demand_projection_frequency_of_reprojection_years = vars[99]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-        int chatham_demand_projection_forecast_length_years = vars[100]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
-        int chatham_demand_projection_historical_years_to_use = vars[101]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int chatham_demand_projection_frequency_of_reprojection_years = vars[102]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-        int pittsboro_demand_projection_forecast_length_years = vars[103]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
-        int pittsboro_demand_projection_historical_years_to_use = vars[104]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int pittsboro_demand_projection_frequency_of_reprojection_years = vars[105]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int cary_demand_projection_forecast_length_years = 5 // vars[88]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int cary_demand_projection_historical_years_to_use = 5 // vars[89]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int cary_demand_projection_frequency_of_reprojection_years = 5 // vars[90]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int durham_demand_projection_forecast_length_years = 5 //vars[91]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int durham_demand_projection_historical_years_to_use = 5 //vars[92]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int durham_demand_projection_frequency_of_reprojection_years = 5 //vars[93]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int owasa_demand_projection_forecast_length_years = 5 //vars[94]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int owasa_demand_projection_historical_years_to_use = 5 //vars[95]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int owasa_demand_projection_frequency_of_reprojection_years = 5 //vars[96]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int raleigh_demand_projection_forecast_length_years = 5 //vars[97]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int raleigh_demand_projection_historical_years_to_use = 5 //vars[98]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int raleigh_demand_projection_frequency_of_reprojection_years = 5 //vars[99]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int chatham_demand_projection_forecast_length_years = 5 //vars[100]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int chatham_demand_projection_historical_years_to_use = 5 //vars[101]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int chatham_demand_projection_frequency_of_reprojection_years = 5 //vars[102]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int pittsboro_demand_projection_forecast_length_years = 5 //vars[103]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int pittsboro_demand_projection_historical_years_to_use = 5 //vars[104]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int pittsboro_demand_projection_frequency_of_reprojection_years = 5 //vars[105]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
 
         /// catch ROF tables
         if (import_export_rof_tables == EXPORT_ROF_TABLES) {

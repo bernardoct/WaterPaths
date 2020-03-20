@@ -170,7 +170,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         double durham_insurance_payment = 0;
         double owasa_insurance_payment = 0;
-        double raleigh_insurance_payment = 0];
+        double raleigh_insurance_payment = 0;
         double cary_insurance_payment = 0;
 
         double durham_inftrigger = vars[14];
@@ -265,25 +265,25 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         double pittsboro_fund_cap = 100000000;
 
         /// Nov 2019: demand projection parameters for each utility
-        int cary_demand_projection_forecast_length_years = 5 // vars[88]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
-        int cary_demand_projection_historical_years_to_use = 5 // vars[89]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int cary_demand_projection_frequency_of_reprojection_years = 5 // vars[90]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-        int durham_demand_projection_forecast_length_years = 5 //vars[91]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
-        int durham_demand_projection_historical_years_to_use = 5 //vars[92]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int durham_demand_projection_frequency_of_reprojection_years = 5 //vars[93]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-        int owasa_demand_projection_forecast_length_years = 5 //vars[94]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
-        int owasa_demand_projection_historical_years_to_use = 5 //vars[95]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int owasa_demand_projection_frequency_of_reprojection_years = 5 //vars[96]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-        int raleigh_demand_projection_forecast_length_years = 5 //vars[97]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
-        int raleigh_demand_projection_historical_years_to_use = 5 //vars[98]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int raleigh_demand_projection_frequency_of_reprojection_years = 5 //vars[99]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-        int chatham_demand_projection_forecast_length_years = 5 //vars[100]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
-        int chatham_demand_projection_historical_years_to_use = 5 //vars[101]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int chatham_demand_projection_frequency_of_reprojection_years = 5 //vars[102]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-        int pittsboro_demand_projection_forecast_length_years = 5 //vars[103]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
-        int pittsboro_demand_projection_historical_years_to_use = 5 //vars[104]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int pittsboro_demand_projection_frequency_of_reprojection_years = 5 //vars[105]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-
+        int cary_demand_projection_forecast_length_years = 5; // vars[88]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int cary_demand_projection_historical_years_to_use = 5; // vars[89]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int cary_demand_projection_frequency_of_reprojection_years = 5; // vars[90]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int durham_demand_projection_forecast_length_years = 5; //vars[91]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int durham_demand_projection_historical_years_to_use = 5; //vars[92]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int durham_demand_projection_frequency_of_reprojection_years = 5; //vars[93]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int owasa_demand_projection_forecast_length_years = 5; //vars[94]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int owasa_demand_projection_historical_years_to_use = 5; //vars[95]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int owasa_demand_projection_frequency_of_reprojection_years = 5; //vars[96]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int raleigh_demand_projection_forecast_length_years = 5; //vars[97]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int raleigh_demand_projection_historical_years_to_use = 5; //vars[98]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int raleigh_demand_projection_frequency_of_reprojection_years = 5; //vars[99]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int chatham_demand_projection_forecast_length_years = 5; //vars[100]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int chatham_demand_projection_historical_years_to_use = 5; //vars[101]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int chatham_demand_projection_frequency_of_reprojection_years = 5; //vars[102]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int pittsboro_demand_projection_forecast_length_years = 5; //vars[103]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int pittsboro_demand_projection_historical_years_to_use = 5; //vars[104]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int pittsboro_demand_projection_frequency_of_reprojection_years = 5; //vars[105]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+	
         /// catch ROF tables
         if (import_export_rof_tables == EXPORT_ROF_TABLES) {
             durham_inftrigger = 1.1;

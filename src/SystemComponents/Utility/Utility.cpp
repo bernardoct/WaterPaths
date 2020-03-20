@@ -658,8 +658,12 @@ double Utility::updateCurrent_debt_payment(int week) {
     // Check if any bonds are variable debt service bonds
     // (aka are any tied to VariableJointWTP projects with changing allocations)
     for (Bond *bond : issued_bonds) {
-        if (bond->type == VARIABLE_INTEREST)
+        if (bond->type == VARIABLE_INTEREST) {
             bond->setDebtService(water_sources.at(bond->getWaterSourceID())->getAllocatedTreatmentFraction(id));
+//            cout << name << ": " << water_sources.at(bond->getWaterSourceID())->name
+//                << " allocated treatment fraction is "
+//                 << water_sources.at(bond->getWaterSourceID())->getAllocatedTreatmentFraction(id) << endl;
+        }
     }
 
     // Checks if it's the first week of the year, when outstanding debt
@@ -703,6 +707,7 @@ void Utility::issueBond(int new_infra_triggered, int week) {
                     .at((unsigned long) new_infra_triggered)->construction_time;
             bond.issueBond(week, (int) construction_time, bond_term_multiplier,
                            bond_interest_rate_multiplier);
+            cout << "Utility " << id << ": Bond issued for " << new_infra_triggered << " in week " << week << endl;
             issued_bonds.push_back(&bond);
             infra_net_present_cost += bond.getNetPresentValueAtIssuance(
                     infra_discount_rate, week);
@@ -726,8 +731,6 @@ void Utility::forceInfrastructureConstruction(int week, vector<int> new_infra_tr
 
             // issue the bond after capital cost adjustment
             issueBond(ws, week);
-            if (ws != NON_INITIALIZED)
-                cout << "Utility " << id << ": Bond issued for " << ws << " in week " << week << endl;
         }
     }
 }
@@ -766,8 +769,6 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
     // Issue and add bond of triggered water source to list of outstanding bonds, and update total new
     // infrastructure NPV.
     issueBond(new_infra_triggered, week);
-    if (new_infra_triggered != NON_INITIALIZED)
-        cout << "Utility " << id << ": Bond issued for " << new_infra_triggered << " in week " << week << endl;
 
     return new_infra_triggered;
 }

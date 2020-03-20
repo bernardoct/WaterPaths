@@ -1114,6 +1114,30 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                 0.0, sanford_partner_treatment_capacity_allocation_fractions);
 
         // Potential Sources
+
+        // for simplicity, hold all permitting period variables here (in years)
+        int little_river_reservoir_raleigh_permitting_period = 17;
+        int richland_creek_quarry_permitting_period = 17;
+        int falls_lake_reallocation_permitting_period = 7; //FIXME: CHECK THIS
+        int teer_quarry_permitting_period = 7;
+        int neuse_river_intake_permitting_period = 17;
+        int haw_river_intake_low_permitting_period = 7;
+        int haw_river_intake_high_permitting_period = 7;
+        int cape_fear_river_permitting_period = 100;
+        int sanford_wtp_intake_low_permitting_period = 100; // should be 7 (2025)
+        int sanford_wtp_intake_high_permitting_period = 100; // should be 22 (2040)
+        int cane_creek_reservoir_expansion_permitting_period = 17;
+        int stone_quarry_low_permitting_period = 23;
+        int stone_quarry_high_permitting_period = 23;
+        int university_lake_expansion_permitting_period = 17;
+        int lake_michie_low_permitting_period = 17;
+        int lake_michie_high_permitting_period = 17;
+        int reclaimed_low_permitting_period = 7;
+        int reclaimed_high_permitting_period = 7;
+        int dummy_wjlwtp_permitting_period = 100;
+        int wjlwtp_low_permitting_period = 2; //FIXME: CHECK THIS
+        int wjlwtp_high_permitting_period = 7; //FIXME: CHECK THIS
+
         // FIXME: THIS EXPLANATION IS NO LONGER CONSISTENT WITH THE CODE
         // The capacities listed here for expansions are what additional capacity is gained relative to existing capacity,
         // NOT the total capacity after the expansion is complete. For infrastructure with a high and low option, this means
@@ -1123,27 +1147,26 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         LevelDebtServiceBond lrr_bond(little_river_raleigh_reservoir_id, 263.0, 25, 0.05, vector<int>(1, 0));
         Reservoir little_river_reservoir("Little River Reservoir (Raleigh)", little_river_raleigh_reservoir_id, catchment_little_river_raleigh, 3700.0,
                                          ILLIMITED_TREATMENT_CAPACITY, evaporation_little_river, &little_river_storage_area,
-                                         construction_time_interval, 17 * WEEKS_IN_YEAR, lrr_bond);
+                                         construction_time_interval,
+                                         little_river_reservoir_raleigh_permitting_period * WEEKS_IN_YEAR, lrr_bond);
 
         LevelDebtServiceBond rcq_bond(richland_creek_quarry_id, 400.0, 25, 0.05, vector<int>(1, 0));
         Quarry richland_creek_quarry("Richland Creek Quarry", richland_creek_quarry_id, gage_clayton, 4000.0, ILLIMITED_TREATMENT_CAPACITY,
-                                     evaporation_falls_lake, 100., construction_time_interval, 17 * WEEKS_IN_YEAR, rcq_bond,
+                                     evaporation_falls_lake, 100., construction_time_interval,
+                                     richland_creek_quarry_permitting_period * WEEKS_IN_YEAR, rcq_bond,
                                      50. * 7);
 
         BalloonPaymentBond tq_bond(teer_quarry_id, 22.6, 25, 0.05, vector<int>(1, 0), 3);
         Quarry teer_quarry("Teer Quarry", teer_quarry_id, vector<Catchment *>(), 1315.0, ILLIMITED_TREATMENT_CAPACITY,
-                           evaporation_falls_lake, &teer_storage_area, construction_time_interval, 7 * WEEKS_IN_YEAR, tq_bond,
+                           evaporation_falls_lake, &teer_storage_area, construction_time_interval,
+                           teer_quarry_permitting_period * WEEKS_IN_YEAR, tq_bond,
                            15 * 7);
 
         // original catchment was flat river, remove catchment because it is below falls lake
         LevelDebtServiceBond neuse_bond(neuse_river_intake_id, 225.5, 25, 0.05, vector<int>(1, 0));
         Intake neuse_river_intake("Neuse River Intake", neuse_river_intake_id, vector<Catchment *>(), vector<int>(),
                 16 * 7, construction_time_interval,
-                17 * WEEKS_IN_YEAR, neuse_bond);
-
-//        auto it10 = std::find(rof_triggered_infra_order_raleigh.begin(),
-//                             rof_triggered_infra_order_raleigh.end(), 10);
-//        rof_triggered_infra_order_raleigh.erase(it10);
+                neuse_river_intake_permitting_period * WEEKS_IN_YEAR, neuse_bond);
 
         // diversions to Teer Quarry for Durham based on inflows to downstream Falls Lake from the Flat River
         // FYI: spillage from Eno River also helps determine Teer quarry diversion, but Eno spillage isn't factored into
@@ -1160,27 +1183,28 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                                        added_capacity_haw_river_intake_expansion_low, added_capacity_haw_river_intake_expansion_low,
                                                        construction_time_interval,
                                                        {haw_river_intake_expansion_low_id, haw_river_intake_expansion_high_id},
-                                                       7 * WEEKS_IN_YEAR, low_haw_river_intake_expansion_bond);
+                                                       haw_river_intake_low_permitting_period * WEEKS_IN_YEAR,
+                                                       low_haw_river_intake_expansion_bond);
 
         LevelDebtServiceBond high_haw_river_intake_expansion_bond(haw_river_intake_expansion_high_id, 28.4, 25, 0.05, vector<int>(1, 0), 3);
         IntakeExpansion haw_river_intake_expansion_high("Haw River Intake High Expansion", haw_river_intake_expansion_high_id, haw_river_intake_id,
                                                         added_capacity_haw_river_intake_expansion_high, added_capacity_haw_river_intake_expansion_high,
                                                         construction_time_interval,
                                                         {haw_river_intake_expansion_low_id, haw_river_intake_expansion_high_id},
-                                                        7 * WEEKS_IN_YEAR, high_haw_river_intake_expansion_bond);
+                                                        haw_river_intake_high_permitting_period * WEEKS_IN_YEAR,
+                                                        high_haw_river_intake_expansion_bond);
 
         /// Mar 2020: Permitting period set to 100, Hazen and Sawyer thinks this is no longer an option
         LevelDebtServiceBond cape_fear_river_intake_bond(harnett_county_intake_id, 221.43, 25, 0.05, vector<int>(1, 0), 3);
         Intake cape_fear_river_intake("Cape Fear River Intake", harnett_county_intake_id, vector<Catchment *>(),
                 vector<int>(), 12.2 * 7, construction_time_interval,
-                100 * WEEKS_IN_YEAR, cape_fear_river_intake_bond); // possible by 2031
+                cape_fear_river_permitting_period * WEEKS_IN_YEAR,
+                cape_fear_river_intake_bond); // possible by 2031
 
         /// Feb 2020: additional new Pittsboro and Chatham projects:
         ///             (3abcd) staged buy-ins to Sanford WTP capacity
         ///                       (we aren't modeling Sanford, so include these as potential intakes)
         //FIXME: PERMIT PERIODS SET LOW FOR TESTING, SHOULD BE 7 AND 22
-        double low_permit_period = 1; // online by 2025 SET LOW FOR TESTING
-        double high_permit_period = 0; // online by 2040
         double pittsboro_low_cost = 49.6*0.94; // in millions, capital cost ADJUSTED FROM 2018 TO 2014 DOLLARS
         double pittsboro_high_cost = (19.7+49.6)*0.94; // in millions, capital cost
         double chatham_low_cost = 7.9*0.94; // in millions, capital cost
@@ -1223,7 +1247,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                 sanford_allocated_low_treatment_expansions, // added trmt allocs
                 construction_time_interval, // construction time range
                 {sanford_wtp_intake_expansion_low_base_id, sanford_wtp_intake_expansion_high_base_id}, // connected projects
-                low_permit_period * WEEKS_IN_YEAR, // permit time
+                sanford_wtp_intake_low_permitting_period * WEEKS_IN_YEAR, // permit time
                 sanford_low_expansion_bonds); // bonds
 
         AllocatedIntakeExpansion sanford_wtp_intake_expansion_high(
@@ -1235,7 +1259,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                 sanford_allocated_high_treatment_expansions, // added trmt allocs
                 construction_time_interval, // construction time range
                 {sanford_wtp_intake_expansion_low_base_id, sanford_wtp_intake_expansion_high_base_id}, // connected projects
-                high_permit_period * WEEKS_IN_YEAR, sanford_high_expansion_bonds); // permit time, bonds
+                sanford_wtp_intake_high_permitting_period * WEEKS_IN_YEAR, sanford_high_expansion_bonds); // permit time, bonds
 
 
         //FIXME: CHECK THAT REALLOCATION IS FIXED TO ARMY CORPS APPROVED LEVEL
@@ -1254,39 +1278,42 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         LevelDebtServiceBond fl_bond(falls_lake_reallocation_id, 142.0, 25, 0.05, vector<int>(1, 0));
         Relocation fl_reallocation("Falls Lake Reallocation", falls_lake_reallocation_id, falls_lake_id, &fl_relocation_fractions, &fl_allocations_ids,
-                                   construction_time_interval, 2 * WEEKS_IN_YEAR, fl_bond);
+                                   construction_time_interval,
+                                   falls_lake_reallocation_permitting_period * WEEKS_IN_YEAR, fl_bond);
 
         LevelDebtServiceBond ccr_exp_bond(cane_creek_reservoir_expansion_id, 127.0, 25, 0.05, vector<int>(1, 0));
         ReservoirExpansion ccr_expansion("Cane Creek Reservoir Expansion", cane_creek_reservoir_expansion_id, cane_creek_reservoir_id, 3000.0, construction_time_interval,
-                                         17 * WEEKS_IN_YEAR, ccr_exp_bond);
+                                         cane_creek_reservoir_expansion_permitting_period * WEEKS_IN_YEAR, ccr_exp_bond);
 
         LevelDebtServiceBond low_sq_exp_bond(stone_quarry_expansion_low_id, 1.4, 25, 0.05, vector<int>(1, 0));
         ReservoirExpansion low_sq_expansion("Low Stone Quarry Expansion", stone_quarry_expansion_low_id, stone_quarry_id, 1500.0, construction_time_interval,
-                                            23 * WEEKS_IN_YEAR, low_sq_exp_bond);
+                                            stone_quarry_low_permitting_period * WEEKS_IN_YEAR, low_sq_exp_bond);
 
         LevelDebtServiceBond high_sq_exp_bond(stone_quarry_expansion_high_id, 64.6, 25, 0.05, vector<int>(1, 0));
         ReservoirExpansion high_sq_expansion("High Stone Quarry Expansion", stone_quarry_expansion_high_id, stone_quarry_id, 2200.0, construction_time_interval,
-                                             23 * WEEKS_IN_YEAR, high_sq_exp_bond);
+                                             stone_quarry_high_permitting_period * WEEKS_IN_YEAR, high_sq_exp_bond);
 
         LevelDebtServiceBond ul_exp_bond(university_lake_expansion_id, 107.0, 25, 0.05, vector<int>(1, 0));
         ReservoirExpansion univ_lake_expansion("University Lake Expansion", university_lake_expansion_id, university_lake_id, 2550.0, construction_time_interval,
-                                               17 * WEEKS_IN_YEAR, ul_exp_bond);
+                                               university_lake_expansion_permitting_period * WEEKS_IN_YEAR, ul_exp_bond);
 
         LevelDebtServiceBond low_mi_exp_bond(michie_expansion_low_id, 158.3, 25, 0.05, vector<int>(1, 0));
         ReservoirExpansion low_michie_expansion("Low Lake Michie Expansion", michie_expansion_low_id, durham_reservoirs_id, added_storage_michie_expansion_low,
-                                                construction_time_interval, 17 * WEEKS_IN_YEAR, low_mi_exp_bond);
+                                                construction_time_interval,
+                                                lake_michie_low_permitting_period * WEEKS_IN_YEAR, low_mi_exp_bond);
 
         LevelDebtServiceBond high_mi_exp_bond(michie_expansion_high_id, 203.3, 25, 0.05, vector<int>(1, 0));
         ReservoirExpansion high_michie_expansion("High Lake Michie Expansion", michie_expansion_high_id, durham_reservoirs_id, added_storage_michie_expansion_high,
-                                                 construction_time_interval, 17 * WEEKS_IN_YEAR, high_mi_exp_bond);
+                                                 construction_time_interval,
+                                                 lake_michie_high_permitting_period * WEEKS_IN_YEAR, high_mi_exp_bond);
 
         LevelDebtServiceBond low_rec_bond(reclaimed_water_low_id, 27.5, 25, 0.05, vector<int>(1, 0));
         WaterReuse low_reclaimed("Low Reclaimed Water System", reclaimed_water_low_id, reclaimed_capacity_low, construction_time_interval,
-                                 7 * WEEKS_IN_YEAR, low_rec_bond);
+                                 reclaimed_low_permitting_period * WEEKS_IN_YEAR, low_rec_bond);
 
         LevelDebtServiceBond high_rec_bond(reclaimed_water_high_id, 104.4, 25, 0.05, vector<int>(1, 0));
         WaterReuse high_reclaimed("High Reclaimed Water System", reclaimed_water_high_id, reclaimed_capacity_high, construction_time_interval,
-                                  7 * WEEKS_IN_YEAR, high_rec_bond);
+                                  reclaimed_high_permitting_period * WEEKS_IN_YEAR, high_rec_bond);
 
         /// Western Jordan Lake WTP with fixed long-term treatment allocations
         /// Utility IDs: 0 - OWASA, 1 - Durham, 2 - Cary, 3 - Raleigh, 4 - Chatham County, 5 - Pittsboro
@@ -1397,7 +1424,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
             } else {*/
 
             wjlwtp_variable_bonds_capacity_1.emplace_back(
-                    new VariableDebtServiceBond(wjlwtp_variable_low_base_id + uid, wjlwtp_fixed_low_base_id,
+                    new VariableDebtServiceBond(wjlwtp_variable_low_base_id + uid, wjlwtp_variable_low_base_id,
                                                 243.3, alloc, 25, 0.05, vector<int>(1, 0)));
             wjlwtp_variable_bonds_capacity_2.emplace_back(
                     new VariableDebtServiceBond(wjlwtp_variable_high_base_id + uid, wjlwtp_variable_high_base_id,
@@ -1498,46 +1525,51 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         // create dummy WJLWTPs
         FixedJointWTP dummy_small_fixed_WJLWTP( "Dummy Small Fixed WJLWTP", wjlwtp_fixed_low_base_id, jordan_lake_id, 0, 0,
                                                 {wjlwtp_fixed_low_base_id, wjlwtp_fixed_high_base_id}, partner_utilities, capacities_wjlwtp_upgrade_1,
-                                                wjlwtp_dummy_fixed_bonds_capacity_1, construction_time_interval, 100 * WEEKS_IN_YEAR);
+                                                wjlwtp_dummy_fixed_bonds_capacity_1, construction_time_interval,
+                                                dummy_wjlwtp_permitting_period * WEEKS_IN_YEAR);
 
         FixedJointWTP dummy_fixed_large_WJLWTP("Dummy Large Fixed WJLWTP", wjlwtp_fixed_high_base_id, jordan_lake_id, 1, 0,
                                                {wjlwtp_fixed_low_base_id, wjlwtp_fixed_high_base_id}, partner_utilities, capacities_wjlwtp_upgrade_2,
-                                               wjlwtp_dummy_fixed_bonds_capacity_2, construction_time_interval, 100 * WEEKS_IN_YEAR);
+                                               wjlwtp_dummy_fixed_bonds_capacity_2, construction_time_interval,
+                                               dummy_wjlwtp_permitting_period * WEEKS_IN_YEAR);
 
         VariableJointWTP dummy_small_variable_WJLWTP("Dummy Small Variable WJLWTP", wjlwtp_variable_low_base_id,
                                                      jordan_lake_id, 0, 0,
                                                      {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, partner_utilities,
                                                      capacities_wjlwtp_upgrade_1,wjlwtp_dummy_variable_bonds_capacity_1, construction_time_interval,
-                                                     100 * WEEKS_IN_YEAR);
+                                                     dummy_wjlwtp_permitting_period * WEEKS_IN_YEAR);
 
         VariableJointWTP dummy_large_variable_WJLWTP("Dummy Variable WJLWTP", wjlwtp_variable_high_base_id, jordan_lake_id,
                                                      1, 0,
                                                      {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, partner_utilities, capacities_wjlwtp_upgrade_1,
-                                                     wjlwtp_dummy_variable_bonds_capacity_2, construction_time_interval, 100 * WEEKS_IN_YEAR);
+                                                     wjlwtp_dummy_variable_bonds_capacity_2, construction_time_interval,
+                                                     dummy_wjlwtp_permitting_period * WEEKS_IN_YEAR);
 
 
         // create fixed WJLWTPs
         FixedJointWTP small_fixed_WJLWTP( "Small Fixed WJLWTP", wjlwtp_fixed_low_base_id, jordan_lake_id,
                                           0, 33 * 7,
                                           {wjlwtp_fixed_low_base_id, wjlwtp_fixed_high_base_id}, partner_utilities, capacities_wjlwtp_upgrade_1,
-                                          wjlwtp_fixed_bonds_capacity_1, construction_time_interval, 7 * WEEKS_IN_YEAR);
+                                          wjlwtp_fixed_bonds_capacity_1, construction_time_interval,
+                                          wjlwtp_low_permitting_period * WEEKS_IN_YEAR);
 
         FixedJointWTP large_fixed_WJLWTP("Large Fixed WJLWTP", wjlwtp_fixed_high_base_id, jordan_lake_id,
                                          1, 54 * 7,
                                          {wjlwtp_fixed_low_base_id, wjlwtp_fixed_high_base_id}, partner_utilities, capacities_wjlwtp_upgrade_2,
-                                         wjlwtp_fixed_bonds_capacity_2, construction_time_interval, 12 * WEEKS_IN_YEAR);
+                                         wjlwtp_fixed_bonds_capacity_2, construction_time_interval,
+                                         wjlwtp_high_permitting_period * WEEKS_IN_YEAR);
 
 
         // create variable WJLWTPs
         VariableJointWTP small_variable_WJLWTP("Small Variable WJLWTP", wjlwtp_variable_low_base_id, jordan_lake_id, 0, 33*7,
                                                {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, partner_utilities,
                                                capacities_wjlwtp_upgrade_1, wjlwtp_variable_bonds_capacity_1,
-                                               construction_time_interval, 7 * WEEKS_IN_YEAR);
+                                               construction_time_interval, wjlwtp_low_permitting_period * WEEKS_IN_YEAR);
 
         VariableJointWTP large_variable_WJLWTP("Large Variable WJLWTP", wjlwtp_variable_high_base_id, jordan_lake_id, 1, 54*7,
                                                {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, partner_utilities,
                                                capacities_wjlwtp_upgrade_1, wjlwtp_variable_bonds_capacity_2,
-                                               construction_time_interval, 12 * WEEKS_IN_YEAR);
+                                               construction_time_interval, wjlwtp_high_permitting_period * WEEKS_IN_YEAR);
 
         // small fixed WJLWTP (formulation 0: dummy, formulation 1: actual plant, formulation 2: dummy)
         vector<FixedJointWTP *> fixed_small_WJLWTP_options = {&dummy_small_fixed_WJLWTP, &small_fixed_WJLWTP,
@@ -1748,6 +1780,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         auto table_base_storage_shift = vector<vector<double>>(6, vector<double>(35, 0.));
         table_base_storage_shift[uid_pittsboro][wjlwtp_fixed_low_base_id] = 5000.;
         table_base_storage_shift[uid_pittsboro][wjlwtp_fixed_high_base_id] = 5000.;
+        table_base_storage_shift[uid_pittsboro][wjlwtp_variable_low_base_id] = 5000.;
+        table_base_storage_shift[uid_pittsboro][wjlwtp_variable_high_base_id] = 5000.;
         table_base_storage_shift[uid_pittsboro][haw_river_intake_expansion_low_id] = 10000.;
         table_base_storage_shift[uid_pittsboro][haw_river_intake_expansion_high_id] = 10000.;
 

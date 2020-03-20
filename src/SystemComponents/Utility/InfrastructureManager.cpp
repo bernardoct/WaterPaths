@@ -585,7 +585,7 @@ void InfrastructureManager::checkForSequenceProjects(int original_build_id) {
                         water_sources->at(ws)->getBond(id).getCostOfCapital());
                 cout << "Utility " << id << ": the capital cost for project " << original_build_id
                      << " is reduced by the capital cost of earlier sequence project " << ws
-                     << " because it has already been built.";
+                     << " because it has already been built." << endl;
             }
         }
     }

@@ -93,7 +93,7 @@ void ContinuityModelRealization::updateJointWTPTreatmentAllocations(int current_
                     // (otherwise zero out the change), this means if the following calculation still
                     // leads to treatment capacity going below zero for a utility, we can zero it out rather than
                     // triggering an error killing the realization
-                    for (int u : *ws->getUtilities_with_allocations())
+                    for (int u : *ws->getUtilities_with_allocations()) {
                         // only catch if treatment capacity is being reduced to begin with, otherwise this may
                         // result in a massive adjustment unnecessarily
                         if (continuity_utilities.at(u)->getTotal_treatment_capacity() + demand_deltas.at(u) <
@@ -103,18 +103,23 @@ void ContinuityModelRealization::updateJointWTPTreatmentAllocations(int current_
                             demand_deltas.at(u) = min(0.0,
                                                       continuity_utilities.at(u)->getTotal_treatment_capacity() -
                                                       (continuity_utilities.at(u)->getCurrent_year_demand_record() *
-                                                      DEMAND_PEAKING_FACTOR));
+                                                       DEMAND_PEAKING_FACTOR));
+//                        cout << "Demand delta (1) for utility " << u << ": " << demand_deltas.at(u) << endl;
+                    }
 
                     // update treatment allocations for wtp and parent source
                     // Mar 2020: first condition deltas relative to the fraction of storage capacity this source
                     //  has compared to the rest of the utility's sources so that if multiple of these projects exist
                     //  they do not double-count the same delta (also, set a floor on this calculation to 10%,
                     //  because variable allocations may go to zero and not rebound otherwise)
-                    for (int u : *ws->getUtilities_with_allocations())
+                    for (int u : *ws->getUtilities_with_allocations()) {
                         demand_deltas.at(u) *= max(PROPORTION_OF_UTILITY_CAPACITY_FLOOR,
                                                    continuity_water_sources.at(
                                                            ws->getParentWaterSourceID())->getAllocatedCapacity(u) /
-                                                           continuity_utilities.at(u)->getTotal_storage_capacity());
+                                                   continuity_utilities.at(u)->getTotal_storage_capacity());
+//                        cout << "Demand delta (2) for utility " << u << ": " << demand_deltas.at(u) << endl;
+                    }
+
                     ws->resetAllocations(&demand_deltas); // should skip right to VariableJointWTP definition
                     continuity_water_sources.at(ws->getParentWaterSourceID())->resetTreatmentAllocations(
                             previous_year_treatment_capacities,

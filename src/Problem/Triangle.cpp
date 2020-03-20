@@ -84,32 +84,28 @@ void Triangle::setProblemDefinition(BORG_Problem &problem)
     BORG_Problem_set_bounds(problem, 40, 0.001, 1.0); // pitt restriction trigger
     BORG_Problem_set_bounds(problem, 41, 0.001, 1.0); // pitt transfer trigger
     BORG_Problem_set_bounds(problem, 42, 0.01, 0.1); // pitt JLA
-    BORG_Problem_set_bounds(problem, 43, 0.0, 0.1); // pitt annual payment
-    BORG_Problem_set_bounds(problem, 44, 0.0, 1.0); // pitt insurance use
-    BORG_Problem_set_bounds(problem, 45, 0.0, 0.02); // pitt insurance payment
-    BORG_Problem_set_bounds(problem, 46, 0.0, 1.0); // pitt in trigger
-    BORG_Problem_set_bounds(problem, 47, 0.0, 20.0); // pittsboro inf buff
-    BORG_Problem_set_bounds(problem, 48, 0.001, 1.0); // chatham restriction trigger
-    BORG_Problem_set_bounds(problem, 49, 0.001, 1.0); // chatham transfer trigger
-    BORG_Problem_set_bounds(problem, 50, 0.01, 0.1); // chatham JLA
-    BORG_Problem_set_bounds(problem, 51, 0.0, 0.1); // chatham annual payment
-    BORG_Problem_set_bounds(problem, 52, 0.001, 1.0); // chatham insurance use
-    BORG_Problem_set_bounds(problem, 53, 0.0, 0.02); // chatham insurance payment
-    BORG_Problem_set_bounds(problem, 54, 0.001, 1.0); // chatham inf trigger
-    BORG_Problem_set_bounds(problem, 55, 0.0, 20.0); // chatham inf buff
-    BORG_Problem_set_bounds(problem, 56, 0.001, 1.0); // wjlwtp pitt frac
-    BORG_Problem_set_bounds(problem, 57, 0.001, 1.0); // wjlwtp chatham frac
-    BORG_Problem_set_bounds(problem, 58, 0.0, 1.0); // wjlwtp rank low pitt
-    BORG_Problem_set_bounds(problem, 59, 0.0, 1.0); // wjlwtp rank high pitt
-    BORG_Problem_set_bounds(problem, 60, 0.0, 1.0); // wjlwtp rank low chatham
-    BORG_Problem_set_bounds(problem, 61, 0.0, 1.0); // wjlwtp rank high chatham
-    BORG_Problem_set_bounds(problem, 62, 0.0, 1.0); // Sanford intake expansion pitt low rank
-    BORG_Problem_set_bounds(problem, 63, 0.0, 1.0); // Sanford intake expansion pitt high rank
-    BORG_Problem_set_bounds(problem, 64, 0.0, 1.0); // Sanford intake expansion chatham low rank	
-    BORG_Problem_set_bounds(problem, 65, 0.0, 1.0); // Sanford intake expansion chatham high rank
-    BORG_Problem_set_bounds(problem, 66, 0.0, 1.0); // haw intake expansion rank low
-    BORG_Problem_set_bounds(problem, 67, 0.0, 1.0); // haw intake expansion rank high
-    BORG_Problem_set_bounds(problem, 68, 0.0, 1.0); // cape fear intake rank
+    BORG_Problem_set_bounds(problem, 43, 0.0, 0.02); // pitt insurance payment
+    BORG_Problem_set_bounds(problem, 44, 0.0, 1.0); // pitt in trigger
+    BORG_Problem_set_bounds(problem, 45, 0.0, 20.0); // pittsboro inf buff
+    BORG_Problem_set_bounds(problem, 46, 0.001, 1.0); // chatham restriction trigger
+    BORG_Problem_set_bounds(problem, 47, 0.001, 1.0); // chatham transfer trigger
+    BORG_Problem_set_bounds(problem, 48, 0.01, 0.1); // chatham JLA
+    BORG_Problem_set_bounds(problem, 49, 0.0, 0.1); // chatham annual payment
+    BORG_Problem_set_bounds(problem, 50, 0.001, 1.0); // chatham inf trigger
+    BORG_Problem_set_bounds(problem, 51, 0.0, 20.0); // chatham inf buff
+    BORG_Problem_set_bounds(problem, 52, 0.001, 1.0); // wjlwtp pitt frac
+    BORG_Problem_set_bounds(problem, 53, 0.001, 1.0); // wjlwtp chatham frac
+    BORG_Problem_set_bounds(problem, 54, 0.0, 1.0); // wjlwtp rank low pitt
+    BORG_Problem_set_bounds(problem, 55, 0.0, 1.0); // wjlwtp rank high pitt
+    BORG_Problem_set_bounds(problem, 56, 0.0, 1.0); // wjlwtp rank low chatham
+    BORG_Problem_set_bounds(problem, 57, 0.0, 1.0); // wjlwtp rank high chatham
+    BORG_Problem_set_bounds(problem, 58, 0.0, 1.0); // Sanford intake expansion pitt low rank
+    BORG_Problem_set_bounds(problem, 59, 0.0, 1.0); // Sanford intake expansion pitt high rank
+    BORG_Problem_set_bounds(problem, 60, 0.0, 1.0); // Sanford intake expansion chatham low rank	
+    BORG_Problem_set_bounds(problem, 61, 0.0, 1.0); // Sanford intake expansion chatham high rank
+    BORG_Problem_set_bounds(problem, 62, 0.0, 1.0); // haw intake expansion rank low
+    BORG_Problem_set_bounds(problem, 63, 0.0, 1.0); // haw intake expansion rank high
+    BORG_Problem_set_bounds(problem, 64, 0.0, 1.0); // cape fear intake rank
 	
 	
     // Set epsilons for objectives
@@ -218,43 +214,43 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         double pittsboro_transfer_trigger = vars[41];
         double Pittsboro_JLA = vars[42];
         double pittsboro_annual_payment = vars[43];
-        double pittsboro_insurance_use = vars[44];
-        double pittsboro_insurance_payment = vars[45];
-        double pittsboro_inftrigger = vars[46];
-        double pittsboro_inf_buffer = vars[47];
+        double pittsboro_insurance_use = 1.1;
+        double pittsboro_insurance_payment = 0;
+        double pittsboro_inftrigger = vars[44];
+        double pittsboro_inf_buffer = vars[45];
 
-        double chatham_restriction_trigger = vars[48];
-        double chatham_transfer_trigger = vars[49];
-        double Chatham_JLA = vars[50];
-        double chatham_annual_payment = vars[51];
-        double chatham_insurance_use = vars[52];
-        double chatham_insurance_payment = vars[53];
-        double chatham_inftrigger = vars[54];
-        double chatham_inf_buffer = vars[55];
+        double chatham_restriction_trigger = vars[46];
+        double chatham_transfer_trigger = vars[47];
+        double Chatham_JLA = vars[48];
+        double chatham_annual_payment = vars[49];
+        double chatham_insurance_use = 1.1;
+        double chatham_insurance_payment = 0;
+        double chatham_inftrigger = vars[50];
+        double chatham_inf_buffer = vars[51];
 
         /// July 2019: pittsboro and chatham county infrastructure projects
         ///             where there are references to input vars, owasa values are used as placeholders
-        double western_wake_treatment_plant_pittsboro_frac = vars[56]; //0.167; // 16.7% of ultimate 2060 capacity
-        double western_wake_treatment_plant_chatham_frac = vars[57]; //0.296; // 29.6% of ultimate 2060 capacity
-        double western_wake_treatment_plant_rank_pittsboro_low = vars[58]; // 20
-        double western_wake_treatment_plant_rank_pittsboro_high = vars[59]; // 21
-        double western_wake_treatment_plant_rank_chatham_low = vars[60]; // 20
-        double western_wake_treatment_plant_rank_chatham_high = vars[61]; // 21
+        double western_wake_treatment_plant_pittsboro_frac = vars[52]; //0.167; // 16.7% of ultimate 2060 capacity
+        double western_wake_treatment_plant_chatham_frac = vars[53]; //0.296; // 29.6% of ultimate 2060 capacity
+        double western_wake_treatment_plant_rank_pittsboro_low = vars[54]; // 20
+        double western_wake_treatment_plant_rank_pittsboro_high = vars[55]; // 21
+        double western_wake_treatment_plant_rank_chatham_low = vars[56]; // 20
+        double western_wake_treatment_plant_rank_chatham_high = vars[57]; // 21
 
         /// Feb 2020: pittsboro and chatham infrastructure, expansion of sanford wtp modeled as intake expansions
         //FIXME: ADJUST PARAMETER INPUT FILE TO ACCOUNT FOR NEW INFRASTRUCTURE RANKS
         // PLACEHOLDER INDICES ARE USED FOR NOW
-        double sanford_wtp_pittsboro_intake_expansion_low_rank = vars[62];
-        double sanford_wtp_pittsboro_intake_expansion_high_rank = vars[63];
-        double sanford_wtp_chatham_intake_expansion_low_rank = vars[64];
-        double sanford_wtp_chatham_intake_expansion_high_rank = vars[65];
+        double sanford_wtp_pittsboro_intake_expansion_low_rank = vars[58];
+        double sanford_wtp_pittsboro_intake_expansion_high_rank = vars[59];
+        double sanford_wtp_chatham_intake_expansion_low_rank = vars[60];
+        double sanford_wtp_chatham_intake_expansion_high_rank = vars[61];
 
         /// potential independent Pittsboro project(s)
-        double haw_river_intake_expansion_rank_low = vars[66]; //0.9;
-        double haw_river_intake_expansion_rank_high = vars[67]; //0.9;
+        double haw_river_intake_expansion_rank_low = vars[62]; //0.9;
+        double haw_river_intake_expansion_rank_high = vars[63]; //0.9;
 
         /// potential independent Chatham County project(s)
-        double cape_fear_river_intake_rank = vars[68]; //0.8;
+        double cape_fear_river_intake_rank = vars[64]; //0.8;
 
         /// Nov 2019: parameters to cap contingency funds
         double cary_fund_cap = 100000000;

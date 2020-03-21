@@ -186,71 +186,71 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         double little_river_reservoir_ranking = vars[27]; // 7
         double richland_creek_quarry_rank = vars[28]; // 8
         double neuse_river_intake_rank = vars[29]; // 10
-        double reallocate_falls_lake_rank = 1.1; // 17
-        double western_wake_treatment_plant_rank_OWASA_low = vars[30]; // 20
-        double western_wake_treatment_plant_rank_OWASA_high = vars[31]; // 21
-        double western_wake_treatment_plant_rank_durham_low = vars[32]; // 20
-        double western_wake_treatment_plant_rank_durham_high = vars[33]; // 21
+        double reallocate_falls_lake_rank = vars[30]; // 17
+        double western_wake_treatment_plant_rank_OWASA_low = vars[31]; // 20
+        double western_wake_treatment_plant_rank_OWASA_high = vars[32]; // 21
+        double western_wake_treatment_plant_rank_durham_low = vars[33]; // 20
+        double western_wake_treatment_plant_rank_durham_high = vars[34]; // 21
         double western_wake_treatment_plant_rank_raleigh_low = 1.1; // 20
         double western_wake_treatment_plant_rank_raleigh_high = 1.1; // 21
     //    double caryupgrades_1 = 1.1; // not used: already built.
         double caryupgrades_2 = 56;  //FIXME: SET AT FIXED VALUE
         double caryupgrades_3 = 58; //FIXME: SET AT FIXED VALUE
-        double western_wake_treatment_plant_owasa_frac = vars[34];
-        double western_wake_treatment_frac_durham = vars[35];
+        double western_wake_treatment_plant_owasa_frac = vars[35];
+        double western_wake_treatment_frac_durham = vars[36];
         double western_wake_treatment_plant_raleigh_frac = 0; //FIXME: SET TO 0
 
         //FIXME: FIX THIS DECISION VARIABLE BASED ON REPORTS
         double falls_lake_reallocation = 5637; // 17,300 AF
 
-        double durham_inf_buffer = vars[36];
-        double owasa_inf_buffer = vars[37];
-        double raleigh_inf_buffer = vars[38];
-        double cary_inf_buffer = vars[39];
+        double durham_inf_buffer = vars[37];
+        double owasa_inf_buffer = vars[38];
+        double raleigh_inf_buffer = vars[39];
+        double cary_inf_buffer = vars[40];
 
         /// Nov 2019: new parameter input file expands on existing 57 parameters to include pittsboro and chatham county
         /// utilities as well as demand projection parameters:
-        double pittsboro_restriction_trigger = vars[40];
-        double pittsboro_transfer_trigger = vars[41];
-        double Pittsboro_JLA = vars[42];
-        double pittsboro_annual_payment = vars[43];
+        double pittsboro_restriction_trigger = vars[41];
+        double pittsboro_transfer_trigger = vars[42];
+        double Pittsboro_JLA = vars[43];
+        double pittsboro_annual_payment = vars[44];
         double pittsboro_insurance_use = 1.1;
         double pittsboro_insurance_payment = 0;
-        double pittsboro_inftrigger = vars[44];
-        double pittsboro_inf_buffer = vars[45];
+        double pittsboro_inftrigger = vars[45];
+        double pittsboro_inf_buffer = vars[46];
 
-        double chatham_restriction_trigger = vars[46];
-        double chatham_transfer_trigger = vars[47];
-        double Chatham_JLA = vars[48];
-        double chatham_annual_payment = vars[49];
+        double chatham_restriction_trigger = vars[47];
+        double chatham_transfer_trigger = vars[48];
+        double Chatham_JLA = vars[49];
+        double chatham_annual_payment = vars[50];
         double chatham_insurance_use = 1.1;
         double chatham_insurance_payment = 0;
-        double chatham_inftrigger = vars[50];
-        double chatham_inf_buffer = vars[51];
+        double chatham_inftrigger = vars[51];
+        double chatham_inf_buffer = vars[52];
 
         /// July 2019: pittsboro and chatham county infrastructure projects
         ///             where there are references to input vars, owasa values are used as placeholders
-        double western_wake_treatment_plant_pittsboro_frac = vars[52]; //0.167; // 16.7% of ultimate 2060 capacity
-        double western_wake_treatment_plant_chatham_frac = vars[53]; //0.296; // 29.6% of ultimate 2060 capacity
-        double western_wake_treatment_plant_rank_pittsboro_low = vars[54]; // 20
-        double western_wake_treatment_plant_rank_pittsboro_high = vars[55]; // 21
-        double western_wake_treatment_plant_rank_chatham_low = vars[56]; // 20
-        double western_wake_treatment_plant_rank_chatham_high = vars[57]; // 21
+        double western_wake_treatment_plant_pittsboro_frac = vars[53]; //0.167; // 16.7% of ultimate 2060 capacity
+        double western_wake_treatment_plant_chatham_frac = vars[54]; //0.296; // 29.6% of ultimate 2060 capacity
+        double western_wake_treatment_plant_rank_pittsboro_low = vars[55]; // 20
+        double western_wake_treatment_plant_rank_pittsboro_high = vars[56]; // 21
+        double western_wake_treatment_plant_rank_chatham_low = vars[57]; // 20
+        double western_wake_treatment_plant_rank_chatham_high = vars[58]; // 21
 
         /// Feb 2020: pittsboro and chatham infrastructure, expansion of sanford wtp modeled as intake expansions
         //FIXME: ADJUST PARAMETER INPUT FILE TO ACCOUNT FOR NEW INFRASTRUCTURE RANKS
         // PLACEHOLDER INDICES ARE USED FOR NOW
-        double sanford_wtp_pittsboro_intake_expansion_low_rank = vars[58];
-        double sanford_wtp_pittsboro_intake_expansion_high_rank = vars[59];
-        double sanford_wtp_chatham_intake_expansion_low_rank = vars[60];
-        double sanford_wtp_chatham_intake_expansion_high_rank = vars[61];
+        double sanford_wtp_pittsboro_intake_expansion_low_rank = vars[59];
+        double sanford_wtp_pittsboro_intake_expansion_high_rank = vars[60];
+        double sanford_wtp_chatham_intake_expansion_low_rank = vars[61];
+        double sanford_wtp_chatham_intake_expansion_high_rank = vars[62];
 
         /// potential independent Pittsboro project(s)
-        double haw_river_intake_expansion_rank_low = vars[62]; //0.9;
-        double haw_river_intake_expansion_rank_high = vars[63]; //0.9;
+        double haw_river_intake_expansion_rank_low = vars[63]; //0.9;
+        double haw_river_intake_expansion_rank_high = vars[64]; //0.9;
 
         /// potential independent Chatham County project(s)
-        double cape_fear_river_intake_rank = vars[64]; //0.8;
+        double cape_fear_river_intake_rank = vars[65]; //0.8;
 
         /// Nov 2019: parameters to cap contingency funds
         double cary_fund_cap = 100000000;
@@ -260,25 +260,29 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         double chatham_fund_cap = 100000000;
         double pittsboro_fund_cap = 100000000;
 
+        int demand_projection_forecast_length = (int) vars[66];
+        int demand_projection_historical_use = (int) vars[67];
+        int demand_projection_frequency = (int) vars[68];
+
         /// Nov 2019: demand projection parameters for each utility
-        int cary_demand_projection_forecast_length_years = 5; // vars[88]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
-        int cary_demand_projection_historical_years_to_use = 5; // vars[89]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int cary_demand_projection_frequency_of_reprojection_years = 5; // vars[90]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-        int durham_demand_projection_forecast_length_years = 1; //vars[91]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
-        int durham_demand_projection_historical_years_to_use = 1; //vars[92]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int durham_demand_projection_frequency_of_reprojection_years = 1; //vars[93]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-        int owasa_demand_projection_forecast_length_years = 10; //vars[94]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
-        int owasa_demand_projection_historical_years_to_use = 5; //vars[95]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int owasa_demand_projection_frequency_of_reprojection_years = 12; //vars[96]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-        int raleigh_demand_projection_forecast_length_years = 3; //vars[97]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
-        int raleigh_demand_projection_historical_years_to_use = 5; //vars[98]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int raleigh_demand_projection_frequency_of_reprojection_years = 7; //vars[99]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-        int chatham_demand_projection_forecast_length_years = 7; //vars[100]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
-        int chatham_demand_projection_historical_years_to_use = 5; //vars[101]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int chatham_demand_projection_frequency_of_reprojection_years = 3; //vars[102]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-        int pittsboro_demand_projection_forecast_length_years = 14; //vars[103]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
-        int pittsboro_demand_projection_historical_years_to_use = 1; //vars[104]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int pittsboro_demand_projection_frequency_of_reprojection_years = 10; //vars[105]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int cary_demand_projection_forecast_length_years = demand_projection_forecast_length; // vars[88]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int cary_demand_projection_historical_years_to_use = demand_projection_historical_use; // vars[89]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int cary_demand_projection_frequency_of_reprojection_years = demand_projection_frequency; // vars[90]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int durham_demand_projection_forecast_length_years = demand_projection_forecast_length; //vars[91]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int durham_demand_projection_historical_years_to_use = demand_projection_historical_use; //vars[92]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int durham_demand_projection_frequency_of_reprojection_years = demand_projection_frequency; //vars[93]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int owasa_demand_projection_forecast_length_years = demand_projection_forecast_length; //vars[94]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int owasa_demand_projection_historical_years_to_use = demand_projection_historical_use; //vars[95]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int owasa_demand_projection_frequency_of_reprojection_years = demand_projection_frequency; //vars[96]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int raleigh_demand_projection_forecast_length_years = demand_projection_forecast_length; //vars[97]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int raleigh_demand_projection_historical_years_to_use = demand_projection_historical_use; //vars[98]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int raleigh_demand_projection_frequency_of_reprojection_years = demand_projection_frequency; //vars[99]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int chatham_demand_projection_forecast_length_years = demand_projection_forecast_length; //vars[100]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int chatham_demand_projection_historical_years_to_use = demand_projection_historical_use; //vars[101]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int chatham_demand_projection_frequency_of_reprojection_years = demand_projection_frequency; //vars[102]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int pittsboro_demand_projection_forecast_length_years = demand_projection_forecast_length; //vars[103]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int pittsboro_demand_projection_historical_years_to_use = demand_projection_historical_use; //vars[104]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int pittsboro_demand_projection_frequency_of_reprojection_years = demand_projection_frequency; //vars[105]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
 	
         /// catch ROF tables
         if (import_export_rof_tables == EXPORT_ROF_TABLES) {
@@ -633,25 +637,24 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                 vecInfraRankToVecInt(owasa_infra_order_raw);
         vector<int> rof_triggered_infra_order_raleigh =
                 vecInfraRankToVecInt(raleigh_infra_order_raw);
-        //FIXME: FOR TESTING, LET RANK FOR HIGH EXPANSIONS BE CLOSER TO 0 THAN LOW EXPANSIONS?
         vector<int> rof_triggered_infra_order_pittsboro =
                 vecInfraRankToVecInt(pittsboro_infra_order_raw);
         vector<int> rof_triggered_infra_order_chatham =
                 vecInfraRankToVecInt(chatham_infra_order_raw);
 
-    // Create vectors with each utility's long-term ROF values assigned to all
-    // infrastructure options.
-    vector<double> rofs_infra_durham = vector<double>
-            (rof_triggered_infra_order_durham.size(), durham_inftrigger);
-    vector<double> rofs_infra_owasa = vector<double>
-            (rof_triggered_infra_order_owasa.size(), owasa_inftrigger);
-    vector<double> rofs_infra_raleigh = vector<double>
-            (rof_triggered_infra_order_raleigh.size(), raleigh_inftrigger);
+        // Create vectors with each utility's long-term ROF values assigned to all
+        // infrastructure options.
+        vector<double> rofs_infra_durham = vector<double>
+                (rof_triggered_infra_order_durham.size(), durham_inftrigger);
+        vector<double> rofs_infra_owasa = vector<double>
+                (rof_triggered_infra_order_owasa.size(), owasa_inftrigger);
+        vector<double> rofs_infra_raleigh = vector<double>
+                (rof_triggered_infra_order_raleigh.size(), raleigh_inftrigger);
 
-    vector<double> rofs_infra_pittsboro = vector<double>
-            (rof_triggered_infra_order_pittsboro.size(), pittsboro_inftrigger);
-    vector<double> rofs_infra_chatham = vector<double>
-            (rof_triggered_infra_order_chatham.size(), chatham_inftrigger);
+        vector<double> rofs_infra_pittsboro = vector<double>
+                (rof_triggered_infra_order_pittsboro.size(), pittsboro_inftrigger);
+        vector<double> rofs_infra_chatham = vector<double>
+                (rof_triggered_infra_order_chatham.size(), chatham_inftrigger);
 
         /// Remove small expansions being built after big expansions that would
         /// encompass the smal expansions.
@@ -906,8 +909,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         FixedMinEnvFlowControl teer_min_env_control(teer_quarry_id, 0);
         FixedMinEnvFlowControl neuse_intake_min_env_control(neuse_river_intake_id, 38.78 * 7);
 
-        // FIXME: MAY NEED INTAKE CONTROLS FOR PITTSBORO AND CHATHAM HERE
-
     //    vector<int> eno_weeks = {7, 16, 53};
     //    vector<double> eno_releases = {6.49 * 7, 19.48 * 7, 6.49 * 7};
     //    SeasonalMinEnvFlowControl eno_min_env_control(&eno_weeks, &eno_releases);
@@ -1125,29 +1126,28 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         // Potential Sources
 
         // for simplicity, hold all permitting period variables here (in years)
-        int little_river_reservoir_raleigh_permitting_period = 17;
-        int richland_creek_quarry_permitting_period = 17;
-        int falls_lake_reallocation_permitting_period = 7; //FIXME: CHECK THIS
-        int teer_quarry_permitting_period = 7;
-        int neuse_river_intake_permitting_period = 17;
-        int haw_river_intake_low_permitting_period = 7;
-        int haw_river_intake_high_permitting_period = 7;
-        int cape_fear_river_permitting_period = 100;
-        int sanford_wtp_intake_low_permitting_period = 100; // should be 7 (2025)
-        int sanford_wtp_intake_high_permitting_period = 100; // should be 22 (2040)
-        int cane_creek_reservoir_expansion_permitting_period = 17;
-        int stone_quarry_low_permitting_period = 23;
-        int stone_quarry_high_permitting_period = 23;
-        int university_lake_expansion_permitting_period = 17;
-        int lake_michie_low_permitting_period = 17;
-        int lake_michie_high_permitting_period = 17;
-        int reclaimed_low_permitting_period = 7;
-        int reclaimed_high_permitting_period = 7;
-        int dummy_wjlwtp_permitting_period = 100;
-        int wjlwtp_low_permitting_period = 2; //FIXME: CHECK THIS
-        int wjlwtp_high_permitting_period = 7; //FIXME: CHECK THIS
+        int little_river_reservoir_raleigh_permitting_period = 17; // assume 2035 from TRWSP 2014 report
+        int richland_creek_quarry_permitting_period = 40; // from Falls Lake re-alloc report USACE (2017): not ready until at least 2057
+        int falls_lake_reallocation_permitting_period = 7; // based on TRWSP 2014, assume 2025 availability
+        int teer_quarry_permitting_period = 7; // 2025
+        int neuse_river_intake_permitting_period = 17; // assume 2035 availability, TRWSP 2014
+        int haw_river_intake_low_permitting_period = 5; // earliest by 2023 (Pittsboro 2019 report)
+        int haw_river_intake_high_permitting_period = 5; // earliest by 2023
+        int cape_fear_river_permitting_period = 100; // no longer a viable option according to Hazen and Sawyer
+        int sanford_wtp_intake_low_permitting_period = 7; // should be 7 (2025)
+        int sanford_wtp_intake_high_permitting_period = 22; // should be 22 (2040)
+        int cane_creek_reservoir_expansion_permitting_period = 17; // 2035
+        int stone_quarry_low_permitting_period = 22; // 2040
+        int stone_quarry_high_permitting_period = 22; // 2040
+        int university_lake_expansion_permitting_period = 17; // 2035
+        int lake_michie_low_permitting_period = 17; // 2035
+        int lake_michie_high_permitting_period = 17; // 2035
+        int reclaimed_low_permitting_period = 7; // 2025
+        int reclaimed_high_permitting_period = 7; // 2025
+        int dummy_wjlwtp_permitting_period = 100; // just a dummy, never built
+        int wjlwtp_low_permitting_period = 12; // Pittsboro 2019 report says 2035, TRWSP (2014) report says 2020-2025, so set to 2030
+        int wjlwtp_high_permitting_period = 12; // 2019 report says 2040, TRWSP (2014) says between 2020-2025, set to 2030
 
-        // FIXME: THIS EXPLANATION IS NO LONGER CONSISTENT WITH THE CODE
         // The capacities listed here for expansions are what additional capacity is gained relative to existing capacity,
         // NOT the total capacity after the expansion is complete. For infrastructure with a high and low option, this means
         // the capacity for both is relative to current conditions - if Lake Michie is expanded small it will gain 2.5BG,
@@ -1185,9 +1185,9 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         // FIXME: ADJUST TO ACCESS THE BUILT_SEQUENCE/CONNECTED_SOURCES PARAMETERS IN THE CONSTRUCTORS
         // SO THAT SEQUENTIAL PROJECTS ARE APPLIED PROPERLY??
         /// July 2019: three new Pittsboro/Chatham projects:
-        ///             (1ab) two stages of expansion to existing Haw River Intake for Pittsboro, above JL
+        ///             (1ab) two stages of expansion to existing Haw River Intake for Pittsboro, above JL (cost numbers from Pittsboro 2019 supply/trmt exp study, converted below to 2014 dollars)
         ///             (2)   construction of intake for Chatham County on Cape Fear river below JL, above Lillington
-        LevelDebtServiceBond low_haw_river_intake_expansion_bond(haw_river_intake_expansion_low_id, 14.2, 25, 0.05, vector<int>(1, 0), 3);
+        LevelDebtServiceBond low_haw_river_intake_expansion_bond(haw_river_intake_expansion_low_id, 20*0.93, 25, 0.05, vector<int>(1, 0), 3);
         IntakeExpansion haw_river_intake_expansion_low("Haw River Intake Low Expansion", haw_river_intake_expansion_low_id, haw_river_intake_id,
                                                        added_capacity_haw_river_intake_expansion_low, added_capacity_haw_river_intake_expansion_low,
                                                        construction_time_interval,
@@ -1195,7 +1195,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                                        haw_river_intake_low_permitting_period * WEEKS_IN_YEAR,
                                                        low_haw_river_intake_expansion_bond);
 
-        LevelDebtServiceBond high_haw_river_intake_expansion_bond(haw_river_intake_expansion_high_id, 28.4, 25, 0.05, vector<int>(1, 0), 3);
+        LevelDebtServiceBond high_haw_river_intake_expansion_bond(haw_river_intake_expansion_high_id, 30*0.93, 25, 0.05, vector<int>(1, 0), 3);
         IntakeExpansion haw_river_intake_expansion_high("Haw River Intake High Expansion", haw_river_intake_expansion_high_id, haw_river_intake_id,
                                                         added_capacity_haw_river_intake_expansion_high, added_capacity_haw_river_intake_expansion_high,
                                                         construction_time_interval,
@@ -1550,7 +1550,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         VariableJointWTP dummy_large_variable_WJLWTP("Dummy Variable WJLWTP", wjlwtp_variable_high_base_id, jordan_lake_id,
                                                      1, 0,
-                                                     {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, partner_utilities, capacities_wjlwtp_upgrade_1,
+                                                     {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, partner_utilities, capacities_wjlwtp_upgrade_2,
                                                      wjlwtp_dummy_variable_bonds_capacity_2, construction_time_interval,
                                                      dummy_wjlwtp_permitting_period * WEEKS_IN_YEAR);
 
@@ -1563,7 +1563,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                           wjlwtp_low_permitting_period * WEEKS_IN_YEAR);
 
         FixedJointWTP large_fixed_WJLWTP("Large Fixed WJLWTP", wjlwtp_fixed_high_base_id, jordan_lake_id,
-                                         1, 54 * 7,
+                                         1, (54-33) * 7,
                                          {wjlwtp_fixed_low_base_id, wjlwtp_fixed_high_base_id}, partner_utilities, capacities_wjlwtp_upgrade_2,
                                          wjlwtp_fixed_bonds_capacity_2, construction_time_interval,
                                          wjlwtp_high_permitting_period * WEEKS_IN_YEAR);
@@ -1575,9 +1575,9 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                                capacities_wjlwtp_upgrade_1, wjlwtp_variable_bonds_capacity_1,
                                                construction_time_interval, wjlwtp_low_permitting_period * WEEKS_IN_YEAR);
 
-        VariableJointWTP large_variable_WJLWTP("Large Variable WJLWTP", wjlwtp_variable_high_base_id, jordan_lake_id, 1, 54*7,
+        VariableJointWTP large_variable_WJLWTP("Large Variable WJLWTP", wjlwtp_variable_high_base_id, jordan_lake_id, 1, (54-33)*7,
                                                {wjlwtp_variable_low_base_id, wjlwtp_variable_high_base_id}, partner_utilities,
-                                               capacities_wjlwtp_upgrade_1, wjlwtp_variable_bonds_capacity_2,
+                                               capacities_wjlwtp_upgrade_2, wjlwtp_variable_bonds_capacity_2,
                                                construction_time_interval, wjlwtp_high_permitting_period * WEEKS_IN_YEAR);
 
         // small fixed WJLWTP (formulation 0: dummy, formulation 1: actual plant, formulation 2: dummy)

@@ -25,7 +25,7 @@ namespace Constants {
 //#define NUM_DEC_VAR 57;
 //    const int NUM_DEC_VAR = 57; // infrastructure turned on
 //    const int NUM_DEC_VAR = 30; // infrastructure turned off
-    const int NUM_DEC_VAR = 106; // new utilities plus infrastructure
+    const int NUM_DEC_VAR = 69; // new utilities plus infrastructure
 
     const std::string DEFAULT_DATA_DIR = "TestFiles" + BAR;
     const std::string DEFAULT_OUTPUT_DIR = "output" + BAR;

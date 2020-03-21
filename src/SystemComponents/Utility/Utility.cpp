@@ -434,6 +434,18 @@ void Utility::calculateDemandEstimateFromProjection(int week, bool reproject_dem
     int year = round(week/WEEKS_IN_YEAR_ROUND);
     current_year_recorded_demand = annual_average_weekly_demand[year];
 
+    // estimate demand in future year for LTROF calculation
+    // check that forecast length is not too long
+    if (year + demand_projection_forecast_length >= annual_demand_projections.size()) {
+        cout << "ERROR in Utility::calculateDemandEstimateFromProjection, Utility: "
+             << name << ", Year: " << year << ", Forecast Length: "
+             << demand_projection_forecast_length << ", Projection Vector Length: "
+             << annual_demand_projections.size() << endl;
+        __throw_logic_error("Error in Utility::calculateDemandEstimateFromProjection: "
+                            "input data of annual demand projections is too short for chosen "
+                            "demand projection forecast length in re-projection.");
+    }
+
     /// set final demand projection estimate for the LTROF calculation
     /// if at least 5 years since start of realization, re-project demand
     /// by determining annual average growth rate of last five years
@@ -446,7 +458,6 @@ void Utility::calculateDemandEstimateFromProjection(int week, bool reproject_dem
                 (annual_average_weekly_demand[year] - annual_average_weekly_demand[year-demand_projection_historical_period_to_use]) /
                         demand_projection_historical_period_to_use;
 
-        // estimate demand in future year for LTROF calculation
         future_demand_estimate = current_year_recorded_demand + (average_growth_rate * demand_projection_forecast_length);
 
         // overwrite annual demand projections for future years to use reprojected demands until next reprojection occurs
@@ -456,8 +467,8 @@ void Utility::calculateDemandEstimateFromProjection(int week, bool reproject_dem
             i += 1;
         }
     } else {
-        // comment for future expected mistakes: if there is an over-indexing error here, the look-ahead year range
-        // is probably too large for the input dataset of annual projected demands, which should be extended
+        // if re-projection does not occur (between years of re-projection or before re-projections begin at all)
+        // use the forecast length plus current projections to set future demand estimate
         future_demand_estimate = annual_demand_projections[year+demand_projection_forecast_length];
     }
 }
@@ -482,7 +493,9 @@ void Utility::splitDemands(
     restricted_demand -= unfulfilled_demand;
 
     if (total_available_volume > total_storage_capacity * 1.01)
-        cout << "Continuity issue here" << endl;
+        __throw_logic_error("Error in Utility::splitDemands: "
+                            "available storage volume is greater than storage capacity, "
+                            "possibly due to a source existing twice in a utility's vectors of online sources.");
 
     // Allocates demand to intakes and reuse based on allocated volume to
     // this utility.

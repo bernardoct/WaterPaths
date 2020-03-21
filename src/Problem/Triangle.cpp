@@ -264,21 +264,21 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         int cary_demand_projection_forecast_length_years = 5; // vars[88]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
         int cary_demand_projection_historical_years_to_use = 5; // vars[89]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
         int cary_demand_projection_frequency_of_reprojection_years = 5; // vars[90]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-        int durham_demand_projection_forecast_length_years = 5; //vars[91]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
-        int durham_demand_projection_historical_years_to_use = 5; //vars[92]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int durham_demand_projection_frequency_of_reprojection_years = 5; //vars[93]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-        int owasa_demand_projection_forecast_length_years = 5; //vars[94]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int durham_demand_projection_forecast_length_years = 1; //vars[91]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int durham_demand_projection_historical_years_to_use = 1; //vars[92]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int durham_demand_projection_frequency_of_reprojection_years = 1; //vars[93]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int owasa_demand_projection_forecast_length_years = 10; //vars[94]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
         int owasa_demand_projection_historical_years_to_use = 5; //vars[95]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int owasa_demand_projection_frequency_of_reprojection_years = 5; //vars[96]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-        int raleigh_demand_projection_forecast_length_years = 5; //vars[97]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int owasa_demand_projection_frequency_of_reprojection_years = 12; //vars[96]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int raleigh_demand_projection_forecast_length_years = 3; //vars[97]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
         int raleigh_demand_projection_historical_years_to_use = 5; //vars[98]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int raleigh_demand_projection_frequency_of_reprojection_years = 5; //vars[99]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-        int chatham_demand_projection_forecast_length_years = 5; //vars[100]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int raleigh_demand_projection_frequency_of_reprojection_years = 7; //vars[99]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int chatham_demand_projection_forecast_length_years = 7; //vars[100]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
         int chatham_demand_projection_historical_years_to_use = 5; //vars[101]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int chatham_demand_projection_frequency_of_reprojection_years = 5; //vars[102]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
-        int pittsboro_demand_projection_forecast_length_years = 5; //vars[103]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
-        int pittsboro_demand_projection_historical_years_to_use = 5; //vars[104]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
-        int pittsboro_demand_projection_frequency_of_reprojection_years = 5; //vars[105]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int chatham_demand_projection_frequency_of_reprojection_years = 3; //vars[102]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
+        int pittsboro_demand_projection_forecast_length_years = 14; //vars[103]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
+        int pittsboro_demand_projection_historical_years_to_use = 1; //vars[104]; //int LOOK_BACK_YEARS_FOR_DEMAND_REPROJECTION = 5;
+        int pittsboro_demand_projection_frequency_of_reprojection_years = 10; //vars[105]; //int FREQUENCY_OF_DEMAND_REPROJECTION_YEARS = 5;
 	
         /// catch ROF tables
         if (import_export_rof_tables == EXPORT_ROF_TABLES) {
@@ -2186,7 +2186,8 @@ void Triangle::readInputData() {
             evap_jordan_lake = evap_owasa;
         }
 
-        cout << "Reading demands from demands sub-folder " << demand_path_subfolder << " with input file suffix " << demand_path_suffix << endl;
+        cout << "Reading demands from demands sub-folder " << demand_path_subfolder << " with input file suffix "
+             << demand_path_suffix << endl;
 
 #pragma omp single
         demand_cary = Utils::parse2DCsvFile(
@@ -2214,34 +2215,35 @@ void Triangle::readInputData() {
                 BAR + "chatham_synthetic_demands_" + demand_path_suffix + ".csv", n_realizations);
 
         //cout << "Reading demand projections." << endl;
-        /// DEMAND PROJECTION FILES ARE 51 ELEMENTS LONG
-        /// BECAUSE DEMAND PROJECTIONS 5 YEARS AHEAD ARE USED FOR LTROF CALCULATION
-        /// SO THE PROJECTIONS ARE ANNUAL FOR 2015-2065 WHILE ALL OTHER FILES
+        /// DEMAND PROJECTION FILES ARE NOW 60 ELEMENTS LONG
+        /// BECAUSE DEMAND PROJECTIONS 5+ YEARS AHEAD ARE USED FOR LTROF CALCULATION
+        /// SO THE PROJECTIONS ARE ANNUAL FOR 2015-2075 WHILE ALL OTHER FILES
         /// ARE OUT TO 2060
+        unsigned long length_of_projection_years = 60;
 #pragma omp single
         demand_projection_cary = Utils::parse1DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
-                BAR + "cary_annual_demand_projections_MGW.csv", 51);
+                BAR + "cary_annual_demand_projections_MGW.csv", length_of_projection_years);
 #pragma omp single
         demand_projection_durham = Utils::parse1DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
-                BAR + "durham_annual_demand_projections_MGW.csv", 51);
+                BAR + "durham_annual_demand_projections_MGW.csv", length_of_projection_years);
 #pragma omp single
         demand_projection_raleigh = Utils::parse1DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
-                BAR + "raleigh_annual_demand_projections_MGW.csv", 51);
+                BAR + "raleigh_annual_demand_projections_MGW.csv", length_of_projection_years);
 #pragma omp single
         demand_projection_owasa = Utils::parse1DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
-                BAR + "owasa_annual_demand_projections_MGW.csv", 51);
+                BAR + "owasa_annual_demand_projections_MGW.csv", length_of_projection_years);
 #pragma omp single
         demand_projection_pittsboro = Utils::parse1DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
-                BAR + "pittsboro_annual_demand_projections_MGW.csv", 51);
+                BAR + "pittsboro_annual_demand_projections_MGW.csv", length_of_projection_years);
 #pragma omp single
         demand_projection_chatham = Utils::parse1DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + "demands" + BAR + demand_path_subfolder +
-                BAR + "chatham_annual_demand_projections_MGW.csv", 51);
+                BAR + "chatham_annual_demand_projections_MGW.csv", length_of_projection_years);
 
         //cout << "Reading others." << endl;
 #pragma omp single

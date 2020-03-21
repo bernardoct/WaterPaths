@@ -96,14 +96,16 @@ void ContinuityModelRealization::updateJointWTPTreatmentAllocations(int current_
                     for (int u : *ws->getUtilities_with_allocations()) {
                         // only catch if treatment capacity is being reduced to begin with, otherwise this may
                         // result in a massive adjustment unnecessarily
+                        double initial_delta = demand_deltas.at(u);
                         if (continuity_utilities.at(u)->getTotal_treatment_capacity() + demand_deltas.at(u) <
                             continuity_utilities.at(u)->getCurrent_year_demand_record() * DEMAND_PEAKING_FACTOR &
                             demand_deltas.at(u) < 0)
-                            // either reduce the "reduction" or zero out the change
-                            demand_deltas.at(u) = min(0.0,
+                            // either reduce the "reduction" or zero out the change, don't allow delta to grow
+                            // more negative than it initially was
+                            demand_deltas.at(u) = max(min(0.0,
                                                       continuity_utilities.at(u)->getTotal_treatment_capacity() -
                                                       (continuity_utilities.at(u)->getCurrent_year_demand_record() *
-                                                       DEMAND_PEAKING_FACTOR));
+                                                       DEMAND_PEAKING_FACTOR)), initial_delta);
 //                        cout << "Demand delta (1) for utility " << u << ": " << demand_deltas.at(u) << endl;
                     }
 

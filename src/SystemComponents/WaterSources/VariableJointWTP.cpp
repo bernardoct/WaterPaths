@@ -49,8 +49,8 @@ void VariableJointWTP::resetAllocations(const vector<double> *demand_deltas) {
 
         if (allocated_treatment_capacities[u] < 0) {
             allocated_treatment_capacities[u] = 0;
-            cout << "Utility " << u << " allocated treatment capacity in project " << id << " is now "
-                 << allocated_treatment_capacities[u] << " after a change of " << demand_deltas->at(u) << endl;
+//            cout << "Utility " << u << " allocated treatment capacity in project " << id << " is now "
+//                 << allocated_treatment_capacities[u] << " after a change of " << demand_deltas->at(u) << endl;
 //            throw logic_error("Error in VariableJointWTP::resetAllocations, "
 //                              "allocated treatment capacity for at least one utility is negative.");
         }

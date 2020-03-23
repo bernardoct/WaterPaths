@@ -2110,7 +2110,7 @@ Triangle::Triangle(unsigned long n_weeks, int import_export_rof_table)
 
 
 void Triangle::readInputData() {
-    cout << "Reading input data." << endl;
+//    cout << "Reading input data." << endl;
     string data_dir = DEFAULT_DATA_DIR + BAR;
 
 #pragma omp parallel num_threads(omp_get_thread_num())
@@ -2186,8 +2186,8 @@ void Triangle::readInputData() {
             evap_jordan_lake = evap_owasa;
         }
 
-        cout << "Reading demands from demands sub-folder " << demand_path_subfolder << " with input file suffix "
-             << demand_path_suffix << endl;
+//        cout << "Reading demands from demands sub-folder " << demand_path_subfolder << " with input file suffix "
+//             << demand_path_suffix << endl;
 
 #pragma omp single
         demand_cary = Utils::parse2DCsvFile(

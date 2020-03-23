@@ -471,7 +471,7 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
                 for (const int &wss : set_online_now) {
                     setWaterSourceOnline((unsigned int) wss, week, total_storage_capacity, total_treatment_capacity,
                                          total_available_volume, total_stored_volume);
-                    cout << "Utility: " << id << ", set water source " << wss << " online." << endl;
+//                    cout << "Utility: " << id << ", set water source " << wss << " online." << endl;
 
                     /// Record ID of and when infrastructure option construction was
                     /// completed. (utility_id, week, new source id)
@@ -583,9 +583,9 @@ void InfrastructureManager::checkForSequenceProjects(int original_build_id) {
             if (!yet_to_be_built) {
                 water_sources->at(original_build_id)->getBond(id).adjustCostOfCapital(
                         water_sources->at(ws)->getBond(id).getCostOfCapital());
-                cout << "Utility " << id << ": the capital cost for project " << original_build_id
-                     << " is reduced by the capital cost of earlier sequence project " << ws
-                     << " because it has already been built." << endl;
+//                cout << "Utility " << id << ": the capital cost for project " << original_build_id
+//                     << " is reduced by the capital cost of earlier sequence project " << ws
+//                     << " because it has already been built." << endl;
             }
         }
     }

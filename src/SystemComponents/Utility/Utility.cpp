@@ -1105,9 +1105,11 @@ void Utility::updateTreatmentCapacity(double capacity_adjustment) {
     total_treatment_capacity += capacity_adjustment;
 
     if (total_treatment_capacity < 0) {
-        cout << "Utility " << name << " capacity was adjusted by " << capacity_adjustment << endl;
-        throw logic_error("Error in Utility::updateTreatmentCapacity, "
-                          "total treatment capacity is negative.");
+        total_treatment_capacity = 0;
+	    
+	//cout << "Utility " << name << " capacity was adjusted by " << capacity_adjustment << endl;
+        //throw logic_error("Error in Utility::updateTreatmentCapacity, "
+        //                  "total treatment capacity is negative.");
     }
 }
 

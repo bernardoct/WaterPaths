@@ -492,21 +492,21 @@ void Utility::splitDemands(
                                  restricted_demand - total_treatment_capacity), 0.);
     restricted_demand -= unfulfilled_demand;
 
-    if (total_available_volume > total_storage_capacity * 1.01) {
-        cout << "Week " << week << ", " << name << ", Volume: " << total_available_volume << ", Capacity: "
-             << total_storage_capacity << endl;
-        for (int &ws : priority_draw_water_source)
-            cout << name << " Priority Source " << water_sources.at(ws)->name << " has capacity of "
-                 << water_sources.at(ws)->getAllocatedCapacity(id)
-                 << " and available volume of " << water_sources.at(ws)->getAvailableAllocatedVolume(id) << endl;
-        for (int &ws : non_priority_draw_water_source)
-            cout << name << " Non-Priority Source " << water_sources.at(ws)->name << " has capacity of "
-                 << water_sources.at(ws)->getAllocatedCapacity(id)
-                 << " and available volume of " << water_sources.at(ws)->getAvailableAllocatedVolume(id) << endl;
+//    if (total_available_volume > total_storage_capacity * 1.01) {
+//        cout << "Week " << week << ", " << name << ", Volume: " << total_available_volume << ", Capacity: "
+//             << total_storage_capacity << endl;
+//        for (int &ws : priority_draw_water_source)
+//            cout << name << " Priority Source " << water_sources.at(ws)->name << " has capacity of "
+//                 << water_sources.at(ws)->getAllocatedCapacity(id)
+//                 << " and available volume of " << water_sources.at(ws)->getAvailableAllocatedVolume(id) << endl;
+//        for (int &ws : non_priority_draw_water_source)
+//            cout << name << " Non-Priority Source " << water_sources.at(ws)->name << " has capacity of "
+//                << water_sources.at(ws)->getAllocatedCapacity(id)
+//                 << " and available volume of " << water_sources.at(ws)->getAvailableAllocatedVolume(id) << endl;
 //        __throw_logic_error("Error in Utility::splitDemands: "
 //                            "available storage volume is greater than storage capacity, "
 //                            "possibly due to a source existing twice in a utility's vectors of online sources.");
-    }
+//    }
 
     // Allocates demand to intakes and reuse based on allocated volume to
     // this utility.

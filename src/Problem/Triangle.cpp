@@ -71,41 +71,46 @@ void Triangle::setProblemDefinition(BORG_Problem &problem)
     BORG_Problem_set_bounds(problem, 27, 0.0, 1.0);  // LRR ranking
     BORG_Problem_set_bounds(problem, 28, 0.0, 1.0);  // Richland creek ranking 
     BORG_Problem_set_bounds(problem, 29, 0.0, 1.0);  // Neuse river intake ranking
-    BORG_Problem_set_bounds(problem, 30, 0.0, 1.0);  // WJLWTP rank OWASA low
-    BORG_Problem_set_bounds(problem, 31, 0.0, 1.0);  // WJLWTP rank OWASA high
-    BORG_Problem_set_bounds(problem, 32, 0.0, 1.0);  // WJLWTP rank durham low
-    BORG_Problem_set_bounds(problem, 33, 0.0, 1.0);  // WJLWTP rank durham high
-    BORG_Problem_set_bounds(problem, 34, 0.001, 1.0);  // WJWLTP OWASA frac
-    BORG_Problem_set_bounds(problem, 35, 0.001, 1.0);  // WJLWTP Duram frac
-    BORG_Problem_set_bounds(problem, 36, 0.0, 20.0);  // Durham inf buffer
-    BORG_Problem_set_bounds(problem, 37, 0.0, 20.0);  // OWASA inf buffer
-    BORG_Problem_set_bounds(problem, 38, 0.0, 20.0);  // Raleigh inf buffer
-    BORG_Problem_set_bounds(problem, 39, 0.0, 20.0);  // Cary inf buffer
-    BORG_Problem_set_bounds(problem, 40, 0.001, 1.0); // pitt restriction trigger
-    BORG_Problem_set_bounds(problem, 41, 0.001, 1.0); // pitt transfer trigger
-    BORG_Problem_set_bounds(problem, 42, 0.01, 0.1); // pitt JLA
-    BORG_Problem_set_bounds(problem, 43, 0.0, 0.02); // pitt insurance payment
-    BORG_Problem_set_bounds(problem, 44, 0.0, 1.0); // pitt in trigger
-    BORG_Problem_set_bounds(problem, 45, 0.0, 20.0); // pittsboro inf buff
-    BORG_Problem_set_bounds(problem, 46, 0.001, 1.0); // chatham restriction trigger
-    BORG_Problem_set_bounds(problem, 47, 0.001, 1.0); // chatham transfer trigger
-    BORG_Problem_set_bounds(problem, 48, 0.01, 0.1); // chatham JLA
-    BORG_Problem_set_bounds(problem, 49, 0.0, 0.1); // chatham annual payment
-    BORG_Problem_set_bounds(problem, 50, 0.001, 1.0); // chatham inf trigger
-    BORG_Problem_set_bounds(problem, 51, 0.0, 20.0); // chatham inf buff
-    BORG_Problem_set_bounds(problem, 52, 0.001, 1.0); // wjlwtp pitt frac
-    BORG_Problem_set_bounds(problem, 53, 0.001, 1.0); // wjlwtp chatham frac
-    BORG_Problem_set_bounds(problem, 54, 0.0, 1.0); // wjlwtp rank low pitt
-    BORG_Problem_set_bounds(problem, 55, 0.0, 1.0); // wjlwtp rank high pitt
-    BORG_Problem_set_bounds(problem, 56, 0.0, 1.0); // wjlwtp rank low chatham
-    BORG_Problem_set_bounds(problem, 57, 0.0, 1.0); // wjlwtp rank high chatham
-    BORG_Problem_set_bounds(problem, 58, 0.0, 1.0); // Sanford intake expansion pitt low rank
-    BORG_Problem_set_bounds(problem, 59, 0.0, 1.0); // Sanford intake expansion pitt high rank
-    BORG_Problem_set_bounds(problem, 60, 0.0, 1.0); // Sanford intake expansion chatham low rank	
-    BORG_Problem_set_bounds(problem, 61, 0.0, 1.0); // Sanford intake expansion chatham high rank
-    BORG_Problem_set_bounds(problem, 62, 0.0, 1.0); // haw intake expansion rank low
-    BORG_Problem_set_bounds(problem, 63, 0.0, 1.0); // haw intake expansion rank high
-    BORG_Problem_set_bounds(problem, 64, 0.0, 1.0); // cape fear intake rank
+    BORG_Problem_set_bounds(problem, 30, 0.0, 1.0);  // Neuse river intake ranking
+    BORG_Problem_set_bounds(problem, 31, 0.0, 1.0);  // WJLWTP rank OWASA low
+    BORG_Problem_set_bounds(problem, 32, 0.0, 1.0);  // WJLWTP rank OWASA high
+    BORG_Problem_set_bounds(problem, 33, 0.0, 1.0);  // WJLWTP rank durham low
+    BORG_Problem_set_bounds(problem, 34, 0.0, 1.0);  // WJLWTP rank durham high
+    BORG_Problem_set_bounds(problem, 35, 0.001, 1.0);  // WJWLTP OWASA frac
+    BORG_Problem_set_bounds(problem, 36, 0.001, 1.0);  // WJLWTP Duram frac
+    BORG_Problem_set_bounds(problem, 37, 0.0, 20.0);  // Durham inf buffer
+    BORG_Problem_set_bounds(problem, 38, 0.0, 20.0);  // OWASA inf buffer
+    BORG_Problem_set_bounds(problem, 39, 0.0, 20.0);  // Raleigh inf buffer
+    BORG_Problem_set_bounds(problem, 40, 0.0, 20.0);  // Cary inf buffer
+    BORG_Problem_set_bounds(problem, 41, 0.001, 1.0); // pitt restriction trigger
+    BORG_Problem_set_bounds(problem, 42, 0.001, 1.0); // pitt transfer trigger
+    BORG_Problem_set_bounds(problem, 43, 0.01, 0.1); // pitt JLA
+    BORG_Problem_set_bounds(problem, 44, 0.0, 0.02); // pitt insurance payment
+    BORG_Problem_set_bounds(problem, 45, 0.0, 1.0); // pitt in trigger
+    BORG_Problem_set_bounds(problem, 46, 0.0, 20.0); // pittsboro inf buff
+    BORG_Problem_set_bounds(problem, 47, 0.001, 1.0); // chatham restriction trigger
+    BORG_Problem_set_bounds(problem, 48, 0.001, 1.0); // chatham transfer trigger
+    BORG_Problem_set_bounds(problem, 49, 0.01, 0.1); // chatham JLA
+    BORG_Problem_set_bounds(problem, 50, 0.0, 0.1); // chatham annual payment
+    BORG_Problem_set_bounds(problem, 51, 0.001, 1.0); // chatham inf trigger
+    BORG_Problem_set_bounds(problem, 52, 0.0, 20.0); // chatham inf buff
+    BORG_Problem_set_bounds(problem, 53, 0.001, 1.0); // wjlwtp pitt frac
+    BORG_Problem_set_bounds(problem, 54, 0.001, 1.0); // wjlwtp chatham frac
+    BORG_Problem_set_bounds(problem, 55, 0.0, 1.0); // wjlwtp rank low pitt
+    BORG_Problem_set_bounds(problem, 56, 0.0, 1.0); // wjlwtp rank high pitt
+    BORG_Problem_set_bounds(problem, 57, 0.0, 1.0); // wjlwtp rank low chatham
+    BORG_Problem_set_bounds(problem, 58, 0.0, 1.0); // wjlwtp rank high chatham
+    BORG_Problem_set_bounds(problem, 59, 0.0, 1.0); // Sanford intake expansion pitt low rank
+    BORG_Problem_set_bounds(problem, 60, 0.0, 1.0); // Sanford intake expansion pitt high rank
+    BORG_Problem_set_bounds(problem, 61, 0.0, 1.0); // Sanford intake expansion chatham low rank    
+    BORG_Problem_set_bounds(problem, 62, 0.0, 1.0); // Sanford intake expansion chatham high rank
+    BORG_Problem_set_bounds(problem, 63, 0.0, 1.0); // haw intake expansion rank low
+    BORG_Problem_set_bounds(problem, 64, 0.0, 1.0); // haw intake expansion rank high
+    BORG_Problem_set_bounds(problem, 65, 0.0, 1.0); // cape fear intake rank
+    BORG_Problem_set_bounds(problem, 66, 1.0, 10.0);  // forecast length
+    BORG_Problem_set_bounds(problem, 67, 1.0, 10.0);  // historical range
+    BORG_Problem_set_bounds(problem, 68, 1.0, 5.0);  // frequency of projection
+    
 	
 	
     // Set epsilons for objectives

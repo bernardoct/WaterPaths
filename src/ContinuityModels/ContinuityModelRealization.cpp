@@ -103,9 +103,9 @@ void ContinuityModelRealization::updateJointWTPTreatmentAllocations(int current_
                             // either reduce the "reduction" or zero out the change, don't allow delta to grow
                             // more negative than it initially was
                             demand_deltas.at(u) = max(min(0.0,
-                                                      continuity_utilities.at(u)->getTotal_treatment_capacity() -
-                                                      (continuity_utilities.at(u)->getCurrent_year_demand_record() *
-                                                       DEMAND_PEAKING_FACTOR)), initial_delta);
+                                    (continuity_utilities.at(u)->getCurrent_year_demand_record() * DEMAND_PEAKING_FACTOR) -
+                                    continuity_utilities.at(u)->getTotal_treatment_capacity()),
+                                            initial_delta);
 //                        cout << "Demand delta (1) for utility " << u << ": " << demand_deltas.at(u) << endl;
                     }
 
@@ -120,6 +120,13 @@ void ContinuityModelRealization::updateJointWTPTreatmentAllocations(int current_
                                                            ws->getParentWaterSourceID())->getAllocatedCapacity(u) /
                                                    continuity_utilities.at(u)->getTotal_storage_capacity());
 //                        cout << "Demand delta (2) for utility " << u << ": " << demand_deltas.at(u) << endl;
+
+                        // double-check that deltas do not draw down treatment capacity too much
+                        if (continuity_utilities.at(u)->getTotal_treatment_capacity() + demand_deltas.at(u) < continuity_utilities.at(u)->getCurrent_year_demand_record() * DEMAND_PEAKING_FACTOR)
+                            if (demand_deltas.at(u) < 0)
+                                demand_deltas.at(u) = continuity_utilities.at(u)->getCurrent_year_demand_record() *
+                                        DEMAND_PEAKING_FACTOR -
+                                        continuity_utilities.at(u)->getTotal_treatment_capacity();
                     }
 
                     ws->resetAllocations(&demand_deltas); // should skip right to VariableJointWTP definition

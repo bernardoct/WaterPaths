@@ -396,7 +396,7 @@ MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, dou
             // printf("Realization %lu took %f seconds.\n", r, omp_get_wtime() - start);
 
 #pragma omp critical
-	    printProgress((double) master_data_collector->getRealizations_created() / (double) realizations_to_run_unique.size());
+	    //printProgress((double) master_data_collector->getRealizations_created() / (double) realizations_to_run_unique.size());
 
 //        } catch (...) {
 //#pragma omp atomic

@@ -2031,8 +2031,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         objectives = calculateAndPrintObjectives(false);
 
         int i = 0;
-        objs[i] = min(min(objectives[i], objectives[5 + i]),
-        		   min(objectives[10 + i], objectives[15 + i])) - 1.;
+        objs[i] = 1. - min(min(objectives[i], objectives[5 + i]),
+        		   min(objectives[10 + i], objectives[15 + i]));
         for (i = 1; i < 5; ++i) {
             objs[i] = max(max(objectives[i], objectives[5 + i]),
       	                  max(objectives[10 + i], objectives[15 + i]));

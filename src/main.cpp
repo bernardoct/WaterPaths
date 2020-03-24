@@ -6,7 +6,7 @@
 #include "Utils/Utils.h"
 
 #ifdef  PARALLEL
-#include "../Borg/borgms.h"
+#include "../Borg/borgmm.h"
 #include <mpi.h>
 #endif
 
@@ -422,8 +422,8 @@ int main(int argc, char *argv[]) {
         // for debugging borg, creating file to print each ranks DVs which isdone in Eval function   
         
         BORG_Algorithm_ms_startup(&argc, &argv);
-        // BORG_Algorithm_ms_islands((int) n_islands);
-        // BORG_Algorithm_ms_initialization(INITIALIZATION_LATIN_GLOBAL);
+        BORG_Algorithm_ms_initialization(INITIALIZATION_LATIN_GLOBAL);
+        BORG_Algorithm_ms_islands((int) n_islands);
         BORG_Algorithm_ms_max_evaluations((int) nfe);
         BORG_Algorithm_output_frequency((int) output_frequency);
 
@@ -452,9 +452,9 @@ int main(int argc, char *argv[]) {
         sprintf(output_file_name, "%sNC_output_MS_S%d_N%lu.set", output_directory, seed, nfe);
         printf("Reference set will be in %s.\n", output_file_name);
         // output path (make sure this exists)
-        // sprintf(runtime, "%sNC_runtime_MM_S%d_N%lu_M%%d.runtime", output_directory,
-        sprintf(runtime, "%sNC_runtime_MS_S%d_N%lu.runtime", output_directory,
-                seed, nfe); // runtime
+        sprintf(runtime, "%sNC_runtime_MM_S%d_N%lu_M%%d.runtime", output_directory, seed, nfe); // runtime
+        //sprintf(runtime, "%sNC_runtime_MS_S%d_N%lu.runtime", output_directory,
+                
         printf("Runtime files will be in %s.\n", runtime);
         // path (make sure this exists)
 
@@ -463,6 +463,7 @@ int main(int argc, char *argv[]) {
         int rank; // different seed on each processor
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         string rank_out_file = "diagnostic_output/DVs_rank_" + to_string(rank) + ".csv";
+        ofstream sol_out;
         sol_out.open(rank_out_file.c_str());
 
         //int rank; // different seed on each processor

@@ -6,7 +6,7 @@
 #define TRIANGLEMODEL_TRIANGLE_H
 
 #ifdef PARALLEL
-#include "../../Borg/borgms.h"
+#include "../../Borg/borgmm.h"
 #endif
 #include "Base/Problem.h"
 #include "../Simulation/Simulation.h"

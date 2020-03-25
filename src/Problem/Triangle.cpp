@@ -954,8 +954,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                 Durham_JLA * jl_supply_capacity / jl_storage_capacity,
                 Cary_JLA * jl_supply_capacity / jl_storage_capacity,
                 Raleigh_JLA * jl_supply_capacity / jl_storage_capacity,
-                Pittsboro_JLA * jl_supply_capacity / jl_storage_capacity,
                 Chatham_JLA * jl_supply_capacity / jl_storage_capacity,
+                Pittsboro_JLA * jl_supply_capacity / jl_storage_capacity,
                 jl_wq_capacity / jl_storage_capacity};
 
         /// July 2019: with Pittsboro (5th) and Chatham County (6th) added, Chatham's existing treatment capacity

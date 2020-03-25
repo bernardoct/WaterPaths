@@ -84,6 +84,10 @@ ContinuityModel::ContinuityModel(vector<WaterSource *> &water_sources, vector<Ut
     for (Utility *u : continuity_utilities) {
         utilities_capacities.push_back(u->getTotal_storage_capacity());
         if (utilities_capacities.back() == 0) {
+            cout << u->name << " has no storage capacity. Sources: " << endl;
+            for (int ws : water_sources_online_to_utilities[u->id])
+                cout << water_sources.at(ws)->name << ": storage capacity is "
+                     << water_sources.at(ws)->getAllocatedCapacity(u->id) << endl;
             char error[1000];
             sprintf(error, "Utility %d has no storage capacity (0 MGD), which "
                            "would lead to an ROF value of 0/0. WaterPaths "

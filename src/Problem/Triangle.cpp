@@ -48,9 +48,9 @@ void Triangle::setProblemDefinition(BORG_Problem &problem)
     BORG_Problem_set_bounds(problem, 4, 0.001, 1.0); // Durham Transfers
     BORG_Problem_set_bounds(problem, 5, 0.001, 1.0); // OWASA Transfers
     BORG_Problem_set_bounds(problem, 6, 0.001, 1.0); // Raleigh Transfers
-    BORG_Problem_set_bounds(problem, 7, 0.1, 0.47);  // OWASA JLA
-    BORG_Problem_set_bounds(problem, 8, 0.05, 0.42); // Durham JLA 
-    BORG_Problem_set_bounds(problem, 9, 0.355, 0.725); // Cary JLA
+    BORG_Problem_set_bounds(problem, 7, 0.05, 0.1);  // OWASA JLA
+    BORG_Problem_set_bounds(problem, 8, 0.1, 0.35); // Durham JLA
+    BORG_Problem_set_bounds(problem, 9, 0.46, 0.7); // Cary JLA
     BORG_Problem_set_bounds(problem, 10, 0.0, 0.1);  // Durham reserver fund cont
     BORG_Problem_set_bounds(problem, 11, 0.0, 0.1);  // OWASA reserve fund cont
     BORG_Problem_set_bounds(problem, 12, 0.0, 0.1);  // Raleigh reserve fund cont
@@ -71,31 +71,31 @@ void Triangle::setProblemDefinition(BORG_Problem &problem)
     BORG_Problem_set_bounds(problem, 27, 0.0, 1.0);  // LRR ranking
     BORG_Problem_set_bounds(problem, 28, 0.0, 1.0);  // Richland creek ranking 
     BORG_Problem_set_bounds(problem, 29, 0.0, 1.0);  // Neuse river intake ranking
-    BORG_Problem_set_bounds(problem, 30, 0.0, 1.0);  // Neuse river intake ranking
+    BORG_Problem_set_bounds(problem, 30, 0.0, 1.0);  // Falls lake reallocation
     BORG_Problem_set_bounds(problem, 31, 0.0, 1.0);  // WJLWTP rank OWASA low
     BORG_Problem_set_bounds(problem, 32, 0.0, 1.0);  // WJLWTP rank OWASA high
     BORG_Problem_set_bounds(problem, 33, 0.0, 1.0);  // WJLWTP rank durham low
     BORG_Problem_set_bounds(problem, 34, 0.0, 1.0);  // WJLWTP rank durham high
-    BORG_Problem_set_bounds(problem, 35, 0.001, 1.0);  // WJWLTP OWASA frac
-    BORG_Problem_set_bounds(problem, 36, 0.001, 1.0);  // WJLWTP Duram frac
+    BORG_Problem_set_bounds(problem, 35, 0.001, 0.2);  // WJWLTP OWASA frac
+    BORG_Problem_set_bounds(problem, 36, 0.001, 0.6);  // WJLWTP Durham frac
     BORG_Problem_set_bounds(problem, 37, 0.0, 20.0);  // Durham inf buffer
     BORG_Problem_set_bounds(problem, 38, 0.0, 20.0);  // OWASA inf buffer
     BORG_Problem_set_bounds(problem, 39, 0.0, 20.0);  // Raleigh inf buffer
     BORG_Problem_set_bounds(problem, 40, 0.0, 20.0);  // Cary inf buffer
     BORG_Problem_set_bounds(problem, 41, 0.001, 1.0); // pitt restriction trigger
     BORG_Problem_set_bounds(problem, 42, 0.001, 1.0); // pitt transfer trigger
-    BORG_Problem_set_bounds(problem, 43, 0.01, 0.1); // pitt JLA
+    BORG_Problem_set_bounds(problem, 43, 0.0, 0.12); // pitt JLA
     BORG_Problem_set_bounds(problem, 44, 0.0, 0.02); // pitt insurance payment
     BORG_Problem_set_bounds(problem, 45, 0.0, 1.0); // pitt in trigger
     BORG_Problem_set_bounds(problem, 46, 0.0, 20.0); // pittsboro inf buff
     BORG_Problem_set_bounds(problem, 47, 0.001, 1.0); // chatham restriction trigger
     BORG_Problem_set_bounds(problem, 48, 0.001, 1.0); // chatham transfer trigger
-    BORG_Problem_set_bounds(problem, 49, 0.01, 0.1); // chatham JLA
+    BORG_Problem_set_bounds(problem, 49, 0.06, 0.35); // chatham JLA
     BORG_Problem_set_bounds(problem, 50, 0.0, 0.1); // chatham annual payment
     BORG_Problem_set_bounds(problem, 51, 0.001, 1.0); // chatham inf trigger
     BORG_Problem_set_bounds(problem, 52, 0.0, 20.0); // chatham inf buff
-    BORG_Problem_set_bounds(problem, 53, 0.001, 1.0); // wjlwtp pitt frac
-    BORG_Problem_set_bounds(problem, 54, 0.001, 1.0); // wjlwtp chatham frac
+    BORG_Problem_set_bounds(problem, 53, 0.01, 0.4); // wjlwtp pitt frac
+    BORG_Problem_set_bounds(problem, 54, 0.01, 0.5); // wjlwtp chatham frac
     BORG_Problem_set_bounds(problem, 55, 0.0, 1.0); // wjlwtp rank low pitt
     BORG_Problem_set_bounds(problem, 56, 0.0, 1.0); // wjlwtp rank high pitt
     BORG_Problem_set_bounds(problem, 57, 0.0, 1.0); // wjlwtp rank low chatham
@@ -1136,11 +1136,11 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         int falls_lake_reallocation_permitting_period = 7; // based on TRWSP 2014, assume 2025 availability
         int teer_quarry_permitting_period = 7; // 2025
         int neuse_river_intake_permitting_period = 17; // assume 2035 availability, TRWSP 2014
-        int haw_river_intake_low_permitting_period = 5; // earliest by 2023 (Pittsboro 2019 report)
-        int haw_river_intake_high_permitting_period = 5; // earliest by 2023
+        int haw_river_intake_low_permitting_period = 2; // earliest by 2023 (Pittsboro 2019 report), say 2020 (2014 JLA report implies 2020)
+        int haw_river_intake_high_permitting_period = 5; // earliest by 2023, though older report says 2025
         int cape_fear_river_permitting_period = 100; // no longer a viable option according to Hazen and Sawyer
         int sanford_wtp_intake_low_permitting_period = 7; // should be 7 (2025)
-        int sanford_wtp_intake_high_permitting_period = 22; // should be 22 (2040)
+        int sanford_wtp_intake_high_permitting_period = 13; // should be 22 (2040), 2014 Cnty report says 2031 is earliest for a harnett county project so use that...
         int cane_creek_reservoir_expansion_permitting_period = 17; // 2035
         int stone_quarry_low_permitting_period = 22; // 2040
         int stone_quarry_high_permitting_period = 22; // 2040
@@ -1150,8 +1150,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         int reclaimed_low_permitting_period = 7; // 2025
         int reclaimed_high_permitting_period = 7; // 2025
         int dummy_wjlwtp_permitting_period = 100; // just a dummy, never built
-        int wjlwtp_low_permitting_period = 12; // Pittsboro 2019 report says 2035, TRWSP (2014) report says 2020-2025, so set to 2030
-        int wjlwtp_high_permitting_period = 12; // 2019 report says 2040, TRWSP (2014) says between 2020-2025, set to 2030
+        int wjlwtp_low_permitting_period = 5; // Pittsboro 2019 report says 2035, TRWSP (2014) report says 2020-2025, so set to 2023 (if began today...)
+        int wjlwtp_high_permitting_period = 7; // 2019 report says 2040, TRWSP (2014) says between 2020-2025, Pittsboro 2014 report says 2030... say 2025
 
         // The capacities listed here for expansions are what additional capacity is gained relative to existing capacity,
         // NOT the total capacity after the expansion is complete. For infrastructure with a high and low option, this means
@@ -1218,7 +1218,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         /// Feb 2020: additional new Pittsboro and Chatham projects:
         ///             (3abcd) staged buy-ins to Sanford WTP capacity
         ///                       (we aren't modeling Sanford, so include these as potential intakes)
-        //FIXME: PERMIT PERIODS SET LOW FOR TESTING, SHOULD BE 7 AND 22
         double pittsboro_low_cost = 49.6*0.94; // in millions, capital cost ADJUSTED FROM 2018 TO 2014 DOLLARS
         double pittsboro_high_cost = (19.7+49.6)*0.94; // in millions, capital cost
         double chatham_low_cost = 7.9*0.94; // in millions, capital cost
@@ -1276,7 +1275,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                 sanford_wtp_intake_high_permitting_period * WEEKS_IN_YEAR, sanford_high_expansion_bonds); // permit time, bonds
 
 
-        //FIXME: CHECK THAT REALLOCATION IS FIXED TO ARMY CORPS APPROVED LEVEL
         /// MAR 2020: REALLOCATION FROM USACE 2017 REPORT IS 17,300 AF (effectively flips fraction of conservation pool
         /// allocated for water quality and quantity to 58 and 42 percent, respectively)
         /// The expected costs (says economic analysis but I think this is total financial cost) are $142 MM (2016 dollars)

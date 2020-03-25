@@ -1784,16 +1784,16 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         table_storage_shift[uid_raleigh][falls_lake_reallocation_id] = 2000.;
         table_storage_shift[uid_raleigh][richland_creek_quarry_id] = 5000.;
         table_storage_shift[uid_owasa][university_lake_expansion_id] = 100.;
-        table_storage_shift[uid_durham][wjlwtp_fixed_low_base_id] = 500.;
-        table_storage_shift[uid_durham][wjlwtp_fixed_high_base_id] = 500.;
+        table_storage_shift[uid_durham][wjlwtp_fixed_low_base_id] = 500.*Durham_JLA;
+        table_storage_shift[uid_durham][wjlwtp_fixed_high_base_id] = 500.*Durham_JLA;
         table_storage_shift[uid_durham][michie_expansion_low_id] = 700.;
         table_storage_shift[uid_durham][teer_quarry_id] = 700.;
 
         auto table_base_storage_shift = vector<vector<double>>(6, vector<double>(35, 0.));
-        table_base_storage_shift[uid_pittsboro][wjlwtp_fixed_low_base_id] = 5000.;
-        table_base_storage_shift[uid_pittsboro][wjlwtp_fixed_high_base_id] = 5000.;
-        table_base_storage_shift[uid_pittsboro][wjlwtp_variable_low_base_id] = 5000.;
-        table_base_storage_shift[uid_pittsboro][wjlwtp_variable_high_base_id] = 5000.;
+        table_base_storage_shift[uid_pittsboro][wjlwtp_fixed_low_base_id] = 5000.*Pittsboro_JLA;
+        table_base_storage_shift[uid_pittsboro][wjlwtp_fixed_high_base_id] = 5000.*Pittsboro_JLA;
+        table_base_storage_shift[uid_pittsboro][wjlwtp_variable_low_base_id] = 5000.*Pittsboro_JLA;
+        table_base_storage_shift[uid_pittsboro][wjlwtp_variable_high_base_id] = 5000.*Pittsboro_JLA;
         table_base_storage_shift[uid_pittsboro][haw_river_intake_expansion_low_id] = 10000.;
         table_base_storage_shift[uid_pittsboro][haw_river_intake_expansion_high_id] = 10000.;
 

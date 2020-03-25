@@ -114,9 +114,9 @@ void Triangle::setProblemDefinition(BORG_Problem &problem)
 	
 	
     // Set epsilons for objectives
-    BORG_Problem_set_epsilon(problem, 0, 0.002);
+    BORG_Problem_set_epsilon(problem, 0, 0.001);
     BORG_Problem_set_epsilon(problem, 1, 0.02);
-    BORG_Problem_set_epsilon(problem, 2, 10.);
+    BORG_Problem_set_epsilon(problem, 2, 5.);
     BORG_Problem_set_epsilon(problem, 3, 0.02);
     BORG_Problem_set_epsilon(problem, 4, 0.01);
     BORG_Problem_set_epsilon(problem, 5, 0.01);
@@ -2031,21 +2031,19 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         objectives = calculateAndPrintObjectives(false);
 
         int i = 0;
-        objs[i] = 1. - min(min(objectives[i], objectives[5 + i]),
-        		   min(objectives[10 + i], objectives[15 + i]));
-        for (i = 1; i < 5; ++i) {
-            objs[i] = max(max(objectives[i], objectives[5 + i]),
-      	                  max(objectives[10 + i], objectives[15 + i]));
+        objs[i] = 1. - min(min(min(objectives[i], objectives[6 + i]),
+                   min(objectives[12 + i], objectives[18 + i])),
+                   min(objectives[24 + i], objectives[30 + i]));
+        for (i = 1; i < 6; ++i) {
+            objs[i] = max(max(max(objectives[i], objectives[6 + i]),
+                          max(objectives[12 + i], objectives[18 + i])),
+                          max(objectives[24 + i], objectives[30 + i]));
         }
-
-        objs[5] = OWASA_JLA + Durham_JLA + Cary_JLA + Raleigh_JLA;
-
-        objectives.push_back(objs[5]);
         
-        if (s != nullptr) {	
+        if (s != nullptr) { 
             delete s;
-	}
-	s = nullptr;
+    }
+    s = nullptr;
 #endif
 //    } catch (const std::exception& e) {
 //        simulationExceptionHander(e, s, objs, vars);

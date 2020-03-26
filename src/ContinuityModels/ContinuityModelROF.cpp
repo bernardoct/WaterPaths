@@ -197,8 +197,10 @@ vector<vector<double>> ContinuityModelROF::calculateShortTermROFTable(int week, 
 //             << " and is shifted by " << current_base_storage_table_shift[u]
 //             << " leading to a tier of " << tier << endl;
 
-//        if (tier > NO_OF_INSURANCE_STORAGE_TIERS-1)
-//            cout << "VIOLATION OF TIER LIMITS" << endl;
+        // if the table shifts or storage levels result in tier too large for the table, cap it to prevent borg crash
+        // (if past the top tier, ROF = 0 anyway)
+        if (tier > NO_OF_INSURANCE_STORAGE_TIERS-1)
+            tier = NO_OF_INSURANCE_STORAGE_TIERS-1;
 
         // Jan 2020: check in on current demand and treatment capacity conditions
         // THIS IS NOT AN EXACT VERSION OF FULL ROF CALCULATION BUT A ROUGH APPROXIMATION OF CONDITIONS

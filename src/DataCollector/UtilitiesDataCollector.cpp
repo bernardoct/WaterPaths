@@ -8,7 +8,7 @@
 
 
 UtilitiesDataCollector::UtilitiesDataCollector(const Utility *utility, unsigned long realization)
-        : DataCollector(utility->id, utility->name, realization, UTILITY, 20 * COLUMN_WIDTH),
+        : DataCollector(utility->id, utility->name, realization, UTILITY, 21 * COLUMN_WIDTH),
           utility(utility) {
 }
 
@@ -61,7 +61,9 @@ string UtilitiesDataCollector::printTabularString(int week) {
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
               << projected_demand_estimate[week]
               << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-              << present_valued_debt_service_payments[week];
+              << present_valued_debt_service_payments[week]
+              << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+              << gross_revenues[week];
 
     return outStream.str();
 }
@@ -115,6 +117,8 @@ string UtilitiesDataCollector::printCompactString(int week) {
               << projected_demand_estimate[week]
               << ","
               << present_valued_debt_service_payments[week]
+              << ","
+              << gross_revenues[week]
               << ",";
 
     return outStream.str();
@@ -146,7 +150,8 @@ string UtilitiesDataCollector::printTabularStringHeaderLine1() {
               << setw(COLUMN_WIDTH) << "Final"
               << setw(COLUMN_WIDTH) << "Obs"
               << setw(COLUMN_WIDTH) << "Proj"
-              << setw(COLUMN_WIDTH) << "PV Debt";
+              << setw(COLUMN_WIDTH) << "PV Debt"
+              << setw(COLUMN_WIDTH) << "Gross";
 
     return outStream.str();
 }
@@ -177,7 +182,8 @@ string UtilitiesDataCollector::printTabularStringHeaderLine2() {
               << setw(COLUMN_WIDTH) << "Storage"
               << setw(COLUMN_WIDTH) << "Demand"
               << setw(COLUMN_WIDTH) << "Demand"
-              << setw(COLUMN_WIDTH) << "Service";
+              << setw(COLUMN_WIDTH) << "Service"
+              << setw(COLUMN_WIDTH) << "Revenue";
 
     return outStream.str();
 }
@@ -207,7 +213,8 @@ string UtilitiesDataCollector::printCompactStringHeader() {
               << id << "stor_vol" << ","
               << id << "obs_ann_dem" << ","
               << id << "proj_dem" << ","
-              << id << "pv_debt_serv" << ",";
+              << id << "pv_debt_serv" << ","
+              << id << "gross_rev" << ",";
 
     return outStream.str();
 }

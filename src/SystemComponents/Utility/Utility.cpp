@@ -841,9 +841,13 @@ void Utility::setRealization(unsigned long r, vector<double>& rdm_factors) {
     // Apply demand multiplier and copy demands pertaining to current realization.
     double delta_demand = demands_all_realizations.at(r)[0] * (1. -
             rdm_factors.at(0));
+
+    // Also apply sinusoidal factors (rdm_factor ids 4,5,6)
     for (unsigned long w = 0; w < n_weeks; ++w) {
         demand_series_realization[w] = demands_all_realizations.at(r)[w] *
-                                               rdm_factors.at(0)
+                                               rdm_factors.at(0) *
+                                               getSinusoidalFactor(w, rdm_factors.at(4),
+                                                       rdm_factors.at(5), rdm_factors.at(6))
                                        + delta_demand;
     }
 
@@ -1116,4 +1120,9 @@ void Utility::updateTreatmentCapacity(double capacity_adjustment) {
 void Utility::setTreatmentCapacity(double total_capacity) {
     // meant to pass treatment capacity from realization model to rof model
     total_treatment_capacity = total_capacity;
+}
+
+// accepts sinusoidal parameters from LHS RDM sample and returns weekly multiplier
+double Utility::getSinusoidalFactor(int week, double A, double T, double p) {
+    return (1 + A * sin(2 * 3.14159265 * week / T + p) - A * sin(p));
 }

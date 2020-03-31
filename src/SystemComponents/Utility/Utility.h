@@ -290,6 +290,8 @@ public:
     double getStorageRisk_of_failure() const;
 
     double getTreatmentRisk_of_failure() const;
+
+    double getSinusoidalFactor(int week, double A, double T, double p);
 };
 
 

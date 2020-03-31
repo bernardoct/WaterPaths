@@ -759,7 +759,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         if (utilities_rdm.empty()) {
             /// All matrices below have dimensions n_realizations x nr_rdm_factors
             utilities_rdm = std::vector<vector<double>>(
-                    n_realizations, vector<double>(6, 1.));
+                    n_realizations, vector<double>(7, 1.));
             water_sources_rdm = std::vector<vector<double>>(
                     n_realizations, vector<double>(80, 1.));
             policies_rdm = std::vector<vector<double>>(

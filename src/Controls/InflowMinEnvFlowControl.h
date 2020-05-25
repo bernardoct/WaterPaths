@@ -10,9 +10,13 @@
 
 class InflowMinEnvFlowControl : public MinEnvFlowControl {
 private:
+    int last_tier = 0;
+    vector<double> inflows;
     double getRelease(int week) override;
+
+    unsigned long n_inflows;
 public:
-    InflowMinEnvFlowControl(int water_source_id, const vector<double> &inflows,
+    InflowMinEnvFlowControl(int water_source_id, const vector<double> inflows,
                                 const vector<double> &releases);
 
     InflowMinEnvFlowControl(const InflowMinEnvFlowControl &min_env_control);
@@ -23,7 +27,6 @@ public:
 
     const vector<double> &getReleases() const;
 
-    const vector<double>& inflows;
     const vector<double>& releases;
 };
 

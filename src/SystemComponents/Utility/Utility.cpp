@@ -362,17 +362,20 @@ void Utility::splitDemands(
                           weekly_peaking_factor[Utils::weekOfTheYear(week)];
     restricted_demand = unrestricted_demand * demand_multiplier - demand_offset;
     unfulfilled_demand = max(max(restricted_demand - total_available_volume,
-                                 restricted_demand - total_treatment_capacity),
-                             0.);
+                                 restricted_demand - total_treatment_capacity), 0.);
     restricted_demand -= unfulfilled_demand;
+    double demand_non_priority_sources = restricted_demand;
+    double total_serviced_demand = 0;
 
     // Allocates demand to intakes and reuse based on allocated volume to
     // this utility.
     for (int &ws : priority_draw_water_source) {
         double source_demand =
-                min(restricted_demand,
+                min(demand_non_priority_sources,
                     water_sources[ws]->getAvailableAllocatedVolume(id));
         demands[ws][this->id] = source_demand;
+        demand_non_priority_sources -= source_demand;
+        total_serviced_demand += source_demand;
     }
 
     // Allocates remaining demand to reservoirs based on allocated available
@@ -390,10 +393,10 @@ void Utility::splitDemands(
         demand_fraction[ws] =
                 max(1.0e-6,
                     source->getAvailableAllocatedVolume(id) /
-                    total_available_volume);
+                    total_stored_volume);
 
         // Calculate demand allocated to a given source.
-        double source_demand = restricted_demand * demand_fraction[ws];
+        double source_demand = demand_non_priority_sources * demand_fraction[ws];
         demands[ws][id] = source_demand;
 
         // Check if allocated demand was greater than treatment capacity.
@@ -410,6 +413,7 @@ void Utility::splitDemands(
             sum_not_alloc_demand_fraction += demand_fraction[ws];
             not_over_allocated_sources++;
         }
+        total_serviced_demand += demands[ws][id];
     }
 
     // Do one iteration of demand reallocation among sources whose treatment
@@ -425,6 +429,7 @@ void Utility::splitDemands(
     }
 
     // Update contingency fund
+    unfulfilled_demand = restricted_demand - total_serviced_demand;
     if (used_for_realization) {
         updateContingencyFundAndDebtService(unrestricted_demand,
                                             demand_multiplier,

@@ -17,6 +17,7 @@ class IntakeDataCollector : public DataCollector {
     vector<double> wastewater_inflows;
     vector<double> outflows;
     vector<double> total_catchments_inflow;
+    vector<double> treatment_capacity;
 
 public:
     IntakeDataCollector(Intake *intake, unsigned long realization);

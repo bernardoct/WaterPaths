@@ -19,9 +19,11 @@ protected:
     int number_of_week_demands = NON_INITIALIZED;
     vector<int> demand_infra_construction_order;
     vector<int> rof_infra_construction_order;
+    vector<double> infra_construction_triggers;
+    vector<double> utility_owned_wtp_capacities;
     vector<vector<int>> infra_if_built_remove;
     vector<vector<int>> construction_pre_requisites;
-    vector<double> infra_construction_triggers;
+    vector<vector<int>> water_source_to_wtp;
     vector<vector<double>> typesMonthlyDemandFraction;
     vector<vector<double>> typesMonthlyWaterPrice;
     vector<vector<double>> *demands_all_realizations = nullptr;

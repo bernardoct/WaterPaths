@@ -93,8 +93,16 @@ void UtilityParser::parseVariables(vector<vector<string>> &block,
                     discharge_to_sources_ids
             );
             rows_read.push_back(i);
-        } else if (line[0] == "construction_pre_requisites") {
-
+        } else if (line[0] == "water_source_to_wtp") {
+            for (auto n = line.begin() + 1; n != line.end(); ++n) {
+                vector<int> wswtp;
+                Utils::tokenizeString(*n, wswtp, ',');
+                water_source_to_wtp.push_back(wswtp);
+            }
+            rows_read.push_back(i);
+        } else if (line[0] == "utility_owned_wtp_capacities") {
+            Utils::tokenizeString(line[1], utility_owned_wtp_capacities, ',');
+            rows_read.push_back(i);
         }
     }
 
@@ -112,18 +120,6 @@ UtilityParser::generateUtility(int id, vector<vector<string>> &block,
     AuxParserFunctions::checkForUnreadTags(line_no, block, tag_name);
     checkMissingOrExtraParams(block, line_no);
 
-//    if (rof_infra_construction_order.size() !=
-//        infra_construction_triggers.size() &&
-//        demand_infra_construction_order.size() !=
-//        infra_construction_triggers.size()) {
-//        char error[300];
-//        sprintf(error,
-//                "Mismatch between number of infrastructure trigger values and "
-//                "infrastructure options in %s, line number %d.",
-//                tag_name.c_str(), line_no);
-//        throw invalid_argument(error);
-//    }
-
     if (infra_construction_triggers.empty()) {
         return new Utility(
                 name, id, *demands_all_realizations,
@@ -131,7 +127,8 @@ UtilityParser::generateUtility(int id, vector<vector<string>> &block,
                 percent_contingency_fund_contribution,
                 typesMonthlyDemandFraction,
                 typesMonthlyWaterPrice, wwtp_discharge_rule,
-                demand_buffer
+                demand_buffer, water_source_to_wtp,
+                utility_owned_wtp_capacities
         );
     } else {
         return new Utility(
@@ -140,12 +137,12 @@ UtilityParser::generateUtility(int id, vector<vector<string>> &block,
                 percent_contingency_fund_contribution,
                 typesMonthlyDemandFraction,
                 typesMonthlyWaterPrice, wwtp_discharge_rule,
-                demand_buffer, rof_infra_construction_order,
+                demand_buffer, water_source_to_wtp,
+                utility_owned_wtp_capacities, rof_infra_construction_order,
                 demand_infra_construction_order,
                 infra_construction_triggers, infra_discount_rate,
                 infra_if_built_remove
         );
-
     }
 }
 

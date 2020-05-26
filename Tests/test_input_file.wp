@@ -1,41 +1,42 @@
 [RUN PARAMETERS]
-n_realizations 1000 
-n_weeks 2344 
-rdm_utilities /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/rdm_utilities_test_problem_opt.csv 
-rdm_water_sources /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/rdm_water_sources_test_problem_opt.csv 
-rdm_dmps /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/rdm_dmp_test_problem_opt.csv
-rdm_no 0
-n_threads 8
-rof_tables_dir ../rof_tables_test_problem/
-use_rof_tables generate
-solutions_file /home/bernardo/CLionProjects/RevampedTriangleModel/reference_final_filtered_paper3.reference
+n_realizations 8
+n_weeks 2344
+rdm_utilities /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_utilities_test_problem_opt.csv 
+rdm_water_sources /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_water_sources_test_problem_opt.csv 
+rdm_dmps /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_dmp_test_problem_opt.csv
+n_threads 4
+rof_tables_dir /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/rof_tables_test_problem/
+use_rof_tables import
+solutions_file /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/reference_final_filtered_paper3.reference
 solutions_to_run 0
 seed 0
+print_time_series true
+output_dir /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/output/
 
 
 [DATA TO LOAD]
 # Files with "*" are always fully loaded instead of having on n_realizations lines loaded
-*caryDemandClassesFractions /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/caryDemandClassesFractions.csv
-*caryUserClassesWaterPrices /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/caryUserClassesWaterPrices.csv
-*demand_to_wastewater_fraction_owasa_raleigh /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv
-*raleighDemandClassesFractions /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/raleighDemandClassesFractions.csv
-*raleighUserClassesWaterPrices /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/raleighUserClassesWaterPrices.csv
-*durhamDemandClassesFractions /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/durhamDemandClassesFractions.csv
-*durhamUserClassesWaterPrices /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/durhamUserClassesWaterPrices.csv
-cary_demand /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/demands/cary_demand.csv
-durham_demand /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/demands/durham_demand.csv
-raleigh_demand /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/demands/raleigh_demand.csv
-falls_lake_evap /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/falls_lake_evap.csv
-jordan_lake_evap /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/evaporation/jordan_lake_evap.csv
-clayton_inflows /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/inflows/clayton_inflows.csv
-crabtree_inflows /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/inflows/crabtree_inflows.csv
-durham_inflows /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/inflows/durham_inflows.csv
-falls_lake_inflows /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/inflows/falls_lake_inflows.csv
-jordan_lake_inflows /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/inflows/jordan_lake_inflows.csv
-lillington_inflows /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/inflows/lillington_inflows.csv
-little_river_raleigh_inflows /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/inflows/little_river_raleigh_inflows.csv
-stone_quarry_inflows /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/inflows/stone_quarry_inflows.csv
-university_lake_inflows /home/bernardo/CLionProjects/RevampedTriangleModel/TestFiles/inflows/university_lake_inflows.csv
+*caryDemandClassesFractions /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/caryDemandClassesFractions.csv
+*caryUserClassesWaterPrices /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/caryUserClassesWaterPrices.csv
+*demand_to_wastewater_fraction_owasa_raleigh /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv
+*raleighDemandClassesFractions /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/raleighDemandClassesFractions.csv
+*raleighUserClassesWaterPrices /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/raleighUserClassesWaterPrices.csv
+*durhamDemandClassesFractions /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/durhamDemandClassesFractions.csv
+*durhamUserClassesWaterPrices /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/durhamUserClassesWaterPrices.csv
+cary_demand /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/demands/cary_demand.csv
+durham_demand /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/demands/durham_demand.csv
+raleigh_demand /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/demands/raleigh_demand.csv
+falls_lake_evap /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/evaporation/falls_lake_evap.csv
+jordan_lake_evap /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/evaporation/jordan_lake_evap.csv
+clayton_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/clayton_inflows.csv
+crabtree_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/crabtree_inflows.csv
+durham_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/durham_inflows.csv
+falls_lake_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/falls_lake_inflows.csv
+jordan_lake_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/jordan_lake_inflows.csv
+lillington_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/lillington_inflows.csv
+little_river_raleigh_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/little_river_raleigh_inflows.csv
+stone_quarry_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/stone_quarry_inflows.csv
+university_lake_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/university_lake_inflows.csv
 
 [RESERVOIR]
 name College_Rock_Reservoir
@@ -156,7 +157,6 @@ ctime 3 5
 ptime 5
 
 
-
 [UTILITY]
 name Watertown
 demands cary_demand
@@ -168,6 +168,9 @@ demand_buffer 0.35
 rof_infra_construction_order New_River_Reservoir,College_Rock_Expansion_Low,College_Rock_Expansion_High,Watertown_Reuse_I,Watertown_Reuse_II
 infra_construction_triggers 0.1,0.1,0.1,0.1,0.1
 infra_discount_rate 0.07
+water_source_to_wtp 0 1 4
+utility_owned_wtp_capacities 560.,548.,9999999.
+
 
 [UTILITY]
 name Dryville
@@ -179,8 +182,11 @@ typesMonthlyWaterPrice durhamUserClassesWaterPrices
 wwtp_discharge_rule demand_to_wastewater_fraction_owasa_raleigh New_River_Reservoir
 demand_buffer 0.35
 rof_infra_construction_order Sugar_Creek_Reservoir,Dryville_Reuse
-infra_construction_triggers 0.2,0.1,0.3
+infra_construction_triggers 0.2,0.3
 infra_discount_rate 0.07
+water_source_to_wtp 2 5 6
+utility_owned_wtp_capacities 9999999.,9999999.,9999999.
+
 
 [UTILITY]
 name Fallsland
@@ -194,7 +200,8 @@ demand_buffer 0.35
 rof_infra_construction_order New_River_Reservoir,Fallsland_Reuse
 infra_construction_triggers 0.2,0.1
 infra_discount_rate 0.07
-
+water_source_to_wtp 2 4
+utility_owned_wtp_capacities 9999999,9999999.
 
 
 [WATER SOURCES GRAPH]
@@ -268,8 +275,8 @@ release 0
 
 [INFLOW-BASED RESERVOIR CONTROL RULE]
 water_source_id Sugar_Creek_Reservoir
-inflows 1,3.5,7,10.5,12.579
-releases 1,3.5,7,10.5,12.579
+inflows 836.898,1673.796,2789.66
+releases 4.522,9.03,13.58
 
 [SEASONAL RESERVOIR CONTROL RULE]
 water_source_id Autumn_Lake

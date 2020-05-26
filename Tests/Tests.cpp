@@ -5,7 +5,7 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "Catch2/single_include/catch2/catch.hpp"
+#include "catch.hpp"
 #include "../src/SystemComponents/WaterSources/AllocatedReservoir.h"
 #include "../src/SystemComponents/WaterSources/WaterReuse.h"
 #include "../src/SystemComponents/Bonds/LevelDebtServiceBond.h"

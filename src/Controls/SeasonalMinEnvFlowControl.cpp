@@ -57,7 +57,7 @@ double SeasonalMinEnvFlowControl::getRelease(int week) {
 
 const vector<int> &SeasonalMinEnvFlowControl::getWeekThresholds() const {
     return week_thresholds;
-}
+    }
 
 const vector<double> &SeasonalMinEnvFlowControl::getMinEnvFlows() const {
     return min_env_flows;

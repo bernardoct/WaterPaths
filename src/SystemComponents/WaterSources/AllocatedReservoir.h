@@ -65,11 +65,11 @@ public:
 
     AllocatedReservoir(const AllocatedReservoir &allocated_reservoir);
 
-    ~AllocatedReservoir();
+    ~AllocatedReservoir() override;
 
     void applyContinuity(int week, double upstream_source_inflow,
-                         double wastewater_inflow,
-                         vector<double> &demand_outflow) override;
+                             double wastewater_inflow,
+                             vector<double> &demand_outflow) override;
 
     void setFull() override;
 
@@ -83,8 +83,7 @@ public:
 
     void addCapacity(double capacity) override;
 
-    void addTreatmentCapacity(const double added_plant_treatment_capacity,
-                              int utility_id)
+    void addTreatmentCapacity(const double added_plant_treatment_capacity, int utility_id)
     override;
 
     double getAllocatedTreatmentCapacity(int utility_id) const override;
@@ -93,12 +92,10 @@ public:
 
 
     bool
-    mass_balance_with_wq_pool(double net_inflow,
-                              vector<double> &demand_outflow);
+    mass_balance_with_wq_pool(double net_inflow, vector<double> &demand_outflow);
 
     bool
-    mass_balance_without_wq_pool(double net_inflow,
-                                 vector<double> &demand_outflow);
+    mass_balance_without_wq_pool(double net_inflow, vector<double> &demand_outflow);
 
     void setOnline() override;
 
@@ -108,4 +105,4 @@ public:
 };
 
 
-#endif //TRIANGLEMODEL_ALLOCATEDRESERVOIRPARSER_H
+#endif //TRIANGLEMODEL_ALLOCATEDRESERVOIR_H

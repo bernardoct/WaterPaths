@@ -17,8 +17,8 @@
 class Problem {
 protected:
     unsigned long n_realizations;
-    unsigned long n_weeks;
-    unsigned long solution_no;
+    unsigned long  n_weeks;
+    unsigned long  solution_no;
     unsigned long n_threads;
     unsigned long n_dec_vars = NON_INITIALIZED;
     unsigned long n_objectives = 5; /// Number of objectives implemented in current version.
@@ -28,8 +28,8 @@ protected:
     string evap_inflows_suffix;
     string rof_tables_directory;
 
-    vector<unsigned long> realizations_to_run;
-    MasterDataCollector *master_data_collector = nullptr;
+    vector<unsigned long > realizations_to_run;
+    MasterDataCollector* master_data_collector = nullptr;
     vector<double> objectives;
     bool print_output_files = true;
 
@@ -63,8 +63,7 @@ public:
 
     virtual ~Problem();
 
-    virtual int
-    functionEvaluation(double *vars, double *objs, double *consts) = 0;
+    virtual int functionEvaluation(double* vars, double* objs, double* consts)=0;
 
     void setN_weeks(unsigned long n_weeks);
 
@@ -82,20 +81,19 @@ public:
 
     void setN_realizations(unsigned long n_realizations);
 
-    void setRealizationsToRun(vector<unsigned long> &realizations_to_run);
+    void setRealizationsToRun(vector<unsigned long>& realizations_to_run);
 
     void setEvap_inflows_suffix(const string &evap_inflows_suffix);
 
     void setFname_sufix(const string &fname_sufix);
 
-    MasterDataCollector *getMaster_data_collector();
+    MasterDataCollector* getMaster_data_collector();
 
     void destroyDataCollector();
 
     void printTimeSeriesAndPathways(bool plot_time_series = true);
 
-    void
-    setRofTables(unsigned long n_realizations, string rof_tables_directory);
+    void setRofTables(unsigned long n_realizations, string rof_tables_directory);
 
     void setImport_export_rof_tables(int import_export_rof_tables,
                                      string rof_tables_directory);
@@ -115,5 +113,6 @@ public:
     virtual void setProblemDefinition(BORG_Problem &problem) = 0;
 #endif
 };
+
 
 #endif //TRIANGLEMODEL_PROBLEM_H

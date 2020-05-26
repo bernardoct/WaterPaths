@@ -11,7 +11,7 @@
 
 InfrastructureManager::InfrastructureManager(const string name,
         int id, const vector<double> &infra_construction_triggers,
-        const vector<vector<int>> &infra_if_built_remove,
+                                             const vector<vector<int>> &infra_if_built_remove,
         double infra_discount_rate, vector<int> rof_infra_construction_order,
         vector<int> demand_infra_construction_order):
         name(name),
@@ -165,7 +165,6 @@ vector<double> InfrastructureManager::rearrangeInfraRofVector(
 
 void InfrastructureManager::addWaterSourceToOnlineLists(int source_id,
                                                         double &total_storage_capacity,
-                                                        double &total_treatment_capacity,
                                                         double &total_available_volume,
                                                         double &total_stored_volume) {
     auto ws = water_sources->at((unsigned long) source_id);
@@ -173,8 +172,6 @@ void InfrastructureManager::addWaterSourceToOnlineLists(int source_id,
     // Add capacities to utility.
     total_storage_capacity +=
             ws->getAllocatedCapacity(id);
-    total_treatment_capacity +=
-            ws->getAllocatedTreatmentCapacity(id);
     total_available_volume = total_storage_capacity;
 
     // Add source to the corresponding list of online water sources.
@@ -190,21 +187,20 @@ void InfrastructureManager::addWaterSourceToOnlineLists(int source_id,
 
 void
 InfrastructureManager::setWaterSourceOnline(unsigned int source_id, int week,
+                                            vector<double> &utility_owned_wtp_capacities,
+                                            vector<int> &water_source_to_wtp,
                                             double &total_storage_capacity,
-                                            double &total_treatment_capacity,
                                             double &total_available_volume,
                                             double &total_stored_volume) {
     // Sets water source online and add its ID to appropriate
     // priority/non-priority ID vector. If reservoir expansion, add its
     // capacity to the corresponding existing reservoir.
     if (water_sources->at(source_id)->source_type ==
-        NEW_SEQUENTIAL_WATER_TREATMENT_PLANT) {
+        NEW_JOINT_WATER_TREATMENT_PLANT) {
         waterTreatmentPlantConstructionHandler(source_id,
-                                               total_storage_capacity);
-    } else if (water_sources->at(source_id)->source_type ==
-               NEW_JOINT_WATER_TREATMENT_PLANT) {
-        waterTreatmentPlantConstructionHandler(source_id,
-                                               total_storage_capacity);
+                                               total_storage_capacity,
+                                               utility_owned_wtp_capacities,
+                                               water_source_to_wtp);
     } else if (water_sources->at(source_id)->source_type ==
                RESERVOIR_EXPANSION) {
         reservoirExpansionConstructionHandler(source_id);
@@ -213,14 +209,12 @@ InfrastructureManager::setWaterSourceOnline(unsigned int source_id, int week,
     } else {
         water_sources->at(source_id)->setOnline();
         addWaterSourceToOnlineLists(source_id, total_storage_capacity,
-                                    total_treatment_capacity,
                                     total_available_volume,
                                     total_stored_volume);
     }
 
     // Updates total storage and treatment variables.
     total_storage_capacity = 0;
-    total_treatment_capacity = 0;
     total_available_volume = 0;
     for (WaterSource *ws : *water_sources) {
         if (ws &&
@@ -231,60 +225,59 @@ InfrastructureManager::setWaterSourceOnline(unsigned int source_id, int week,
                   non_priority_draw_water_source->end(),
                   ws->id) != non_priority_draw_water_source->end())) {
             total_storage_capacity += ws->getAllocatedCapacity(id);
-            total_treatment_capacity += ws->getAllocatedTreatmentCapacity(id);
             total_available_volume += ws->getAvailableAllocatedVolume(id);
         }
     }
 }
 
-void InfrastructureManager::waterTreatmentPlantConstructionHandler(
-        unsigned int source_id, double &total_storage_capacity) {
+
+void
+InfrastructureManager::waterTreatmentPlantConstructionHandler(
+        unsigned int source_id, double &total_storage_capacity,
+        vector<double> &utility_owned_wtp_capacities,
+        vector<int> &water_source_to_wtp) {
     auto wtp = dynamic_cast<JointTreatmentCapacityExpansion *>(water_sources->at(
             source_id));
 
     // Add treatment capacity to source
+    double added_capacity = wtp->implementTreatmentCapacity(id);
     try {
-        // added_treatment_capacities is a map in which .first is the id and
-        // .second is the capacity
-        water_sources->at(wtp->parent_source_id)
-                ->addTreatmentCapacity(
-                        wtp->added_treatment_capacities.at(id), id);
 
-        // If source is an existing intake or reuse and is not in the utility's list
-        // of active sources, add it to the priority list.
-        // If source is active, is not and intake or reuse, and is not in the
-        // utility's list of active sources, add it to the non-priority list.
-        bool is_priority_source =
-                water_sources->at(wtp->parent_source_id)->source_type ==
-                INTAKE ||
-                water_sources->at(wtp->parent_source_id)->source_type ==
-                WATER_REUSE;
-        bool is_not_in_priority_list =
-                find(priority_draw_water_source->begin(),
-                     priority_draw_water_source->end(),
-                     wtp->parent_source_id)
-                == priority_draw_water_source->end();
-        bool is_not_in_non_priority_list =
-                find(non_priority_draw_water_source->begin(),
-                     non_priority_draw_water_source->end(),
-                     wtp->parent_source_id)
-                == non_priority_draw_water_source->end();
-
-        // Finally, the checking.
-        if (is_priority_source && is_not_in_priority_list) {
-            priority_draw_water_source->push_back(wtp->parent_source_id);
-            total_storage_capacity +=
-                    water_sources->at(wtp->parent_source_id)
-                            ->getAllocatedCapacity(id);
-        } else if (is_not_in_non_priority_list) {
-            non_priority_draw_water_source
-                    ->push_back(wtp->parent_source_id);
-        }
+        utility_owned_wtp_capacities[water_source_to_wtp[wtp->parent_source_id]] += added_capacity;
     } catch (...) {
-        throw runtime_error("Could not add treatment capacity to "
-                            "infrastructure.");
+        throw runtime_error("Could not add treatment capacity to reservoir.");
     }
 
+    /// If source is intake or reuse and is not in the list of active
+    /// sources, add it to the priority list.
+    /// If source is not intake or reuse and is not in the list of active
+    /// sources, add it to the non-priority list.
+    bool is_priority_source =
+                water_sources->at(wtp->parent_source_id)->source_type ==
+            INTAKE ||
+                water_sources->at(wtp->parent_source_id)->source_type ==
+            WATER_REUSE;
+    bool is_not_in_priority_list =
+            find(priority_draw_water_source->begin(),
+                 priority_draw_water_source->end(),
+                     wtp->parent_source_id)
+            == priority_draw_water_source->end();
+    bool is_not_in_non_priority_list =
+            find(non_priority_draw_water_source->begin(),
+                 non_priority_draw_water_source->end(),
+                     wtp->parent_source_id)
+            == non_priority_draw_water_source->end();
+
+        // Finally, the checking.
+    if (is_priority_source && is_not_in_priority_list) {
+            priority_draw_water_source->push_back(wtp->parent_source_id);
+        total_storage_capacity +=
+                    water_sources->at(wtp->parent_source_id)
+                        ->getAllocatedCapacity(id);
+    } else if (is_not_in_non_priority_list) {
+        non_priority_draw_water_source
+                    ->push_back(wtp->parent_source_id);
+    }
     water_sources->at(source_id)->setOnline();
 }
 
@@ -341,14 +334,12 @@ void InfrastructureManager::forceInfrastructureConstruction(
  * @param long_term_rof
  * @param week
  */
-int
-InfrastructureManager::infrastructureConstructionHandler(double long_term_rof,
-                                                         int week,
-                                                         double past_year_average_demand,
-                                                         double &total_storage_capacity,
-                                                         double &total_treatment_capacity,
-                                                         double &total_available_volume,
-                                                         double &total_stored_volume) {
+int InfrastructureManager::infrastructureConstructionHandler(
+        double long_term_rof, int week, double past_year_average_demand,
+        vector<double> &utility_owned_wtp_capacities,
+        vector<int> &water_source_to_wtp,
+        double &total_storage_capacity,
+        double &total_available_volume, double &total_stored_volume) {
     int new_infra_triggered = NON_INITIALIZED;
     bool under_construction_any = (find(under_construction.begin(),
                                         under_construction.end(), true) !=
@@ -363,7 +354,7 @@ InfrastructureManager::infrastructureConstructionHandler(double long_term_rof,
         new_infra_triggered = getIdOfNewTriggeredInfra(
                 past_year_average_demand, week, under_construction_any,
                 demand_infra_construction_order);
-    }
+        }
 
     // If there's a water source under construction, check if it's ready and,
     // if so, clear it from the to-build list.
@@ -377,8 +368,9 @@ InfrastructureManager::infrastructureConstructionHandler(double long_term_rof,
 
                 // Set online all sources that to be set online now.
                 setWaterSourceOnline((unsigned int) ws, week,
+                                     utility_owned_wtp_capacities,
+                                     water_source_to_wtp,
                                      total_storage_capacity,
-                                     total_treatment_capacity,
                                      total_available_volume,
                                      total_stored_volume);
 
@@ -388,18 +380,18 @@ InfrastructureManager::infrastructureConstructionHandler(double long_term_rof,
 
                 // Erase infrastructure option from both vectors of
                 // infrastructure to be built.
-                if (!rof_infra_construction_order.empty())
-                    Utils::removeIntFromVector(rof_infra_construction_order,
+                    if (!rof_infra_construction_order.empty())
+                        Utils::removeIntFromVector(rof_infra_construction_order,
                                                ws);
 
-                else if (!demand_infra_construction_order.empty())
-                    Utils::removeIntFromVector(
+                    else if (!demand_infra_construction_order.empty())
+                        Utils::removeIntFromVector(
                             demand_infra_construction_order, ws);
-                else
-                    throw logic_error(
-                            "Infrastructure option whose construction was"
-                            " complete is not in the demand or "
-                            "rof triggered construction lists.");
+                    else
+                        throw logic_error(
+                                "Infrastructure option whose construction was"
+                                " complete is not in the demand or "
+                                "rof triggered construction lists.");
 
                 under_construction[ws] = false;
 
@@ -475,21 +467,21 @@ InfrastructureManager::getIdOfNewTriggeredInfra(double trigger_var, int week,
 }
 
 /**
- * Checks if piece of infrastructure to be built next prevents another one
+ * Checks is piece of infrastructure to be built next prevents another one
  * from being build and, if so, removes the latter from the queue.
  * @param next_construction
  */
 void
 InfrastructureManager::removeRelatedSourcesFromQueue(int next_construction) {
-    for (auto &v : infra_if_built_remove) {
+        for (auto &v : infra_if_built_remove) {
         if (!v.empty() && v[0] == next_construction) {
-            for (int i : v) {
-                Utils::removeIntFromVector(rof_infra_construction_order, i);
-                Utils::removeIntFromVector(demand_infra_construction_order,
-                                           i);
+                for (int i : v) {
+                    Utils::removeIntFromVector(rof_infra_construction_order, i);
+                    Utils::removeIntFromVector(demand_infra_construction_order,
+                                               i);
+                }
             }
         }
-    }
 
 }
 

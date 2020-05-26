@@ -70,30 +70,23 @@ public:
 
     void collectData(unsigned long r);
 
-    void performBootstrapAnalysis(int sol_id, int n_sets, int n_samples,
-                                  int n_threads,
+    void performBootstrapAnalysis(int sol_id, int n_sets, int n_samples, int n_threads,
                                   vector<vector<unsigned long>> bootstrap_samples = vector<vector<unsigned long>>());
 
-    DataCollector *
-    createPolicyDataCollector(DroughtMitigationPolicy *dmp, unsigned long r);
+    DataCollector* createPolicyDataCollector(DroughtMitigationPolicy* dmp, unsigned long r);
 
-    DataCollector *
-    createWaterSourceDataCollector(WaterSource *ws, unsigned long r);
+    DataCollector* createWaterSourceDataCollector(WaterSource* ws, unsigned long r);
 
-    void
-    printUtilityObjectivesToRowOutStream(vector<UtilitiesDataCollector *> &u,
-                                         std::ofstream &outStream,
-                                         vector<double> &objectives);
+    void printUtilityObjectivesToRowOutStream(vector<UtilitiesDataCollector *> &u, std::ofstream &outStream,
+            vector<double> &objectives);
 
     void readOrCreateBSSamples(int sol_id, int n_sets, int n_samples,
                                const vector<vector<unsigned long>> &bootstrap_samples,
                                vector<vector<unsigned long>> &bootstrap_sample_sets) const;
 
-    void printObjsBSSamples(int sol_id, int n_sets, int n_samples,
-                            vector<vector<double>> &objectives);
+    void printObjsBSSamples(int sol_id, int n_sets, int n_samples, vector<vector<double>> &objectives);
 
-    void printObjectivesOfAllRealizationsForBSAnalysis(int sol_id, int n_sets,
-                                                       int n_samples);
+    void printObjectivesOfAllRealizationsForBSAnalysis(int sol_id, int n_sets, int n_samples);
 
     static void setSeed(int seed);
 

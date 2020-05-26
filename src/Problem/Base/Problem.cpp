@@ -37,8 +37,7 @@ vector<double> Problem::calculateAndPrintObjectives(bool print_files) {
         }
         string fo = "Objectives";
         objectives = this->master_data_collector->calculatePrintObjectives(
-                fo + "_s" + std::to_string(solution_no) + fname_sufix,
-                print_files);
+                fo + "_s" + std::to_string(solution_no) + fname_sufix, print_files);
         return objectives;
     } else {
         objectives = vector<double>(25, 1e5);
@@ -52,7 +51,7 @@ void Problem::printTimeSeriesAndPathways(bool plot_time_series) {
 
         // Print output files.
         string fu = "Utilities";
-        string fws = "WaterSourceParsers";
+        string fws = "WaterSources";
         string fp = "Policies";
         string fpw = "Pathways";
 
@@ -95,8 +94,7 @@ void Problem::destroyDataCollector() {
  * @param n_realizations number of realizations.
  */
 void
-Problem::setRofTables(unsigned long n_realizations,
-                      string rof_tables_directory) {
+Problem::setRofTables(unsigned long n_realizations, string rof_tables_directory) {
 
     double start_time = omp_get_wtime();
     printf("Reading ROF tables.\n");
@@ -107,8 +105,7 @@ Problem::setRofTables(unsigned long n_realizations,
 
     if (n_tiers != NO_OF_INSURANCE_STORAGE_TIERS) {
         char error[75];
-        sprintf(error,
-                "Number of tiers in tables does not match number of tiers for this problem.");
+        sprintf(error, "Number of tiers in tables does not match number of tiers for this problem.");
     }
 
     n_utilities = 0;
@@ -117,29 +114,23 @@ Problem::setRofTables(unsigned long n_realizations,
     std::ifstream ifile(fname.c_str());
     while ((bool) ifile) {
         n_utilities += 1;
-        fname = rof_tables_directory + "tables_r0_u" + to_string(n_utilities) +
-                ".csv";
+        fname = rof_tables_directory + "tables_r0_u" + to_string(n_utilities) + ".csv";
         ifile = std::ifstream(fname.c_str());
     }
 
     rof_tables = vector<vector<Matrix2D<double>>>(
             n_realizations,
             vector<Matrix2D<double>>((unsigned long) n_utilities,
-                                     Matrix2D<double>(n_weeks_in_table,
-                                                      n_tiers)));
+                                     Matrix2D<double>(n_weeks_in_table, n_tiers)));
 
     for (unsigned long r = 0; r < n_realizations; ++r) {
 
         for (int u = 0; u < n_utilities; ++u) {
-            string file_name =
-                    rof_tables_directory + "tables_r" + to_string(r) + "_u" +
-                    to_string(u) + ".csv";
+            string file_name = rof_tables_directory + "tables_r" + to_string(r) + "_u" + to_string(u) + ".csv";
             auto tables_utility_week = Utils::parse2DCsvFile(file_name);
 
             for (int w = 0; w < n_weeks; ++w) {
-                rof_tables[r][u].setPartialData(w,
-                                                tables_utility_week[w].data(),
-                                                tables_utility_week[w].size());
+                rof_tables[r][u].setPartialData(w, tables_utility_week[w].data(), tables_utility_week[w].size());
             }
         }
     }
@@ -147,8 +138,8 @@ Problem::setRofTables(unsigned long n_realizations,
     printf("Loading tables took %f time.\n", omp_get_wtime() - start_time);
 }
 
-void Problem::setImport_export_rof_tables(int import_export_rof_tables,
-                                          string rof_tables_directory) {
+
+void Problem::setImport_export_rof_tables(int import_export_rof_tables, string rof_tables_directory) {
     if (std::abs(import_export_rof_tables) > 1)
         throw invalid_argument("Import/export ROF tables can be assigned as:\n"
                                "-1 - import tables\n"
@@ -165,8 +156,7 @@ void Problem::setImport_export_rof_tables(int import_export_rof_tables,
     }
 }
 
-void Problem::runBootstrapRealizationThinning(int standard_solution, int n_sets,
-                                              int n_bs_samples,
+void Problem::runBootstrapRealizationThinning(int standard_solution, int n_sets, int n_bs_samples,
                                               int threads,
                                               const vector<vector<unsigned long>> &bs_realizations) {
     master_data_collector->setOutputDirectory(io_directory);

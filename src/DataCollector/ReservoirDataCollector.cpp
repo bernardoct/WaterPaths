@@ -59,7 +59,8 @@ string ReservoirDataCollector::printCompactString(int week) {
             << wastewater_inflows[week] << ","
             << total_catchments_inflow[week] << ","
             << evaporated_volume[week] << ","
-            << outflows[week] << ",";
+            << outflows[week] << ","
+            << treatment_capacity[week] << ",";
 
     return outStream.str();
 }
@@ -119,7 +120,8 @@ string ReservoirDataCollector::printCompactStringHeader() {
             << id << "ww_inflow" << ","
             << id << "catch_inflow" << ","
             << id << "evap" << ","
-            << id << "ds_spill" << ",";
+            << id << "ds_spill" << ","
+            << id << "treat_cap" << ",";
 
     return outStream.str();
 }
@@ -134,5 +136,6 @@ void ReservoirDataCollector::collect_data() {
     total_catchments_inflow.push_back(reservoir->getUpstreamCatchmentInflow());
     evaporated_volume.push_back(reservoir->getEvaporated_volume());
     wastewater_inflows.push_back(reservoir->getWastewater_inflow());
+    treatment_capacity.push_back(reservoir->getTotal_treatment_capacity());
     if (reservoir->fixed_area) area.push_back(reservoir->getArea());
 }

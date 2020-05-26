@@ -22,7 +22,7 @@ namespace Constants {
 #endif
     const int NUM_OBJECTIVES = 5;
 //#define NUM_DEC_VAR 57;
-    const int NUM_DEC_VAR = 30; // infrastructure turned off
+    const int NUM_DEC_VAR = 18; // infrastructure turned off
 
     const std::string DEFAULT_DATA_DIR = "TestFiles" + BAR;
     const std::string DEFAULT_OUTPUT_DIR = "output" + BAR;
@@ -85,6 +85,7 @@ namespace Constants {
     // for financial instruments.
     const int TRANSFERS = 0;
     const int RESTRICTIONS = 1;
+    const int BILATERAL_TRANSFERS = 2;
     const int INSURANCE_STORAGE_ROF = 100;
 
     const int SUPPLY_INSTRUMENT_LIM = 99;

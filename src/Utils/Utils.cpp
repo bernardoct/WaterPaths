@@ -4,6 +4,7 @@
 
 #include "Utils.h"
 #include "../DroughtMitigationInstruments/Transfers.h"
+#include "../DroughtMitigationInstruments/TransfersBilateral.h"
 #include "../SystemComponents/WaterSources/ReservoirExpansion.h"
 #include "../SystemComponents/WaterSources/Quarry.h"
 #include "../DroughtMitigationInstruments/InsuranceStorageToROF.h"
@@ -33,15 +34,14 @@
  * @param max_lines
  * @return
  */
-vector<vector<double>>
-Utils::parse2DCsvFile(string file_name, unsigned long max_lines,
-                      vector<unsigned long> rows_to_read) {
+vector<vector<double>> Utils::parse2DCsvFile(string file_name, unsigned long max_lines,
+                                             vector<unsigned long> rows_to_read) {
 
     vector<vector<double> > data;
     ifstream inputFile(file_name);
     int l = -1;
     int ml = (int) (rows_to_read.empty() ? max_lines : *max_element(
-            rows_to_read.begin(), rows_to_read.end())) + 1;
+                            rows_to_read.begin(), rows_to_read.end())) + 1;
 //    if (!rows_to_read.empty())
 //        ml = max_lines;
 //    else
@@ -51,12 +51,11 @@ Utils::parse2DCsvFile(string file_name, unsigned long max_lines,
             l++;
             string s;
             if (!getline(inputFile, s)) break;
-            if (s.find(" ") != string::npos) {
-                char error[500];
-                sprintf(error, "File %s seems to be space-separated.",
-                        file_name.c_str());
-                throw std::invalid_argument(error);
-            }
+	    if (s.find(" ") != string::npos) {
+		char error[500];
+		sprintf(error, "File %s seems to be space-separated.", file_name.c_str());
+	        throw std::invalid_argument(error);
+	    }
 
             vector<double> record;
             if (s[0] != '#' &&
@@ -83,9 +82,9 @@ Utils::parse2DCsvFile(string file_name, unsigned long max_lines,
             data.push_back(record);
         }
     } else {
-        string error = "File " + file_name + " not found.";
-        char error_char[error.size() + 1];
-        strcpy(error_char, error.c_str());
+	string error = "File " + file_name + " not found.";
+	char error_char[error.size() + 1];
+	strcpy(error_char, error.c_str());
         throw invalid_argument(error_char);
     }
 
@@ -109,9 +108,7 @@ vector<double> Utils::parse1DCsvFile(string file_name, unsigned long max_lines,
         l++;
         string s;
         if (!getline(infile, s)) break;
-        if (s[0] != '#' && (rows_to_read.empty() || (!rows_to_read.empty() &&
-                                                     l - 1 ==
-                                                     rows_to_read[0]))) {
+        if (s[0] != '#' && (rows_to_read.empty() || (!rows_to_read.empty() && l - 1 == rows_to_read[0]))) {
 
             istringstream ss(s);
             double record;
@@ -120,12 +117,11 @@ vector<double> Utils::parse1DCsvFile(string file_name, unsigned long max_lines,
                 record = stof(ss.str());
                 data.push_back(record);
             } catch (const std::invalid_argument e) {
-                cout << "NaN found in file " << file_name << " line " << l
-                     << endl;
+                cout << "NaN found in file " << file_name << " line " << l << endl;
                 e.what();
             }
             if (!rows_to_read.empty())// && rows_to_read[0] != NON_INITIALIZED) 
-                rows_to_read.erase(rows_to_read.begin());
+		    rows_to_read.erase(rows_to_read.begin());
         }
     }
 
@@ -144,34 +140,27 @@ vector<MinEnvFlowControl *> Utils::copyMinEnvFlowControlVector(
     for (MinEnvFlowControl *mef : min_env_flow_controls_original) {
         if (mef->type == FIXED_FLOW_CONTROLS)
             min_env_flow_controls_new.push_back(
-                    new FixedMinEnvFlowControl(
-                            *dynamic_cast<FixedMinEnvFlowControl *>(mef)));
+                    new FixedMinEnvFlowControl(*dynamic_cast<FixedMinEnvFlowControl *>(mef)));
         else if (mef->type == INFLOW_CONTROLS)
             min_env_flow_controls_new.push_back(
-                    new InflowMinEnvFlowControl(
-                            *dynamic_cast<InflowMinEnvFlowControl *>(mef)));
+                    new InflowMinEnvFlowControl(*dynamic_cast<InflowMinEnvFlowControl *>(mef)));
         else if (mef->type == SEASONAL_CONTROLS)
             min_env_flow_controls_new.push_back(
-                    new SeasonalMinEnvFlowControl(
-                            *dynamic_cast<SeasonalMinEnvFlowControl *>(mef)));
+                    new SeasonalMinEnvFlowControl(*dynamic_cast<SeasonalMinEnvFlowControl *>(mef)));
         else if (mef->type == STORAGE_CONTROLS)
             min_env_flow_controls_new.push_back(
-                    new StorageMinEnvFlowControl(
-                            *dynamic_cast<StorageMinEnvFlowControl *>(mef)));
+                    new StorageMinEnvFlowControl(*dynamic_cast<StorageMinEnvFlowControl *>(mef)));
         else if (mef->type == JORDAN_CONTROLS)
             min_env_flow_controls_new.push_back(
-                    new JordanLakeMinEnvFlowControl(
-                            *dynamic_cast<JordanLakeMinEnvFlowControl *>(mef)));
+                    new JordanLakeMinEnvFlowControl(*dynamic_cast<JordanLakeMinEnvFlowControl *>(mef)));
         else if (mef->type == FALLS_CONTROLS)
             min_env_flow_controls_new.push_back(
-                    new FallsLakeMinEnvFlowControl(
-                            *dynamic_cast<FallsLakeMinEnvFlowControl *>(mef)));
+                    new FallsLakeMinEnvFlowControl(*dynamic_cast<FallsLakeMinEnvFlowControl *>(mef)));
         else
-            throw invalid_argument(
-                    "One of the minimum environmental flow controls "
-                    "does not have an implementation in the "
-                    "Utils::copyWaterSourceVector function. "
-                    "Please add your control to it.");
+            throw invalid_argument("One of the minimum environmental flow controls "
+                                             "does not have an implementation in the "
+                                             "Utils::copyWaterSourceVector function. "
+                                             "Please add your control to it.");
     }
 
     return min_env_flow_controls_new;
@@ -213,10 +202,10 @@ vector<WaterSource *> Utils::copyWaterSourceVector(
                             *dynamic_cast<JointTreatmentCapacityExpansion *>(ws)));
         else
             throw invalid_argument("One of the water sources does not have "
-                                   "an implementation in the "
-                                   "Utils::copyWaterSourceVector "
-                                   "function. Please add your "
-                                   "source to it.");
+                                             "an implementation in the "
+                                             "Utils::copyWaterSourceVector "
+                                             "function. Please add your "
+                                             "source to it.");
     }
 
     return water_sources_new;
@@ -250,6 +239,9 @@ Utils::copyDroughtMitigationPolicyVector(
         else if (dmp->type == TRANSFERS)
             drought_mitigation_policy_new.push_back(
                     new Transfers(*dynamic_cast<Transfers *>(dmp)));
+        else if (dmp->type == BILATERAL_TRANSFERS)
+            drought_mitigation_policy_new.push_back(
+                    new TransfersBilateral(*dynamic_cast<TransfersBilateral *>(dmp)));
         else if (dmp->type == INSURANCE_STORAGE_ROF)
             drought_mitigation_policy_new.push_back(
                     new InsuranceStorageToROF(
@@ -264,18 +256,15 @@ vector<Bond *> Utils::copyBonds(vector<Bond *> bonds_original) {
 
     for (Bond *bond : bonds_original) {
         if (bond->type == LEVEL_DEBT_SERVICE)
-            bonds_new.push_back(new LevelDebtServiceBond(
-                    *dynamic_cast<LevelDebtServiceBond *>(bond)));
+            bonds_new.push_back(new LevelDebtServiceBond(*dynamic_cast<LevelDebtServiceBond *>(bond)));
         else if (bond->type == BALLOON_PAYMENT)
-            bonds_new.push_back(new BalloonPaymentBond(
-                    *dynamic_cast<BalloonPaymentBond *>(bond)));
+            bonds_new.push_back(new BalloonPaymentBond(*dynamic_cast<BalloonPaymentBond *>(bond)));
         else if (bond->type == FLOATING_INTEREST)
             bonds_new.push_back(new FloatingInterestBalloonPaymentBond(
                     *dynamic_cast<FloatingInterestBalloonPaymentBond *>(bond)));
         else
-            throw invalid_argument(
-                    "Your bond type does not have a corresponding "
-                    "copy function in Utils::copyBonds yet.\n");
+            throw invalid_argument("Your bond type does not have a corresponding "
+                                     "copy function in Utils::copyBonds yet.\n");
     }
 
     return bonds_new;
@@ -289,20 +278,20 @@ int Utils::weekOfTheYear(int week) {
     return WEEK_OF_YEAR[week];
 }
 
-void Utils::removeIntFromVector(vector<int> &vec, int el) {
+void Utils::removeIntFromVector(vector<int>& vec, int el) {
 
     auto vbeg = vec.begin();
     auto vend = vec.end();
     vec.erase(std::remove(vbeg, vend, el), vend);
 }
 
-void Utils::print_exception(const std::exception &e, int level) {
+void Utils::print_exception(const std::exception& e, int level) {
     std::cerr << std::string(level, ' ') << "exception: " << e.what() << '\n';
     try {
         std::rethrow_if_nested(e);
-    } catch (const std::exception &e) {
-        print_exception(e, level + 1);
-    } catch (...) {}
+    } catch(const std::exception& e) {
+        print_exception(e, level+1);
+    } catch(...) {}
 }
 
 void Utils::createDir(string directory) {
@@ -313,7 +302,7 @@ void Utils::createDir(string directory) {
     create_dir_command = "mkdir -p";
 #endif
     struct stat sb;
-    // Check if io_directory exists and print either location or that io_directory does not exist.
+        // Check if io_directory exists and print either location or that io_directory does not exist.
     if (stat(directory.c_str(), &sb) != 0) {
         auto output = system((create_dir_command + " " + directory).c_str());
     }

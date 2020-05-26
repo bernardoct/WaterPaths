@@ -7,7 +7,6 @@
 #include "../Utils/Constants.h"
 
 
-
 WwtpDischargeRule::WwtpDischargeRule() = default;
 
 WwtpDischargeRule::WwtpDischargeRule(

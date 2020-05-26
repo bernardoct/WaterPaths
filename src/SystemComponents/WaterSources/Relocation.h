@@ -18,15 +18,14 @@ public:
                vector<double> *allocated_fractions,
                vector<int> *utilities_with_allocations,
                vector<int> construction_prerequisites,
-               const vector<double> &construction_time_range,
-               double permitting_period,
+               const vector<double> &construction_time_range, double permitting_period,
                Bond &bond);
 
     Relocation(const Relocation &relocation);
 
     void applyContinuity(int week, double upstream_source_inflow,
-                         double wastewater_discharge,
-                         vector<double> &demand_outflow) override;
+                             double wastewater_discharge,
+                             vector<double> &demand_outflow) override;
 
     unsigned long getParent_reservoir_ID() const;
 };

@@ -125,8 +125,7 @@ Transfers::Transfers(
  * @param transfers
  */
 Transfers::Transfers(const Transfers &transfers) :
-        DroughtMitigationPolicy(transfers.id,
-                                TRANSFERS),
+        DroughtMitigationPolicy(transfers.id, TRANSFERS),
         source_utility_id(transfers.source_utility_id),
         source_treatment_buffer(transfers.source_treatment_buffer) {
 
@@ -160,14 +159,14 @@ Transfers::~Transfers() {
 
 /**
  * Adds source and buying utility.
- * @param system_utilities UtilityParser to be added.
+ * @param system_utilities Utility to be added.
  */
 void Transfers::addSystemComponents(vector<Utility *> system_utilities,
                                     vector<WaterSource *> water_sources,
                                     vector<MinEnvFlowControl *> min_env_flow_controls) {
 
     if (!realization_utilities.empty())
-        throw std::invalid_argument("UtilityParser were already assigned to "
+        throw std::invalid_argument("Utility were already assigned to "
                                             "transfer policy.");
 
     //FIXME: RIGHT NOW TRANSFERS CAN ONLY HAVE ONE SOURCE. THIS NEEDS TO BE EXPANDED.
@@ -216,10 +215,13 @@ void Transfers::applyPolicy(int week) {
         vector<double> transfer_requests((unsigned long) n_allocations, 0);
 
         // Total volume available for transfers in source utility.
-        double available_transfer_volume =
-                (source_utility->getTotal_treatment_capacity()
-                 - source_treatment_buffer) * PEAKING_FACTOR
-                - source_utility->getUnrestrictedDemand();
+        double available_transfer_volume = 0;
+        if (source_utility->getRisk_of_failure() == 0) {
+            available_transfer_volume =
+                    (source_utility->getTotal_treatment_capacity()
+                     - source_treatment_buffer) * PEAKING_FACTOR
+                    - source_utility->getUnrestrictedDemand();
+        }
 
         if (available_transfer_volume > 0) {
 

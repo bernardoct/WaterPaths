@@ -43,8 +43,7 @@ public:
            const double max_treatment_capacity,
            EvaporationSeries &evaporation_series, double storage_area,
            vector<int> construction_prerequisites,
-           const vector<double> &construction_time_range,
-           double permitting_period, Bond &bond,
+           const vector<double> &construction_time_range, double permitting_period, Bond &bond,
            double max_diversion);
 
     Quarry(const Quarry &quarry, const double max_diversion);

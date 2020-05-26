@@ -29,7 +29,7 @@ Reservoir::Reservoir(
         fixed_area(false), evaporation_series(evaporation_series) {
 
     if (storage_area_curve.getSeries_x().back() != capacity) {
-        char error[1024];
+	char error[1024];
         sprintf(error,
                 "Error Reservoir %d: Last storage of data series must be"
                 " equal to reservoir capacity.",
@@ -56,8 +56,7 @@ Reservoir::Reservoir(
         int source_type) :
         WaterSource(name, id, catchments, capacity, max_treatment_capacity,
                     source_type),
-        area(storage_area), fixed_area(true),
-        evaporation_series(evaporation_series) {}
+        area(storage_area), fixed_area(true), evaporation_series(evaporation_series) {}
 
 /**
  * Constructor for when Reservoir does not exist in the beginning of the simulation.
@@ -81,17 +80,14 @@ Reservoir::Reservoir(string name, const int id,
                      vector<int> construction_prerequisites,
                      const vector<double> &construction_time_range,
                      double permitting_period, Bond &bond, int source_type) :
-        WaterSource(name, id, catchments, capacity, max_treatment_capacity,
-                    vector<int>(), source_type,
+        WaterSource(name, id, catchments, capacity, max_treatment_capacity, vector<int>(), source_type,
                     construction_time_range, permitting_period, bond),
         storage_area_curve(storage_area_curve), fixed_area(false),
         evaporation_series(evaporation_series) {
 
     if (storage_area_curve.getSeries_x().back() != capacity) {
-        char error[1024];
-        sprintf(error,
-                "Error Reservoir %d: Last storage of data series must be equal to reservoir capacity.",
-                id);
+	char error[1024];
+    	sprintf(error, "Error Reservoir %d: Last storage of data series must be equal to reservoir capacity.", id);
         throw invalid_argument(error);
     }
 }
@@ -119,8 +115,7 @@ Reservoir::Reservoir(string name, const int id,
                      const vector<double> &construction_time_range,
                      double permitting_period,
                      Bond &bond, int source_type) :
-        WaterSource(name, id, catchments, capacity, max_treatment_capacity,
-                    vector<int>(), source_type,
+        WaterSource(name, id, catchments, capacity, max_treatment_capacity, vector<int>(), source_type,
                     construction_time_range, permitting_period, bond),
         area(storage_area), fixed_area(true),
         evaporation_series(evaporation_series) {}
@@ -144,10 +139,8 @@ Reservoir::Reservoir(
         vector<double> allocated_treatment_fractions,
         vector<double> allocated_fractions,
         vector<int> utilities_with_allocations, int source_type) :
-        WaterSource(name, id, catchments, capacity, max_treatment_capacity,
-                    vector<int>(), source_type,
-                    allocated_treatment_fractions, allocated_fractions,
-                    utilities_with_allocations),
+        WaterSource(name, id, catchments, capacity, max_treatment_capacity, vector<int>(), source_type,
+                    allocated_treatment_fractions, allocated_fractions, utilities_with_allocations),
         storage_area_curve(storage_area_curve), fixed_area(false),
         evaporation_series(evaporation_series) {
 
@@ -159,10 +152,8 @@ Reservoir::Reservoir(
                                "constructor.");
 
     if (storage_area_curve.getSeries_x().back() != capacity) {
-        char error[1024];
-        sprintf(error,
-                "Error Reservoir %d: Last storage of data series must be equal to reservoir capacity.",
-                id);
+	char error[1024];
+    	sprintf(error, "Error Reservoir %d: Last storage of data series must be equal to reservoir capacity.", id);
         throw invalid_argument(error);
     }
 }
@@ -223,22 +214,17 @@ Reservoir::Reservoir(string name, const int id,
                      vector<double> allocated_treatment_fractions,
                      vector<double> allocated_fractions,
                      vector<int> utilities_with_allocations,
-                     const vector<double> &construction_time_range,
-                     double permitting_period,
+                     const vector<double> &construction_time_range, double permitting_period,
                      Bond &bond, int source_type) :
-        WaterSource(name, id, catchments, capacity, max_treatment_capacity,
-                    vector<int>(), source_type,
-                    allocated_treatment_fractions, allocated_fractions,
-                    utilities_with_allocations,
+        WaterSource(name, id, catchments, capacity, max_treatment_capacity, vector<int>(), source_type,
+                    allocated_treatment_fractions, allocated_fractions, utilities_with_allocations,
                     construction_time_range, permitting_period, bond),
         storage_area_curve(storage_area_curve), fixed_area(false),
         evaporation_series(evaporation_series) {
 
     if (storage_area_curve.getSeries_x().back() != capacity) {
-        char error[1024];
-        sprintf(error,
-                "Error Reservoir %d: Last storage of data series must be equal to reservoir capacity.",
-                id);
+	char error[1024];
+    	sprintf(error, "Error Reservoir %d: Last storage of data series must be equal to reservoir capacity.", id);
         throw invalid_argument(error);
     }
 }
@@ -266,13 +252,10 @@ Reservoir::Reservoir(string name, const int id,
                      vector<double> allocated_treatment_fractions,
                      vector<double> allocated_fractions,
                      vector<int> utilities_with_allocations,
-                     const vector<double> &construction_time_range,
-                     double permitting_period,
+                     const vector<double> &construction_time_range, double permitting_period,
                      Bond &bond, int source_type) :
-        WaterSource(name, id, catchments, capacity, max_treatment_capacity,
-                    vector<int>(), source_type,
-                    allocated_treatment_fractions, allocated_fractions,
-                    utilities_with_allocations,
+        WaterSource(name, id, catchments, capacity, max_treatment_capacity, vector<int>(), source_type,
+                    allocated_treatment_fractions, allocated_fractions, utilities_with_allocations,
                     construction_time_range, permitting_period, bond),
         area(storage_area), fixed_area(true),
         evaporation_series(evaporation_series) {}
@@ -282,11 +265,9 @@ Reservoir::Reservoir(string name, const int id,
  * @param reservoir
  */
 Reservoir::Reservoir(const Reservoir &reservoir) : WaterSource(reservoir),
-                                                   storage_area_curve(
-                                                           reservoir.storage_area_curve),
+                                                   storage_area_curve(reservoir.storage_area_curve),
                                                    area(reservoir.area),
-                                                   fixed_area(
-                                                           reservoir.fixed_area),
+                                                   fixed_area(reservoir.fixed_area),
                                                    evaporation_series(
                                                            reservoir.evaporation_series) {
     evaporation_series = EvaporationSeries(evaporation_series);
@@ -340,7 +321,7 @@ void Reservoir::applyContinuity(int week, double upstream_source_inflow,
     else {
         area = storage_area_curve.get_dependent_variable(available_volume);
         evaporated_volume = area *
-                            evaporation_series.getEvaporation(week);
+                evaporation_series.getEvaporation(week);
     }
 
     /// Calculate new stored volume and outflow based on continuity.
@@ -359,7 +340,7 @@ void Reservoir::applyContinuity(int week, double upstream_source_inflow,
         stored_volume_new = capacity;
     } else if (stored_volume_new < 0) {
         outflow_new = max(outflow_new + stored_volume_new, 0.);
-        stored_volume_new = 0.;
+	    stored_volume_new = 0.;
     }
 
     /// Update data collection variables.

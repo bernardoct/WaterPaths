@@ -12,11 +12,12 @@
 class AllocatedReservoirDataCollector : public ReservoirDataCollector {
     AllocatedReservoir *allocated_reservoir;
     vector<vector<double>> allocated_stored_volumes;
+    vector<vector<double>> allocated_treatment_cap;
     vector<int> utilities_with_allocations;
 
 public:
     AllocatedReservoirDataCollector(AllocatedReservoir *allocated_reservoir,
-                                    unsigned long realization);
+                                        unsigned long realization);
 
     string printTabularString(int week) override;
 

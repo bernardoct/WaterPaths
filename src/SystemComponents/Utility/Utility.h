@@ -26,16 +26,21 @@ private:
     double total_available_volume = 0;
     double total_stored_volume = 0;
     double total_treatment_capacity = 0;
+    double total_storage_treatment_capacity = 0;
     double waste_water_discharge = 0;
     double gross_revenue = 0;
     double unfulfilled_demand = 0;
     double net_stream_inflow = 0;
+    double price_rdm_multiplier = 1.;
+    double *available_treated_flow_rate = new double[0];
     bool used_for_realization = true;
+    unsigned short n_storage_sources = 0;
     vector<WaterSource *> water_sources;
     WwtpDischargeRule wwtp_discharge_rule;
     vector<vector<double>> &demands_all_realizations;
     vector<double> demand_series_realization;
-    double *rdm_factors_realization;
+    vector<double> utility_owned_wtp_capacities; /// vector with water treatment capacity shared across one or more sources.
+    vector<int> water_source_to_wtp;
     InfrastructureManager infrastructure_construction_manager;
 
     /// Drought mitigation
@@ -77,7 +82,9 @@ public:
             const vector<vector<double>> &typesMonthlyDemandFraction,
             const vector<vector<double>> &typesMonthlyWaterPrice,
             WwtpDischargeRule wwtp_discharge_rule,
-            double demand_buffer);
+            double demand_buffer,
+            vector<vector<int>> water_source_to_wtp,
+            vector<double> utility_owned_wtp_capacities);
 
     Utility(string name, int id,
             vector<vector<double>> &demands_all_realizations,
@@ -87,6 +94,8 @@ public:
             const vector<vector<double>> &typesMonthlyWaterPrice,
             WwtpDischargeRule wwtp_discharge_rule,
             double demand_buffer,
+            vector<vector<int>> water_source_to_wtp,
+            vector<double> utility_owned_wtp_capacities,
             const vector<int> &rof_infra_construction_order,
             const vector<int> &demand_infra_construction_order,
             const vector<double> &infra_construction_triggers,
@@ -221,6 +230,33 @@ public:
     const InfrastructureManager &getInfrastructure_construction_manager() const;
 
     double getDemand_offset() const;
+
+    double getInfraDiscountRate() const;
+
+    void updateTreatmentAndNumberOfStorageSources();
+
+    static bool
+    idealDemandSplitUnconstrained(double *split_demands,
+                                  const double *available_treated_flow_rate,
+                                  double total_demand, const double *storage,
+                                  double total_storage, int n_storage_sources);
+
+    static bool
+    idealDemandSplitConstrained(double *split_demands, bool *over_allocated,
+                                bool *has_spare_capacity,
+                                const double *available_treated_flow_rate,
+                                double total_demand, const double *storage,
+                                double total_storage, int n_storage_sources);
+
+    void splitDemandsQP(int week, vector<vector<double>> &demands,
+                        bool apply_demand_buffer);
+
+    bool hasTreatmentConnected(int ws);
+
+    void
+    unrollWaterSourceToWtpVector(
+            const vector<vector<int>> &water_source_to_wtp,
+            const vector<double>& utility_owned_wtp_capacities);
 };
 
 

@@ -5,8 +5,10 @@
 #include <iomanip>
 #include "IntakeDataCollector.h"
 
-IntakeDataCollector::IntakeDataCollector(Intake *intake, unsigned long realization)
-        : DataCollector(intake->id, intake->name, realization, INTAKE, 5 * COLUMN_WIDTH), intake(intake) {
+IntakeDataCollector::IntakeDataCollector(Intake *intake,
+                                         unsigned long realization)
+        : DataCollector(intake->id, intake->name, realization, INTAKE,
+                        5 * COLUMN_WIDTH), intake(intake) {
 }
 
 string IntakeDataCollector::printTabularString(int week) {
@@ -22,7 +24,9 @@ string IntakeDataCollector::printTabularString(int week) {
             << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
             << total_catchments_inflow[week]
             << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
-            << outflows[week];
+            << outflows[week]
+            << setw(COLUMN_WIDTH) << setprecision(COLUMN_PRECISION)
+            << treatment_capacity[week];
 
     return outStream.str();
 }
@@ -35,7 +39,8 @@ string IntakeDataCollector::printCompactString(int week) {
             << total_upstream_sources_inflows[week] << ","
             << wastewater_inflows[week] << ","
             << total_catchments_inflow[week] << ","
-            << outflows[week] << ",";
+            << outflows[week] << ","
+            << treatment_capacity[week];
 
     return outStream.str();
 }
@@ -75,7 +80,8 @@ string IntakeDataCollector::printCompactStringHeader() {
             << id << "up_spill" << ","
             << id << "ww_inflow" << ","
             << id << "catch_inflow" << ","
-            << id << "ds_spill" << ",";
+            << id << "ds_spill" << ","
+            << id << "treat_cap" << ",";
 
     return outStream.str();
 }
@@ -88,5 +94,6 @@ void IntakeDataCollector::collect_data() {
     wastewater_inflows.push_back(intake->getWastewater_inflow());
     outflows.push_back(intake->getTotal_outflow());
     total_catchments_inflow.push_back(intake->getUpstreamCatchmentInflow());
+    treatment_capacity.push_back(intake->getTotal_treatment_capacity());
 }
 

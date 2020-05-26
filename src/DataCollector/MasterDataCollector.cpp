@@ -8,9 +8,10 @@
 #include <numeric>
 #include <random>
 #include <algorithm>
+#include "../DroughtMitigationInstruments/TransfersBilateral.h"
 
 #ifdef NETCDF
-#include <netcdf>
+#include <netcdf> 
 using namespace std;
 using namespace netCDF;
 using namespace netCDF::exceptions;
@@ -35,6 +36,7 @@ static const int NC_ERR = 2;
 #include "WaterReuseDataCollector.h"
 #include "AllocatedReservoirDataCollector.h"
 #include "EmptyDataCollector.h"
+#include "TransfersBilateralDataCollector.h"
 
 using namespace Constants;
 
@@ -42,10 +44,8 @@ int MasterDataCollector::seed = NON_INITIALIZED;
 
 MasterDataCollector::MasterDataCollector(
         const vector<unsigned long> &realizations_to_run)
-        : n_realizations(
-        *max_element(realizations_to_run.begin(), realizations_to_run.end()) +
-        1),
-          realizations_ran(realizations_to_run) {}
+        : n_realizations(*max_element(realizations_to_run.begin(), realizations_to_run.end()) + 1),
+        realizations_ran(realizations_to_run) {}
 
 MasterDataCollector::~MasterDataCollector() {
     for (vector<DataCollector *> dcs : water_source_collectors)
@@ -74,86 +74,86 @@ int MasterDataCollector::printNETCDFUtilities(string base_file_name) {
     unsigned long n_vars = 6;
 
     try {
-    string file_name = io_directory + base_file_name + ".nc";
-    printf("Printing NetCDF output in %s.\n", file_name.c_str());
-    int ncid, dimid, csid, strofid, retval;
-    vector<int> group_ids(n_realizations);
-    vector<int> utilities_group_ids(n_utilities * n_realizations);
-    vector<int> vars_ids(n_utilities * n_realizations * n_vars);
+	string file_name = io_directory + base_file_name + ".nc";
+	printf("Printing NetCDF output in %s.\n", file_name.c_str());
+	int ncid, dimid, csid, strofid, retval;
+	vector<int> group_ids(n_realizations);
+	vector<int> utilities_group_ids(n_utilities * n_realizations);
+	vector<int> vars_ids(n_utilities * n_realizations * n_vars);
 
         /* Create the file. The NC_NETCDF4 flag tells netCDF to
          * create a netCDF-4/HDF5 file.
-     * */
+	 * */
         if ((retval = nc_create(file_name.c_str(), NC_NETCDF4|NC_CLOBBER, &ncid)))
-                       ERR(retval);
+		               ERR(retval);
 
         nc_def_dim(ncid, "weeks", n_weeks, &dimid);
         for (int r = 0; r < (int) n_realizations; ++r) {
-        if ((retval = nc_def_grp(ncid, (string("realization_") + to_string(r)).c_str(), &group_ids[r])))
-                     ERR (retval);
-        for (int u = 0; u < (int) n_utilities; ++u) {
-            if ((retval = nc_def_grp(group_ids[r], utility_collectors[u][r]->name, &utilities_group_ids[n_utilities * r + u])))
-                         ERR (retval);
+	    if ((retval = nc_def_grp(ncid, (string("realization_") + to_string(r)).c_str(), &group_ids[r])))
+		             ERR (retval);
+	    for (int u = 0; u < (int) n_utilities; ++u) {
+	        if ((retval = nc_def_grp(group_ids[r], utility_collectors[u][r]->name, &utilities_group_ids[n_utilities * r + u])))
+		                 ERR (retval);	    
 
-                if ((retval = nc_def_var(utilities_group_ids[n_utilities * r + u], "storage",
-                        NC_FLOAT, 1, &dimid, &vars_ids[n_utilities * r * n_vars + u])))
+                if ((retval = nc_def_var(utilities_group_ids[n_utilities * r + u], "storage", 
+						NC_FLOAT, 1, &dimid, &vars_ids[n_utilities * r * n_vars + u])))
                     ERR(retval);
-                if ((retval = nc_def_var(utilities_group_ids[n_utilities * r + u], "st_rof",
-                        NC_FLOAT, 1, &dimid, &vars_ids[n_utilities * r * n_vars + u + 1])))
+                if ((retval = nc_def_var(utilities_group_ids[n_utilities * r + u], "st_rof", 
+						NC_FLOAT, 1, &dimid, &vars_ids[n_utilities * r * n_vars + u + 1])))
                     ERR(retval);
-                if ((retval = nc_def_var(utilities_group_ids[n_utilities * r + u], "lt_rof",
-                        NC_FLOAT, 1, &dimid, &vars_ids[n_utilities * r * n_vars + u + 2])))
+                if ((retval = nc_def_var(utilities_group_ids[n_utilities * r + u], "lt_rof", 
+						NC_FLOAT, 1, &dimid, &vars_ids[n_utilities * r * n_vars + u + 2])))
                     ERR(retval);
-                if ((retval = nc_def_var(utilities_group_ids[n_utilities * r + u], "res_demand",
-                        NC_FLOAT, 1, &dimid, &vars_ids[n_utilities * r * n_vars + u + 3])))
+                if ((retval = nc_def_var(utilities_group_ids[n_utilities * r + u], "res_demand", 
+						NC_FLOAT, 1, &dimid, &vars_ids[n_utilities * r * n_vars + u + 3])))
                     ERR(retval);
-                if ((retval = nc_def_var(utilities_group_ids[n_utilities * r + u], "cf_size",
-                        NC_FLOAT, 1, &dimid, &vars_ids[n_utilities * r * n_vars + u+ 4])))
+                if ((retval = nc_def_var(utilities_group_ids[n_utilities * r + u], "cf_size", 
+						NC_FLOAT, 1, &dimid, &vars_ids[n_utilities * r * n_vars + u+ 4])))
                     ERR(retval);
-                if ((retval = nc_def_var(utilities_group_ids[n_utilities * r + u], "infr_pmts",
-                        NC_FLOAT, 1, &dimid, &vars_ids[n_utilities * r * n_vars + u + 5])))
+                if ((retval = nc_def_var(utilities_group_ids[n_utilities * r + u], "infr_pmts", 
+						NC_FLOAT, 1, &dimid, &vars_ids[n_utilities * r * n_vars + u + 5])))
                     ERR(retval);
 
-                if ((retval = nc_def_var_deflate(utilities_group_ids[n_utilities * r + u],
-                        vars_ids[n_utilities * r * n_vars + u], 1, 1, DEFLATE_LEVEL_9)))
+                if ((retval = nc_def_var_deflate(utilities_group_ids[n_utilities * r + u], 
+						vars_ids[n_utilities * r * n_vars + u], 1, 1, DEFLATE_LEVEL_9)))
                     ERR(retval);
-                if ((retval = nc_def_var_deflate(utilities_group_ids[n_utilities * r + u],
-                        vars_ids[n_utilities * r * n_vars + u + 1], 1, 1, DEFLATE_LEVEL_9)))
+                if ((retval = nc_def_var_deflate(utilities_group_ids[n_utilities * r + u], 
+						vars_ids[n_utilities * r * n_vars + u + 1], 1, 1, DEFLATE_LEVEL_9)))
                     ERR(retval);
-                if ((retval = nc_def_var_deflate(utilities_group_ids[n_utilities * r + u],
-                        vars_ids[n_utilities * r * n_vars + u + 2], 1, 1, DEFLATE_LEVEL_9)))
+                if ((retval = nc_def_var_deflate(utilities_group_ids[n_utilities * r + u], 
+						vars_ids[n_utilities * r * n_vars + u + 2], 1, 1, DEFLATE_LEVEL_9)))
                     ERR(retval);
-                if ((retval = nc_def_var_deflate(utilities_group_ids[n_utilities * r + u],
-                        vars_ids[n_utilities * r * n_vars + u + 3], 1, 1, DEFLATE_LEVEL_9)))
+                if ((retval = nc_def_var_deflate(utilities_group_ids[n_utilities * r + u], 
+						vars_ids[n_utilities * r * n_vars + u + 3], 1, 1, DEFLATE_LEVEL_9)))
                     ERR(retval);
-                if ((retval = nc_def_var_deflate(utilities_group_ids[n_utilities * r + u],
-                        vars_ids[n_utilities * r * n_vars + u + 4], 1, 1, DEFLATE_LEVEL_9)))
+                if ((retval = nc_def_var_deflate(utilities_group_ids[n_utilities * r + u], 
+						vars_ids[n_utilities * r * n_vars + u + 4], 1, 1, DEFLATE_LEVEL_9)))
                     ERR(retval);
-                if ((retval = nc_def_var_deflate(utilities_group_ids[n_utilities * r + u],
-                        vars_ids[n_utilities * r * n_vars + u + 5], 1, 1, DEFLATE_LEVEL_9)))
+                if ((retval = nc_def_var_deflate(utilities_group_ids[n_utilities * r + u], 
+						vars_ids[n_utilities * r * n_vars + u + 5], 1, 1, DEFLATE_LEVEL_9)))
                     ERR(retval);
 
                 if ((retval = nc_put_var_double(utilities_group_ids[n_utilities * r + u], vars_ids[n_utilities * r * n_vars + u],
-                        utility_collectors[u][r]->getCombined_storage().data())))
-                ERR(retval);
+						utility_collectors[u][r]->getCombined_storage().data())))
+	            ERR(retval);
                 if ((retval = nc_put_var_double(utilities_group_ids[n_utilities * r + u], vars_ids[n_utilities * r * n_vars + u + 1],
-                        utility_collectors[u][r]->getSt_rof().data())))
-                ERR(retval);
+						utility_collectors[u][r]->getSt_rof().data())))
+	            ERR(retval);
                 if ((retval = nc_put_var_double(utilities_group_ids[n_utilities * r + u], vars_ids[n_utilities * r * n_vars + u + 2],
-                        utility_collectors[u][r]->getLt_rof().data())))
-                ERR(retval);
+						utility_collectors[u][r]->getLt_rof().data())))
+	            ERR(retval);
                 if ((retval = nc_put_var_double(utilities_group_ids[n_utilities * r + u], vars_ids[n_utilities * r * n_vars + u + 3],
-                        utility_collectors[u][r]->getRestricted_demand().data())))
-                ERR(retval);
+						utility_collectors[u][r]->getRestricted_demand().data())))
+	            ERR(retval);
                 if ((retval = nc_put_var_double(utilities_group_ids[n_utilities * r + u], vars_ids[n_utilities * r * n_vars + u + 4],
-                        utility_collectors[u][r]->getContingency_fund_size().data())))
-                ERR(retval);
+						utility_collectors[u][r]->getContingency_fund_size().data())))
+	            ERR(retval);
                 if ((retval = nc_put_var_double(utilities_group_ids[n_utilities * r + u], vars_ids[n_utilities * r * n_vars + u + 5],
-                        utility_collectors[u][r]->getDebt_service_payments().data())))
-                ERR(retval);
-        }
-    }
-    return 0;
+						utility_collectors[u][r]->getDebt_service_payments().data())))
+	            ERR(retval);
+	    }
+	}
+	return 0;
     } catch(NcException& e){
         e.what();
         return NC_ERR;
@@ -318,8 +318,7 @@ void MasterDataCollector::printWaterSourcesOutputCompact(
 
             out_stream.close();
         } catch (...) {
-            printf("Warning: water sources data for realization %lu not saved due to error.\n",
-                   r);
+            printf("Warning: water sources data for realization %lu not saved due to error.\n", r);
         }
     }
 }
@@ -463,24 +462,19 @@ MasterDataCollector::calculatePrintObjectives(string file_name, bool print) {
             vector<RestrictionsDataCollector *> utility_restrictions(
                     *max_element(realizations_ran.begin(),
                                  realizations_ran.end()) + 1
-            );
+                    );
             isolateRestrictionDataCollectors(u, utility_restrictions);
 
             objectives.push_back
-                    (ObjectivesCalculator::calculateReliabilityObjective(u,
-                                                                         realizations_ran));
+                    (ObjectivesCalculator::calculateReliabilityObjective(u, realizations_ran));
             objectives.push_back
-                    (ObjectivesCalculator::calculateRestrictionFrequencyObjective(
-                            utility_restrictions, realizations_ran));
+                    (ObjectivesCalculator::calculateRestrictionFrequencyObjective(utility_restrictions, realizations_ran));
             objectives.push_back
-                    (ObjectivesCalculator::calculateNetPresentCostInfrastructureObjective(
-                            u, realizations_ran));
+                    (ObjectivesCalculator::calculateNetPresentCostInfrastructureObjective(u, realizations_ran));
             objectives.push_back
-                    (ObjectivesCalculator::calculatePeakFinancialCostsObjective(
-                            u, realizations_ran));
+                    (ObjectivesCalculator::calculatePeakFinancialCostsObjective(u, realizations_ran));
             objectives.push_back
-                    (ObjectivesCalculator::calculateWorseCaseCostsObjective(u,
-                                                                            realizations_ran));
+                    (ObjectivesCalculator::calculateWorseCaseCostsObjective(u, realizations_ran));
         }
     }
     return objectives;
@@ -488,7 +482,7 @@ MasterDataCollector::calculatePrintObjectives(string file_name, bool print) {
 
 void MasterDataCollector::isolateRestrictionDataCollectors(
         vector<UtilitiesDataCollector *> &u,
-        vector<RestrictionsDataCollector *> &utility_restrictions) const {
+                                                           vector<RestrictionsDataCollector *> &utility_restrictions) const {
     for (auto &p : drought_mitigation_policy_collectors)
         if (p.at(realizations_ran.at(0))->type == RESTRICTIONS &&
             p[realizations_ran[0]]->id == u.at(realizations_ran[0])->id)
@@ -599,13 +593,13 @@ MasterDataCollector::printObjectivesOfAllRealizationsForBSAnalysis(int sol_id,
                                                                    int n_samples) {
     string file_name =
             output_directory + "objectives_all_reals_" + to_string(n_sets) +
-            "_" + to_string(n_samples) + "_S" + to_string(sol_id) + ".csv";
+                       "_" + to_string(n_samples) + "_S" + to_string(sol_id) + ".csv";
     vector<double> objectives_all_reals = calculatePrintObjectives("", false);
 
     string line;
     line = "";
     for (double &o : objectives_all_reals) {
-        line += to_string(o) + ",";
+	    line += to_string(o) + ",";
     }
     line.pop_back();
 
@@ -618,11 +612,11 @@ MasterDataCollector::printObjectivesOfAllRealizationsForBSAnalysis(int sol_id,
 
 void
 MasterDataCollector::printObjsBSSamples(int sol_id, int n_sets, int n_samples,
-                                        vector<vector<double>> &objectives) {// Print objectives.
+                                              vector<vector<double>> &objectives) {// Print objectives.
     ofstream outStream_objs;
     string objectives_file_name =
             output_directory + "bootstrap_objs_" + to_string(n_sets) + "_" +
-            to_string(n_samples) + "_S" + to_string(sol_id) + ".csv";
+                        to_string(n_samples) + "_S" + to_string(sol_id) + ".csv";
     outStream_objs.open(objectives_file_name);
     printf("Bootstrap objectives files will be printed at %s\n",
            objectives_file_name.c_str());
@@ -652,7 +646,7 @@ void MasterDataCollector::readOrCreateBSSamples(int sol_id, int n_sets,
     uniform_int_distribution<int> uni(min, max); // guaranteed unbiased
     string line;
     if (!bootstrap_samples.empty()) {
-        bootstrap_sample_sets = bootstrap_samples;
+	    bootstrap_sample_sets = bootstrap_samples;
     } else {
         for (int set = 0; set < n_sets; ++set) {
             // Generate one set of bootstrapped realizations, if none was specified.
@@ -694,17 +688,18 @@ DataCollector *
 MasterDataCollector::createPolicyDataCollector(DroughtMitigationPolicy *dmp,
                                                unsigned long r) {
     if (dmp->type == RESTRICTIONS)
-        return new RestrictionsDataCollector(dynamic_cast<Restrictions *> (dmp),
-                                             r);
+        return new RestrictionsDataCollector(dynamic_cast<Restrictions *> (dmp), r);
     else if (dmp->type == TRANSFERS)
         return new TransfersDataCollector(dynamic_cast<Transfers *> (dmp), r);
+    else if (dmp->type == BILATERAL_TRANSFERS)
+        return new TransfersBilateralDataCollector(dynamic_cast<TransfersBilateral *> (dmp), r);
     else if (dmp->type == INSURANCE_STORAGE_ROF)
         return new EmptyDataCollector();
     else
         throw invalid_argument("Drought mitigation policy not recognized. "
-                               "Did you forget to add it to the "
-                               "MasterDataCollector::addRealization"
-                               " function?");
+                                 "Did you forget to add it to the "
+                                 "MasterDataCollector::addRealization"
+                                 " function or to create its data collector??");
 }
 
 DataCollector *
@@ -730,9 +725,9 @@ MasterDataCollector::createWaterSourceDataCollector(WaterSource *ws,
         return new EmptyDataCollector();
     else
         throw invalid_argument("Water source not recognized. "
-                               "Did you forget to add it to the "
-                               "MasterDataCollector::addRealization"
-                               " function?");
+                                 "Did you forget to add it to the "
+                                 "MasterDataCollector::addRealization"
+                                 " function?");
 }
 
 void MasterDataCollector::addRealization(
@@ -764,62 +759,45 @@ void MasterDataCollector::addRealization(
     }
 
     // Create drought mitigation policies data collector
-    for (int dmp = 0;
-         dmp < (int) drought_mitigation_policies_realization.size(); ++dmp)
+    for (int dmp = 0; dmp < (int) drought_mitigation_policies_realization.size(); ++dmp)
         drought_mitigation_policy_collectors[dmp][r] =
-                createPolicyDataCollector(
-                        drought_mitigation_policies_realization[dmp], r);
+                createPolicyDataCollector(drought_mitigation_policies_realization[dmp], r);
 
     // Create water sources data collectors
     for (int ws = 0; ws < (int) water_sources_realization.size(); ++ws) {
-        water_source_collectors[ws][r] = createWaterSourceDataCollector(
-                water_sources_realization[ws], r);
+        water_source_collectors[ws][r] = createWaterSourceDataCollector(water_sources_realization[ws], r);
     }
-}
+} 
 
 void MasterDataCollector::removeRealization(unsigned long r) {
     for (int u = 0; u < (int) utility_collectors.size(); ++u) {
         delete utility_collectors[u][r];
         utility_collectors[u][r] = nullptr;
     }
-    for (int dmp = 0;
-         dmp < (int) drought_mitigation_policy_collectors.size(); ++dmp) {
-        delete drought_mitigation_policy_collectors[dmp][r];
+    for (int dmp = 0; dmp < (int) drought_mitigation_policy_collectors.size(); ++dmp) {
+	    delete drought_mitigation_policy_collectors[dmp][r];
         drought_mitigation_policy_collectors[dmp][r] = nullptr;
     }
     for (int ws = 0; ws < (int) water_source_collectors.size(); ++ws) {
-        delete water_source_collectors[ws][r];
+	    delete water_source_collectors[ws][r];
         water_source_collectors[ws][r] = nullptr;
     }
 
-    realizations_ran.erase(
-            std::remove(realizations_ran.begin(), realizations_ran.end(), r),
-            realizations_ran.end());
+    realizations_ran.erase(std::remove(realizations_ran.begin(), realizations_ran.end(), r), realizations_ran.end());
     crashed_realizations.push_back(r);
 }
 
-//void MasterDataCollector::removeNullptrs(vector<vector<void *>> vector_of_collectors) {
-//    for (auto &v : vector_of_collectors) {
-//        v.erase(remove_if(v.begin(), v.end(), [](const void *x) { return x == nullptr; }), v.end());
-//    }
-//}
 
 void MasterDataCollector::cleanCollectorsOfDeletedRealizations() {
-//    removeNullptrs(utility_collectors);
-//    removeNullptrs(drought_mitigation_policy_collectors);
-//    removeNullptrs(water_source_collectors);
 
     for (auto &v : utility_collectors) {
-        v.erase(remove_if(v.begin(), v.end(),
-                          [](const void *x) { return x == nullptr; }), v.end());
+        v.erase(remove_if(v.begin(), v.end(), [](const void *x) { return x == nullptr; }), v.end());
     }
     for (auto &v : drought_mitigation_policy_collectors) {
-        v.erase(remove_if(v.begin(), v.end(),
-                          [](const void *x) { return x == nullptr; }), v.end());
+        v.erase(remove_if(v.begin(), v.end(), [](const void *x) { return x == nullptr; }), v.end());
     }
     for (auto &v : water_source_collectors) {
-        v.erase(remove_if(v.begin(), v.end(),
-                          [](const void *x) { return x == nullptr; }), v.end());
+        v.erase(remove_if(v.begin(), v.end(), [](const void *x) { return x == nullptr; }), v.end());
     }
 }
 

@@ -17,13 +17,8 @@ private:
 
     vector<double> stage_multipliers;
     vector<double> stage_triggers;
-public:
-    const vector<double> &getStageMultipliers() const;
-
-    const vector<double> &getStageTriggers() const;
 
 public:
-
     Restrictions(const int id, const vector<double> &stage_multipliers,
                  const vector<double> &stage_triggers);
 
@@ -56,6 +51,10 @@ public:
 
     void setupTriggers(const vector<double> &stage_multipliers,
                        const vector<double> &stage_triggers);
+
+    const vector<double> &getStageMultipliers() const;
+
+    const vector<double> &getStageTriggers() const;
 };
 
 

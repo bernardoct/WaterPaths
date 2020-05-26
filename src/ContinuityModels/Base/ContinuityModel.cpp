@@ -202,11 +202,12 @@ void ContinuityModel::continuityStep(
         }
 
         // Mass balance. The value of rof_realization for a a non-ROF continuity
-	    // step is -1 (NON_INITIALIZED), so adding 1 brings it to delta_realization_weeks[0]
-	    // which is 0, while delta_realization_weeks[1] is 52, and so on.
+	// step is -1 (NON_INITIALIZED), so adding 1 brings it to delta_realization_weeks[0]
+	// which is 0, while delta_realization_weeks[1] is 52, and so on.
         continuity_water_sources[i]->continuityWaterSource(
                 week - delta_realization_weeks[rof_realization + 1],
                 upstream_spillage[i], wastewater_discharges[i], demands[i]);
+        demands[i] = vector<double>(n_utilities, 0.);
     }
 
     // updates combined storage for utilities.

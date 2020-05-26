@@ -50,13 +50,16 @@ public:
                             const vector<int> &demand_infra_construction_order);
 
     void setWaterSourceOnline(unsigned int source_id, int week,
+                              vector<double> &utility_owned_wtp_capacities,
+                              vector<int> &water_source_to_wtp,
                               double &total_storage_capacity,
-                              double &total_treatment_capacity,
                               double &total_available_volume,
                               double &total_stored_volume);
 
     void waterTreatmentPlantConstructionHandler(unsigned int source_id,
-                                                double &total_storage_capacity);
+                                                double &total_storage_capacity,
+                                                vector<double> &utility_owned_wtp_capacities,
+                                                vector<int> &water_source_to_wtp);
 
     void reservoirExpansionConstructionHandler(unsigned int source_id);
 
@@ -64,12 +67,12 @@ public:
 
     void removeRelatedSourcesFromQueue(int next_construction);
 
-    int infrastructureConstructionHandler(double long_term_rof, int week,
-                                          double past_year_average_demand,
-                                          double &total_storage_capacity,
-                                          double &total_treatment_capacity,
-                                          double &total_available_volume,
-                                          double &total_stored_volume);
+    int infrastructureConstructionHandler(
+            double long_term_rof, int week, double past_year_average_demand,
+            vector<double> &utility_owned_wtp_capacities,
+            vector<int> &water_source_to_wtp,
+            double &total_storage_capacity,
+            double &total_available_volume, double &total_stored_volume);
 
     void
     forceInfrastructureConstruction(int week, vector<int> new_infra_triggered);
@@ -78,7 +81,6 @@ public:
 
     void
     addWaterSourceToOnlineLists(int source_id, double &total_storage_capacity,
-                                double &total_treatment_capacity,
                                 double &total_available_volume,
                                 double &total_stored_volume);
 
@@ -86,8 +88,8 @@ public:
 
     void
     connectWaterSourcesVectorsToUtilitys(vector<WaterSource *> &water_sources,
-                                         vector<int> &priority_draw_water_source,
-                                         vector<int> &non_priority_draw_water_source);
+                                          vector<int> &priority_draw_water_source,
+                                          vector<int> &non_priority_draw_water_source);
 
     int getIdOfNewTriggeredInfra(double trigger_var, int week,
                                  bool under_construction_any,

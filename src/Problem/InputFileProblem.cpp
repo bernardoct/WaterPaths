@@ -57,6 +57,7 @@ int InputFileProblem::functionEvaluation(double *vars, double *objs,
 
     parser.createSystemObjects(vars);
     solutions_decvars = parser.getSolutionsDecvars();
+    solutions_to_run = parser.getSolutionsToRun();
 
     // Creates simulation object depending on use (or lack thereof) ROF tables
     printf("Starting Simulation\n");

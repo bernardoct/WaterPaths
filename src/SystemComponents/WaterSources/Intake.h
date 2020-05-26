@@ -32,8 +32,7 @@ public:
     ~Intake() override;
 
     void applyContinuity(int week, double upstream_source_min_env_flow,
-                         double wastewater_inflow,
-                         vector<double> &demand) override;
+                             double wastewater_inflow, vector<double> &demand) override;
 
     void
     setRealization(unsigned long r, const vector<double> &rdm_factors) override;

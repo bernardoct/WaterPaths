@@ -77,6 +77,8 @@ public:
     const vector<double> &getRestricted_demand() const;
 
     void checkForNans() const;
+
+    const Utility *getUtility() const;
 };
 
 

@@ -22,9 +22,9 @@ protected:
 
 
     Reservoir(string name, const int id,
-              const vector<Catchment *> &catchments, const double capacity,
-              const double max_treatment_capacity,
-              EvaporationSeries &evaporation_series,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
+            EvaporationSeries &evaporation_series,
               DataSeries &storage_area_curve,
               vector<double> allocated_treatment_fractions,
               vector<double> allocated_fractions,
@@ -32,14 +32,13 @@ protected:
               int source_type = RESERVOIR);
 
     Reservoir(string name, const int id,
-              const vector<Catchment *> &catchments, const double capacity,
-              const double max_treatment_capacity,
-              EvaporationSeries &evaporation_series,
-              double storage_area,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
+            EvaporationSeries &evaporation_series, double storage_area,
               vector<double> allocated_treatment_fractions,
               vector<double> allocated_fractions,
               vector<int> utilities_with_allocations,
-              int source_type = RESERVOIR);
+            int source_type = RESERVOIR);
 
     Reservoir(string name, const int id, const vector<Catchment *> &catchments,
               const double capacity,
@@ -70,9 +69,9 @@ public:
     const bool fixed_area;
 
     Reservoir(string name, const int id,
-              const vector<Catchment *> &catchments, const double capacity,
-              const double max_treatment_capacity,
-              EvaporationSeries &evaporation_series,
+            const vector<Catchment *> &catchments, const double capacity,
+            const double max_treatment_capacity,
+            EvaporationSeries &evaporation_series,
               DataSeries &storage_area_curve, int source_type = RESERVOIR);
 
     Reservoir(string name, const int id, const vector<Catchment *> &catchments,
@@ -83,18 +82,18 @@ public:
               vector<int> construction_prerequisites,
               const vector<double> &construction_time_range,
               double permitting_period, Bond &bond,
-              int source_type = RESERVOIR);
+            int source_type = RESERVOIR);
 
     Reservoir(string name, const int id,
-              const vector<Catchment *> &catchments, const double capacity,
+            const vector<Catchment *> &catchments, const double capacity,
               const double max_treatment_capacity,
               EvaporationSeries &evaporation_series, double storage_area,
               int source_type = RESERVOIR);
 
     Reservoir(string name, const int id, const vector<Catchment *> &catchments,
               const double capacity,
-              const double max_treatment_capacity,
-              EvaporationSeries &evaporation_series,
+            const double max_treatment_capacity,
+            EvaporationSeries &evaporation_series,
               double storage_area, vector<int> construction_prerequisites,
               const vector<double> &construction_time_range,
               double permitting_period,
@@ -107,8 +106,8 @@ public:
     ~Reservoir() override;
 
     void applyContinuity(int week, double upstream_source_inflow,
-                         double wastewater_discharge,
-                         vector<double> &demand_outflow) override;
+                             double wastewater_discharge,
+                             vector<double> &demand_outflow) override;
 
     void setOnline() override;
 

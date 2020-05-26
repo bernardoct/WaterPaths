@@ -75,7 +75,7 @@ void solve_quadprog_matlab_syntax(Matrix<double> &G, Vector<double> &g0,
                                   const Vector<double> &lb, const Vector<double> &ub,
                                   Vector<double> &x);
 
-// UtilityParser functions for printing vectors and matrices
+// Utility functions for printing vectors and matrices
 void print_matrix(char *name, const Matrix<double> &A, int n = -1, int m = -1);
 
 void print_vector(char *name, const Vector<double> &v, int n = -1);

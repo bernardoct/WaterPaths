@@ -70,17 +70,17 @@ void Intake::applyContinuity(int week, double upstream_source_inflow,
 
     /// Get all upstream catchment inflow.
     upstream_catchment_inflow = 0;
-    for (Catchment c : catchments)
+    for (Catchment &c : catchments)
         upstream_catchment_inflow += c.getStreamflow(week);
 
     /// Water availability for next ime step.
     double next_upstream_catchment_inflow = 0;
-    for (Catchment c : catchments)
+    for (Catchment &c : catchments)
         next_upstream_catchment_inflow += c.getStreamflow(week + 1);
 
     /// The available volume for the following week will be next week's gain
     /// - this week's minimum environmental outflow (assuming next week's
-    /// will be more or less the same and this week's) as long as the intake
+    /// will be more or less the same as this week's) as long as the intake
     /// capacity is not exceeded. This should work well for small intakes.
     available_volume = min(total_treatment_capacity,
                            next_upstream_catchment_inflow -

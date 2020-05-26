@@ -97,11 +97,8 @@ MasterSystemInputFileParser::replacePlaceHoldersByDVs(
                 if (it != string::npos) {
                     reorderCSVDataInBlockLine(vars, count_var, data);
                 }
-//		printf("%s ", data.c_str());
             }
-//	    printf("\n");
         }
-//	printf("\n");
     }
 }
 

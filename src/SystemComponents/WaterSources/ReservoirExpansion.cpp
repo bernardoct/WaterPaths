@@ -20,8 +20,7 @@ ReservoirExpansion::ReservoirExpansion(string name, const int id,
  * Copy constructor.
  * @param reservoir
  */
-ReservoirExpansion::ReservoirExpansion(
-        const ReservoirExpansion &reservoir_expansion) :
+ReservoirExpansion::ReservoirExpansion(const ReservoirExpansion &reservoir_expansion) :
         WaterSource(reservoir_expansion),
         parent_reservoir_ID(reservoir_expansion.parent_reservoir_ID) {}
 
@@ -30,18 +29,16 @@ ReservoirExpansion::ReservoirExpansion(
  * @param reservoir
  * @return
  */
-ReservoirExpansion &
-ReservoirExpansion::operator=(const ReservoirExpansion &reservoir_expansion) {
+ReservoirExpansion &ReservoirExpansion::operator=(const ReservoirExpansion &reservoir_expansion) {
     WaterSource::operator=(reservoir_expansion);
     return *this;
 }
 
-void
-ReservoirExpansion::applyContinuity(int week, double upstream_source_inflow,
-                                    double wastewater_discharge,
-                                    vector<double> &demand_outflow) {
+void ReservoirExpansion::applyContinuity(int week, double upstream_source_inflow,
+                                         double wastewater_discharge,
+                                         vector<double> &demand_outflow) {
     throw logic_error("Reservoir expansion only add storage volume to the "
-                      "reservoir they're assigned to.  Continuity "
-                      "cannot be called on it, but only on the "
-                      "reservoir it's  assigned to expand.");
+                                "reservoir they're assigned to.  Continuity "
+                                "cannot be called on it, but only on the "
+                                "reservoir it's  assigned to expand.");
 }

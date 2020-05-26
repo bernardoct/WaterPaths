@@ -37,7 +37,6 @@ struct by_xreal {
 };
 
 class Utils {
-
 public:
 
     static vector<vector<double>> parse2DCsvFile(basic_string<char, char_traits<char>, allocator<char>> file_name,

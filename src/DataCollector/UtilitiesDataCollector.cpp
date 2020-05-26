@@ -287,3 +287,7 @@ const vector<double> &UtilitiesDataCollector::getLt_rof() const {
 const vector<double> &UtilitiesDataCollector::getRestricted_demand() const {
     return restricted_demand;
 }
+
+const Utility *UtilitiesDataCollector::getUtility() const {
+    return utility;
+}

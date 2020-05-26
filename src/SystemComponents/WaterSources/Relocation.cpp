@@ -9,8 +9,7 @@ Relocation::Relocation(string name, const int id,
                        vector<double> *allocated_fractions,
                        vector<int> *utilities_with_allocations,
                        vector<int> construction_prerequisites,
-                       const vector<double> &construction_time_range,
-                       double permitting_period,
+                       const vector<double> &construction_time_range, double permitting_period,
                        Bond &bond)
         : WaterSource(name, id, vector<Catchment *>(), NONE, NONE,
                       construction_prerequisites, SOURCE_RELOCATION,
@@ -35,9 +34,9 @@ void Relocation::applyContinuity(int week, double upstream_source_inflow,
                                  vector<double> &demand_outflow) {
 
     throw logic_error("Source relocations just changes allocated fractions "
-                      "in the source they're assigned to. Continuity "
-                      "cannot be called on it, but only on the "
-                      "source it's assigned to relocate.");
+                                "in the source they're assigned to. Continuity "
+                                "cannot be called on it, but only on the "
+                                "source it's assigned to relocate.");
 }
 
 unsigned long Relocation::getParent_reservoir_ID() const {

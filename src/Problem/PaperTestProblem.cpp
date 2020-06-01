@@ -844,84 +844,88 @@ void PaperTestProblem::readInputData() {
         rdm_tseries_dir = DEFAULT_RDM_TSERIES_DIR;
     }
 
-#pragma omp parallel num_threads(omp_get_thread_num()) default(none) shared(rdm_tseries_dir)
-    {
-#pragma omp single
-        streamflows_durham = Utils::parse2DCsvFile(io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir + "inflows" +
-                evap_inflows_suffix + Constants::BAR + "durham_inflows.csv", n_realizations);
-#pragma omp single
+//#pragma omp parallel num_threads(omp_get_thread_num()) default(none) shared(rdm_tseries_dir)
+//    {
+//// #pragma omp single
+//        {
+            streamflows_durham = Utils::parse2DCsvFile(
+                    io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir +
+                    "inflows" + evap_inflows_suffix + BAR +
+                    "durham_inflows.csv", n_realizations);
+
+// #pragma omp single
         streamflows_flat = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir + "inflows" +
                 evap_inflows_suffix +
                 BAR + "falls_lake_inflows.csv", n_realizations);
-#pragma omp single
+// #pragma omp single
         streamflows_swift = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir + "inflows" +
                 evap_inflows_suffix +
                 BAR + "lake_wb_inflows.csv", n_realizations);
-#pragma omp single
+// #pragma omp single
         streamflows_llr = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir + "inflows" +
                 evap_inflows_suffix +
                 BAR + "little_river_raleigh_inflows.csv", n_realizations);
-#pragma omp single
+// #pragma omp single
         streamflows_phils = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir + "inflows" +
                 evap_inflows_suffix +
                 BAR + "stone_quarry_inflows.csv", n_realizations);
-#pragma omp single
+// #pragma omp single
         streamflows_cane = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir + "inflows" +
                 evap_inflows_suffix +
                 BAR + "cane_creek_inflows.csv", n_realizations);
-#pragma omp single
+// #pragma omp single
         streamflows_morgan = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir + "inflows" +
                 evap_inflows_suffix +
                 BAR + "university_lake_inflows.csv", n_realizations);
-#pragma omp single
+// #pragma omp single
         streamflows_crabtree = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir + "inflows" +
                 evap_inflows_suffix +
                 BAR + "crabtree_inflows.csv", n_realizations);
 //                BAR + "university_lake_inflows.csv", n_realizations);
-#pragma omp single
+// #pragma omp single
         streamflows_haw = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir + "inflows" +
                 evap_inflows_suffix +
                 BAR + "jordan_lake_inflows.csv", n_realizations);
-#pragma omp single
+// #pragma omp single
         streamflows_lillington = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir + "inflows" +
                 evap_inflows_suffix +
                 BAR + "lillington_inflows.csv", n_realizations);
-#pragma omp single
+// #pragma omp single
         streamflows_clayton = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir + "inflows" +
                 evap_inflows_suffix +
                 BAR + "clayton_inflows.csv", n_realizations);
 
-#pragma omp single
+// #pragma omp single
         evap_durham = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir +
                 "evaporation" + evap_inflows_suffix +
                 BAR + "durham_evap.csv", n_realizations);
-#pragma omp single
+// #pragma omp single
         evap_falls_lake = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir +
                 "evaporation" + evap_inflows_suffix +
                 BAR + "falls_lake_evap.csv", n_realizations);
-#pragma omp single
+// #pragma omp single
         evap_jordan_lake = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir +
                 "evaporation" + evap_inflows_suffix +
                 BAR + "jordan_lake_evap.csv", n_realizations);
-#pragma omp single
+// #pragma omp single
         evap_little_river = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir +
                 "evaporation" + evap_inflows_suffix +
                 BAR + "little_river_raleigh_evap.csv", n_realizations);
-#pragma omp single
+// #pragma omp single
         {
             evap_wheeler_benson = Utils::parse2DCsvFile(
                     io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir +
@@ -929,23 +933,23 @@ void PaperTestProblem::readInputData() {
                     BAR + "wb_evap.csv", n_realizations);
         }
 
-#pragma omp single
+// #pragma omp single
         demand_watertown = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir + "demands" +
                 evap_inflows_suffix +
                 BAR + "cary_demand.csv", n_realizations);
-#pragma omp single
+// #pragma omp single
         demand_dryville = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir + "demands" +
                 evap_inflows_suffix +
                 BAR + "durham_demand.csv", n_realizations);
-#pragma omp single
+// #pragma omp single
         demand_fallsland = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir + "demands" +
                 evap_inflows_suffix +
                 BAR + "raleigh_demand.csv", n_realizations);
 
-#pragma omp single
+// #pragma omp single
         {
             demand_to_wastewater_fraction_fallsland = Utils::parse2DCsvFile(
                     io_directory + DEFAULT_DATA_DIR +
@@ -973,7 +977,7 @@ void PaperTestProblem::readInputData() {
             fallslandUserClassesWaterPrices = Utils::parse2DCsvFile(
                     io_directory + DEFAULT_DATA_DIR +
                     "raleighUserClassesWaterPrices.csv");
-        }
+//        }
     }
 }
 

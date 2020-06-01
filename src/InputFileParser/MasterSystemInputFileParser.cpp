@@ -717,7 +717,7 @@ MasterSystemInputFileParser::readBlock(ifstream &inputFile, int &l,
     vector<vector<string>> block;
 
     while (getline(inputFile, line) && line[0] != '[') {
-        if (line.back() == '\r') line.pop_back();
+        if (!line.empty() && line.back() == '\r') line.pop_back();
 
         if (line[0] != '#' && !line.empty()) {
             vector<string> tokenized_line;

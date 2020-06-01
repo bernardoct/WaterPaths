@@ -148,7 +148,7 @@ void Matrix2D<T>::setData(T *data, int length) {
     }
     memcpy(data_.get(), data, length * sizeof(T));
 }
-#pragma GCC optimize("O0")
+
 template<typename T>
 void Matrix2D<T>::setPartialData(unsigned long i, T *data, unsigned long length) {
     if (i * dj_ + length > di_ * dj_) {

@@ -44,7 +44,7 @@ public:
 
     bool empty();
 
-    void setPartialData(int i, T *data, unsigned long length);
+    void setPartialData(unsigned long i, T *data, unsigned long length);
 
     void setData(T *data, int length);
 
@@ -148,11 +148,12 @@ void Matrix2D<T>::setData(T *data, int length) {
     }
     memcpy(data_.get(), data, length * sizeof(T));
 }
-
+#pragma GCC optimize("O0")
 template<typename T>
-void Matrix2D<T>::setPartialData(int i, T *data, unsigned long length) {
-    if (i >= di_ + length)
-        throw length_error("Matrix2D subscript out of bounds or negative");
+void Matrix2D<T>::setPartialData(unsigned long i, T *data, unsigned long length) {
+    if (i * dj_ + length > di_ * dj_) {
+        throw length_error("Matrix2D subscript out of bounds");
+    }
     memcpy(data_.get() + i * dj_, data, length * sizeof(T));
 }
 

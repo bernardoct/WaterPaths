@@ -760,6 +760,16 @@ void MasterSystemInputFileParser::clearParsers() {
         delete dmp;
     }
     drought_mitigation_policy.clear();
+
+    for (auto rcrp : reservoir_control_rule_parse) {
+        delete rcrp;
+    }
+    reservoir_control_rule_parse.clear();
+
+    for (auto rcl : reservoir_control_rules) {
+        delete rcl;
+    }
+    reservoir_control_rules.clear();
 }
 
 string MasterSystemInputFileParser::findName(vector<vector<string>> &block,

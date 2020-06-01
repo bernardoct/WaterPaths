@@ -171,6 +171,13 @@ void UtilityParser::checkMissingOrExtraParams(vector<vector<string>> &block,
     if (demand_buffer == NON_INITIALIZED) {
         throw MissingParameter("demand_buffer", tag_name, line_no);
     }
+    if (utility_owned_wtp_capacities.empty()) {
+        throw MissingParameter("utility_owned_wtp_capacities", tag_name, line_no);
+    }
+    if (water_source_to_wtp.empty()) {
+        throw MissingParameter("water_source_to_wtp", tag_name, line_no);
+    }
+
 
     bool all_construction_vars_initialized = (
             (!infra_construction_triggers.empty() ||

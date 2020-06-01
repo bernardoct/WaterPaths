@@ -129,7 +129,7 @@ Problem::setRofTables(unsigned long n_realizations, string rof_tables_directory)
             string file_name = rof_tables_directory + "tables_r" + to_string(r) + "_u" + to_string(u) + ".csv";
             auto tables_utility_week = Utils::parse2DCsvFile(file_name);
 
-            for (int w = 0; w < n_weeks; ++w) {
+            for (unsigned long w = 0; w < n_weeks; ++w) {
                 rof_tables[r][u].setPartialData(w, tables_utility_week[w].data(), tables_utility_week[w].size());
             }
         }

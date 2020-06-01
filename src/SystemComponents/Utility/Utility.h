@@ -32,7 +32,9 @@ private:
     double unfulfilled_demand = 0;
     double net_stream_inflow = 0;
     double price_rdm_multiplier = 1.;
-    double *available_treated_flow_rate = new double[0];
+    double *available_treated_flow_rate = nullptr;
+    double *utility_owned_wtp_capacities_tmp = nullptr;
+    unsigned long n_wtp = NONE;
     bool used_for_realization = true;
     unsigned short n_storage_sources = 0;
     vector<WaterSource *> water_sources;

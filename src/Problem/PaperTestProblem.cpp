@@ -847,10 +847,8 @@ void PaperTestProblem::readInputData() {
 #pragma omp parallel num_threads(omp_get_thread_num()) default(none) shared(rdm_tseries_dir)
     {
 #pragma omp single
-        streamflows_durham = Utils::parse2DCsvFile(
-                io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir + "inflows" +
-                evap_inflows_suffix +
-                BAR + "durham_inflows.csv", n_realizations);
+        streamflows_durham = Utils::parse2DCsvFile(io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir + "inflows" +
+                evap_inflows_suffix + Constants::BAR + "durham_inflows.csv", n_realizations);
 #pragma omp single
         streamflows_flat = Utils::parse2DCsvFile(
                 io_directory + DEFAULT_DATA_DIR + rdm_tseries_dir + "inflows" +

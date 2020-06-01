@@ -221,6 +221,8 @@ Utility::Utility(Utility &utility) :
 
 Utility::~Utility() {
     water_sources.clear();
+    delete[] utility_owned_wtp_capacities_tmp;
+    delete[] available_treated_flow_rate;
 }
 
 Utility &Utility::operator=(const Utility &utility) {
@@ -260,11 +262,15 @@ void Utility::updateTreatmentAndNumberOfStorageSources() {
         total_storage_treatment_capacity += available_treated_flow_rate[i];
     }
 
+    delete[] utility_owned_wtp_capacities_tmp;
+    n_wtp = utility_owned_wtp_capacities.size();
+    utility_owned_wtp_capacities_tmp = new double[n_wtp];
+
     total_treatment_capacity = accumulate(utility_owned_wtp_capacities.begin(),
                                           utility_owned_wtp_capacities.end(),
                                           0.);
 
-    //TODO: IMPLEMENT QP HERE
+    //TODO: IMPLEMENT HERE QP PROBLEM UPDATE
 //    P_x = new double[n_storage_sources];
 //    A_x = new double[n_storage_sources];
 }
@@ -470,7 +476,8 @@ bool Utility::idealDemandSplitConstrained(double *split_demands,
 void Utility::splitDemands(
         int week, vector<vector<double>> &demands,
         bool apply_demand_buffer) {
-    auto utility_owned_wtp_capacities = this->utility_owned_wtp_capacities;
+    memcpy(utility_owned_wtp_capacities_tmp, utility_owned_wtp_capacities.data(),
+            sizeof(double) * n_wtp);
     unrestricted_demand = demand_series_realization[week] +
                           apply_demand_buffer * demand_buffer *
                           weekly_peaking_factor[Utils::weekOfTheYear(week)];
@@ -487,14 +494,14 @@ void Utility::splitDemands(
     for (int &ws : priority_draw_water_source) {
         double max_source_output = min(
                 water_sources[ws]->getAvailableAllocatedVolume(id),
-                utility_owned_wtp_capacities[water_source_to_wtp[ws]]);
+                utility_owned_wtp_capacities_tmp[water_source_to_wtp[ws]]);
         double source_demand =
                 min(demand_non_priority_sources,
                     max_source_output);
         demands[ws][this->id] = source_demand;
         demand_non_priority_sources -= source_demand;
         total_serviced_demand += source_demand;
-        utility_owned_wtp_capacities[water_source_to_wtp[ws]] -= source_demand;
+        utility_owned_wtp_capacities_tmp[water_source_to_wtp[ws]] -= source_demand;
     }
 
     double storages[n_storage_sources];
@@ -504,7 +511,7 @@ void Utility::splitDemands(
         storages[i] = ws->getAvailableAllocatedVolume(id);
         available_treated_flow_rate[i] = min(
                 storages[i],
-                utility_owned_wtp_capacities[water_source_to_wtp[ws->id]]
+                utility_owned_wtp_capacities_tmp[water_source_to_wtp[ws->id]]
         );
         total_available_flow_rate += available_treated_flow_rate[i];
     }
@@ -751,7 +758,8 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
         //                            demand_series_realization.begin() + week, 0.0) / WEEKS_IN_YEAR;
 
         for (int w = week - (int) WEEKS_IN_YEAR; w < week; ++w) {
-            past_year_average_demand += demand_series_realization.at(w);
+            past_year_average_demand += demand_series_realization.at(w) /
+                    WEEKS_IN_YEAR;
         }
     }
 
@@ -766,6 +774,7 @@ int Utility::infrastructureConstructionHandler(double long_term_rof, int week) {
             total_storage_capacity,
             total_available_volume,
             total_stored_volume);
+
 
     // Issue and add bond of triggered water source to list of outstanding bonds, and update total new
     // infrastructure NPV.

@@ -62,8 +62,8 @@ void Utility::unrollWaterSourceToWtpVector(
 
     if (water_source_to_wtp.size() != utility_owned_wtp_capacities.size()) {
         char error[512];
-        sprintf(error, "Utility %d has %lu WTPs but %lu water sources (or "
-                       "groups of) assigned to WTPs.", id,
+        sprintf(error, "Utility %s has %lu WTPs but %lu water sources (or "
+                       "groups of) assigned to WTPs.", name.c_str(),
                 utility_owned_wtp_capacities.size(),
                 water_source_to_wtp.size());
         throw invalid_argument(error);
@@ -392,9 +392,27 @@ void Utility::addWaterSource(WaterSource *water_source) {
 
     // If watersource is online and the utility owns some of its installed
     // treatment capacity, make it online.
-    if (water_source->isOnline() &&
-        utility_owned_wtp_capacities[water_source_to_wtp[water_source->id]] >
-        0) {
+    double ws_treat_capacity = 0;
+    try {
+        if (find(SOURCES_REQUIRING_TREATMENT.begin(),
+                 SOURCES_REQUIRING_TREATMENT.end(),
+                 water_source->source_type) !=
+                SOURCES_REQUIRING_TREATMENT.end()) {
+            ws_treat_capacity = utility_owned_wtp_capacities.at(
+                    water_source_to_wtp.at(water_source->id)
+            );
+        }
+    } catch (out_of_range &e) {
+        char error[256];
+        sprintf(error, "Treatment capacity was assigned to utility %s "
+                       "for water source %s without being connected to it. If "
+                       "you passed an input file to WaterPaths, check [WS TO "
+                       "UTILITY MATRIX]. Otherwise, check the connectivity "
+                       "matrix.", name.c_str(), water_source->name.c_str());
+        throw invalid_argument(error);
+    }
+
+    if (water_source->isOnline() && ws_treat_capacity > 0) {
         infrastructure_construction_manager.addWaterSourceToOnlineLists(
                 water_source->id, total_storage_capacity,
                 total_available_volume,

@@ -11,7 +11,7 @@ solutions_file /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/reference_final_fi
 solutions_to_run 0
 seed 0
 print_time_series true
-output_dir /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/output/
+output_dir /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/
 
 
 [DATA TO LOAD]
@@ -168,7 +168,7 @@ demand_buffer 0.35
 rof_infra_construction_order New_River_Reservoir,College_Rock_Expansion_Low,College_Rock_Expansion_High,Watertown_Reuse_I,Watertown_Reuse_II
 infra_construction_triggers 0.1,0.1,0.1,0.1,0.1
 infra_discount_rate 0.07
-water_source_to_wtp 0 1 4
+water_source_to_wtp College_Rock_Reservoir Lake_Michael New_River_Reservoir
 utility_owned_wtp_capacities 560.,548.,9999999.
 
 
@@ -184,7 +184,7 @@ demand_buffer 0.35
 rof_infra_construction_order Sugar_Creek_Reservoir,Dryville_Reuse
 infra_construction_triggers 0.2,0.3
 infra_discount_rate 0.07
-water_source_to_wtp 2 5 6
+water_source_to_wtp Autumn_Lake Sugar_Creek_Reservoir Granite_Quarry
 utility_owned_wtp_capacities 9999999.,9999999.,9999999.
 
 
@@ -200,7 +200,7 @@ demand_buffer 0.35
 rof_infra_construction_order New_River_Reservoir,Fallsland_Reuse
 infra_construction_triggers 0.2,0.1
 infra_discount_rate 0.07
-water_source_to_wtp 2 4
+water_source_to_wtp Autumn_Lake New_River_Reservoir
 utility_owned_wtp_capacities 9999999,9999999.
 
 

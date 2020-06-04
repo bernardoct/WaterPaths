@@ -49,7 +49,7 @@ void InputFileProblem::setRofTablesAndRunParams() {
     setImport_export_rof_tables(parser.getUseRofTables(),
                                 parser.getRofTablesDir());
 }
-
+#pragma GCC optimize("O0")
 int InputFileProblem::functionEvaluation(double *vars, double *objs,
                                          double *consts) {
 
@@ -113,44 +113,47 @@ int InputFileProblem::functionEvaluation(double *vars, double *objs,
     // Calculate objectives and store them in Borg decision variables array.
     if (parser.isOptimize()) {
 #ifdef  PARALLEL
-//    printf("Starting to calculate objectives.\n");
-    if (import_export_rof_tables != EXPORT_ROF_TABLES) {
-        objectives = calculateAndPrintObjectives(false);
+        //    printf("Starting to calculate objectives.\n");
+            if (import_export_rof_tables != EXPORT_ROF_TABLES) {
+                objectives = calculateAndPrintObjectives(false);
 
-	unsigned long n_utilities = parser.getUtilities().size();
+            unsigned long n_utilities = parser.getUtilities().size();
 
-	memcpy(objs, objectives.data(), sizeof(double) * 5);
-	for (int i = 1; i < n_utilities; ++i) {
-	    objs[0] = min(objs[0], 1. - objectives[0 + 5 * i]);
-            objs[1] = max(objs[1], objectives[1 + 5 * i]);
-            objs[2] = max(objs[2], objectives[2 + 5 * i]);
-            objs[3] = max(objs[3], objectives[3 + 5 * i]);
-            objs[4] = max(objs[4], objectives[4 + 5 * i]);
-        }
-
-        for (int i = 0; i < parser.getNObjectives(); ++i) {
-            if (isnan(objs[i])) {
-                for (int j = 0; j < parser.getNObjectives(); ++j) {
-                    objs[i] = 1e5;
+            memcpy(objs, objectives.data(), sizeof(double) * 5);
+            for (int i = 1; i < n_utilities; ++i) {
+                objs[0] = min(objs[0], 1. - objectives[0 + 5 * i]);
+                    objs[1] = max(objs[1], objectives[1 + 5 * i]);
+                    objs[2] = max(objs[2], objectives[2 + 5 * i]);
+                    objs[3] = max(objs[3], objectives[3 + 5 * i]);
+                    objs[4] = max(objs[4], objectives[4 + 5 * i]);
                 }
-                break;
-            }
-        }
-        printf("Objectives calculated.\n");
-    }
 
-    delete s;
-    s = nullptr;
+                for (int i = 0; i < parser.getNObjectives(); ++i) {
+                    if (isnan(objs[i])) {
+                        for (int j = 0; j < parser.getNObjectives(); ++j) {
+                            objs[i] = 1e5;
+                        }
+                        break;
+                    }
+                }
+                printf("Objectives calculated.\n");
+            }
+
+            delete s;
+            s = nullptr;
 #else
-    throw runtime_error("This version of WaterPaths was not compiled with Borg.\n");
+        throw runtime_error(
+                "This version of WaterPaths was not compiled with Borg.\n");
 //    } catch (const std::exception& e) {
 //        simulationExceptionHander(e, s, objs, vars);
 //	return 1;
 //    }
 #endif
-    } else {
-        calculateAndPrintObjectives(true);
     }
+//    } else {
+//        setSol_number(sol_number);
+//        calculateAndPrintObjectives(true);
+//    }
 
     parser.clearParsers();
     printf("Function evaluation complete\n");
@@ -162,16 +165,17 @@ const vector<vector<double>> &InputFileProblem::getSolutionsDecvars() const {
 }
 
 void InputFileProblem::runSimulation() {
-    auto solutions_dec_vars = parser.getSolutionsDecvars();
     n_sets = parser.getNBootstrapSamples();
     n_bs_samples = parser.getBootstrapSampleSize();
     plotting = parser.isPrintTimeSeries();
     setIODirectory(parser.getOutputDir());
 
-    if (solutions_dec_vars.size() > 1) {
+    if (solutions_decvars.size() > 1) {
         ofstream objs_file = createOutputFile();
-        for (auto dvs : solutions_dec_vars) {
+        for (int s = 0; s < solutions_to_run.size(); ++s) {
+            auto dvs = solutions_decvars[s];
             functionEvaluation(dvs.data(), nullptr, nullptr);
+            setSol_number(solutions_to_run[s]);
             vector<double> objectives = calculateAndPrintObjectives(false);
             printTimeSeriesAndPathways(plotting);
             destroyDataCollector();
@@ -186,11 +190,13 @@ void InputFileProblem::runSimulation() {
         }
         objs_file.close();
     } else {
-        if (solutions_dec_vars.size() == 1) {
-            functionEvaluation(solutions_dec_vars[0].data(), nullptr, nullptr);
+        if (solutions_decvars.size() == 1) {
+            functionEvaluation(solutions_decvars[0].data(), nullptr, nullptr);
         } else {
             functionEvaluation(nullptr, nullptr, nullptr);
         }
+
+        setSol_number(NONE);
         calculateAndPrintObjectives(true);
         printTimeSeriesAndPathways(plotting);
         if (n_sets != NON_INITIALIZED && n_bs_samples != NON_INITIALIZED) {

@@ -28,6 +28,9 @@ void UtilityParser::preProcessBlock(vector<vector<string>> &block, int l,
     AuxParserFunctions::replaceNameById(block, "[UTILITY]", l,
                                         "demand_infra_construction_order", 1,
                                         ws_name_to_id);
+    AuxParserFunctions::replaceNameById(block, "[UTILITY]", l,
+                                        "water_source_to_wtp", ALL_PARAMS,
+                                        ws_name_to_id);
 }
 
 void UtilityParser::parseVariables(vector<vector<string>> &block,

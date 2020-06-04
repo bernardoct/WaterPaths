@@ -4,6 +4,7 @@
 
 #include <stdexcept>
 #include <algorithm>
+#include <numeric>
 #include "AuxParserFunctions.h"
 #include "../Utils/Utils.h"
 
@@ -74,28 +75,40 @@ void AuxParserFunctions::replaceNameById(vector<vector<string>> &block,
                                          string param_name,
                                          int param_pos,
                                          map<string, int> name_to_id) {
+
     for (vector<string> &line : block) {
         if (line[0] == param_name) {
-            vector<string> names;
-            Utils::tokenizeString(line[param_pos], names, ',');
-            string ids;
-
-            for (auto &name : names) {
-                try {
-                    name = to_string(name_to_id.at(name)) + ",";
-                    ids += name;
-                } catch (...) {
-                    char error[256];
-                    sprintf(error, "Could not find %s in parameter %s of tag %s"
-                                   " line %d. All %s must be added in the input"
-                                   " file above associated %ss.", name.c_str(),
-                            param_name.c_str(), tag_name.c_str(), line_no,
-                            param_name.c_str(), tag_name.c_str());
-                    throw invalid_argument(error);
-                }
+            vector<int> position_to_convert;
+            if (param_pos == ALL_PARAMS) {
+                position_to_convert = vector<int>(line.size() - 1);
+                iota(position_to_convert.begin(), position_to_convert.end(), 1);
+            } else {
+                position_to_convert = vector<int>(1, param_pos);
             }
-            ids.pop_back();
-            line[param_pos] = ids;
+
+            for (auto pp : position_to_convert) {
+                vector<string> names;
+                Utils::tokenizeString(line[pp], names, ',');
+                string ids;
+
+                for (auto &name : names) {
+                    try {
+                        name = to_string(name_to_id.at(name)) + ",";
+                        ids += name;
+                    } catch (...) {
+                        char error[256];
+                        sprintf(error,
+                                "Could not find %s in parameter %s of tag %s"
+                                " line %d. All %s must be added in the input"
+                                " file above associated %ss.", name.c_str(),
+                                param_name.c_str(), tag_name.c_str(), line_no,
+                                param_name.c_str(), tag_name.c_str());
+                        throw invalid_argument(error);
+                    }
+                }
+                ids.pop_back();
+                line[pp] = ids;
+            }
         }
     }
 }

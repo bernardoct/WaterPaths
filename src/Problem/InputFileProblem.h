@@ -14,10 +14,12 @@
 #endif
 
 class InputFileProblem : public Problem {
+private:
     MasterSystemInputFileParser parser;
     string solutions_file;
     vector<unsigned long> solutions_to_run;
     vector<vector<double>> solutions_decvars;
+    int sol_number = NON_INITIALIZED;
 
 public:
     explicit InputFileProblem(string &system_input_file);

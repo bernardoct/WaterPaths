@@ -1,16 +1,15 @@
 [RUN PARAMETERS]
-n_realizations 50
-n_weeks 2343
+n_realizations 1000
+n_weeks 2344
 rdm_utilities /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_utilities_test_problem_opt.csv 
 rdm_water_sources /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_water_sources_test_problem_opt.csv 
 rdm_dmps /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_dmp_test_problem_opt.csv
-rdm_no 0
-n_threads 4
+n_threads 5
 rof_tables_dir /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/rof_tables_test_problem/
 output_dir /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/output/
 use_rof_tables import
 seed 0
-optimize 50 2000
+optimize 1000 75000
 
 [DATA TO LOAD]
 # Files with "*" are always fully loaded instead of having on n_realizations lines loaded. Add "*" to any file that's not a demand, inflow or evaporation time series.
@@ -202,8 +201,8 @@ demand_buffer 0.35
 rof_infra_construction_order @New_River_Reservoir,@College_Rock_Expansion_Low,@College_Rock_Expansion_High,@Watertown_Reuse_I,@Watertown_Reuse_II
 # infra_construction_triggers 0.1,0.1,0.1,0.1,0.1
 infra_construction_triggers %%%
-infra_discount_rate 0.
-water_source_to_wtp 0 1 4
+infra_discount_rate 0.7
+water_source_to_wtp College_Rock_Reservoir Lake_Michael New_River_Reservoir
 utility_owned_wtp_capacities 560.,548.,9999999.
 
 [UTILITY]
@@ -219,7 +218,7 @@ rof_infra_construction_order @Sugar_Creek_Reservoir,@Dryville_Reuse
 # infra_construction_triggers 0.2,0.1,0.3
 infra_construction_triggers %%%
 infra_discount_rate 0.07
-water_source_to_wtp 2 5 6
+water_source_to_wtp Autumn_Lake Sugar_Creek_Reservoir Granite_Quarry
 utility_owned_wtp_capacities 9999999.,9999999.,9999999.
 
 [UTILITY]
@@ -236,6 +235,7 @@ rof_infra_construction_order @New_River_Reservoir,@Fallsland_Reuse
 infra_construction_triggers %%%
 infra_discount_rate 0.07
 water_source_to_wtp 2 4
+water_source_to_wtp Autumn_Lake New_River_Reservoir
 utility_owned_wtp_capacities 9999999,9999999.
 
 
@@ -310,8 +310,8 @@ release 0
 
 [INFLOW-BASED RESERVOIR CONTROL RULE]
 water_source_id Sugar_Creek_Reservoir
-inflows 0,3.5,7,10.5,12.579
-releases 0,1,3.5,7,10.5,12.579
+inflows 836.898,1673.796,2789.66
+releases 4.522,9.03,13.58
 
 [SEASONAL RESERVOIR CONTROL RULE]
 water_source_id Autumn_Lake

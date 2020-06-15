@@ -228,6 +228,13 @@ InfrastructureManager::setWaterSourceOnline(unsigned int source_id, int week,
             total_available_volume += ws->getAvailableAllocatedVolume(id);
         }
     }
+
+    if (water_sources->at(source_id)->source_type == WATER_REUSE) {
+        double treatment_capacity = water_sources->at(source_id)->getTotal_treatment_capacity();
+        utility_owned_wtp_capacities.resize(utility_owned_wtp_capacities.size() + 1, treatment_capacity);
+        water_source_to_wtp.resize(source_id + 1, NON_INITIALIZED);
+        water_source_to_wtp[source_id] = utility_owned_wtp_capacities.size() - 1;
+    }
 }
 
 

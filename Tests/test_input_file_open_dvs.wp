@@ -1,49 +1,28 @@
-########################################################################
-# For details about how to build a file like this one, see             #
-# documentation on GitHub.                                             #
-########################################################################
-
-[RUN PARAMETERS]
-n_realizations 64
-n_weeks 2344
-rdm_utilities /scratch/bct52/TestFiles/rdm_utilities_test_problem_opt.csv 
-rdm_water_sources /scratch/bct52/TestFiles/rdm_water_sources_test_problem_opt.csv 
-rdm_dmps /scratch/bct52/TestFiles/rdm_dmp_test_problem_opt.csv
-# number of threads should not exceede twice the number of cores available.
-n_threads 16
-rof_tables_dir /scratch/bct52/rof_tables_test_problem/
-# change "import" below to "generate" to generate ROF tables.
-use_rof_tables import
-solutions_file /scratch/bct52/reference_final.reference
-solutions_to_run 0
-seed 0
-print_time_series true
-output_dir /scratch/bct52/
-
+10 525 /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_utilities_test_problem_opt.csv /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_water_sources_test_problem_opt.csv /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/rdm_dmp_test_problem_opt.csv
 
 [DATA TO LOAD]
-# Files with "*" are always fully loaded instead of having on n_realizations lines loaded
-*caryDemandClassesFractions /scratch/bct52/TestFiles/caryDemandClassesFractions.csv
-*caryUserClassesWaterPrices /scratch/bct52/TestFiles/caryUserClassesWaterPrices.csv
-*demand_to_wastewater_fraction_owasa_raleigh /scratch/bct52/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv
-*raleighDemandClassesFractions /scratch/bct52/TestFiles/raleighDemandClassesFractions.csv
-*raleighUserClassesWaterPrices /scratch/bct52/TestFiles/raleighUserClassesWaterPrices.csv
-*durhamDemandClassesFractions /scratch/bct52/TestFiles/durhamDemandClassesFractions.csv
-*durhamUserClassesWaterPrices /scratch/bct52/TestFiles/durhamUserClassesWaterPrices.csv
-cary_demand /scratch/bct52/TestFiles/demands/cary_demand.csv
-durham_demand /scratch/bct52/TestFiles/demands/durham_demand.csv
-raleigh_demand /scratch/bct52/TestFiles/demands/raleigh_demand.csv
-falls_lake_evap /scratch/bct52/TestFiles/evaporation/falls_lake_evap.csv
-jordan_lake_evap /scratch/bct52/TestFiles/evaporation/jordan_lake_evap.csv
-clayton_inflows /scratch/bct52/TestFiles/inflows/clayton_inflows.csv
-crabtree_inflows /scratch/bct52/TestFiles/inflows/crabtree_inflows.csv
-durham_inflows /scratch/bct52/TestFiles/inflows/durham_inflows.csv
-falls_lake_inflows /scratch/bct52/TestFiles/inflows/falls_lake_inflows.csv
-jordan_lake_inflows /scratch/bct52/TestFiles/inflows/jordan_lake_inflows.csv
-lillington_inflows /scratch/bct52/TestFiles/inflows/lillington_inflows.csv
-little_river_raleigh_inflows /scratch/bct52/TestFiles/inflows/little_river_raleigh_inflows.csv
-stone_quarry_inflows /scratch/bct52/TestFiles/inflows/stone_quarry_inflows.csv
-university_lake_inflows /scratch/bct52/TestFiles/inflows/university_lake_inflows.csv
+caryDemandClassesFractions /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/caryDemandClassesFractions.csv
+caryUserClassesWaterPrices /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/caryUserClassesWaterPrices.csv
+demand_to_wastewater_fraction_owasa_raleigh /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv
+cary_demand /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/demands/cary_demand.csv
+durham_demand /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/demands/durham_demand.csv
+raleigh_demand /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/demands/raleigh_demand.csv
+durhamDemandClassesFractions /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/durhamDemandClassesFractions.csv
+durhamUserClassesWaterPrices /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/durhamUserClassesWaterPrices.csv
+falls_lake_evap /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/evaporation/falls_lake_evap.csv
+jordan_lake_evap /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/evaporation/jordan_lake_evap.csv
+clayton_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/clayton_inflows.csv
+crabtree_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/crabtree_inflows.csv
+durham_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/durham_inflows.csv
+falls_lake_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/falls_lake_inflows.csv
+jordan_lake_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/jordan_lake_inflows.csv
+lillington_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/lillington_inflows.csv
+little_river_raleigh_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/little_river_raleigh_inflows.csv
+stone_quarry_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/stone_quarry_inflows.csv
+university_lake_inflows /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/inflows/university_lake_inflows.csv
+raleighDemandClassesFractions /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/raleighDemandClassesFractions.csv
+raleighUserClassesWaterPrices /mnt/c/Users/Bernardo/CLionProjects/WaterPaths/TestFiles/raleighUserClassesWaterPrices.csv
+
 
 [RESERVOIR]
 name College_Rock_Reservoir
@@ -68,18 +47,18 @@ capacity 19925
 streamflow_files jordan_lake_inflows
 evaporation_file jordan_lake_evap
 storage_area 13940
-utilities_with_allocations Watertown,Dryville,Fallsland,WATER_QUALITY
+utilities_with_allocations 0,1,2,-1
 allocated_fractions 0.1,0.1,0.2,0.6
 allocated_treatment_fractions 1,0,0
 
 [ALLOCATED RESERVOIR]
 name Autumn_Lake
-treatment_capacity 100000
+treatment_capacity 100000 #unlimitted
 capacity 27500
 streamflow_files falls_lake_inflows little_river_raleigh_inflows
 evaporation_file jordan_lake_evap
 storage_area_curve 0,14000,27500 1834.88,9280,11321.52
-utilities_with_allocations Dryville,Fallsland,WATER_QUALITY
+utilities_with_allocations 1,2,-1
 allocated_fractions 0.19,0.3,0.51
 allocated_treatment_fractions 0.38,0.52
 
@@ -93,6 +72,7 @@ streamflow_files jordan_lake_inflows
 bond level 150 25 0.05 0 deferred
 ctime 3 5
 ptime 17
+
 
 [RESERVOIR]
 name New_River_Reservoir
@@ -163,7 +143,6 @@ bond level 50 30 0.05 0 immediate
 ctime 3 5
 ptime 5
 
-
 [UTILITY]
 name Watertown
 demands cary_demand
@@ -175,9 +154,6 @@ demand_buffer 0.35
 rof_infra_construction_order New_River_Reservoir,College_Rock_Expansion_Low,College_Rock_Expansion_High,Watertown_Reuse_I,Watertown_Reuse_II
 infra_construction_triggers 0.1,0.1,0.1,0.1,0.1
 infra_discount_rate 0.07
-water_source_to_wtp College_Rock_Reservoir Lake_Michael New_River_Reservoir
-utility_owned_wtp_capacities 560.,548.,9999999.
-
 
 [UTILITY]
 name Dryville
@@ -188,12 +164,9 @@ typesMonthlyDemandFraction durhamDemandClassesFractions
 typesMonthlyWaterPrice durhamUserClassesWaterPrices
 wwtp_discharge_rule demand_to_wastewater_fraction_owasa_raleigh New_River_Reservoir
 demand_buffer 0.35
-rof_infra_construction_order Sugar_Creek_Reservoir,Dryville_Reuse
-infra_construction_triggers 0.2,0.3
+rof_infra_construction_order Sugar_Creek_Reservoir,Granite_Quarry,Dryfille_Reuse
+infra_construction_triggers 0.2,0.1,0.3
 infra_discount_rate 0.07
-water_source_to_wtp Autumn_Lake Sugar_Creek_Reservoir Granite_Quarry
-utility_owned_wtp_capacities 9999999.,9999999.,9999999.
-
 
 [UTILITY]
 name Fallsland
@@ -207,8 +180,7 @@ demand_buffer 0.35
 rof_infra_construction_order New_River_Reservoir,Fallsland_Reuse
 infra_construction_triggers 0.2,0.1
 infra_discount_rate 0.07
-water_source_to_wtp Autumn_Lake New_River_Reservoir
-utility_owned_wtp_capacities 9999999,9999999.
+
 
 
 [WATER SOURCES GRAPH]
@@ -221,7 +193,7 @@ New_River_Reservoir,dummy_node
 
 [WS TO UTILITY MATRIX]
 Watertown College_Rock_Reservoir,Lake_Michael,New_River_Reservoir,College_Rock_Expansion_Low,College_Rock_Expansion_High,Watertown_Reuse_I,Watertown_Reuse_II
-Dryville Autumn_Lake,Sugar_Creek_Reservoir,Granite_Quarry,Dryville_Reuse
+Dryville Autumn_Lake,Sugar_Creek_Reservoir,Granite_Quarry,Dryfille_Reuse
 Fallsland Autumn_Lake,New_River_Reservoir,Fallsland_Reuse
 
 [UTILITIES GRAPH]
@@ -236,6 +208,7 @@ Watertown Watertown_Reuse_I 1000
 Watertown Watertown_Reuse_II 600
 Dryville Dryville_Reuse 600
 Fallsland Fallsland_Reuse 1000
+
 
 
 [RESTRICTIONS POLICY]
@@ -282,8 +255,8 @@ release 0
 
 [INFLOW-BASED RESERVOIR CONTROL RULE]
 water_source_id Sugar_Creek_Reservoir
-inflows 836.898,1673.796,2789.66
-releases 4.522,9.03,13.58
+inflows 1,3.5,7,10.5,12.579
+releases 1,3.5,7,10.5,12.579
 
 [SEASONAL RESERVOIR CONTROL RULE]
 water_source_id Autumn_Lake
@@ -299,23 +272,22 @@ lake_michael_supply_capacity 9100.0
 lake_michael_wq_capacity 10825.0
 
 
-#   @ College Rock Reservoir, small expansion, large expansion
-#    \
-#     \                           @ Granite Quarry
-#      \                         /
-#       \                       @ Sugar Creek Reservoir
-#        @ Lake Michael        /
-#         \                   /
-#          \                 @ Autumn Lake
-#           \               /
-# Lillington @             /
-#             \           /
-#              \         /
-#               \       /
-#                \     @ New River Reservoir
-#                 \   /
-#                  \ /    Watertown I, Watertown II,
-#                   V     Dryville, Fallsland reuse
-#	                |	  
-#                   |
-#                   @ Dummy Endpoint 
+# 0 College Rock Reservoir (7) small expansion (8) large expansion
+#  \
+#   \                          (1) Granite Quarry
+#    \                         /
+#     \                      (6) Sugar Creek Reservoir
+#      2 Lake Michael        /
+#       \                   /
+#        \                 3 Autumn Lake
+#         \               /
+#   Lillington           /
+#           \           /
+#            \         /
+#             \       /
+#              \    (5) New River Reservoir
+#               \   /
+#                \ /    (9, 10, 11, 12) Watertown I, Watertown II,
+#				  |						Dryville, Fallsland reuse
+#                 |
+#                (4) Dummy Endpoint 

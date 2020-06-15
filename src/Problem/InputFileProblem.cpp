@@ -4,6 +4,7 @@
 
 #include <omp.h>
 #include <sys/stat.h>
+#include <algorithm>
 // for windows mkdir
 #ifdef _WIN32
 #include <direct.h>
@@ -49,15 +50,13 @@ void InputFileProblem::setRofTablesAndRunParams() {
     setImport_export_rof_tables(parser.getUseRofTables(),
                                 parser.getRofTablesDir());
 }
-#pragma GCC optimize("O0")
+
 int InputFileProblem::functionEvaluation(double *vars, double *objs,
                                          double *consts) {
 
     Simulation *s = nullptr;
 
     parser.createSystemObjects(vars);
-    solutions_decvars = parser.getSolutionsDecvars();
-    solutions_to_run = parser.getSolutionsToRun();
 
     // Creates simulation object depending on use (or lack thereof) ROF tables
     printf("Starting Simulation\n");
@@ -120,8 +119,9 @@ int InputFileProblem::functionEvaluation(double *vars, double *objs,
             unsigned long n_utilities = parser.getUtilities().size();
 
             memcpy(objs, objectives.data(), sizeof(double) * 5);
+            objs[0] = -objs[0];
             for (int i = 1; i < n_utilities; ++i) {
-                objs[0] = min(objs[0], 1. - objectives[0 + 5 * i]);
+                    objs[0] = max(objs[0], - objectives[0 + 5 * i]);
                     objs[1] = max(objs[1], objectives[1 + 5 * i]);
                     objs[2] = max(objs[2], objectives[2 + 5 * i]);
                     objs[3] = max(objs[3], objectives[3 + 5 * i]);
@@ -168,6 +168,7 @@ void InputFileProblem::runSimulation() {
     n_sets = parser.getNBootstrapSamples();
     n_bs_samples = parser.getBootstrapSampleSize();
     plotting = parser.isPrintTimeSeries();
+    solutions_decvars = parser.getSolutionsDecvars();
     setIODirectory(parser.getOutputDir());
 
     if (solutions_decvars.size() > 1) {
@@ -176,7 +177,7 @@ void InputFileProblem::runSimulation() {
             auto dvs = solutions_decvars[s];
             functionEvaluation(dvs.data(), nullptr, nullptr);
             setSol_number(solutions_to_run[s]);
-            vector<double> objectives = calculateAndPrintObjectives(false);
+            vector<double> objectives = calculateAndPrintObjectives(true);
             printTimeSeriesAndPathways(plotting);
             destroyDataCollector();
             printObjsInLineInFile(objs_file, objectives);
@@ -209,17 +210,35 @@ void InputFileProblem::runSimulation() {
     }
 }
 
+#pragma GCC optimize("O0")
 ofstream InputFileProblem::createOutputFile() const {
     string output_dir = system_io + "output" + BAR;
     if (mkdir(output_dir.c_str(), 700) != 0) {
         ofstream objs_file;
+        string sol_numbers;
+        string rdm_name = (rdm_no == NON_INITIALIZED ? "" : "_RDM" + to_string(rdm_no));
+
+        if (solutions_to_run.empty()) {
+            throw invalid_argument("Solutions file was specified in the input "
+                                   "file but no solution number was. Values "
+                                   "need to be provided to either "
+                                   "solutions_to_run or "
+                                   "solutions_to_run_range.");
+        } else if(solutions_to_run.size() > 1) {
+                sol_numbers = to_string(solutions_to_run[0]);
+        } else if (is_sorted(solutions_to_run.begin(), solutions_to_run.end()) &&
+                solutions_to_run[0] - solutions_to_run.back() ==
+                solutions_to_run.size()) {
+            sol_numbers = to_string(solutions_to_run[0]) +
+            "_to_" + to_string(solutions_to_run.back());
+        } else {
+            for (auto s : solutions_to_run) {
+                sol_numbers += to_string(s) + "_";
+            }
+            sol_numbers.pop_back();
+        }
         string file_name = system_io + "output" + BAR + "Objectives" +
-                           (rdm_no == NON_INITIALIZED ? "" : "_RDM" +
-                                                             to_string(
-                                                                     rdm_no)) +
-                           "_sols" + to_string(solutions_to_run_range[0]) +
-                           "_to_" + to_string(solutions_to_run_range[1]) +
-                           ".csv";
+                rdm_name + "_sols" + sol_numbers + ".csv";
         objs_file.open(file_name);
         printf("Objectives will be printed to file %s\n",
                file_name.c_str());

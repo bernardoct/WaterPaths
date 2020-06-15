@@ -66,9 +66,6 @@ void WaterSourceParser::parseVariables(vector<vector<string>> &block,
 }
 
 WaterSourceParser::~WaterSourceParser() {
-//    for (Bond *b : bonds) {
-//        delete b;
-//    }
     bonds.clear();
 }
 

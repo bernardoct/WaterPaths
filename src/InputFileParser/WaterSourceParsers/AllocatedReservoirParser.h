@@ -21,6 +21,9 @@ public:
 
     void checkMissingOrExtraParams(int line_no,
                                    vector<vector<string>> &block) override;
+
+    void preProcessBlock(vector<vector<string>> &block, int line_no,
+                         const map<string, int> &utility_name_to_id);
 };
 
 

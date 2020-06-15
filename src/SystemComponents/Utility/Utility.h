@@ -34,6 +34,7 @@ private:
     double price_rdm_multiplier = 1.;
     double *available_treated_flow_rate = nullptr;
     double *utility_owned_wtp_capacities_tmp = nullptr;
+    bool *has_treatment_capacity = nullptr;
     unsigned long n_wtp = NONE;
     bool used_for_realization = true;
     unsigned short n_storage_sources = 0;

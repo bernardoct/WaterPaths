@@ -6,15 +6,16 @@
 #include "Problem/InputFileProblem.h"
 
 #ifdef  PARALLEL
-
 #include <mpi.h>
-
 #endif
 
 #include <algorithm>
 #include <getopt.h>
 #include <fstream>
 
+#ifdef PROFILE
+#include </opt/ohpc/pub/utils/valgrind/3.15.0/include/valgrind/callgrind.h>
+#endif
 
 using namespace std;
 using namespace Constants;
@@ -24,30 +25,16 @@ Problem *problem_ptr;
 int failures = 0;
 
 void eval(double *vars, double *objs, double *consts) {
-//    try {
-        for (int i = 0; i < NUM_DEC_VAR; ++i) {
-            if (isnan(vars[i])) {
-                char error[50];
-                sprintf(error, "Nan in decision variable %d", i);
-                throw invalid_argument(error);
-            }
+    for (int i = 0; i < NUM_DEC_VAR; ++i) {
+        if (isnan(vars[i])) {
+            char error[50];
+            sprintf(error, "Nan in decision variable %d", i);
+            throw invalid_argument(error);
         }
-        failures += problem_ptr->functionEvaluation(vars, objs, consts);
-        printf("destroying data collector\n");
-        problem_ptr->destroyDataCollector();
-        printf("data colletor destroyed!\n");
-        for (int i = 0; i < 5; ++i) printf("%f ", objs[i]);
-        printf("\n");
-//    } catch (...) {
-//        ofstream sol_out; // for debugging borg
-//        sol_out << endl;
-//        sol_out << "Failure! Decision Variable values: " << endl;
-//        cout << endl;
-//        cout << "Failure! Decision variable values: " << endl;
-//        for (int i = 0; i < NUM_DEC_VAR; ++i) sol_out << vars[i] << " ";
-//        sol_out << endl;
-//        for (int i = 0; i < NUM_OBJECTIVES; ++i) objs[i] = 1e5;
-//    }
+    }
+    failures += problem_ptr->functionEvaluation(vars, objs, consts);
+    problem_ptr->destroyDataCollector();
+    printf("\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -262,7 +249,14 @@ int main(int argc, char *argv[]) {
     // If Borg is not called, run in simulation mode
     if (!run_optimization) {
         printf("Running single simulation.\n");
+
+#ifdef PROFILE
+	CALLGRIND_START_INSTRUMENTATION;
+#endif
         problem_ptr->runSimulation();
+#ifdef PROFILE
+	CALLGRIND_STOP_INSTRUMENTATION;
+#endif
 
         return 0;
     } else {
@@ -326,8 +320,13 @@ int main(int argc, char *argv[]) {
         //MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         //BORG_Random_seed(37*seed*(rank+1));
 
-        BORG_Archive result = BORG_Algorithm_ms_run(
-                problem); // this actually runs the optimization
+#ifdef PROFILE
+	CALLGRIND_START_INSTRUMENTATION;
+#endif
+        BORG_Archive result = BORG_Algorithm_ms_run(problem); // this actually runs the optimization
+#ifdef PROFILE
+	CALLGRIND_STOP_INSTRUMENTATION;
+#endif
         //BORG_Archive result = BORG_Algorithm_run(problem, nfe);
         // If this is the master node, print out the final archive
 

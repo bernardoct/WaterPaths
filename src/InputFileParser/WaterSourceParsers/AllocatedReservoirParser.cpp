@@ -5,6 +5,7 @@
 #include "AllocatedReservoirParser.h"
 #include "../../SystemComponents/WaterSources/AllocatedReservoir.h"
 #include "../Exceptions/MissingParameter.h"
+#include "../AuxParserFunctions.h"
 
 AllocatedReservoirParser::AllocatedReservoirParser(bool generate_tables)
         : ReservoirParser("[ALLOCATED RESERVOIR]", generate_tables) {}
@@ -16,7 +17,7 @@ AllocatedReservoirParser::generateSource(int id, vector<vector<string>> &block,
                                          const map<string, int> &ws_name_to_id,
                                          const map<string, int> &utility_name_to_id,
                                          map<string, vector<vector<double>>> &pre_loaded_data) {
-
+    preProcessBlock(block, line_no, utility_name_to_id);
     ReservoirParser::parseVariables(block, n_realizations, n_weeks,
                                     line_no, ws_name_to_id,
                                     utility_name_to_id, pre_loaded_data);
@@ -75,4 +76,13 @@ void AllocatedReservoirParser::checkMissingOrExtraParams(int line_no,
         throw MissingParameter("allocated_treatment_fractions", tag_name,
                                line_no);
     }
+}
+
+void AllocatedReservoirParser::preProcessBlock(vector<vector<string>> &block,
+                                               int line_no,
+                                               const map<string, int> &utility_name_to_id) {
+
+    AuxParserFunctions::replaceNameById(block, tag_name,
+                                        line_no, "utilities_with_allocations", 1,
+                                        utility_name_to_id);
 }

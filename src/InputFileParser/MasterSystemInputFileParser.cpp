@@ -23,6 +23,9 @@
 #include "DroughtMitigationPolicyParsers/DroughtInsuranceParser.h"
 #include "Exceptions/InconsistentMutuallyImplicativeParameters.h"
 #include "../DataCollector/MasterDataCollector.h"
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
 
 MasterSystemInputFileParser::MasterSystemInputFileParser() = default;
 
@@ -58,15 +61,31 @@ void MasterSystemInputFileParser::createSystemObjects(double *vars) {
             replacePlaceHoldersByDVs(vars, blocks_sol);
         }
 
-//	for (auto &bb : blocks_sol) {
-//	    for (auto &b : bb) {
-//	        for (string s : b) {
-//		    printf("%s ", s.c_str());
-//		}
-//		printf("\n");
-//	    }
-//	    printf("\n");
-//	}
+#ifdef BORG_INPUT_FILE_DEBUG
+        int rank;
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        string dv_file_name = "dvs_rank_" + to_string(rank) + ".csv";
+        ofstream dv_file(dv_file_name.c_str());
+        string dvs_sol = "# ";
+        for (int i = 0; i < n_dec_vars; ++i) {
+            dvs_sol += to_string(vars[i]) + ",";
+        }
+        dvs_sol.pop_back();
+        dv_file << dvs_sol << endl;
+
+        for (int i = 0; i < tags.size(); ++i) {
+            printf("%s\n", tags[i].c_str());
+            auto bb = blocks_sol[i];
+            for (auto &b : bb) {
+                for (string s : b) {
+                    printf("%s ", s.c_str());
+                }
+                printf("\n");
+            }
+            printf("\n");
+        }
+        dv_file.close();
+#endif
 
         // loop through blocks again but now to create all objects.
         loopThroughTags(blocks_sol, true);
@@ -75,6 +94,7 @@ void MasterSystemInputFileParser::createSystemObjects(double *vars) {
         if (rdm_dmp.empty()) {
             initializeStandardRDMFactors();
         }
+	printf("Decision variables implemented.\n");
     } else {
         throw invalid_argument("Data blocks must be populated before "
                                "createSystemObjects can be called.");

@@ -5,7 +5,7 @@ LDFLAGS=-lstdc++
 SOURCES=$(shell find ./src -name "*.cpp")
 OBJECTS=$(SOURCES:.cpp=.o)
 
-TARGET=triangleSimulation
+TARGET=waterpaths
 EXECUTABLE=$(TARGET)
 
 LIB_DIR=./lib
@@ -13,11 +13,15 @@ LIBS=-static-libasan -lm
 
 all: $(SOURCES) $(TARGET)
 
+###### Make arguments to toggle WaterPaths development features on and off. ######
+# -DBORG_INPUT_FILE_DEBUG: activate some verbose to ease debugging how decision  #
+#     variables from optimization are coupled with the input file.               #
+# -DPROFILE: activate Valgrind's import and instrumentation start and end.       #
+##################################################################################
+
 borg: CC=mpicxx
-#borg: CC=g++ # for serial borg debugging
 borg: LIBS += -lborgms
-#borg: LIBS += -lborg # for serial borg debugging
-borg: CFLAGS += -DPARALLEL -fopenmp -march=native -O0 -g
+borg: CFLAGS += -DPARALLEL -fopenmp -march=native -O2 
 borg: all
 
 gcc: CC=g++
@@ -34,7 +38,6 @@ gcc-debug: all
 
 intel-debug: CC=icc
 intel-debug: CFLAGS+=-O1 -xAVX -g -qopenmp
-#intel-debug: CFLAGS+=-O3 ${TACC_VEC_FLAGS} -g -qopenmp
 intel-debug: all
 
 pchecking: CC=icc

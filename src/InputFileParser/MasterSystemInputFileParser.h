@@ -72,7 +72,7 @@ class MasterSystemInputFileParser {
     vector<string> tags;
 
     map<string, int> ws_name_to_id;
-    map<string, int> utility_name_to_id;
+    map<string, int> utility_name_to_id = {{"WATER_QUALITY", WATER_QUALITY_ALLOCATION}};
 
     bool parseUtility(int line_no,
                       vector<vector<string>> &block,

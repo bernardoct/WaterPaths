@@ -223,6 +223,7 @@ Utility::~Utility() {
     water_sources.clear();
     delete[] utility_owned_wtp_capacities_tmp;
     delete[] available_treated_flow_rate;
+    delete[] has_treatment_capacity;
 }
 
 Utility &Utility::operator=(const Utility &utility) {
@@ -269,6 +270,14 @@ void Utility::updateTreatmentAndNumberOfStorageSources() {
     total_treatment_capacity = accumulate(utility_owned_wtp_capacities.begin(),
                                           utility_owned_wtp_capacities.end(),
                                           0.);
+    
+    delete[] has_treatment_capacity;
+    has_treatment_capacity = new bool[water_sources.size()];
+    for (int ws = 0; ws < water_sources.size(); ++ws) {
+        if (any_of(water_source_to_wtp.begin(), water_source_to_wtp.end(), [&ws](int x){return x==ws;})) {
+            has_treatment_capacity[ws] = utility_owned_wtp_capacities[water_source_to_wtp[ws]] > 0.;
+	}
+    }
 
     //TODO: IMPLEMENT HERE QP PROBLEM UPDATE
 //    P_x = new double[n_storage_sources];
@@ -901,7 +910,8 @@ vector<double> Utility::calculateWeeklyPeakingFactor(vector<double> *demands) {
 //========================= GETTERS AND SETTERS =============================//
 
 bool Utility::hasTreatmentConnected(int ws) {
-    return utility_owned_wtp_capacities[water_source_to_wtp[ws]] > 0.;
+//    return utility_owned_wtp_capacities[water_source_to_wtp[ws]] > 0.;
+    return has_treatment_capacity[ws];
 }
 
 double Utility::getStorageToCapacityRatio() const {

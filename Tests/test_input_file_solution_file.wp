@@ -1,24 +1,18 @@
-########################################################################
-# In the lines below, the optimization will be performed for variables #
-# marked with a %%% or with an @ preceding an alias. Variables marked  #
-# with a %%% will have its value optimized, while vairables with a @   #
-# in the same line will have their order optimized.                    #
-# For more details about how to build a file like this one, see        #
-# documentation on GitHub.                                             #
-########################################################################
-
 [RUN PARAMETERS]
-n_realizations 1000
-n_weeks 2344
+n_realizations 100
+n_weeks 2343
 rdm_utilities /scratch/bct52/TestFiles/rdm_utilities_test_problem_opt.csv 
 rdm_water_sources /scratch/bct52/TestFiles/rdm_water_sources_test_problem_opt.csv 
 rdm_dmps /scratch/bct52/TestFiles/rdm_dmp_test_problem_opt.csv
-n_threads 5
+rdm_no 0
+n_threads 16
 rof_tables_dir /scratch/bct52/rof_tables_test_problem/
 output_dir /scratch/bct52/output/
 use_rof_tables import
 seed 0
-optimize 75000 2500
+solutions_file /scratch/bct52/reference_final_filtered.reference
+solutions_to_run 0
+
 
 [DATA TO LOAD]
 # Files with "*" are always fully loaded instead of having on n_realizations lines loaded. Add "*" to any file that's not a demand, inflow or evaporation time series.
@@ -102,7 +96,7 @@ capacity 19925
 streamflow_files jordan_lake_inflows
 evaporation_file jordan_lake_evap
 storage_area 13940
-utilities_with_allocations Watertown,Dryville,Fallsland,WATER_QUALITY
+utilities_with_allocations 0,1,2,-1
 allocated_fractions %%%,%%%,%%%,0.6
 allocated_treatment_fractions 1,0,0
 
@@ -113,7 +107,7 @@ capacity 27500
 streamflow_files falls_lake_inflows little_river_raleigh_inflows
 evaporation_file jordan_lake_evap
 storage_area_curve 0,14000,27500 1834.88,9280,11321.52
-utilities_with_allocations Dryville,Fallsland,WATER_QUALITY
+utilities_with_allocations 1,2,-1
 allocated_fractions 0.19,0.3,0.51
 allocated_treatment_fractions 0.38,0.52
 
@@ -208,10 +202,9 @@ typesMonthlyDemandFraction caryDemandClassesFractions
 typesMonthlyWaterPrice caryUserClassesWaterPrices
 demand_buffer 0.35
 rof_infra_construction_order @New_River_Reservoir,@College_Rock_Expansion_Low,@College_Rock_Expansion_High,@Watertown_Reuse_I,@Watertown_Reuse_II
+# infra_construction_triggers 0.1,0.1,0.1,0.1,0.1
 infra_construction_triggers %%%
-infra_discount_rate 0.7
-water_source_to_wtp College_Rock_Reservoir Lake_Michael New_River_Reservoir
-utility_owned_wtp_capacities 560.,548.,9999999.
+infra_discount_rate 0.07
 
 [UTILITY]
 name Dryville
@@ -223,10 +216,9 @@ typesMonthlyWaterPrice durhamUserClassesWaterPrices
 wwtp_discharge_rule demand_to_wastewater_fraction_owasa_raleigh New_River_Reservoir
 demand_buffer 0.35
 rof_infra_construction_order @Sugar_Creek_Reservoir,@Dryville_Reuse
+# infra_construction_triggers 0.2,0.1,0.3
 infra_construction_triggers %%%
 infra_discount_rate 0.07
-water_source_to_wtp Autumn_Lake Sugar_Creek_Reservoir Granite_Quarry
-utility_owned_wtp_capacities 9999999.,9999999.,9999999.
 
 [UTILITY]
 name Fallsland
@@ -238,10 +230,10 @@ typesMonthlyWaterPrice raleighUserClassesWaterPrices
 wwtp_discharge_rule demand_to_wastewater_fraction_owasa_raleigh New_River_Reservoir
 demand_buffer 0.35
 rof_infra_construction_order @New_River_Reservoir,@Fallsland_Reuse
+# infra_construction_triggers 0.2,0.1
 infra_construction_triggers %%%
 infra_discount_rate 0.07
-water_source_to_wtp Autumn_Lake New_River_Reservoir
-utility_owned_wtp_capacities 9999999,9999999.
+
 
 
 [WATER SOURCES GRAPH]
@@ -315,8 +307,8 @@ release 0
 
 [INFLOW-BASED RESERVOIR CONTROL RULE]
 water_source_id Sugar_Creek_Reservoir
-inflows 836.898,1673.796,2789.66
-releases 4.522,9.03,13.58
+inflows 0,3.5,7,10.5,12.579
+releases 0,1,3.5,7,10.5,12.579
 
 [SEASONAL RESERVOIR CONTROL RULE]
 water_source_id Autumn_Lake

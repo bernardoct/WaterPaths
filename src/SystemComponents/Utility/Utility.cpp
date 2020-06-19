@@ -845,9 +845,9 @@ void Utility::setRealization(unsigned long r, vector<double>& rdm_factors) {
     // Also apply sinusoidal factors (rdm_factor ids 4,5,6)
     for (unsigned long w = 0; w < n_weeks; ++w) {
         demand_series_realization[w] = demands_all_realizations.at(r)[w] *
-                                               rdm_factors.at(0) *
-                                               getSinusoidalFactor(w, rdm_factors.at(4),
-                                                       rdm_factors.at(5), rdm_factors.at(6))
+                                               rdm_factors.at(0) //*
+//                                               getSinusoidalFactor(w, rdm_factors.at(4),
+//                                                       rdm_factors.at(5), rdm_factors.at(6))
                                        + delta_demand;
     }
 

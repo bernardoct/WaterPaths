@@ -85,7 +85,7 @@ void Triangle::setProblemDefinition(BORG_Problem &problem)
     BORG_Problem_set_bounds(problem, 41, 0.001, 1.0); // pitt restriction trigger
     BORG_Problem_set_bounds(problem, 42, 0.001, 1.0); // pitt transfer trigger
     BORG_Problem_set_bounds(problem, 43, 0.0, 0.12); // pitt JLA
-    BORG_Problem_set_bounds(problem, 44, 0.0, 0.02); // pitt insurance payment
+    BORG_Problem_set_bounds(problem, 44, 0.0, 0.1); // pitt annual payment
     BORG_Problem_set_bounds(problem, 45, 0.0, 1.0); // pitt in trigger
     BORG_Problem_set_bounds(problem, 46, 0.0, 20.0); // pittsboro inf buff
     BORG_Problem_set_bounds(problem, 47, 0.001, 1.0); // chatham restriction trigger

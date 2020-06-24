@@ -313,6 +313,9 @@ double ObjectivesCalculator::calculateUnitTotalCostObjective(const vector<Utilit
                 realization->getUnrestricted_demand().end(), 0.);
 
         realization_unit_cost.push_back(infra_npv_total / utility_demanded_water);
+
+        if (isnan(infra_npv_total / utility_demanded_water))
+            cout << "REALIZATION " << r << " HAS NAN FOR UTILITY " << utility_data[r]->name << endl;
     }
 
     // take the average across all realizations for the objective value

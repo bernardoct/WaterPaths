@@ -27,7 +27,7 @@ double VariableDebtServiceBond::getDebtService(int week) {
     ///  catch this and correct the value if it occurs
     if (isnan(variable_debt_service_payment))
         variable_debt_service_payment = 0;
-    
+
     if (n_payments_made < n_payments &&
         week > week_issued + begin_repayment_after_n_years
                              * WEEKS_IN_YEAR - 1 &&

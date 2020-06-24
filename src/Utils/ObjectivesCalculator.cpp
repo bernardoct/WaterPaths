@@ -291,14 +291,18 @@ double ObjectivesCalculator::calculateUnitTotalCostObjective(const vector<Utilit
 
     // for each realization, calculate the ratio of NPV infrastructure cost over
     // total water demanded to get an estimate of cost per unit demand
+    // June 2020: added first year water demand getter to normalize total water demand
+    //  by first year, so the unit cost is of infrastructure needed to meet "new" demand
     vector<double> realization_unit_cost;
     double infra_npv_total;
     double utility_demanded_water;
+    double first_year_average_demand;
     for (const unsigned long &r : realizations) {
         auto realization = utility_data[r];
 
         infra_npv_total = 0;
         utility_demanded_water = 0;
+        first_year_average_demand = 0;
 
 //        infra_npv_total = accumulate(
 //                realization->getNet_present_infrastructure_cost().begin(),
@@ -312,10 +316,17 @@ double ObjectivesCalculator::calculateUnitTotalCostObjective(const vector<Utilit
                 realization->getUnrestricted_demand().begin(),
                 realization->getUnrestricted_demand().end(), 0.);
 
-        realization_unit_cost.push_back(infra_npv_total / utility_demanded_water);
+        first_year_average_demand = realization->getRecorded_annual_demand().at(0);
 
-        if (isnan(infra_npv_total / utility_demanded_water))
-            cout << "REALIZATION " << r << " HAS NAN FOR UTILITY " << utility_data[r]->name << endl;
+        if (utility_demanded_water < first_year_average_demand * realization->getRecorded_annual_demand().size())
+            cout << "REALIZATION " << r << " HAS AVERAGE DEMAND LOSS FOR " << utility_data[r]->name << endl;
+
+        if (abs(infra_npv_total / (utility_demanded_water - first_year_average_demand * realization->getRecorded_annual_demand().size())) > 1e3)
+            cout << "REALIZATION " << r << " HAS VERY LARGE UNIT COST FOR " << utility_data[r]->name << endl;
+
+        realization_unit_cost.push_back(
+            infra_npv_total / (utility_demanded_water -
+            first_year_average_demand * realization->getRecorded_annual_demand().size()));
     }
 
     // take the average across all realizations for the objective value

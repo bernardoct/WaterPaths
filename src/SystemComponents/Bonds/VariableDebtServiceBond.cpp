@@ -22,6 +22,12 @@ VariableDebtServiceBond::~VariableDebtServiceBond() = default;
 double VariableDebtServiceBond::getDebtService(int week) {
     /// If there are still payments to be made, repayment has begun,
     /// and this is a payment week, issue payment.
+    /// June 2020: appears to be some way that debt service can go to -nan if the
+    ///  fraction of capital expenses a utility is responsible for is 0, so
+    ///  catch this and correct the value if it occurs
+    if (isnan(variable_debt_service_payment))
+        variable_debt_service_payment = 0;
+    
     if (n_payments_made < n_payments &&
         week > week_issued + begin_repayment_after_n_years
                              * WEEKS_IN_YEAR - 1 &&

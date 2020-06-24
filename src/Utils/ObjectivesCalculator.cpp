@@ -318,19 +318,24 @@ double ObjectivesCalculator::calculateUnitTotalCostObjective(const vector<Utilit
 
         first_year_average_demand = realization->getRecorded_annual_demand().at(0);
 
-        if (utility_demanded_water < first_year_average_demand * realization->getRecorded_annual_demand().size())
-            cout << "REALIZATION " << r << " HAS AVERAGE DEMAND LOSS FOR " << utility_data[r]->name << endl;
+//        if (abs(infra_npv_total / (utility_demanded_water - first_year_average_demand * realization->getRecorded_annual_demand().size())) > 1e3)
+//            cout << "REALIZATION " << r << " HAS VERY LARGE UNIT COST FOR " << utility_data[r]->name << endl;
 
-        if (abs(infra_npv_total / (utility_demanded_water - first_year_average_demand * realization->getRecorded_annual_demand().size())) > 1e3)
-            cout << "REALIZATION " << r << " HAS VERY LARGE UNIT COST FOR " << utility_data[r]->name << endl;
-
-        realization_unit_cost.push_back(
-            infra_npv_total / (utility_demanded_water -
-            first_year_average_demand * realization->getRecorded_annual_demand().size()));
+        if (utility_demanded_water <= first_year_average_demand * realization->getRecorded_annual_demand().size()) {
+//            cout << "REALIZATION " << r << " HAS AVERAGE DEMAND LOSS FOR " << utility_data[r]->name << endl;
+            realization_unit_cost.push_back(infra_npv_total); // make ratio huge, but not negative
+        } else {
+            realization_unit_cost.push_back(
+                    infra_npv_total / (utility_demanded_water -
+                    first_year_average_demand * realization->getRecorded_annual_demand().size()));
+        }
     }
 
     // take the average across all realizations for the objective value
     // in the future, this could be some other statistic
+    // Jun 2020: because unit cost can be skewed to enormous values if little demand growth occurs,
+    // be aware that taking the average (vs the median, for instance) will highlight negative
+    // impact of extreme infrastructure spending for little demand growth
     // THIS IS IN UNITS OF MILLIONS OF DOLLARS PER MILLION GALLONS (COMVERTED TO $/kgal)
     return accumulate(realization_unit_cost.begin(), realization_unit_cost.end(), 0.0) / n_realizations * 1000;
 }

@@ -21,7 +21,7 @@ all: $(SOURCES) $(TARGET)
 
 borg: CC=mpicxx
 borg: LIBS += -lborgms
-borg: CFLAGS += -DPARALLEL -fopenmp -march=native -O2 
+borg: CFLAGS += -DPARALLEL -fopenmp -march=native -O2
 borg: all
 
 gcc: CC=g++

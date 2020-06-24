@@ -6,44 +6,44 @@
 [RUN PARAMETERS]
 n_realizations 64
 n_weeks 2344
-rdm_utilities /scratch/bct52/TestFiles/rdm_utilities_test_problem_opt.csv 
-rdm_water_sources /scratch/bct52/TestFiles/rdm_water_sources_test_problem_opt.csv 
-rdm_dmps /scratch/bct52/TestFiles/rdm_dmp_test_problem_opt.csv
+rdm_utilities /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/rdm_utilities_test_problem_opt.csv 
+rdm_water_sources /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/rdm_water_sources_test_problem_opt.csv 
+rdm_dmps /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/rdm_dmp_test_problem_opt.csv
 # number of threads should not exceede twice the number of cores available.
-n_threads 16
-rof_tables_dir /scratch/bct52/rof_tables_test_problem/
+n_threads 4
+rof_tables_dir /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/rof_tables_test_problem/
 # change "import" below to "generate" to generate ROF tables.
-use_rof_tables import
-solutions_file /scratch/bct52/reference_final.reference
+use_rof_tables generate
+solutions_file /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/reference_final.reference
 solutions_to_run 0
 seed 0
 print_time_series true
-output_dir /scratch/bct52/
+output_dir /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/
 
 
 [DATA TO LOAD]
 # Files with "*" are always fully loaded instead of having on n_realizations lines loaded
-*caryDemandClassesFractions /scratch/bct52/TestFiles/caryDemandClassesFractions.csv
-*caryUserClassesWaterPrices /scratch/bct52/TestFiles/caryUserClassesWaterPrices.csv
-*demand_to_wastewater_fraction_owasa_raleigh /scratch/bct52/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv
-*raleighDemandClassesFractions /scratch/bct52/TestFiles/raleighDemandClassesFractions.csv
-*raleighUserClassesWaterPrices /scratch/bct52/TestFiles/raleighUserClassesWaterPrices.csv
-*durhamDemandClassesFractions /scratch/bct52/TestFiles/durhamDemandClassesFractions.csv
-*durhamUserClassesWaterPrices /scratch/bct52/TestFiles/durhamUserClassesWaterPrices.csv
-cary_demand /scratch/bct52/TestFiles/demands/cary_demand.csv
-durham_demand /scratch/bct52/TestFiles/demands/durham_demand.csv
-raleigh_demand /scratch/bct52/TestFiles/demands/raleigh_demand.csv
-falls_lake_evap /scratch/bct52/TestFiles/evaporation/falls_lake_evap.csv
-jordan_lake_evap /scratch/bct52/TestFiles/evaporation/jordan_lake_evap.csv
-clayton_inflows /scratch/bct52/TestFiles/inflows/clayton_inflows.csv
-crabtree_inflows /scratch/bct52/TestFiles/inflows/crabtree_inflows.csv
-durham_inflows /scratch/bct52/TestFiles/inflows/durham_inflows.csv
-falls_lake_inflows /scratch/bct52/TestFiles/inflows/falls_lake_inflows.csv
-jordan_lake_inflows /scratch/bct52/TestFiles/inflows/jordan_lake_inflows.csv
-lillington_inflows /scratch/bct52/TestFiles/inflows/lillington_inflows.csv
-little_river_raleigh_inflows /scratch/bct52/TestFiles/inflows/little_river_raleigh_inflows.csv
-stone_quarry_inflows /scratch/bct52/TestFiles/inflows/stone_quarry_inflows.csv
-university_lake_inflows /scratch/bct52/TestFiles/inflows/university_lake_inflows.csv
+*caryDemandClassesFractions /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/caryDemandClassesFractions.csv
+*caryUserClassesWaterPrices /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/caryUserClassesWaterPrices.csv
+*demand_to_wastewater_fraction_owasa_raleigh /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/demand_to_wastewater_fraction_owasa_raleigh.csv
+*raleighDemandClassesFractions /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/raleighDemandClassesFractions.csv
+*raleighUserClassesWaterPrices /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/raleighUserClassesWaterPrices.csv
+*durhamDemandClassesFractions /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/durhamDemandClassesFractions.csv
+*durhamUserClassesWaterPrices /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/durhamUserClassesWaterPrices.csv
+cary_demand /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/demands/cary_demand.csv
+durham_demand /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/demands/durham_demand.csv
+raleigh_demand /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/demands/raleigh_demand.csv
+falls_lake_evap /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/evaporation/falls_lake_evap.csv
+jordan_lake_evap /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/evaporation/jordan_lake_evap.csv
+clayton_inflows /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/inflows/clayton_inflows.csv
+crabtree_inflows /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/inflows/crabtree_inflows.csv
+durham_inflows /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/inflows/durham_inflows.csv
+falls_lake_inflows /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/inflows/falls_lake_inflows.csv
+jordan_lake_inflows /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/inflows/jordan_lake_inflows.csv
+lillington_inflows /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/inflows/lillington_inflows.csv
+little_river_raleigh_inflows /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/inflows/little_river_raleigh_inflows.csv
+stone_quarry_inflows /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/inflows/stone_quarry_inflows.csv
+university_lake_inflows /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/inflows/university_lake_inflows.csv
 
 [RESERVOIR]
 name College_Rock_Reservoir

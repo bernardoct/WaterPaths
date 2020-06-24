@@ -873,7 +873,7 @@ Utility::setRealization(unsigned long r, const vector<double> &rdm_factors) {
         for (double &awp : weekly_average_volumetric_price) {
             awp *= price_rdm_multiplier;
         }
-    } catch (length_error &e) {
+    } catch (out_of_range &e) {
         char error[256];
         sprintf(error, "Utilities RDM file must have five columns but "
                        "has only %lu. The columns are for bond term "

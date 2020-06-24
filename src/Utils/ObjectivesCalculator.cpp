@@ -304,7 +304,7 @@ double ObjectivesCalculator::calculateUnitTotalCostObjective(const vector<Utilit
 //                realization->getNet_present_infrastructure_cost().begin(),
 //                realization->getNet_present_infrastructure_cost().end(), 0.);
 
-        infra_npv_total += accumulate(
+        infra_npv_total = accumulate(
                 realization->getPresent_value_debt_service_payments().begin(),
                 realization->getPresent_value_debt_service_payments().end(), 0.);
 

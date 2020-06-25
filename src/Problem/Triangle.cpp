@@ -50,7 +50,7 @@ void Triangle::setProblemDefinition(BORG_Problem &problem)
     BORG_Problem_set_bounds(problem, 6, 0.001, 1.0); // Raleigh Transfers
     BORG_Problem_set_bounds(problem, 7, 0.05, 0.1);  // OWASA JLA
     BORG_Problem_set_bounds(problem, 8, 0.1, 0.35); // Durham JLA
-    BORG_Problem_set_bounds(problem, 9, 0.46, 0.7); // Cary JLA
+    BORG_Problem_set_bounds(problem, 9, 0.45, 0.55); // Cary JLA
     BORG_Problem_set_bounds(problem, 10, 0.0, 0.1);  // Durham reserver fund cont
     BORG_Problem_set_bounds(problem, 11, 0.0, 0.1);  // OWASA reserve fund cont
     BORG_Problem_set_bounds(problem, 12, 0.0, 0.1);  // Raleigh reserve fund cont
@@ -155,7 +155,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         double raleigh_transfer_trigger = vars[6];
 
         double OWASA_JLA = vars[7];
-        double Raleigh_JLA = 0; //FIXME: HOLD AT 0
+        double Raleigh_JLA = 0;
         double Durham_JLA = vars[8];
         double Cary_JLA = vars[9];
 
@@ -746,12 +746,15 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         if (sum_wjlwtp == 0.)
             throw invalid_argument("Treatment fractions for WJLWTP cannot be all "
                                              "zero.");
-        western_wake_treatment_frac_durham /= sum_wjlwtp;
-        western_wake_treatment_plant_owasa_frac /= sum_wjlwtp;
-        western_wake_treatment_plant_raleigh_frac /= sum_wjlwtp;
 
-        western_wake_treatment_plant_pittsboro_frac /= sum_wjlwtp;
-        western_wake_treatment_plant_chatham_frac /= sum_wjlwtp;
+        /// June 2020: only normalize fractions if they sum to greater than 1
+        if (sum_wjlwtp > 1) {
+            western_wake_treatment_frac_durham /= sum_wjlwtp;
+            western_wake_treatment_plant_owasa_frac /= sum_wjlwtp;
+            western_wake_treatment_plant_raleigh_frac /= sum_wjlwtp;
+            western_wake_treatment_plant_pittsboro_frac /= sum_wjlwtp;
+            western_wake_treatment_plant_chatham_frac /= sum_wjlwtp;
+        }
 
 
         // ==================== SET UP RDM FACTORS ============================
@@ -1469,7 +1472,13 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         /// Bonds Cary treatment plant expansion
         /// July 2019: Pittsboro/CC added to vectors here
-        vector<double> cost_cary_wtp_upgrades = {0, 0, 243. / 2, 0, 0, 0};
+        /// June 2020: Cost of Cary WTP expansions set to zero -
+        ///  they occur as a demand-triggered (inevitable) project, not by ROF
+        ///  and this plant expansion occurred in reality in 2018
+        ///  so we can assume it is "already built" financially, and it will
+        ///  be put in place when demands rise for Cary
+//        vector<double> cost_cary_wtp_upgrades = {0, 0, 243. / 2, 0, 0, 0};
+        vector<double> cost_cary_wtp_upgrades = {0, 0, 0., 0, 0, 0};
 
         vector<Bond *> bonds_cary_wtp_upgrades_1;
         uid = 0;

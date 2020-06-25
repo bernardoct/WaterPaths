@@ -683,6 +683,11 @@ double Utility::updateCurrent_debt_payment(int week) {
     // (aka are any tied to VariableJointWTP projects with changing allocations)
     for (Bond *bond : issued_bonds) {
         if (bond->type == VARIABLE_INTEREST) {
+            // June 2020: make the value passed to setDebtService function not just
+            // a utility's allocated fraction, but the quantity [utility fraction / sum of utility fractions]
+            // because it is possible allocations do not sum to 100% of wtp capacity
+            // the getAllocatedTreatmentFraction function override in JointWTP class does this,
+            // which isn't the same as the definition in WaterSource
             bond->setDebtService(water_sources.at(bond->getWaterSourceID())->getAllocatedTreatmentFraction(id));
 //            cout << name << ": " << water_sources.at(bond->getWaterSourceID())->name
 //                << " allocated treatment fraction is "

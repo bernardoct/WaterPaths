@@ -81,7 +81,7 @@ void Triangle::setProblemDefinition(BORG_Problem &problem)
     BORG_Problem_set_bounds(problem, 37, 0.0, 20.0);  // Durham inf buffer
     BORG_Problem_set_bounds(problem, 38, 0.0, 20.0);  // OWASA inf buffer
     BORG_Problem_set_bounds(problem, 39, 0.0, 20.0);  // Raleigh inf buffer
-    BORG_Problem_set_bounds(problem, 40, 0.0, 20.0);  // Cary inf buffer
+    BORG_Problem_set_bounds(problem, 40, 15.0, 20.0);  // Cary inf buffer
     BORG_Problem_set_bounds(problem, 41, 0.001, 1.0); // pitt restriction trigger
     BORG_Problem_set_bounds(problem, 42, 0.001, 1.0); // pitt transfer trigger
     BORG_Problem_set_bounds(problem, 43, 0.0, 0.12); // pitt JLA

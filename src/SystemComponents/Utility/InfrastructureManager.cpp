@@ -78,6 +78,9 @@ void InfrastructureManager::addWaterSource(WaterSource *water_source) {
  * @param demand_infra_construction_order
  * @return
  */
+
+//FIXME: THIS DOESN'T WORK IF A UTILITY HAS BOTH ROF AND DEMAND TRIGGERED INFRASTRUCTURE
+//FIXME: AND THERE ARE NOT AN EQUAL NUMBER OF EACH
 vector<double> InfrastructureManager::rearrangeInfraRofVector(
         const vector<double>& infra_construction_triggers,
         const vector<int>& rof_infra_construction_order,
@@ -90,29 +93,32 @@ vector<double> InfrastructureManager::rearrangeInfraRofVector(
                                     demand_infra_construction_order.end()));
     int size = max(size_rof, size_demand) + 1;
 
-    auto n_options = max(rof_infra_construction_order.size(), demand_infra_construction_order.size());
-    if (infra_construction_triggers.size() != n_options) {
-        char error[200];
-        sprintf(error, "Number of ROF or demand triggers (%lu) for utility %d must match the number of "
-                            "infrastructure options triggered by ROf or demand (%lu, %lu, respectively).",
-			    infra_construction_triggers.size(), id, rof_infra_construction_order.size(), 
-			    demand_infra_construction_order.size());
-        throw invalid_argument(error);
-    }
+    // June 2020: turn off this error statement - not really sure the point of it
+//    auto n_options = max(rof_infra_construction_order.size(), demand_infra_construction_order.size());
+//    if (infra_construction_triggers.size() != n_options) {
+//        char error[200];
+//        sprintf(error, "Number of ROF or demand triggers (%lu) for utility %d must match the number of "
+//                            "infrastructure options triggered by ROf or demand (%lu, %lu, respectively).",
+//			    infra_construction_triggers.size(), id, rof_infra_construction_order.size(),
+//			    demand_infra_construction_order.size());
+//        throw invalid_argument(error);
+//    }
 
+    // July 2020: need to adjust how the triggers vector is filled
+    // NOTE: ASSUMES ROF TRIGGERS POPULATE VECTOR FIRST, THEN CHECKS FOR DEMAND TRIGGERS?
     vector<double> infra_construction_triggers_new((unsigned long) size, 1e10);
-    for (unsigned long i = 0; i < rof_infra_construction_order.size(); ++i) {
-        auto ws = (unsigned long) rof_infra_construction_order.at(i);
-        infra_construction_triggers_new.at(ws) = infra_construction_triggers.at(i);
-    }
-
-    for (unsigned long i = 0; i < demand_infra_construction_order.size(); ++i) {
-        auto ws = (unsigned long) demand_infra_construction_order.at(i);
-        if (infra_construction_triggers_new.at(ws) != 1e10)
-            throw invalid_argument("A source can be triggered only by "
-                                     "either rof or by demand.");
-        infra_construction_triggers_new.at((unsigned long) demand_infra_construction_order.at(i)) =
-                infra_construction_triggers.at(i);
+    for (unsigned long i = 0; i < infra_construction_triggers.size(); ++i) {
+        // first, check ROF triggers
+        if (i < rof_infra_construction_order.size()) {
+            auto ws = (unsigned long) rof_infra_construction_order.at(i);
+            infra_construction_triggers_new.at(ws) = infra_construction_triggers.at(i);
+        } else { // next, follow with demand triggers
+            auto ws = (unsigned long) demand_infra_construction_order.at(i-rof_infra_construction_order.size());
+            if (infra_construction_triggers_new.at(ws) != 1e10)
+                throw invalid_argument("A source can be triggered only by "
+                                       "either rof or by demand.");
+            infra_construction_triggers_new.at(ws) = infra_construction_triggers.at(i);
+        }
     }
 
     return infra_construction_triggers_new;
@@ -376,6 +382,34 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
                                         under_construction.end(), true) !=
                                    under_construction.end());
 
+    /// Checks whether the target demand has been exceeded for the next
+    /// infrastructure option in the list and, if not already under
+    /// construction, starts building it.
+    /// July 2020: DEMAND STATEMENT PUT IN FRONT OF ROF STATEMENT - DEMAND-TRIGGERED PROJECTS GO FIRST
+    if (!demand_infra_construction_order.empty() && !under_construction_any &&
+        week > WEEKS_IN_YEAR) { // if there is anything to be built
+
+
+        /// Selects next water source whose permitting period is passed.
+        int next_construction = NON_INITIALIZED;
+        for (int &id : demand_infra_construction_order) {
+            auto idd = (unsigned long) id;
+            if (week > water_sources->at(idd)->getPermitting_period() && !water_sources->at(idd)->skipConstruction(id)) {
+                next_construction = id;
+                break;
+            }
+        }
+        /// Checks if demand threshold for next infrastructure in line has been
+        /// reached and if there is already infrastructure being built.
+        if (next_construction != NON_INITIALIZED &&
+            past_year_average_demand >infra_construction_triggers[next_construction]) {
+            new_infra_triggered = next_construction;
+
+            /// Begin construction.
+            beginConstruction(week, next_construction);
+        }
+    }
+
     /// Checks whether the long-term ROF has been exceeded for the next
     /// infrastructure option in the list and, if not already under
     /// construction, starts building it.
@@ -396,33 +430,6 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
         /// reached and if there is already infrastructure being built.
         if (next_construction != NON_INITIALIZED &&
             long_term_rof > infra_construction_triggers[next_construction]) {
-            new_infra_triggered = next_construction;
-
-            /// Begin construction.
-            beginConstruction(week, next_construction);
-        }
-    }
-
-    /// Checks whether the target demand has been exceeded for the next
-    /// infrastructure option in the list and, if not already under
-    /// construction, starts building it.
-    if (!demand_infra_construction_order.empty() && !under_construction_any &&
-        week > WEEKS_IN_YEAR) { // if there is anything to be built
-
-
-        /// Selects next water source whose permitting period is passed.
-        int next_construction = NON_INITIALIZED;
-        for (int &id : demand_infra_construction_order) {
-            auto idd = (unsigned long) id;
-            if (week > water_sources->at(idd)->getPermitting_period() && !water_sources->at(idd)->skipConstruction(id)) {
-                next_construction = id;
-                break;
-            }
-        }
-        /// Checks if demand threshold for next infrastructure in line has been
-        /// reached and if there is already infrastructure being built.
-        if (next_construction != NON_INITIALIZED &&
-                past_year_average_demand >infra_construction_triggers[next_construction]) {
             new_infra_triggered = next_construction;
 
             /// Begin construction.
@@ -479,12 +486,17 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
 
                     /// Erase infrastructure option from both vectors of
                     /// infrastructure to be built.
-                    if (!rof_infra_construction_order.empty())
+                    bool rof_check = false; bool demand_check = false;
+                    if (!rof_infra_construction_order.empty()) {
                         Utils::removeIntFromVector(rof_infra_construction_order, wss);
-
-                    else if (!demand_infra_construction_order.empty())
+                        rof_check = true;
+                    }
+                    if (!demand_infra_construction_order.empty()) {
                         Utils::removeIntFromVector(demand_infra_construction_order, wss);
-                    else
+                        demand_check = true;
+                    }
+                    // if a project was triggered, but removed from neither list, throw error
+                    if (!rof_check && !demand_check)
                         throw logic_error("Infrastructure option whose construction was"
                                             " complete is not in the demand or "
                                             "rof triggered construction lists.");

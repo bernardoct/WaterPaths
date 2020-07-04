@@ -175,7 +175,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
     double durham_inftrigger = vars[14];
     double owasa_inftrigger = vars[15];
     double raleigh_inftrigger = vars[16];
-    double cary_inftrigger = 1.1; //June 2020: Cary has no ROF-triggered infrastructure, no trigger needed
 
     double university_lake_expansion_ranking = vars[17]; // 14
     double Cane_creek_expansion_ranking = vars[18]; // 24
@@ -207,7 +206,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
     double durham_inf_buffer = vars[36];
     double owasa_inf_buffer = vars[37];
     double raleigh_inf_buffer = vars[38];
-    double cary_inf_buffer = 0.0; // June 2020: Cary has no ROF triggered infrastructure, no buffer needed
 
     /// Nov 2019: new parameter input file expands on existing 57 parameters to include pittsboro and chatham county
     /// utilities as well as demand projection parameters:
@@ -249,6 +247,10 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
     double haw_river_intake_expansion_rank_high = vars[62]; //0.9;
 
     /// potential independent Chatham County project(s)
+    /// July 2020: this appears to no longer be of interest to Chatham County,
+    ///  however Cary is considering a Cape Fear Intake in Harnett County as part of Town's 2018 LRWRP
+    ///  no cost info is given in Cary report - will use estimates for Chatham County project
+    ///  in their place, should Cary choose to build an intake
     double cape_fear_river_intake_rank = vars[63]; //0.8;
 
     /// Nov 2019: parameters to cap contingency funds
@@ -262,6 +264,13 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
     int demand_projection_forecast_length = (int) vars[64];
     int demand_projection_historical_use = (int) vars[65];
     int demand_projection_frequency = (int) vars[66];
+
+    // July 2020: Cary overhaul involving new projects, all DVs included here for ease
+    // on June 30, 2020 a 67 DV parameter input file was made for the setup before these lines of code
+    // that one should be built out with additional Cary DVs below
+    double cary_inftrigger = vars[67];
+    double cary_inf_buffer = vars[68];
+    double cary_sanford_wtp_capacity_stake_rank = vars[69];
 
     /// Nov 2019: demand projection parameters for each utility
     int cary_demand_projection_forecast_length_years = demand_projection_forecast_length; // vars[88]; //int LOOK_AHEAD_YEARS_FOR_DEMAND_PROJECTION = 5;
@@ -309,8 +318,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
     int jordan_lake_id = 6;
     int haw_river_intake_id = 7;
     int sanford_wtp_dummy_intake_id = 8;
-    //int sanford_wtp_dummy_pittsboro_intake_id = 8;
-    //int sanford_wtp_dummy_chatham_intake_id = 9;
     int dummy_node_id = 14;
 
     // Potential sources (geographically separate from above)
@@ -339,6 +346,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
     int wjlwtp_fixed_high_base_id = 30;
     int wjlwtp_variable_low_base_id = 31;
     int wjlwtp_variable_high_base_id = 32;
+    int cary_sanford_stake_id = 33;
 
     // select the correct ordering based on formulation
     vector<infraRank> owasa_infra_order_raw;
@@ -346,6 +354,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
     vector<infraRank> raleigh_infra_order_raw;
     vector<infraRank> pittsboro_infra_order_raw;
     vector<infraRank> chatham_infra_order_raw;
+    vector<infraRank> cary_infra_order_raw;
 
     // these variables will be used to assign true rank to the WJLWTP
     // Depending on the formulation, they will either be set to the DV, or to the last ranks for each utility
@@ -475,7 +484,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
     };
 
     chatham_infra_order_raw = {
-            infraRank(harnett_county_intake_id, cape_fear_river_intake_rank),
             infraRank(sanford_wtp_intake_expansion_low_base_id, sanford_wtp_chatham_intake_expansion_low_rank),
             infraRank(sanford_wtp_intake_expansion_high_base_id, sanford_wtp_chatham_intake_expansion_high_rank),
             infraRank(wjlwtp_fixed_low_base_id, chatham_fixed_WJLWTP_rank_low),
@@ -483,6 +491,13 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
             infraRank(wjlwtp_variable_low_base_id, chatham_variable_WJLWTP_rank_low),
             infraRank(wjlwtp_variable_high_base_id, chatham_variable_WJLWTP_rank_high)
 
+    };
+
+    cary_infra_order_raw = {
+            infraRank(harnett_county_intake_id, cape_fear_river_intake_rank),
+            infraRank(cary_sanford_stake_id, cary_sanford_wtp_capacity_stake_rank)
+//            infraRank(michie_expansion_low_id, cary_lake_michie_expansion_ranking_low),
+//            infraRank(michie_expansion_high_id, cary_lake_michie_expansion_ranking_high)
     };
 
     durham_infra_order_raw = {
@@ -624,6 +639,10 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
              chatham_infra_order_raw.end(),
              by_xreal());
 
+        sort(cary_infra_order_raw.begin(),
+             cary_infra_order_raw.end(),
+             by_xreal());
+
         vector<int> rof_triggered_infra_order_durham =
                 vecInfraRankToVecInt(durham_infra_order_raw);
         vector<int> rof_triggered_infra_order_owasa =
@@ -634,6 +653,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                 vecInfraRankToVecInt(pittsboro_infra_order_raw);
         vector<int> rof_triggered_infra_order_chatham =
                 vecInfraRankToVecInt(chatham_infra_order_raw);
+        vector<int> rof_triggered_infra_order_cary =
+                vecInfraRankToVecInt(cary_infra_order_raw);
 
         // Create vectors with each utility's long-term ROF values assigned to all
         // infrastructure options.
@@ -704,6 +725,10 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                         sanford_wtp_intake_expansion_high_base_id,
                         added_capacity_sanford_wtp_intake_chatham_expansion_low,
                         added_capacity_sanford_wtp_intake_chatham_expansion_high);
+
+        /// July 2020: Cary also considering purchasing stake in Sanford's WTP/intake
+        /// but this is considered separately from Pittsboro and Chatham Co. agreement(s)
+        double added_capacity_sanford_wtp_stake_cary = 10.0 * 7;
 
         /// Normalize Jordan Lake Allocations in case they exceed 1.
         double sum_jla_allocations = OWASA_JLA + Durham_JLA + Cary_JLA +
@@ -1110,9 +1135,10 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         Intake haw_river_intake("Haw River Intake", haw_river_intake_id, catchment_haw, 2.0*7, 2.0*7);
 
         /// Sanford WTP - dummy Cape Fear River "Intake" with zero capacity, can be expanded later
-        vector<int> sanford_partner_utility_ids = {4, 5}; // Chatham and Pittsboro
-        vector<double> sanford_partner_capacity_allocation_fractions = {0.0, 0.0};
-        vector<double> sanford_partner_treatment_capacity_allocation_fractions = {0.0, 0.0};
+        /// July 2020: Cary also wants in on this - include them
+        vector<int> sanford_partner_utility_ids = {2, 4, 5}; // Cary, Chatham and Pittsboro
+        vector<double> sanford_partner_capacity_allocation_fractions = {0.0, 0.0, 0.0};
+        vector<double> sanford_partner_treatment_capacity_allocation_fractions = {0.0, 0.0, 0.0};
         AllocatedIntake sanford_wtp_dummy_intake("Sanford WTP Dummy Intake", sanford_wtp_dummy_intake_id,
                 vector<Catchment *>(), vector<int>(), sanford_partner_utility_ids,
                 0.0, sanford_partner_capacity_allocation_fractions,
@@ -1128,9 +1154,9 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         int neuse_river_intake_permitting_period = 17; // assume 2035 availability, TRWSP 2014
         int haw_river_intake_low_permitting_period = 2; // earliest by 2023 (Pittsboro 2019 report), say 2020 (2014 JLA report implies 2020)
         int haw_river_intake_high_permitting_period = 5; // earliest by 2023, though older report says 2025
-        int cape_fear_river_permitting_period = 100; // no longer a viable option according to Hazen and Sawyer
+        int cape_fear_river_permitting_period = 17; // for Chatham County, no longer a viable option according to Hazen and Sawyer, but switched it to a possibility for Cary by 2035
         int sanford_wtp_intake_low_permitting_period = 7; // should be 7 (2025)
-        int sanford_wtp_intake_high_permitting_period = 13; // should be 22 (2040), 2014 Cnty report says 2031 is earliest for a harnett county project so use that...
+        int sanford_wtp_intake_high_permitting_period = 13; // should be 22 (2040), 2014 Chatham report says 2031 is earliest for a harnett county project so use that...
         int cane_creek_reservoir_expansion_permitting_period = 17; // 2035
         int stone_quarry_low_permitting_period = 22; // 2040
         int stone_quarry_high_permitting_period = 22; // 2040
@@ -1142,6 +1168,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         int dummy_wjlwtp_permitting_period = 100; // just a dummy, never built
         int wjlwtp_low_permitting_period = 5; // Pittsboro 2019 report says 2035, TRWSP (2014) report says 2020-2025, so set to 2023 (if began today...)
         int wjlwtp_high_permitting_period = 7; // 2019 report says 2040, TRWSP (2014) says between 2020-2025, Pittsboro 2014 report says 2030... say 2025
+        int sanford_stake_cary_permitting_period = 0; // can be added now, Cary has interconnection infrastructure already
 
         // The capacities listed here for expansions are what additional capacity is gained relative to existing capacity,
         // NOT the total capacity after the expansion is complete. For infrastructure with a high and low option, this means
@@ -1198,7 +1225,8 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                                                         haw_river_intake_high_permitting_period * WEEKS_IN_YEAR,
                                                         high_haw_river_intake_expansion_bond);
 
-        /// Mar 2020: Permitting period set to 100, Hazen and Sawyer thinks this is no longer an option
+        /// Mar 2020: Permitting period set to 100, Hazen and Sawyer thinks this is no longer an option for Chatham
+        /// July 2020: Using these cost estimates/this project as potential Cary project
         LevelDebtServiceBond cape_fear_river_intake_bond(harnett_county_intake_id, 221.43, 25, 0.05, vector<int>(1, 0), 3);
         Intake cape_fear_river_intake("Cape Fear River Intake", harnett_county_intake_id, vector<Catchment *>(),
                 vector<int>(), 12.2 * 7, construction_time_interval,
@@ -1208,24 +1236,30 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         /// Feb 2020: additional new Pittsboro and Chatham projects:
         ///             (3abcd) staged buy-ins to Sanford WTP capacity
         ///                       (we aren't modeling Sanford, so include these as potential intakes)
+        /// July 2020: added "0.0" costs or allocations for below vectors because Cary is added as a
+        ///  utility to the "intake/wtp" but is not part of this expansion agreement
         double pittsboro_low_cost = 49.6*0.94; // in millions, capital cost ADJUSTED FROM 2018 TO 2014 DOLLARS
         double pittsboro_high_cost = (19.7+49.6)*0.94; // in millions, capital cost
         double chatham_low_cost = 7.9*0.94; // in millions, capital cost
         double chatham_high_cost = (3.3+7.9)*0.94; // in millions, capital cost
 
-        vector<double> sanford_expansion_low_costs = {chatham_low_cost, pittsboro_low_cost};
-        vector<double> sanford_expansion_high_costs = {chatham_high_cost, pittsboro_high_cost};
+        vector<double> sanford_expansion_low_costs = {0.0, chatham_low_cost, pittsboro_low_cost};
+        vector<double> sanford_expansion_high_costs = {0.0, chatham_high_cost, pittsboro_high_cost};
         vector<double> sanford_allocated_low_supply_expansions =
-                {added_capacity_sanford_wtp_intake_pittsboro_expansion_low,
+                {0.0,
+                 added_capacity_sanford_wtp_intake_pittsboro_expansion_low,
                  added_capacity_sanford_wtp_intake_chatham_expansion_low};
         vector<double> sanford_allocated_low_treatment_expansions =
-                {added_capacity_sanford_wtp_intake_pittsboro_expansion_low,
+                {0.0,
+                 added_capacity_sanford_wtp_intake_pittsboro_expansion_low,
                  added_capacity_sanford_wtp_intake_chatham_expansion_low};
         vector<double> sanford_allocated_high_supply_expansions =
-                {added_capacity_sanford_wtp_intake_pittsboro_expansion_high,
+                {0.0,
+                 added_capacity_sanford_wtp_intake_pittsboro_expansion_high,
                  added_capacity_sanford_wtp_intake_chatham_expansion_high};
         vector<double> sanford_allocated_high_treatment_expansions =
-                {added_capacity_sanford_wtp_intake_pittsboro_expansion_high,
+                {0.0,
+                 added_capacity_sanford_wtp_intake_pittsboro_expansion_high,
                  added_capacity_sanford_wtp_intake_chatham_expansion_high};
 
         vector<Bond *> sanford_low_expansion_bonds;
@@ -1264,6 +1298,43 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                 {sanford_wtp_intake_expansion_low_base_id, sanford_wtp_intake_expansion_high_base_id}, // connected projects
                 sanford_wtp_intake_high_permitting_period * WEEKS_IN_YEAR, sanford_high_expansion_bonds); // permit time, bonds
 
+        /// July 2020: Add project for Cary to purchase capacity share in Sanford WTP/"Intake"
+        /// it is a potential project for 10 MGD of capacity in their 2018 LRWRP but there are no cost options
+        /// so use relative cost sizes Chatham and Pittsboro assumed in their reports for this project
+        /// proportionately scaled to match the size of the allocation
+        /// (ex: Chatham's cost estimate is for 2 MGD, so multiply by 5 for Cary estimate)
+        double cary_stake_cost = (3.3+7.9)*0.94 * 5; // in millions, capital cost
+        double cary_stake_allocation = 10.0 * 7;
+
+        vector<double> sanford_cary_stake_costs = {cary_stake_cost, 0.0, 0.0};
+        vector<double> sanford_cary_stake_supply_expansions =
+                {cary_stake_allocation,
+                 0.0,
+                 0.0};
+        vector<double> sanford_cary_stake_treatment_expansions =
+                {cary_stake_allocation,
+                 0.0,
+                 0.0};
+
+        vector<Bond *> sanford_cary_stake_bonds;
+        uid = 0;
+        for (int u : sanford_partner_utility_ids) {
+            sanford_cary_stake_bonds.emplace_back(
+                    new LevelDebtServiceBond(cary_sanford_stake_id + uid,
+                                             sanford_cary_stake_costs[uid], 25, 0.05, vector<int>(1, 0)));
+            uid++;
+        }
+
+        AllocatedIntakeExpansion sanford_wtp_cary_stake_expansion(
+                "Sanford Cary Stake Expansion", cary_sanford_stake_id, sanford_wtp_dummy_intake_id, // name, id, parent id
+                cary_stake_allocation, // added supply cap
+                cary_stake_allocation, // added trmt cap
+                sanford_partner_utility_ids,
+                sanford_cary_stake_supply_expansions, // added allocs
+                sanford_cary_stake_treatment_expansions, // added trmt allocs
+                construction_time_interval, // construction time range
+                vector<int>{}, // connected projects
+                sanford_stake_cary_permitting_period * WEEKS_IN_YEAR, sanford_cary_stake_bonds); // permit time, bonds
 
         /// MAR 2020: REALLOCATION FROM USACE 2017 REPORT IS 17,300 AF (effectively flips fraction of conservation pool
         /// allocated for water quality and quantity to 58 and 42 percent, respectively)
@@ -1596,6 +1667,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         water_sources.push_back(&cape_fear_river_intake);
         water_sources.push_back(&haw_river_intake_expansion_low);
         water_sources.push_back(&haw_river_intake_expansion_high);
+        water_sources.push_back(&sanford_wtp_cary_stake_expansion);
 
         water_sources.push_back(&dummy_endpoint);
 
@@ -1635,14 +1707,15 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         vector<vector<int>> wjlwtp_remove_from_to_build_list;
 
+        /// July 2020: for Cary, concatenate demand and ROF triggers into single vector
+        vector<double> triggers_infra_cary = {cary_inftrigger, cary_inftrigger, caryupgrades * 7};
         vector<int> demand_triggered_infra_order_cary = {cary_wtp_upgrades_low_base_id};
-        vector<double> demand_infra_cary = {caryupgrades * 7};
 
         Utility cary((char *) "Cary", uid_cary, demand_cary, demand_projection_cary,
                      demand_n_weeks, cary_annual_payment, cary_fund_cap,
                      caryDemandClassesFractions,
-                     caryUserClassesWaterPrices, wwtp_discharge_cary, cary_inf_buffer, vector<int>(),
-                     demand_triggered_infra_order_cary, demand_infra_cary, discount_rate, bond_term[0], bond_rate[0],
+                     caryUserClassesWaterPrices, wwtp_discharge_cary, cary_inf_buffer, rof_triggered_infra_order_cary,
+                     demand_triggered_infra_order_cary, triggers_infra_cary, discount_rate, bond_term[0], bond_rate[0],
                      cary_demand_projection_forecast_length_years,
                      cary_demand_projection_historical_years_to_use,
                      cary_demand_projection_frequency_of_reprojection_years);
@@ -1730,7 +1803,10 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                         wjlwtp_variable_low_base_id,
                         wjlwtp_variable_high_base_id}, //Durham
                         {jordan_lake_id,
-                        cary_wtp_upgrades_low_base_id}, //Cary
+                        cary_wtp_upgrades_low_base_id,
+                        sanford_wtp_dummy_intake_id,
+                        cary_sanford_stake_id,
+                        harnett_county_intake_id}, //Cary
                         {falls_lake_id,
                         wheeler_benson_id,
                         jordan_lake_id,
@@ -1743,7 +1819,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                         wjlwtp_variable_low_base_id,
                         wjlwtp_variable_high_base_id},  //Raleigh
                         {jordan_lake_id,
-                        harnett_county_intake_id,
                         sanford_wtp_dummy_intake_id,
                         sanford_wtp_intake_expansion_low_base_id,
                         sanford_wtp_intake_expansion_high_base_id,

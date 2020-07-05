@@ -196,7 +196,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
     double western_wake_treatment_plant_rank_raleigh_low = 1.1; // 20
     double western_wake_treatment_plant_rank_raleigh_high = 1.1; // 21
 
-    double caryupgrades = 0; //June 2020: demand triggers set at 0 to immediately force Cary WTP exp by 2018
+    double caryupgrades = -1; // July 2020: demand triggers set at -1 to immediately force Cary WTP exp by 2018
     double western_wake_treatment_plant_owasa_frac = vars[34];
     double western_wake_treatment_frac_durham = vars[35];
     double western_wake_treatment_plant_raleigh_frac = 0;

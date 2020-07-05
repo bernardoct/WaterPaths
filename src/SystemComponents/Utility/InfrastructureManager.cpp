@@ -386,10 +386,7 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
     /// infrastructure option in the list and, if not already under
     /// construction, starts building it.
     /// July 2020: DEMAND STATEMENT PUT IN FRONT OF ROF STATEMENT - DEMAND-TRIGGERED PROJECTS GO FIRST
-    if (!demand_infra_construction_order.empty() && !under_construction_any &&
-        week > WEEKS_IN_YEAR) { // if there is anything to be built
-
-
+    if (!demand_infra_construction_order.empty() && !under_construction_any) { // if there is anything to be built
         /// Selects next water source whose permitting period is passed.
         int next_construction = NON_INITIALIZED;
         for (int &id : demand_infra_construction_order) {
@@ -401,14 +398,22 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
         }
         /// Checks if demand threshold for next infrastructure in line has been
         /// reached and if there is already infrastructure being built.
+        /// July 2020: note that past_year_average_demand is 0 for year 0, so if a demand project is
+        /// meant to be triggered immediately, the trigger should be negative
         if (next_construction != NON_INITIALIZED &&
-            past_year_average_demand >infra_construction_triggers[next_construction]) {
+            past_year_average_demand > infra_construction_triggers[next_construction]) {
             new_infra_triggered = next_construction;
 
             /// Begin construction.
             beginConstruction(week, next_construction);
         }
     }
+
+    /// July 2020: double-check whether a project has been triggered so that two do not
+    /// go under construction simultaneouslyh
+    under_construction_any = (find(under_construction.begin(),
+                                   under_construction.end(), true) !=
+                              under_construction.end());
 
     /// Checks whether the long-term ROF has been exceeded for the next
     /// infrastructure option in the list and, if not already under

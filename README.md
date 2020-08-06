@@ -200,9 +200,9 @@ treatment_capacity (double)
 |---------------------------------------|----------------------------------|----------------------------------------------------------------------|
 | name                                  | string                           | Name of this utility                                                 |
 | demands                               | filename                         | File with demand data                                                |
-| number_of_week_demands                | int                              |  ??                                                                    |
+| number_of_week_demands                | int                              | Number of demand weeks                                                                    |
 | percent_contingency_fund_contribution | double                           | Percent of anual volumentric revenue that is contributed to a reserve fund.        |
-| typesMonthlyDemandFraction            | filename                         | ?? |
+| typesMonthlyDemandFraction            | filename                         | Types of water uses |
 | typesMonthlyWaterPrice                | filename                         | Corresponding water price for each category.  |
 | wwtp_discharge_rule                   | filename Source,Source,... | Rule dictating wastewater return flow.    |
 | demand_buffer                         | double                           | Demand buffer for this utility                                       |
@@ -256,9 +256,9 @@ where `shift` is the integer representing associated reservoir table shift.
 | apply_to_utilities         | Utility,Utility,... | Which utility (or utilities) this restriction policy is to be applied to |
 | stage_multipliers          | double,double,...   | Demand reductions (percentage of unrestricted demand) associated with each restriction stage. |
 | stage_triggers             | double,double,...   | Short term ROF restrictions triggers                                     |
-| typesMonthlyDemandFraction | filename            | ?? |
-| typesMonthlyWaterPrice     | filename            | ?? |
-| priceMultipliers           | filename            | ?? |
+| typesMonthlyDemandFraction | filename            | Types of water uses |
+| typesMonthlyWaterPrice     | filename            | Types of water prices |
+| priceMultipliers           | filename            | Multipliers on water price |
 
 ### [TRANSFERS POLICY]
 | Parameter                | Value Type          | Description                                                      |
@@ -266,7 +266,7 @@ where `shift` is the integer representing associated reservoir table shift.
 | apply_to_utilities       | Utility,Utility,... | The utility (or utilities) that are the buyers for this transfer |
 | source_utility_id        | Utility             | Which utility is the source for this transfer policy             |
 | transfer_water_source_id | Source              | Which source the transfers utilize                               |
-| source_treatment_buffer  | double              | ?? |
+| source_treatment_buffer  | double              | Buffer for source treatment |
 | pipe_transfer_capacities | double,double,...   | Capacity of inter-connections between utilities. |
 | buyers_transfer_triggers | double,double,...   | Short term ROF triggers for transfers                            |
 
@@ -276,7 +276,7 @@ where `shift` is the integer representing associated reservoir table shift.
 | apply_to_utilities | Utility,Utility,... | The utility (or utilities) that are the buyers for this transfer |
 | insurance_triggers | double,double,...   | Short term ROF triggers for this drought insurance policy        |
 | insurance_premium  | double              | The premium on this insurance policy                             |
-| fixed_payouts      | double,double,...   | ?? |
+| fixed_payouts      | double,double,...   | Amount of fixed payouts from insurance |
 
 ### [FIXED FLOW RESERVOIR CONTROL RULE]
 | Parameter            | Value Type          | Description                                |

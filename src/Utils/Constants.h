@@ -25,7 +25,7 @@ namespace Constants {
 //#define NUM_DEC_VAR 57;
 //    const int NUM_DEC_VAR = 57; // infrastructure turned on
 //    const int NUM_DEC_VAR = 30; // infrastructure turned off
-    const int NUM_DEC_VAR = 67; // new utilities plus infrastructure. June 2020: update, some Cary DVs removed
+    const int NUM_DEC_VAR = 70; // new utilities plus infrastructure. June 2020: update, some Cary DVs removed, Aug 2020: Cary DVs added again
 
     const std::string DEFAULT_DATA_DIR = "TestFiles" + BAR;
     const std::string DEFAULT_OUTPUT_DIR = "output" + BAR;

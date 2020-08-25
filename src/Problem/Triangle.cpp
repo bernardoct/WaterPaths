@@ -51,7 +51,7 @@ void Triangle::setProblemDefinition(BORG_Problem &problem)
     BORG_Problem_set_bounds(problem, 7, 0.05, 0.1);  // OWASA JLA
     BORG_Problem_set_bounds(problem, 8, 0.1, 0.35); // Durham JLA
     BORG_Problem_set_bounds(problem, 9, 0.39, 0.6); // Cary JLA
-    BORG_Problem_set_bounds(problem, 10, 0.0, 0.1);  // Durham reserver fund cont
+    BORG_Problem_set_bounds(problem, 10, 0.0, 0.1);  // Durham reserve fund cont (annual payment)
     BORG_Problem_set_bounds(problem, 11, 0.0, 0.1);  // OWASA reserve fund cont
     BORG_Problem_set_bounds(problem, 12, 0.0, 0.1);  // Raleigh reserve fund cont
     BORG_Problem_set_bounds(problem, 13, 0.0, 0.1);  // cary reserve fund cont
@@ -84,7 +84,7 @@ void Triangle::setProblemDefinition(BORG_Problem &problem)
     BORG_Problem_set_bounds(problem, 40, 0.001, 1.0); // pitt transfer trigger
     BORG_Problem_set_bounds(problem, 41, 0.0, 0.12); // pitt JLA
     BORG_Problem_set_bounds(problem, 42, 0.0, 0.1); // pitt annual payment
-    BORG_Problem_set_bounds(problem, 43, 0.0, 1.0); // pitt in trigger
+    BORG_Problem_set_bounds(problem, 43, 0.001, 1.0); // pitt inf trigger
     BORG_Problem_set_bounds(problem, 44, 0.0, 20.0); // pittsboro inf buff
     BORG_Problem_set_bounds(problem, 45, 0.001, 1.0); // chatham restriction trigger
     BORG_Problem_set_bounds(problem, 46, 0.001, 1.0); // chatham transfer trigger
@@ -108,7 +108,9 @@ void Triangle::setProblemDefinition(BORG_Problem &problem)
     BORG_Problem_set_bounds(problem, 64, 1.0, 10.0);  // forecast length
     BORG_Problem_set_bounds(problem, 65, 1.0, 10.0);  // historical range
     BORG_Problem_set_bounds(problem, 66, 1.0, 5.0);  // frequency of projection
-    
+    BORG_Problem_set_bounds(problem, 67, 0.001, 1.0);  // Cary inf trigger
+    BORG_Problem_set_bounds(problem, 68, 0.0, 20.0);  // Cary inf buffer
+    BORG_Problem_set_bounds(problem, 69, 0.0, 1.0);  // Cary sanford wtp capacity stake rank
 	
 	
     // Set epsilons for objectives

@@ -143,6 +143,18 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
     try {
 	//throw invalid_argument("Test error");
 
+	// sept 2020: add this for borg testing to catch seg fault
+	// should ONLY use with borg constrained to do 1 fe at a time
+	//FIXME:REMOVE THIS WHEN NOT DEBUGGING BORG
+    string error_file = "diagnostic_output/sol_error_rank_.csv";
+    ofstream sol;
+    sol.open(error_file.c_str());
+    for (int i = 0; i < NUM_DEC_VAR; ++i) {
+        sol << vars[i] << ",";
+    }
+    sol << flush;
+    sol.close();
+
     /// July 2019: added Pittsboro and Chatham County triggers, mapped to OWASA levels for now
 
     double Durham_restriction_trigger = vars[0];

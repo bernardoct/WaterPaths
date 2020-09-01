@@ -350,7 +350,7 @@ MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, dou
                 realization_model->getContinuity_utilities(),
                 realization);
 
-//        try {
+        try {
             //double start = omp_get_wtime();
             for (int w = 0; w < (int) total_simulation_time; ++w) {
 //                cout << w << endl;
@@ -398,14 +398,14 @@ MasterDataCollector * Simulation::runFullSimulation(unsigned long n_threads, dou
 //#pragma omp critical
 	    //printProgress((double) master_data_collector->getRealizations_created() / (double) realizations_to_run_unique.size());
 
-//        } catch (...) {
-//#pragma omp atomic
-//            ++had_catch;
-//            error_m += to_string(realization) + " ";
-//            error_file_name += "_" + to_string(realization);
-//            error_file_content += to_string(realization) + ",";
-//            master_data_collector->removeRealization(realization);
-//        }
+        } catch (...) {
+#pragma omp atomic
+            ++had_catch;
+            error_m += to_string(realization) + " ";
+            error_file_name += "_" + to_string(realization);
+            error_file_content += to_string(realization) + ",";
+            master_data_collector->removeRealization(realization);
+        }
 
         delete realization_model;
         delete rof_model;

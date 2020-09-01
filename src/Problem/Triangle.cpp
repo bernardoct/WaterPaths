@@ -140,7 +140,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
     // ===================== SET UP DECISION VARIABLES  =====================
 
     Simulation *s = nullptr;
-//    try {
+    try {
 	//throw invalid_argument("Test error");
 
     /// July 2019: added Pittsboro and Chatham County triggers, mapped to OWASA levels for now
@@ -2108,10 +2108,10 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
     }
     s = nullptr;
 #endif
-//    } catch (const std::exception& e) {
-//        simulationExceptionHander(e, s, objs, vars);
-//	return 1;
-//    }
+    } catch (const std::exception& e) {
+        simulationExceptionHander(e, s, objs, vars);
+	return 1;
+    }
 
         delete s;
 
@@ -2120,7 +2120,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
 int Triangle::simulationExceptionHander(const std::exception &e, Simulation *s,
                                          double *objs, const double *vars) {
-        int num_dec_var = 56;
+        int num_dec_var = 70;
 //        printf("Exception called during calculations. Decision variables are below:\n");
         ofstream sol;
 	int world_rank;

@@ -541,6 +541,8 @@ void MasterDataCollector::performBootstrapAnalysis(
                     (ObjectivesCalculator::calculatePeakFinancialCostsObjective(u, bootstrap_sample_set));
             objectives[set].push_back
                     (ObjectivesCalculator::calculateWorseCaseCostsObjective(u, bootstrap_sample_set));
+            objectives[set].push_back
+                    (ObjectivesCalculator::calculateUnitTotalCostObjective(u, bootstrap_sample_set));
         }
     }
 

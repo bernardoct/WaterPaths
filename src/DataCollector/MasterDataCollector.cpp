@@ -625,15 +625,26 @@ void MasterDataCollector::readOrCreateBSSamples(int sol_id, int n_sets, int n_sa
 
     int min = 0;
     int max = (int) n_realizations - 1;
-    uniform_int_distribution<int> uni(min, max); // guaranteed unbiased
-    string line;
+
+    // Sept 2020: convert to sampling without replacement using shuffle
+    vector<int> realizations_to_sample;
+    for (int i = min; i <= max; i++)
+        realizations_to_sample.push_back(i);
+
+//    uniform_int_distribution<int> uni(min, max); // guaranteed unbiased
+
     if (!bootstrap_samples.empty()) {
 	    bootstrap_sample_sets = bootstrap_samples;
     } else {
         for (int set = 0; set < n_sets; ++set) {
             // Generate one set of bootstrapped realizations, if none was specified.
+            // Sept 2020: go in order through realizations_to_sample until the bootstrap
+            //  sample is filled. realizations_to_sample should be shuffled
+            //  so this amounts to random selection of realizations without replacement/duplication
+            int j = 0;
+            shuffle(realizations_to_sample.begin(), realizations_to_sample.end(), rng);
             for (int &s : bootstrap_sample_sets[set]) {
-                s = uni(rng);
+                s = realizations_to_sample[j]; j += 1;
             }
         }
     }

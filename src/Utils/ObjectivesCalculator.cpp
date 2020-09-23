@@ -339,14 +339,15 @@ double ObjectivesCalculator::calculateUnitTotalCostObjective(const vector<Utilit
     // THIS IS IN UNITS OF MILLIONS OF DOLLARS PER MILLION GALLONS (COMVERTED TO $/kgal)
 
     // Sept 2020: sort costs and then find the 50th percentile (median) unit cost
-    sort(realization_unit_cost.begin(),
-         realization_unit_cost.end());
+//    sort(realization_unit_cost.begin(),
+//         realization_unit_cost.end());
 
-    double obj_value = realization_unit_cost.at((unsigned long) floor(MEDIAN_PERCENTILE * n_realizations));
+//    double obj_value = realization_unit_cost.at((unsigned long) floor(UNIT_COST_PERCENTILE * n_realizations));
 
     // Sept 2020: comment out old code that was for taking the average
-//    return accumulate(realization_unit_cost.begin(), realization_unit_cost.end(), 0.0) / n_realizations * 1000;
-    return obj_value;
+    //  ACTUALLY KEEP IT THIS WAY, MEDIAN AND 90TH PERCENTILES AREN'T ANY MORE USEFUL
+    return accumulate(realization_unit_cost.begin(), realization_unit_cost.end(), 0.0) / n_realizations * 1000;
+//    return obj_value;
 }
 
 double ObjectivesCalculator::calculateNetPresentCostInfrastructureObjectiveForVariableDebtService(

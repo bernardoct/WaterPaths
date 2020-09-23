@@ -126,7 +126,7 @@ namespace Constants {
     const int COLUMN_PRECISION = 4;
 
     const double WORSE_CASE_COST_PERCENTILE = 0.99;
-    const double MEDIAN_PERCENTILE = 0.50;
+    const double UNIT_COST_PERCENTILE = 0.90;
 
     const double INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD = 1. / 75;
     const int NO_OF_INSURANCE_STORAGE_TIERS = (int) std::round(1. / INSURANCE_SHIFT_STORAGE_CURVES_THRESHOLD);

@@ -156,7 +156,7 @@ double ObjectivesCalculator::calculatePeakFinancialCostsObjective(
     double realizations_year_gross_revenue = 1e-6;
     double realizations_year_insurance_contract_cost = 0;
     vector<double> year_financial_costs;
-    vector<double> realization_financial_costs(utility_data.size(), 0);
+    vector<double> realization_financial_costs;
 
     /// Creates a table with years that failed in each realization.
     int y;
@@ -193,10 +193,10 @@ double ObjectivesCalculator::calculatePeakFinancialCostsObjective(
             }
         }
         /// store highest year cost as the cost financial cost of the realization.
-        realization_financial_costs[r] =
-                *max_element(year_financial_costs.begin(),
-                             year_financial_costs.end());
-        if (realization_financial_costs[r] > 1e10) {
+        realization_financial_costs.push_back(*max_element(year_financial_costs.begin(),
+                                                           year_financial_costs.end()));
+        if (*max_element(year_financial_costs.begin(),
+                         year_financial_costs.end()) > 1e10) {
             printf("Absurdly high financial cost in realization %lu.\n", r);
         }
     }

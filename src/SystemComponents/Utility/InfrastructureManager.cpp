@@ -410,7 +410,7 @@ int InfrastructureManager::infrastructureConstructionHandler(double long_term_ro
     }
 
     /// July 2020: double-check whether a project has been triggered so that two do not
-    /// go under construction simultaneouslyh
+    /// go under construction simultaneously
     under_construction_any = (find(under_construction.begin(),
                                    under_construction.end(), true) !=
                               under_construction.end());

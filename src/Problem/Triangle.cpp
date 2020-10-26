@@ -718,17 +718,6 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                         added_capacity_haw_river_intake_expansion_high);
 
         /// Feb 2020: two levels of Sanford WTP expansion possible for both Pittsboro and Chatham
-        double added_capacity_sanford_wtp_intake_pittsboro_expansion_low = 3.0 * 7;
-        double added_capacity_sanford_wtp_intake_pittsboro_expansion_high = 6.0 * 7;
-        added_capacity_sanford_wtp_intake_pittsboro_expansion_high =
-                checkAndFixInfraExpansionHighLowOrder(
-                        &rof_triggered_infra_order_pittsboro,
-                        &rofs_infra_pittsboro,
-                        sanford_wtp_intake_expansion_low_base_id,
-                        sanford_wtp_intake_expansion_high_base_id,
-                        added_capacity_sanford_wtp_intake_pittsboro_expansion_low,
-                        added_capacity_sanford_wtp_intake_pittsboro_expansion_high);
-
         double added_capacity_sanford_wtp_intake_chatham_expansion_low = 1.0 * 7;
         double added_capacity_sanford_wtp_intake_chatham_expansion_high = 1.0 * 7;
         added_capacity_sanford_wtp_intake_chatham_expansion_high =
@@ -739,6 +728,29 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
                         sanford_wtp_intake_expansion_high_base_id,
                         added_capacity_sanford_wtp_intake_chatham_expansion_low,
                         added_capacity_sanford_wtp_intake_chatham_expansion_high);
+
+        /// Oct 2020: make exception for Chatham and Pittsboro here, so that one utility
+        /// won't remove the project from its build list if the rank of the low expansion is
+        /// lower than that of the high expansion when that isn't true for the partner.
+        /// This results in a low expansion happening for one utility but then not being triggered
+        /// for the other. This appears to only happen when Chatham does the low expansion
+        /// but Pittsboro doesn't react, so now skip the step intervene to remove the low expansion
+        /// from Pittsboro's build order
+        double added_capacity_sanford_wtp_intake_pittsboro_expansion_low = 3.0 * 7;
+        double added_capacity_sanford_wtp_intake_pittsboro_expansion_high = 6.0 * 7;
+//        added_capacity_sanford_wtp_intake_pittsboro_expansion_high =
+//                checkAndFixInfraExpansionHighLowOrder(
+//                        &rof_triggered_infra_order_pittsboro,
+//                        &rofs_infra_pittsboro,
+//                        sanford_wtp_intake_expansion_low_base_id,
+//                        sanford_wtp_intake_expansion_high_base_id,
+//                        added_capacity_sanford_wtp_intake_pittsboro_expansion_low,
+//                        added_capacity_sanford_wtp_intake_pittsboro_expansion_high);
+
+
+
+
+
 
         /// July 2020: Cary also considering purchasing stake in Sanford's WTP/intake
         /// but this is considered separately from Pittsboro and Chatham Co. agreement(s)
@@ -1150,7 +1162,7 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
 
         /// Sanford WTP - dummy Cape Fear River "Intake" with zero capacity, can be expanded later
         /// July 2020: Cary also wants in on this - include them
-        vector<int> sanford_partner_utility_ids = {2, 4, 5}; // Cary, Chatham and Pittsboro
+        vector<int> sanford_partner_utility_ids = {2, 5, 4}; // Cary, Chatham and Pittsboro
         vector<double> sanford_partner_capacity_allocation_fractions = {0.0, 0.0, 0.0};
         vector<double> sanford_partner_treatment_capacity_allocation_fractions = {0.0, 0.0, 0.0};
         AllocatedIntake sanford_wtp_dummy_intake("Sanford WTP Dummy Intake", sanford_wtp_dummy_intake_id,
@@ -1873,6 +1885,10 @@ int Triangle::functionEvaluation(double *vars, double *objs, double *consts) {
         table_base_storage_shift[uid_pittsboro][wjlwtp_variable_high_base_id] = jl_supply_capacity*Pittsboro_JLA;
         table_base_storage_shift[uid_pittsboro][haw_river_intake_expansion_low_id] = 10000.;
         table_base_storage_shift[uid_pittsboro][haw_river_intake_expansion_high_id] = 10000.;
+        table_base_storage_shift[uid_pittsboro][sanford_wtp_intake_expansion_low_base_id] = added_capacity_sanford_wtp_intake_pittsboro_expansion_low;
+        table_base_storage_shift[uid_pittsboro][sanford_wtp_intake_expansion_high_base_id] = added_capacity_sanford_wtp_intake_pittsboro_expansion_high;
+        table_base_storage_shift[uid_chatham][sanford_wtp_intake_expansion_low_base_id] = added_capacity_sanford_wtp_intake_chatham_expansion_low;
+        table_base_storage_shift[uid_chatham][sanford_wtp_intake_expansion_high_base_id] = added_capacity_sanford_wtp_intake_chatham_expansion_high;
 
         auto treatment_demand_buffer_shift = vector<vector<double>>(6, vector<double>(35, 0.));
 

@@ -11,7 +11,7 @@ export OMP_NUM_THREADS=16
 cd $SLURM_SUBMIT_DIR
 #module load valgrind/3.15.0
 #valgrind --tool=callgrind --instr-atstart=no ./waterpaths -I Tests/test_input_file.wp
-#./waterpaths -I Tests/test_input_file.wp
-./waterpaths -I Tests/test_input_file_dv_file.wp
+./waterpaths -I Tests/test_input_file.wp
+#./waterpaths -I Tests/test_input_file_dv_file.wp
 
 

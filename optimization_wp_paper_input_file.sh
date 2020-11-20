@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -n 48 -N 16
+#SBATCH -n 24 -N 8
 #SBATCH --time=140:00:00
 #SBATCH --job-name=borg_input_file
 #SBATCH --output=output/borg_input_file.out
@@ -23,4 +23,4 @@ module load valgrind/3.15.0
 # mpirun -np 3 valgrind --tool=memcheck --leak-check=full --track-origins=yes --xml=yes --xml-file=valgrind.xml ./waterpaths -I Tests/test_input_file_borg.wp
 
 # Production run optimization with WaterPaths.
-mpirun -np 48 ./waterpaths -I Tests/test_input_file_borg.wp
+mpirun -np 24 ./waterpaths -I Tests/test_input_file_borg.wp

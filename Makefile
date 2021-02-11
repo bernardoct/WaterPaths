@@ -8,8 +8,8 @@ OBJECTS=$(SOURCES:.cpp=.o)
 TARGET=waterpaths
 EXECUTABLE=$(TARGET)
 
-LIB_DIR=./lib -L../mpiP 
-LIBS=-static-libasan -lm -lmpiP -lbfd -liberty -lunwind
+LIB_DIR=./lib# -L../mpiP 
+LIBS=-static-libasan -lm# -lmpiP -lbfd -liberty -lunwind
 
 all: $(SOURCES) $(TARGET)
 

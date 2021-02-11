@@ -4,16 +4,16 @@
 ########################################################################
 
 [RUN PARAMETERS]
-n_realizations 64
+n_realizations 100
 n_weeks 2344
 rdm_utilities /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/rdm_utilities_test_problem_opt.csv 
 rdm_water_sources /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/rdm_water_sources_test_problem_opt.csv 
 rdm_dmps /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/TestFiles/rdm_dmp_test_problem_opt.csv
 # number of threads should not exceede twice the number of cores available.
-n_threads 4
+n_threads 5
 rof_tables_dir /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/rof_tables_test_problem/
 # change "import" below to "generate" to generate ROF tables.
-use_rof_tables generate
+use_rof_tables import
 solutions_file /home/fs02/pmr82_0001/bct52/wp_test/WaterPaths/reference_final.reference
 solutions_to_run 0
 seed 0

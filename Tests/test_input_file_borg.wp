@@ -19,7 +19,7 @@ output_dir /scratch/bct52/output/
 use_rof_tables import
 seed 0
 #optimize 75000 2500
-optimize 75 2500
+optimize 5000 2500
 
 [DATA TO LOAD]
 # Files with "*" are always fully loaded instead of having on n_realizations lines loaded. Add "*" to any file that's not a demand, inflow or evaporation time series.

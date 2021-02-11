@@ -295,6 +295,7 @@ int main(int argc, char *argv[]) {
         char output_directory[256], output_file_name[256];
         char io_directory[256];
         char runtime[256];
+        char timing[256];
         FILE *outputFile = nullptr;
 
         sprintf(output_directory, "%s", system_io.c_str());
@@ -308,13 +309,17 @@ int main(int argc, char *argv[]) {
         // sprintf(runtime, "%sNC_runtime_MM_S%d_N%lu_M%%d.runtime", output_directory,
         sprintf(runtime, "%sNC_runtime_MS_S%d_N%lu.runtime", output_directory,
                 seed, nfe); // runtime
+
+        int rank; // different seed on each processor
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+        sprintf(timing, "%sNC_runtime_MS_S%d_N%lu_R%d.timing", output_directory,
+                seed, nfe, rank); // runtime
         printf("Runtime files will be in %s.\n", runtime);
         // path (make sure this exists)
 
         BORG_Algorithm_output_runtime(runtime);
-
-        int rank; // different seed on each processor
-        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        BORG_Algorithm_output_timing(timing);
 
         //int rank; // different seed on each processor
         //MPI_Comm_rank(MPI_COMM_WORLD, &rank);

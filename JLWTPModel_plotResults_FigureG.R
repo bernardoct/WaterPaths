@@ -27,13 +27,15 @@ for (r in 1:n_reals) {
 }
 
 # read demands from one utility for an example - Durham
-DD = read.csv(paste("synthetic_demands/", "Durham", "_synthetic_demands_sinusoidal.csv", sep = ""), header = FALSE)
+DDA = read.csv(paste("synthetic_demands/", "Durham", "_synthetic_demands_sinusoidal.csv", sep = ""), header = FALSE)
 DP = read.csv(paste("annual_demand_projections_avgMGD/", "Durham", "_annual_demand_projections_MGW.csv", sep = ""), header = FALSE)
 DP = as.numeric(as.character(DP$V1)); DP = as.data.frame(DP[1:48]) # trim to 48 years
 
 # for paper - make explanatory figure with 3 example realizations of demand
-example_realizations = c(308,164) # low, high
-DD = DD[example_realizations,]
+sorted_LHS_to_find_example = as.data.frame(LHS_parameter_samples[1:500,])
+sorted_LHS_to_find_example$R = 1:500
+example_realizations = c(365,219) # low, high
+DD = DDA[example_realizations,]
 Ms = multipliers[example_realizations,]
 
 # combine data for plotting
@@ -59,8 +61,8 @@ DWM = reshape2::melt(DW, id = "Week")
 #DDM = DDM[which(as.numeric(as.character(DDM$Week)) %in% seq(1, max(DDM$Week), by = 13)),]
 #MM = MM[which(as.numeric(as.character(MM$Week)) %in% seq(1, max(MM$Week), by = 13)),]
 
-DDM$Type = "Modeled (Weekly)"; DPM$Type = "Projected (Annual)"; MM$Type = "Modeled (Weekly)"
-DWM$Type = "Modeled (Weekly)"
+DDM$Type = "Modeled (Annual Average)"; DPM$Type = "Projected (Annual)"; MM$Type = "Modeled (Annual Average)"
+DWM$Type = "Modeled (Annual Average)"
 DDM$Set = "B) With Multiplier"; DPM$Set = "A) Without Multiplier"; 
 MM$Set = "A) Without Multiplier"
 DWM$Set = "A) Without Multiplier"
@@ -69,6 +71,33 @@ DPM2 = DPM; DPM2$Set = "B) With Multiplier"
 
 DPM$Set2 = "Demand (MGW)"; DPM2$Set2 = "Demand (MGW)"; DDM$Set2 = "Demand (MGW)"; DWM$Set2 = "Demand (MGW)"
 MM$Set2 = "Sinusoidal Factor"
+
+# aggregate annually
+DWM$Year = rep(rep(1:48, each = 52),2)
+DDM$Year = rep(rep(1:48, each = 52),2)
+DWMA = aggregate(DWM$value, by = list(DWM$Type, DWM$Set, DWM$Set2, DWM$variable, DWM$Year), FUN = mean)
+colnames(DWMA) = c("Type", "Set", "Set2", "variable", "Year", "value")
+
+DDMA = aggregate(DDM$value, by = list(DDM$Type, DDM$Set, DDM$Set2, DDM$variable, DDM$Year), FUN = mean)
+colnames(DDMA) = c("Type", "Set", "Set2", "variable", "Year", "value")
+
+DDM = DDMA; DWM = DWMA
+DDM$Week = DDM$Year * 52 - 51
+DWM$Week = DWM$Year * 52 - 51
+
+# reorder
+DDM = data.frame(Week = DDM$Week,
+                 variable = DDM$variable, 
+                 value = DDM$value,
+                 Type = DDM$Type, 
+                 Set = DDM$Set,
+                 Set2 = DDM$Set2)
+DWM = data.frame(Week = DWM$Week,
+                 variable = DWM$variable, 
+                 value = DWM$value,
+                 Type = DWM$Type, 
+                 Set = DWM$Set,
+                 Set2 = DWM$Set2)
 
 #DDM$Sizer = 0.4; DPM$Sizer = 1; MM$Sizer = 0.4
 #DDM$Alpha = 1; DPM$Alpha = 1; MM$Alpha = 1
@@ -83,20 +112,24 @@ AM$value = as.numeric(as.character(AM$value))
 
 
 # plot the figure
-AMT = AM[which(AM$Week < 2392 & AM$Type != "Projected (Annual)"),]
+AMT = AM[which(AM$Week < 2392 & AM$Type != "Projected (Annual)" & AM$Set2 != "Sinusoidal Factor"),]
+AMS = AM[which(AM$Week < 2392 & AM$Type != "Projected (Annual)" & AM$Set2 == "Sinusoidal Factor"),]
 AMP = AM[which(AM$Week < 2392 & AM$Type == "Projected (Annual)"),]
 f_color_durham = wes_palette(n = 6, name = "IsleofDogs1")[3]
 G = ggplot() + 
   geom_line(data = AMT, aes(x = Week/52 + 2015, y = value, 
                             group = variable, linetype = Type, color = Realization), 
             size = 0.65) + 
+  geom_line(data = AMS, aes(x = Week/52 + 2015, y = value, 
+                            group = variable, linetype = Type, color = Realization), 
+            size = 0.65) + 
   geom_line(data = AMP, aes(x = Week/52 + 2015, y = value, 
                             group = variable, linetype = Type, color = Realization), 
             size = 2) +
   facet_grid(Set2~Set, scales = "free_y", drop = TRUE, switch = "y") + 
-  guides(size = FALSE, alpha = FALSE, color = FALSE) + 
+  guides(size = FALSE, alpha = FALSE) + 
   scale_color_manual(values = c("black", "grey50", "blue3")) + 
-  theme(legend.position = c(0.03, 0.97), legend.justification = c(0,1),
+  theme(legend.position = c(0.97, 0.15), legend.justification = c(1,0),
         legend.background = element_rect(fill = "white", colour = "black"),
         legend.text = element_text(size = 12, face = "bold"),
         plot.background = element_rect(fill = "transparent", color = NA),
@@ -113,7 +146,7 @@ G = ggplot() +
         panel.grid.minor = element_blank()) +
   xlab("Year")
 setwd("C:/Users/dgorelic/OneDrive - University of North Carolina at Chapel Hill/UNC/Research/WSC/Coding/WP/BorgOutput")
-ggsave("results_figures/G.png", dpi = 1200, unit = "in", width = 7, height = 7, bg = "transparent")
+ggsave("results_figures/G_v2.png", dpi = 1200, unit = "in", width = 7, height = 7, bg = "transparent")
 
 
 

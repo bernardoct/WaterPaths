@@ -7,11 +7,11 @@ rm(list=ls())
 library(dplyr); library(wesanderson); library(ggplot2)
 setwd("C:/Users/dgorelic/OneDrive - University of North Carolina at Chapel Hill/UNC/Research/WSC/Coding/WP/BorgOutput")
 
-Pareto = read.csv("combined_pareto_front_by_formulation_withDVs_NFE50000.csv", header = TRUE)
+Pareto = read.csv("combined_pareto_front_by_formulation_withDVs_mixedNFE.csv", header = TRUE)
 Pareto$Set = "Pareto"; Pareto$Solution = 1:nrow(Pareto)
 satisficing_sols = which(as.numeric(as.character(Pareto$Rel)) <= 0.01 & 
                            as.numeric(as.character(Pareto$RF)) <= 0.2 & 
-                           as.numeric(as.character(Pareto$WCC)) <= 0.1)
+                           as.numeric(as.character(Pareto$WCC)) <= 0.05)
 
 # after running Satisficing_DVs.csv with WaterPaths (using flag -p false) to get utility objective values
 # collect them here from each formulation's set for additional plotting (sim_objectives_run.sh on Cube)
@@ -21,9 +21,9 @@ satisficing_sols = which(as.numeric(as.character(Pareto$Rel)) <= 0.01 &
 #                         sols 3901-4828 are F2 (remember R index "Solutions" starting at 1, not 0)
 # NOTE: because i got the index wrong on these by one for cube runs, will be manually 
 #       adjusting files to add sol 1094 to F1 file and sol 3901 to F2 file
-f0_sols = "reeval_sim_objectives/Objectives_sols0_1094.csv"
-f1_sols = "reeval_sim_objectives/Objectives_sols1094_3901.csv"
-f2_sols = "reeval_sim_objectives/Objectives_sols3901_4829.csv"
+f0_sols = "reeval_sim_objectives/Objectives_sols0_to_3082.csv"
+f1_sols = "reeval_sim_objectives/Objectives_sols3082_to_28597.csv"
+f2_sols = "reeval_sim_objectives/Objectives_sols28597_to_29654.csv"
 files_to_read = c(f0_sols, f1_sols, f2_sols)
 utilities = c("OWASA", "Durham", "Cary", "Raleigh", "Chatham", "Pittsboro")
 formulations = c("3) No Agreement", "1) Fixed Capacity", "2) Adjustable Capacity"); f = 1

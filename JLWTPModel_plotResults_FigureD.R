@@ -77,11 +77,27 @@ DVnames = c('ROF Trigger - Durham Restrictions',
             'Demand Buffer - Cary', 
             'Infrastructure Rank - Sanford WTP Expansion Cary')
 
-Pareto = read.csv("combined_pareto_front_by_formulation_withDVs_NFE50000.csv", header = TRUE)
+Pareto = read.csv("combined_pareto_front_by_formulation_withDVs_mixedNFE.csv", header = TRUE)
 Pareto$Set = "Pareto"; Pareto$Solution = 1:nrow(Pareto)
+satisficing_sols = which(as.numeric(as.character(Pareto$Rel)) <= 0.008 & 
+                           as.numeric(as.character(Pareto$RF)) <= 0.05 & 
+                           as.numeric(as.character(Pareto$WCC)) <= 0.04)
+Satisficing = Pareto[satisficing_sols,]
+
+# identify example solutions for paper
+# this set finds only 1 F0, and 3 F2 solutions
+# the F1 and F2 solutions are picked to have similar WJLWTP allocations
+# F0: 698
+# F1: 19071
+# F2: 29212
+summary(as.factor(Satisficing$group))
+temp = Satisficing[,c(1:7,42,43,59,60)]
+f0_sim = temp[which.min(temp[,1]),2] # index refers to full pareto reference set
+
+# continue with actual satisficing subset
 satisficing_sols = which(as.numeric(as.character(Pareto$Rel)) <= 0.01 & 
                            as.numeric(as.character(Pareto$RF)) <= 0.2 & 
-                           as.numeric(as.character(Pareto$WCC)) <= 0.1)
+                           as.numeric(as.character(Pareto$WCC)) <= 0.05)
 Satisficing = Pareto[satisficing_sols,]
 Satisficing$Set = "Satisficing"; Satisficing$Solution = 1:nrow(Satisficing)
 
@@ -92,6 +108,8 @@ f1_sim = 2702-1; f2_sim = 5065-1
 f1_sim = 2401-1; f2_sim = 4873-1; f0_sim = 1054-1
 f1_sim = 2132-1; f2_sim = 4873-1; f0_sim = 1054-1
 f1_sim = 3613-1; f2_sim = 4249-1; f0_sim = 380-1
+f1_sim = 19071-1; f2_sim = 29212-1; f0_sim = 698-1
+f1_sim = 16797-1; f2_sim = 29091-1; f0_sim = 698-1
 PTests = Pareto[c(f0_sim+1, f1_sim+1, f2_sim+1),] # confirm these are satisficing
 
 ### --------------------------------------------------------------------------------
@@ -112,7 +130,7 @@ OS = Objs[which(Objs$Solution %in% satisficing_sols),]
 OS$Satisficing = "Solutions meeting\ncriteria"
 Objs = rbind(Objs, OS)
 
-colmaxes = apply(Objs[,1:6],2,max); colmaxes = c(1,1,1000,3,4,4000)
+colmaxes = apply(Objs[,1:6],2,max); colmaxes = c(0.25,1,800,3.5,4,5000)
 colmins = apply(Objs[,1:6],2,min); colmins = c(0,0,0,0,0,0)
 for (r in 1:nrow(Objs)) {
   Objs[r,1:6] = (Objs[r,1:6] - colmins) / (colmaxes - colmins)
@@ -127,7 +145,7 @@ for (base_set in unique(OM$Satisficing)) {
   A_base = A_base + 
     geom_line(data = OM[which(OM$Satisficing == base_set),], 
               aes(x = variable, y = value, group = Solution, color = Satisficing)) +
-    scale_color_manual(values = c("grey90", "grey80")) + 
+    scale_color_manual(values = c("grey90", "grey70")) + 
     theme(panel.background = element_rect(color = NA, fill = "transparent"),
           panel.grid.major.y = element_blank(),
           panel.grid.minor = element_blank(),
@@ -143,13 +161,13 @@ for (base_set in unique(OM$Satisficing)) {
 }
 
 # add text labels of objective bounds
-MaxText = c("0%", "100%", "$1B", "300%", "400%", "$4/Gal")
+MaxText = c("75%", "100%", "$800M", "350%", "400%", "$5/Gal")
 MinText = c("100%", "0%", "$0", "0% AVR", "0% AVR", "$0/Gal")
 ObjText = c("Reliability", "Use Restriction\nFrequency", "Infrastructure\nNet Present Cost", 
             "Peak Financial\nCost", "Worst-Case\nCost", "Unit Cost of\nExpansion")
 xloc = c(0.5, 1, 1.5, 2, 2.5, 3) * 2
 for (spot in 1:length(ObjText)) {
-  A_base = A_base + 
+  A_base = A_base + guides(color = FALSE) +
     annotation_custom(grob = textGrob(MinText[spot], gp = gpar(fontsize = 8)),  
                       xmin = xloc[spot], xmax = xloc[spot], 
                       ymin = -0.06, ymax = -0.06) +
@@ -162,10 +180,10 @@ for (spot in 1:length(ObjText)) {
 }
 A_base_table = ggplot_gtable(ggplot_build(A_base))
 A_base_table$layout$clip[A_base_table$layout$name == "panel"] = "off"
-ggsave(plot = A_base_table, "results_figures/D1_base.png", dpi = 1200, height = 3.5, width = 7, units = "in")
+ggsave(plot = A_base_table, "results_figures/D1_base_nolegend.png", dpi = 1200, height = 3.5, width = 5.5, units = "in")
 
 # add chosen solutions
-f_colors = c(wes_palette(n = 3, name = "FantasticFox1"), "grey90", "grey80")
+f_colors = c(wes_palette(n = 3, name = "FantasticFox1"), "grey90", "grey70")
 Chosen = OM_base[which(OM_base$Solution %in% c(f1_sim+1, f2_sim+1, f0_sim+1)),]
 A_base_set = A_base + 
   geom_line(data = Chosen, aes(x = variable, y = value, group = Solution, colour = Formulation), size = 1.25) +
@@ -179,18 +197,18 @@ A_base_set = A_base +
         axis.title = element_blank()) + 
   scale_y_continuous(expand = c(0,0), limits = c(0,1)) + labs(color = "Formulation") +
   annotation_custom(grob = textGrob("A", gp = gpar(fontsize = 15, fontface = "bold", col = f_colors[1])),
-                    xmin = 4.6, xmax = 4.6,
-                    ymin = 0.35, ymax = 0.35) +
+                    xmin = 3.1, xmax = 3.1,
+                    ymin = 0.2, ymax = 0.2) +
   annotation_custom(grob = textGrob("B", gp = gpar(fontsize = 15, fontface = "bold", col = f_colors[2])),
-                    xmin = 5.7, xmax = 5.7,
-                    ymin = 0.25, ymax = 0.25) +
+                    xmin = 2.9, xmax = 2.9,
+                    ymin = 0.45, ymax = 0.45) +
   annotation_custom(grob = textGrob("C", gp = gpar(fontsize = 15, fontface = "bold", col = f_colors[3])),
-                    xmin = 2.55, xmax = 2.55,
-                    ymin = 0.6, ymax = 0.6)
+                    xmin = 2.4, xmax = 2.4,
+                    ymin = 0.6, ymax = 0.6) + guides(color = FALSE)
 A_base_set_table = ggplot_gtable(ggplot_build(A_base_set))
 A_base_set_table$layout$clip[A_base_set_table$layout$name == "panel"] = "off"
-ggsave(plot = A_base_set_table, paste("results_figures/D1.png", sep = ""), 
-       dpi = 1200, height = 3.5, width = 7, units = "in", bg = "transparent")
+ggsave(plot = A_base_set_table, paste("results_figures/D1_nolegend.png", sep = ""), 
+       dpi = 1200, height = 3.5, width = 5.5, units = "in", bg = "transparent")
 
 
 ### --------------------------------------------------------------------------------
@@ -233,13 +251,15 @@ formulations = c("No Agreement", "Fixed Allocations", "Adjustable Allocations")
 #        dpi = 600, height = 15, width = 12, units = "in")
 
 # pick one high and one low demand realization to show realization-level differences
-select_realizations = read.csv("demand_bootstraps/old_bootstraps/bootstrap_realizations_2_100_S1.csv", header = FALSE)
-high_reals = c(t(select_realizations[1,])) # also tested 142, 129, 126, 117, 116, 113
+#select_realizations = read.csv("demand_bootstraps/old_bootstraps/bootstrap_realizations_2_100_S1.csv", header = FALSE)
+#high_reals = c(t(select_realizations[1,])) # also tested 142, 129, 126, 117, 116, 113
 #low_real = select_realizations[2,100] # also tested 377, 376, 372, 371, 366, 363, 360, 355
 
-#for (high_real in high_reals) { # for sim 2429, realizations 60, 236, 268 are good examples to pick
-  high_real = 268
-  low_real = 371
+#high_reals = c(268, 142, 129, 126, 117, 116, 113, 60, 236, 268)
+#low_reals = c(371, 377, 376, 372, 371, 366, 363, 360, 355)
+#for (low_real in low_reals) { # for sim 2429, realizations 60, 236, 268 are good examples to pick
+  low_real = 366
+  high_real = 116
   
   # ------------------------------------------------------------------------------------------------------------------------
   # ------------------------------------------------------------------------------------------------------------------------
@@ -247,7 +267,8 @@ high_reals = c(t(select_realizations[1,])) # also tested 142, 129, 126, 117, 116
   # SO BE AWARE OF THIS WHEN MAKING FIGURES AND WHEN PULLING DATA
   r_names = rownames(Satisficing)
   sol_ids = Satisficing$Solution-1
-  actual_solution_ids_for_satisficing_set = sol_ids[which(r_names %in% as.character(c(f0_sim+1, f1_sim+1, f2_sim+1)))]
+  f_sols = c(f0_sim+1, f1_sim+1, f2_sim+1)-1
+  actual_solution_ids_for_satisficing_set = sol_ids[which(r_names %in% as.character(f_sols+1))]
   
   # locate formulation 1 and 2 satisficing solutions to compare
   # based on objective value and WJLWTP DV similarities 
@@ -256,12 +277,12 @@ high_reals = c(t(select_realizations[1,])) # also tested 142, 129, 126, 117, 116
   
   # auto-generate Ubuntu command to pull realization files for specific formulations/simulations/realizations
   # this isn't the best way to do this, just gonna grab all the realizations for each sim over mobaxterm
-  paste("scp spec689@thecube.cac.cornell.edu:~/AGUmodel2019/WaterPaths/output/", "0", "/sinusoidal/" , 
-        "\\{WaterSources,Policies,Utilities\\}",
-        "_s", as.character(f0_sim), 
-        "_r\\{", as.character(low_real), ",", as.character(high_real), "\\}.csv",
-        " /mnt/c/Users/dgorelic/'OneDrive - University of North Carolina at Chapel Hill'/UNC/Research/WSC/Coding/WP/BorgOutput/demand_bootstraps/", 
-        sep = "")
+  # paste("scp spec689@thecube.cac.cornell.edu:~/AGUmodel2019/WaterPaths/output/", "0", "/sinusoidal/" , 
+  #       "\\{WaterSources,Policies,Utilities\\}",
+  #       "_s", as.character(f0_sim), 
+  #       "_r\\{", as.character(low_real), ",", as.character(high_real), "\\}.csv",
+  #       " /mnt/c/Users/dgorelic/'OneDrive - University of North Carolina at Chapel Hill'/UNC/Research/WSC/Coding/WP/BorgOutput/demand_bootstraps/", 
+  #       sep = "")
   
   # ------------------------------------------------------------------------------------------------------------------------
   # ------------------------------------------------------------------------------------------------------------------------
@@ -306,11 +327,11 @@ high_reals = c(t(select_realizations[1,])) # also tested 142, 129, 126, 117, 116
   Pathways = c("Realization", "Utility", "Week", "Project", "Solution", "Formulation")
   id_set = list(c(1:8), c(9:16))
   f = 1
-  for (s in actual_solution_ids_for_satisficing_set[2:3]) {
+  for (s in f_sols[2:3]) {
     i = 1
     
     # also get pathways for these simulations
-    P = read.table(paste("demand_bootstraps/Pathways_s", as.character(s), ".out", sep = ""), 
+    P = read.table(paste("sim_pathways/Pathways_s", as.character(s), ".out", sep = ""), 
                    sep = "\t", header = TRUE)
     P$Solution = s
     P$Formulation = formulations[Pareto$group[s]+1]
@@ -467,8 +488,10 @@ high_reals = c(t(select_realizations[1,])) # also tested 142, 129, 126, 117, 116
     geom_text(data = ann_text, aes(x = 2015, y = 50, label = lab, colour = ColorToBe), size = 11, face = "bold") +
     scale_colour_manual(values = f_colors2[1:2]) + guides(colour = FALSE) +
     ggtitle("Comparison of cooperative formulations \nfor Jordan Lake WTP development")
-  ggsave(paste("results_figures/D_r", as.character(high_real), ".png", sep = ""), 
-         dpi = 1200, height = 5, width = 7, units = "in", bg = "transparent")
+  # ggsave(paste("results_figures/D_r", as.character(high_real), ".png", sep = ""), 
+  #        dpi = 1200, height = 5, width = 7, units = "in", bg = "transparent")
+    ggsave(paste("results_figures/D_r", as.character(low_real), ".png", sep = ""), 
+           dpi = 1200, height = 5, width = 7, units = "in", bg = "transparent")
   
 #}
 
@@ -541,7 +564,7 @@ for (s in unique(DSsums$Formulation)) {
 }
 D_final = ggplot_gtable(ggplot_build(D_set))
 D_final$layout$clip[D_final$layout$name == "panel"] = "off"
-ggsave(plot = D_final, "results_figures/D.png", 
+ggsave(plot = D_final, "results_figures/D_new.png", 
        dpi = 1200, units = "in", height = 5, width = 7, bg = "transparent")
 
 
